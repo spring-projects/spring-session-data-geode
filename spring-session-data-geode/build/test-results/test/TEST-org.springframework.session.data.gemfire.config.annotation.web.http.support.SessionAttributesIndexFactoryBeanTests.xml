@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionAttributesIndexFactoryBeanTests" tests="5" skipped="0" failures="0" errors="0" timestamp="2017-06-06T07:28:10" hostname="jblum-mbpro-2.local" time="0.015">
+  <properties/>
+  <testcase name="indexIsNotInitializedWhenNoIndexableSessionAttributesAreConfigured" classname="org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionAttributesIndexFactoryBeanTests" time="0.014"/>
+  <testcase name="initializesIndexWhenIndexableSessionAttributesAreConfigured" classname="org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionAttributesIndexFactoryBeanTests" time="0.0"/>
+  <testcase name="setAndGetIndexableSessionAttributes" classname="org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionAttributesIndexFactoryBeanTests" time="0.001"/>
+  <testcase name="setAndGetRegionName" classname="org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionAttributesIndexFactoryBeanTests" time="0.0"/>
+  <testcase name="isSingletonIsTrue" classname="org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionAttributesIndexFactoryBeanTests" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

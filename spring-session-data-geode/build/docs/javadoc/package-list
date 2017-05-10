@@ -1,0 +1,4 @@
+org.springframework.session.data.gemfire
+org.springframework.session.data.gemfire.config.annotation.web.http
+org.springframework.session.data.gemfire.config.annotation.web.http.support
+org.springframework.session.data.gemfire.support

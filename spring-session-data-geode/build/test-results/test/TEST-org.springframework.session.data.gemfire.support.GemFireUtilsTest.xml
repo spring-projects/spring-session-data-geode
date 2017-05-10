@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.springframework.session.data.gemfire.support.GemFireUtilsTest" tests="18" skipped="0" failures="0" errors="0" timestamp="2017-06-06T07:28:10" hostname="jblum-mbpro-2.local" time="0.009">
+  <properties/>
+  <testcase name="regionIsNotProxy" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.0"/>
+  <testcase name="clientCacheIsNotPeer" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.0"/>
+  <testcase name="regionShortcutIsProxy" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.0"/>
+  <testcase name="genericCacheIsNotPeer" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.0"/>
+  <testcase name="clientCacheIsClient" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.001"/>
+  <testcase name="toRegionPath" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.0"/>
+  <testcase name="regionShortcutIsNotProxy" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.0"/>
+  <testcase name="regionIsProxy" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.0"/>
+  <testcase name="peerCacheIsNotClient" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.0"/>
+  <testcase name="closeNonNullCloseableSuccessfullyReturnsTrue" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.005"/>
+  <testcase name="closeNonNullCloseableObjectThrowingIOExceptionReturnsFalse" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.0"/>
+  <testcase name="closeNullCloseableObjectReturnsFalse" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.0"/>
+  <testcase name="genericCacheIsNotClient" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.0"/>
+  <testcase name="clientRegionShortcutIsNotLocal" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.0"/>
+  <testcase name="clientRegionShortcutIsNotProxy" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.0"/>
+  <testcase name="peerCacheIsPeer" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.001"/>
+  <testcase name="clientRegionShortcutIsLocal" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.0"/>
+  <testcase name="clientRegionShortcutIsProxy" classname="org.springframework.session.data.gemfire.support.GemFireUtilsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

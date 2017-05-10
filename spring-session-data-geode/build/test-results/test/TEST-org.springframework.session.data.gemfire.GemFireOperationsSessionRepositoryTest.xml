@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.springframework.session.data.gemfire.GemFireOperationsSessionRepositoryTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2017-06-06T07:28:10" hostname="jblum-mbpro-2.local" time="0.039">
+  <properties/>
+  <testcase name="getSessionFindsMatchingNonExpiredSessionById" classname="org.springframework.session.data.gemfire.GemFireOperationsSessionRepositoryTest" time="0.002"/>
+  <testcase name="findByIndexNameValueFindsMatchingSession" classname="org.springframework.session.data.gemfire.GemFireOperationsSessionRepositoryTest" time="0.024"/>
+  <testcase name="createProperlyInitializedSession" classname="org.springframework.session.data.gemfire.GemFireOperationsSessionRepositoryTest" time="0.001"/>
+  <testcase name="prepareQueryReturnsPrincipalNameOql" classname="org.springframework.session.data.gemfire.GemFireOperationsSessionRepositoryTest" time="0.001"/>
+  <testcase name="findByPrincipalNameFindsMatchingSessions" classname="org.springframework.session.data.gemfire.GemFireOperationsSessionRepositoryTest" time="0.001"/>
+  <testcase name="findByPrincipalNameReturnsNoMatchingSessions" classname="org.springframework.session.data.gemfire.GemFireOperationsSessionRepositoryTest" time="0.001"/>
+  <testcase name="getSessionDeletesMatchingExpiredSessionById" classname="org.springframework.session.data.gemfire.GemFireOperationsSessionRepositoryTest" time="0.002"/>
+  <testcase name="getSessionReturnsNull" classname="org.springframework.session.data.gemfire.GemFireOperationsSessionRepositoryTest" time="0.001"/>
+  <testcase name="deleteRemovesExistingSessionAndHandlesDelete" classname="org.springframework.session.data.gemfire.GemFireOperationsSessionRepositoryTest" time="0.001"/>
+  <testcase name="deleteRemovesNonExistingSessionAndHandlesDelete" classname="org.springframework.session.data.gemfire.GemFireOperationsSessionRepositoryTest" time="0.001"/>
+  <testcase name="saveStoresSession" classname="org.springframework.session.data.gemfire.GemFireOperationsSessionRepositoryTest" time="0.001"/>
+  <testcase name="prepareQueryReturnsIndexNameValueOql" classname="org.springframework.session.data.gemfire.GemFireOperationsSessionRepositoryTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

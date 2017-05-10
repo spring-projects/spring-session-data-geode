@@ -1,0 +1,21 @@
+apply plugin: 'io.spring.convention.spring-module'
+
+description = "Spring Session Data Geode"
+
+dependencies {
+	compile "org.springframework.session:spring-session"
+	compile "org.springframework:spring-jcl"
+	compile "org.springframework.data:spring-data-gemfire"
+
+	provided "javax.servlet:javax.servlet-api"
+
+	integrationTestRuntime "org.springframework.shell:spring-shell"
+
+	testCompile "edu.umd.cs.mtc:multithreadedtc"
+	testCompile "junit:junit"
+	testCompile "org.assertj:assertj-core"
+	testCompile "org.mockito:mockito-core"
+	testCompile "org.springframework.security:spring-security-core"
+	testCompile "org.springframework:spring-test"
+	testCompile "org.springframework:spring-web"
+}
