@@ -1,0 +1,11 @@
+.checkstyle
+.gradle
+.idea
+.iml
+.ipr
+.iws
+build
+buildSrc/.gradle
+buildSrc/build
+out
+target
