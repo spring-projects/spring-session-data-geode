@@ -33,8 +33,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
@@ -68,12 +66,14 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * {@link AbstractGemFireOperationsSessionRepository} is an abstract base class encapsulating functionality
- * common to all implementations that support {@link SessionRepository} operations backed by GemFire.
+ * common to all implementations that support {@link SessionRepository} operations backed by Apache Geode.
  *
  * @author John Blum
- * @since 1.1.0
  * @see org.apache.geode.DataSerializable
  * @see org.apache.geode.DataSerializer
  * @see org.apache.geode.Delta
@@ -84,12 +84,14 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.context.ApplicationEventPublisher
  * @see org.springframework.context.ApplicationEventPublisherAware
  * @see org.springframework.data.gemfire.GemfireOperations
+ * @see org.springframework.expression.Expression
  * @see org.springframework.session.ExpiringSession
+ * @see org.springframework.session.FindByIndexNameSessionRepository
  * @see org.springframework.session.Session
  * @see org.springframework.session.SessionRepository
- * @see org.springframework.session.FindByIndexNameSessionRepository
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
+ * @since 1.1.0
  */
 public abstract class AbstractGemFireOperationsSessionRepository extends CacheListenerAdapter<Object, ExpiringSession>
 		implements ApplicationEventPublisherAware, FindByIndexNameSessionRepository<ExpiringSession>, InitializingBean {
@@ -217,6 +219,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 * @throws Exception if an error occurs during the initialization process.
 	 */
 	public void afterPropertiesSet() throws Exception {
+
 		GemfireOperations template = getTemplate();
 
 		Assert.isInstanceOf(GemfireAccessor.class, template);
@@ -345,6 +348,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 * @see #publishEvent(ApplicationEvent)
 	 */
 	protected void handleCreated(String sessionId, ExpiringSession session) {
+
 		remember(sessionId);
 
 		publishEvent(session != null ? new SessionCreatedEvent(this, session)
@@ -361,6 +365,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 * @see #publishEvent(ApplicationEvent)
 	 */
 	protected void handleDeleted(String sessionId, ExpiringSession session) {
+
 		forget(sessionId);
 
 		publishEvent(session != null ? new SessionDeletedEvent(this, session)
@@ -377,6 +382,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 * @see #publishEvent(ApplicationEvent)
 	 */
 	protected void handleDestroyed(String sessionId, ExpiringSession session) {
+
 		forget(sessionId);
 
 		publishEvent(session != null ? new SessionDestroyedEvent(this, session)
@@ -393,6 +399,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 * @see #publishEvent(ApplicationEvent)
 	 */
 	protected void handleExpired(String sessionId, ExpiringSession session) {
+
 		forget(sessionId);
 
 		publishEvent(session != null ? new SessionExpiredEvent(this, session)
@@ -435,8 +442,8 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 * state information across the GemFire cluster.
 	 */
 	@SuppressWarnings("serial")
-	public static class GemFireSession implements Comparable<ExpiringSession>,
-			DataSerializable, Delta, ExpiringSession {
+	public static class GemFireSession
+			implements Comparable<ExpiringSession>, DataSerializable, Delta, ExpiringSession {
 
 		protected static final boolean DEFAULT_ALLOW_JAVA_SERIALIZATION = true;
 
@@ -471,6 +478,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		protected GemFireSession(ExpiringSession session) {
+
 			Assert.notNull(session, "The ExpiringSession to copy cannot be null");
 
 			this.id = session.getId();
@@ -544,6 +552,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public synchronized boolean isExpired() {
+
 			long lastAccessedTime = getLastAccessedTime();
 			long maxInactiveIntervalInSeconds = getMaxInactiveIntervalInSeconds();
 
@@ -585,6 +594,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public synchronized String getPrincipalName() {
+
 			String principalName = getAttribute(PRINCIPAL_NAME_INDEX_NAME);
 
 			if (principalName == null) {
@@ -601,6 +611,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public synchronized void toData(DataOutput out) throws IOException {
+
 			out.writeUTF(getId());
 			out.writeLong(getCreationTime());
 			out.writeLong(getLastAccessedTime());
@@ -628,6 +639,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public synchronized void fromData(DataInput in) throws ClassNotFoundException, IOException {
+
 			this.id = in.readUTF();
 			this.creationTime = in.readLong();
 			setLastAccessedTime(in.readLong());
@@ -679,7 +691,8 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		/* (non-Javadoc) */
 		@Override
 		public boolean equals(final Object obj) {
-			if (obj == this) {
+
+			if (this == obj) {
 				return true;
 			}
 
@@ -695,14 +708,18 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		/* (non-Javadoc) */
 		@Override
 		public int hashCode() {
+
 			int hashValue = 17;
+
 			hashValue = 37 * hashValue + getId().hashCode();
+
 			return hashValue;
 		}
 
 		/* (non-Javadoc) */
 		@Override
 		public synchronized String toString() {
+
 			return String.format("{ @type = %1$s, id = %2$s, creationTime = %3$s, lastAccessedTime = %4$s"
 				+ ", maxInactiveIntervalInSeconds = %5$s, principalName = %6$s }",
 				getClass().getName(), getId(), toString(getCreationTime()), toString(getLastAccessedTime()),
@@ -771,6 +788,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public void setAttribute(String attributeName, Object attributeValue) {
+
 			synchronized (this.lock) {
 				if (attributeValue != null) {
 					if (!attributeValue.equals(this.sessionAttributes.put(attributeName, attributeValue))) {
@@ -785,6 +803,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public void removeAttribute(String attributeName) {
+
 			synchronized (this.lock) {
 				if (this.sessionAttributes.remove(attributeName) != null) {
 					this.sessionAttributeDeltas.put(attributeName, null);
@@ -795,6 +814,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		/* (non-Javadoc) */
 		@SuppressWarnings("unchecked")
 		public <T> T getAttribute(String attributeName) {
+
 			synchronized (this.lock) {
 				return (T) this.sessionAttributes.get(attributeName);
 			}
@@ -802,6 +822,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public Set<String> getAttributeNames() {
+
 			synchronized (this.lock) {
 				return Collections.unmodifiableSet(new HashSet<String>(this.sessionAttributes.keySet()));
 			}
@@ -816,6 +837,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		@Override
 		@SuppressWarnings("all")
 		public Set<Entry<String, Object>> entrySet() {
+
 			return new AbstractSet<Entry<String, Object>>() {
 				@Override
 				public Iterator<Entry<String, Object>> iterator() {
@@ -832,6 +854,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public void from(Session session) {
+
 			synchronized (this.lock) {
 				for (String attributeName : session.getAttributeNames()) {
 					setAttribute(attributeName, session.getAttribute(attributeName));
@@ -841,6 +864,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public void from(GemFireSessionAttributes sessionAttributes) {
+
 			synchronized (this.lock) {
 				for (String attributeName : sessionAttributes.getAttributeNames()) {
 					setAttribute(attributeName, sessionAttributes.getAttribute(attributeName));
@@ -850,6 +874,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public void toData(DataOutput out) throws IOException {
+
 			synchronized (this.lock) {
 				Set<String> attributeNames = getAttributeNames();
 
@@ -869,6 +894,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+
 			synchronized (this.lock) {
 				for (int count = in.readInt(); count > 0; count--) {
 					setAttribute(in.readUTF(), readObject(in));
@@ -885,6 +911,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public boolean hasDelta() {
+
 			synchronized (this.lock) {
 				return !this.sessionAttributeDeltas.isEmpty();
 			}
@@ -892,7 +919,9 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public void toDelta(DataOutput out) throws IOException {
+
 			synchronized (this.lock) {
+
 				out.writeInt(this.sessionAttributeDeltas.size());
 
 				for (Map.Entry<String, Object> entry : this.sessionAttributeDeltas.entrySet()) {
@@ -906,6 +935,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public void fromDelta(DataInput in) throws InvalidDeltaException, IOException {
+
 			synchronized (this.lock) {
 				try {
 					int count = in.readInt();

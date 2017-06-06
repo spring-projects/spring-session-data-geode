@@ -30,18 +30,20 @@ import org.springframework.session.SessionRepository;
  * that interfaces with and uses GemFire to back and store Spring Sessions.
  *
  * @author John Blum
- * @since 1.1.0
  * @see org.springframework.data.gemfire.GemfireOperations
  * @see org.springframework.session.ExpiringSession
  * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository
+ * @since 1.1.0
  */
 public class GemFireOperationsSessionRepository extends AbstractGemFireOperationsSessionRepository {
 
 	// GemFire OQL query used to lookup Sessions by arbitrary attributes.
-	protected static final String FIND_SESSIONS_BY_INDEX_NAME_VALUE_QUERY = "SELECT s FROM %1$s s WHERE s.attributes['%2$s'] = $1";
+	protected static final String FIND_SESSIONS_BY_INDEX_NAME_VALUE_QUERY =
+		"SELECT s FROM %1$s s WHERE s.attributes['%2$s'] = $1";
 
 	// GemFire OQL query used to look up Sessions by principal name.
-	protected static final String FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY = "SELECT s FROM %1$s s WHERE s.principalName = $1";
+	protected static final String FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY =
+		"SELECT s FROM %1$s s WHERE s.principalName = $1";
 
 	/**
 	 * Constructs an instance of GemFireOperationsSessionRepository initialized with the
@@ -71,6 +73,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see #prepareQuery(String)
 	 */
 	public Map<String, ExpiringSession> findByIndexNameAndIndexValue(String indexName, String indexValue) {
+
 		SelectResults<ExpiringSession> results = getTemplate().find(prepareQuery(indexName), indexValue);
 
 		Map<String, ExpiringSession> sessions = new HashMap<String, ExpiringSession>(results.size());
@@ -91,6 +94,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * Session attribute.
 	 */
 	protected String prepareQuery(String indexName) {
+
 		return (PRINCIPAL_NAME_INDEX_NAME.equals(indexName)
 			? String.format(FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY, getFullyQualifiedRegionName())
 			: String.format(FIND_SESSIONS_BY_INDEX_NAME_VALUE_QUERY, getFullyQualifiedRegionName(), indexName));
@@ -119,6 +123,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see #delete(String)
 	 */
 	public ExpiringSession getSession(String sessionId) {
+
 		ExpiringSession storedSession = getTemplate().get(sessionId);
 
 		if (storedSession != null) {

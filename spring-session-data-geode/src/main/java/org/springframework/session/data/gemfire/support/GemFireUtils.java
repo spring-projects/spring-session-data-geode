@@ -46,6 +46,7 @@ public abstract class GemFireUtils {
 	 * @see java.io.Closeable
 	 */
 	public static boolean close(Closeable obj) {
+
 		if (obj != null) {
 			try {
 				obj.close();
@@ -93,15 +94,16 @@ public abstract class GemFireUtils {
 	 * @see org.apache.geode.cache.client.ClientRegionShortcut
 	 */
 	public static boolean isLocal(ClientRegionShortcut shortcut) {
+
 		switch (shortcut) {
-		case LOCAL:
-		case LOCAL_HEAP_LRU:
-		case LOCAL_OVERFLOW:
-		case LOCAL_PERSISTENT:
-		case LOCAL_PERSISTENT_OVERFLOW:
-			return true;
-		default:
-			return false;
+			case LOCAL:
+			case LOCAL_HEAP_LRU:
+			case LOCAL_OVERFLOW:
+			case LOCAL_PERSISTENT:
+			case LOCAL_PERSISTENT_OVERFLOW:
+				return true;
+			default:
+				return false;
 		}
 	}
 
@@ -115,11 +117,12 @@ public abstract class GemFireUtils {
 	 * @see org.apache.geode.cache.client.ClientRegionShortcut
 	 */
 	public static boolean isProxy(ClientRegionShortcut shortcut) {
+
 		switch (shortcut) {
-		case PROXY:
-			return true;
-		default:
-			return false;
+			case PROXY:
+				return true;
+			default:
+				return false;
 		}
 	}
 
@@ -146,13 +149,14 @@ public abstract class GemFireUtils {
 	 * @see org.apache.geode.cache.RegionShortcut
 	 */
 	public static boolean isProxy(RegionShortcut shortcut) {
+
 		switch (shortcut) {
-		case PARTITION_PROXY:
-		case PARTITION_PROXY_REDUNDANT:
-		case REPLICATE_PROXY:
-			return true;
-		default:
-			return false;
+			case PARTITION_PROXY:
+			case PARTITION_PROXY_REDUNDANT:
+			case REPLICATE_PROXY:
+				return true;
+			default:
+				return false;
 		}
 	}
 

@@ -3,21 +3,21 @@ apply plugin: 'io.spring.convention.spring-test'
 
 dependencies {
 	testCompile project(':spring-session-data-geode')
-	testCompile "junit:junit"
-	testCompile "org.mockito:mockito-core"
-	testCompile "org.springframework:spring-test"
-	testCompile "org.assertj:assertj-core"
-	testCompile "org.springframework.security:spring-security-test"
-	testCompile "org.springframework.security:spring-security-web"
 	testCompile "javax.servlet:javax.servlet-api"
-	testCompile slf4jDependencies
+	testCompile "junit:junit"
+	testCompile "org.assertj:assertj-core"
+	testCompile "org.mockito:mockito-core"
+	testCompile "edu.umd.cs.mtc:multithreadedtc"
+	testCompile "org.springframework:spring-test"
 }
 
 def versions = dependencyManagement.managedVersions
 
 asciidoctor {
+
 	def ghTag = snapshotBuild ? 'master' : project.version
 	def ghUrl = "https://github.com/spring-projects/spring-session/tree/$ghTag"
+
 	attributes	'version-snapshot': snapshotBuild,
 			'version-milestone': milestoneBuild,
 			'version-release': releaseBuild,

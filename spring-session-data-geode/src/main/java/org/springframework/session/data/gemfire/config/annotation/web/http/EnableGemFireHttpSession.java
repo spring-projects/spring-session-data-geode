@@ -22,18 +22,21 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.servlet.http.HttpSession;
+
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.session.web.http.SessionRepositoryFilter;
 
 /**
- * Add this annotation to a Spring {@code @Configuration} class to expose the SessionRepositoryFilter
- * as a bean named "springSessionRepositoryFilter" and backed by Pivotal GemFire or Apache Geode.
+ * Add this annotation to a Spring {@code @Configuration} class to expose the {@link SessionRepositoryFilter}
+ * as a bean named {@literal springSessionRepositoryFilter} back the {@link HttpSession}
+ * by Pivotal GemFire or Apache Geode.
  *
- * In order to leverage the annotation, a single Pivotal GemFire/Apache Geode
- * {@link org.apache.geode.cache.Cache}
+ * In order to use this annotation, a single Pivotal GemFire/Apache Geode {@link org.apache.geode.cache.Cache}
  * or {@link org.apache.geode.cache.client.ClientCache} instance must be provided.
  *
  * For example:
@@ -46,24 +49,31 @@ import org.springframework.context.annotation.Import;
  *
  *     {@literal @Bean}
  *     public Properties gemfireProperties() {
+ *
  *       Properties gemfireProperties = new Properties();
+ *
  *       gemfireProperties.setProperty("name", "ExamplePeer");
  *       gemfireProperties.setProperty("mcast-port", "0");
  *       gemfireProperties.setProperty("log-level", "warning");
+ *
  *       return gemfireProperties;
  *     }
  *
  *     {@literal @Bean}
  *     public CacheFactoryBean gemfireCache() throws Exception {
+ *
  *       CacheFactoryBean cache  = new CacheFactoryBean();
+ *
+ *       cache.setClose(true);
  *       cache.setProperties(gemfireProperties());
+ *
  *       return cache;
  *     }
  * }
  * </code> </pre>
  *
- * Alternatively, Spring Session can be configured to use Pivotal GemFire (Apache Geode) as a client
- * using a dedicated GemFire Server cluster and a {@link org.apache.geode.cache.client.ClientCache}.
+ * Alternatively, Spring Session can be configured to use Pivotal GemFire/Apache Geode as a cache client
+ * with a dedicated Pivotal GemFire/Apache Geode cluster and a {@link org.apache.geode.cache.client.ClientCache}.
  *
  * For example:
  *
@@ -74,24 +84,33 @@ import org.springframework.context.annotation.Import;
  *
  *     {@literal @Bean}
  *     public Properties gemfireProperties() {
+ *
  *       Properties gemfireProperties = new Properties();
+ *
  *       gemfireProperties.setProperty("name", "ExampleClient");
  *       gemfireProperties.setProperty("log-level", "warning");
+ *
  *       return gemfireProperties;
  *     }
  *
  *     {@literal @Bean}
  *     public ClientCacheFactoryBean gemfireCache() throws Exception {
+ *
  *       ClientCacheFactoryBean clientCache = new ClientCacheFactoryBean();
+ *
  *       clientCache.setClose(true)
  *       clientCache.setProperties(gemfireProperties());
+ *
  *       return clientCache;
  *     }
  *
  *     {@literal @Bean}
  *     public PoolFactoryBean gemfirePool() {
+ *
  *         PoolFactoryBean pool = new PoolFactoryBean();
- *         pool.addServer(new ConnectionEndpoint("serverHost", 40404);
+ *
+ *         pool.addServer(new ConnectionEndpoint("localhost", 40404);
+ *
  *         return pool;
  *     }
  * }

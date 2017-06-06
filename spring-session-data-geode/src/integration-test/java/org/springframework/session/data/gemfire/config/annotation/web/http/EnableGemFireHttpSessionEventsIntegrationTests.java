@@ -16,19 +16,21 @@
 
 package org.springframework.session.data.gemfire.config.annotation.web.http;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.ExpirationAction;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -44,8 +46,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * The EnableGemFireHttpSessionEventsIntegrationTests class is a test suite of test cases

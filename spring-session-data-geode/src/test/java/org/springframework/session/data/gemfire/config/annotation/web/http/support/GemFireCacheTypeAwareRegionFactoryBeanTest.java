@@ -16,14 +16,9 @@
 
 package org.springframework.session.data.gemfire.config.annotation.web.http.support;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.cache.InterestResultPolicy;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientRegionShortcut;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,12 +27,18 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.gemfire.client.Interest;
 import org.springframework.session.ExpiringSession;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 /**
  * The GemFireCacheTypeAwareRegionFactoryBeanTest class is a test suite of test cases
@@ -162,7 +163,7 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 	@Test
 	public void setBeanFactoryToNullThrowsIllegalArgumentException() {
 		this.exception.expect(IllegalArgumentException.class);
-		this.exception.expectMessage("BeanFactory must not be null");
+		this.exception.expectMessage("BeanFactory is required");
 		this.regionFactoryBean.setBeanFactory(null);
 	}
 
@@ -201,7 +202,7 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 	@Test
 	public void setGemfireCacheToNullThrowsIllegalArgumentException() {
 		this.exception.expect(IllegalArgumentException.class);
-		this.exception.expectMessage("GemFireCache must not be null");
+		this.exception.expectMessage("GemFireCache is required");
 		this.regionFactoryBean.setGemfireCache(null);
 	}
 

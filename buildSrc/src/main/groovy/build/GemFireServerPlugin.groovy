@@ -1,17 +1,16 @@
-package build;
+package build
 
-import org.gradle.api.plugins.JavaPlugin
-import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskAction
 
-public class GemFireServerPlugin implements Plugin<Project> {
+class GemFireServerPlugin implements Plugin<Project> {
 
 	@Override
-	public void apply(Project project) {
-		project.tasks.create('gemFireServer', GemFireServerTask)
+	void apply(Project project) {
+
+		project.tasks.create('gemfireServer', GemFireServerTask)
 
 		project.tasks.integrationTest.doLast {
 			println 'Stopping GemFire Server...'
@@ -19,7 +18,7 @@ public class GemFireServerPlugin implements Plugin<Project> {
 		}
 
 		project.tasks.prepareAppServerForIntegrationTests {
-			dependsOn project.tasks.gemFireServer
+			dependsOn project.tasks.gemfireServer
 			doFirst {
 				project.gretty {
 					jvmArgs = ["-Dspring.session.data.gemfire.port=${project.tasks.gemFireServer.port}"]
@@ -35,6 +34,7 @@ public class GemFireServerPlugin implements Plugin<Project> {
 	}
 
 	static class GemFireServerTask extends DefaultTask {
+
 		def mainClassName = "sample.ServerConfig"
 		def process
 		def port
@@ -42,12 +42,13 @@ public class GemFireServerPlugin implements Plugin<Project> {
 
 		@TaskAction
 		def greet() {
+
 			port = availablePort()
 			println "Starting GemFire Server on port [$port]..."
-	
+
 			def out = debug ? System.out : new StringBuilder()
 			def err = debug ? System.out : new StringBuilder()
-	
+
 			String classpath = project.sourceSets.main.runtimeClasspath.collect { it }.join(File.pathSeparator)
 			String gemfireLogLevel = System.getProperty('spring.session.data.gemfire.log-level', 'warning')
 
@@ -57,11 +58,11 @@ public class GemFireServerPlugin implements Plugin<Project> {
 				//"-Dgemfire.log-level=config",
 				"-Dspring.session.data.gemfire.log-level=" + gemfireLogLevel,
 				"-Dspring.session.data.gemfire.port=${port}",
-				'sample.ServerConfig'
+				mainClassName
 			]
-	
+
 			//println commandLine
-			
+
 			project.tasks.appRun.ext.process = process = commandLine.execute()
 
 			process.consumeProcessOutput(out, err)

@@ -16,6 +16,8 @@
 
 package org.springframework.session.data.gemfire.config.annotation.web.http.support;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpSession;
 
 import org.apache.geode.cache.GemFireCache;
@@ -43,8 +45,8 @@ import org.springframework.util.ObjectUtils;
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.apache.geode.cache.query.Index
  */
-public class SessionAttributesIndexFactoryBean implements FactoryBean<Index>,
-		InitializingBean, BeanFactoryAware, BeanNameAware {
+public class SessionAttributesIndexFactoryBean
+		implements FactoryBean<Index>, InitializingBean, BeanFactoryAware, BeanNameAware {
 
 	protected static final String[] DEFAULT_INDEXABLE_SESSION_ATTRIBUTES = {};
 
@@ -61,6 +63,7 @@ public class SessionAttributesIndexFactoryBean implements FactoryBean<Index>,
 
 	/* (non-Javadoc) */
 	public void afterPropertiesSet() throws Exception {
+
 		if (isIndexableSessionAttributesConfigured()) {
 			this.sessionAttributesIndex = newIndex();
 		}
@@ -85,6 +88,7 @@ public class SessionAttributesIndexFactoryBean implements FactoryBean<Index>,
 	 * @see org.springframework.data.gemfire.IndexFactoryBean
 	 */
 	protected Index newIndex() throws Exception {
+
 		IndexFactoryBean indexFactory = new IndexFactoryBean();
 
 		indexFactory.setBeanFactory(this.beanFactory);
@@ -110,6 +114,7 @@ public class SessionAttributesIndexFactoryBean implements FactoryBean<Index>,
 	 * @see org.apache.geode.cache.query.Index#getIndexedExpression()
 	 */
 	protected String getIndexableSessionAttributesAsGemFireIndexExpression() {
+
 		StringBuilder builder = new StringBuilder();
 
 		for (String sessionAttribute : getIndexableSessionAttributes()) {
@@ -128,8 +133,9 @@ public class SessionAttributesIndexFactoryBean implements FactoryBean<Index>,
 	}
 
 	/* (non-Javadoc) */
+	@SuppressWarnings("unchecked")
 	public Class<?> getObjectType() {
-		return (this.sessionAttributesIndex != null ? this.sessionAttributesIndex.getClass() : Index.class);
+		return Optional.ofNullable(this.sessionAttributesIndex).map(Object::getClass).orElse((Class) Index.class);
 	}
 
 	/* (non-Javadoc) */
@@ -159,8 +165,7 @@ public class SessionAttributesIndexFactoryBean implements FactoryBean<Index>,
 
 	/* (non-Javadoc) */
 	protected String[] getIndexableSessionAttributes() {
-		return (this.indexableSessionAttributes != null ? this.indexableSessionAttributes
-			: DEFAULT_INDEXABLE_SESSION_ATTRIBUTES);
+		return Optional.ofNullable(this.indexableSessionAttributes).orElse(DEFAULT_INDEXABLE_SESSION_ATTRIBUTES);
 	}
 
 	/* (non-Javadoc) */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package docs.http.gemfire.indexablesessionattributes;
+package docs.gemfire.indexing;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
 
@@ -29,15 +31,13 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * @author Rob Winch
  * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = HttpSessionGemFireIndexingCustomITests.Config.class)
-public class HttpSessionGemFireIndexingCustomITests {
+@ContextConfiguration(classes = HttpSessionGemFireCustomIndexingIntegrationTests.TestConfiguration.class)
+public class HttpSessionGemFireCustomIndexingIntegrationTests {
 
 	@Autowired
 	private GemFireOperationsSessionRepository sessionRepository;
@@ -45,7 +45,7 @@ public class HttpSessionGemFireIndexingCustomITests {
 	@Test
 	public void findByIndexName() {
 		ExpiringSession session = this.sessionRepository.createSession();
-		String attrValue = "HttpSessionGemFireIndexingCustomITests-findByIndexName";
+		String attrValue = "HttpSessionGemFireCustomIndexingIntegrationTests-findByIndexName";
 
 		// tag::findbyindexname-set[]
 		String indexName = "name1";
@@ -64,9 +64,9 @@ public class HttpSessionGemFireIndexingCustomITests {
 		this.sessionRepository.delete(session.getId());
 	}
 
-	@PeerCacheApplication(name = "HttpSessionGemFireIndexingCustomITests", logLevel = "error")
+	@PeerCacheApplication(name = "HttpSessionGemFireCustomIndexingIntegrationTests", logLevel = "error")
 	@EnableGemFireHttpSession(indexableSessionAttributes = { "name1", "name2", "name3" },
 		regionName = "HttpSessionGemFireIndexingCustomTestRegion")
-	static class Config {
+	static class TestConfiguration {
 	}
 }
