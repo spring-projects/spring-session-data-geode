@@ -282,30 +282,11 @@ For example, assume you want to support Spring Security's concurrency control an
 
 A `Session` is a simplified `Map` of key value pairs.
 
-<1> We create a `SessionRepository` instance with a generic type, `S`, that extends `Session`. The generic type is defined in our class.
-<2> We create a new `Session` using our `SessionRepository` and assign it to a variable of type `S`.
-<3> We interact with the `Session`. In our example, we demonstrate saving a `User` to the `Session`.
-<4> We now save the `Session`. This is why we needed the generic type `S`. The `SessionRepository` only allows saving `Session` instances that were created or retrieved using the same `SessionRepository`. This allows for the `SessionRepository` to make implementation specific optimizations (i.e. only writing attributes that have changed).
-<5> We retrieve the `Session` from the `SessionRepository`.
-<6> We obtain the persisted `User` from our `Session` without the need for explicitly casting our attribute.
-
 [[api-expiringsession]]
 === ExpiringSession
 
 An `ExpiringSession` extends a `Session` by providing attributes related to the `Session` instance's expiration.
 If there is no need to interact with the expiration information, prefer using the more simple `Session` API.
-
-<1> We create a `SessionRepository` instance with a generic type, `S`, that extends `ExpiringSession`. The generic type is defined in our class.
-<2> We create a new `ExpiringSession` using our `SessionRepository` and assign it to a variable of type `S`.
-<3> We interact with the `ExpiringSession`.
-In our example, we demonstrate updating the amount of time the `ExpiringSession` can be inactive before it expires.
-<4> We now save the `ExpiringSession`.
-This is why we needed the generic type `S`.
-The `SessionRepository` only allows saving `ExpiringSession` instances that were created or retrieved using the same `SessionRepository`.
-This allows for the `SessionRepository` to make implementation specific optimizations (i.e. only writing attributes that have changed).
-The last accessed time is automatically updated when the `ExpiringSession` is saved.
-<5> We retrieve the `ExpiringSession` from the `SessionRepository`.
-If the `ExpiringSession` were expired, the result would be null.
 
 [[api-sessionrepository]]
 === SessionRepository
