@@ -12,17 +12,8 @@ buildscript {
 apply plugin: 'io.spring.convention.root'
 
 group = 'org.springframework.session'
-description = 'Spring Session'
+description = 'Spring Session Data Geode'
 
 ext.releaseBuild = version.endsWith('RELEASE')
 ext.snapshotBuild = version.endsWith('SNAPSHOT')
 ext.milestoneBuild = !(releaseBuild || snapshotBuild)
-
-ext.BOM_GRADLE = "$rootDir/gradle/bom.gradle"
-ext.IDE_GRADLE = "$rootDir/gradle/ide.gradle"
-ext.JAVA_GRADLE = "$rootDir/gradle/java.gradle"
-ext.MAVEN_GRADLE = "$rootDir/gradle/publish-maven.gradle"
-ext.SAMPLE_GRADLE = "$rootDir/gradle/sample.gradle"
-ext.TOMCAT_GRADLE = "$rootDir/gradle/tomcat.gradle"
-ext.TOMCAT_6_GRADLE = "$rootDir/gradle/tomcat6.gradle"
-ext.TOMCAT_7_GRADLE = "$rootDir/gradle/tomcat7.gradle"
