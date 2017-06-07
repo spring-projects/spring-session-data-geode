@@ -41,8 +41,9 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author Rob Winch
  * @author John Blum
  */
+@SuppressWarnings("unused")
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = HttpSessionGemFireIndexingIntegrationTests.Config.class)
+@ContextConfiguration(classes = HttpSessionGemFireIndexingIntegrationTests.TestConfiguration.class)
 public class HttpSessionGemFireIndexingIntegrationTests {
 
 	@Autowired
@@ -50,6 +51,7 @@ public class HttpSessionGemFireIndexingIntegrationTests {
 
 	@Test
 	public void findByIndexName() {
+
 		ExpiringSession session = this.sessionRepository.createSession();
 		String username = "HttpSessionGemFireIndexingIntegrationTests-findByIndexName-username";
 
@@ -74,18 +76,21 @@ public class HttpSessionGemFireIndexingIntegrationTests {
 	@Test
 	@WithMockUser("HttpSessionGemFireIndexingIntegrationTests-findBySpringSecurityIndexName")
 	public void findBySpringSecurityIndexName() {
+
 		ExpiringSession session = this.sessionRepository.createSession();
 
 		// tag::findbyspringsecurityindexname-context[]
-		SecurityContext context = SecurityContextHolder.getContext();
-		Authentication authentication = context.getAuthentication();
+		SecurityContext securityContext = SecurityContextHolder.getContext();
+		Authentication authentication = securityContext.getAuthentication();
 		// end::findbyspringsecurityindexname-context[]
 
-		session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
+		session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
+
 		this.sessionRepository.save(session);
 
 		// tag::findbyspringsecurityindexname-get[]
 		String indexName = FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
+
 		Map<String, ExpiringSession> idToSessions =
 			this.sessionRepository.findByIndexNameAndIndexValue(indexName, authentication.getName());
 		// end::findbyspringsecurityindexname-get[]
@@ -97,6 +102,6 @@ public class HttpSessionGemFireIndexingIntegrationTests {
 
 	@PeerCacheApplication(name = "HttpSessionGemFireIndexingIntegrationTests", logLevel = "error")
 	@EnableGemFireHttpSession(regionName = "HttpSessionGemFireIndexingTestRegion")
-	static class Config {
+	static class TestConfiguration {
 	}
 }

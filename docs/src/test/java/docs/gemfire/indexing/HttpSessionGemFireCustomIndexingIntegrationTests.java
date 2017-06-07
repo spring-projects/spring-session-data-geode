@@ -29,13 +29,14 @@ import org.springframework.session.ExpiringSession;
 import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author Rob Winch
  * @author John Blum
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@SuppressWarnings("unused")
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = HttpSessionGemFireCustomIndexingIntegrationTests.TestConfiguration.class)
 public class HttpSessionGemFireCustomIndexingIntegrationTests {
 
@@ -44,19 +45,21 @@ public class HttpSessionGemFireCustomIndexingIntegrationTests {
 
 	@Test
 	public void findByIndexName() {
+
 		ExpiringSession session = this.sessionRepository.createSession();
-		String attrValue = "HttpSessionGemFireCustomIndexingIntegrationTests-findByIndexName";
+		String indexValue = "HttpSessionGemFireCustomIndexingIntegrationTests-findByIndexName";
 
 		// tag::findbyindexname-set[]
 		String indexName = "name1";
-		session.setAttribute(indexName, attrValue);
+
+		session.setAttribute(indexName, indexValue);
 		// end::findbyindexname-set[]
 
 		this.sessionRepository.save(session);
 
 		// tag::findbyindexname-get[]
 		Map<String, ExpiringSession> idToSessions =
-			this.sessionRepository.findByIndexNameAndIndexValue(indexName, attrValue);
+			this.sessionRepository.findByIndexNameAndIndexValue(indexName, indexValue);
 		// end::findbyindexname-get[]
 
 		assertThat(idToSessions.keySet()).containsOnly(session.getId());
