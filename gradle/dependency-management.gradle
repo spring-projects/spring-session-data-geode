@@ -1,8 +1,8 @@
 dependencyManagement {
 	dependencies {
 		dependency 'com.maxmind.geoip2:geoip2:2.3.1'
-		dependency 'edu.umd.cs.mtc:multithreadedtc:1.01'
-		dependency 'org.springframework.shell:spring-shell:1.1.0.RELEASE'
+		dependency "edu.umd.cs.mtc:multithreadedtc:$multithreadedtcVersion"
+		dependency "org.springframework.shell:spring-shell:$springShellVersion"
 		dependency 'org.webjars:bootstrap:2.3.2'
 		dependency 'org.webjars:html5shiv:3.7.3'
 		dependency 'org.webjars:knockout:2.3.0'
@@ -14,9 +14,9 @@ dependencyManagement {
 
 dependencyManagement {
 	imports {
-		mavenBom 'org.springframework:spring-framework-bom:5.0.0.RC1'
-		mavenBom 'org.springframework.data:spring-data-releasetrain:Kay-M3'
-		mavenBom 'org.springframework.security:spring-security-bom:5.0.0.M1'
+		mavenBom "org.springframework:spring-framework-bom:$springVersion"
+		mavenBom "org.springframework.data:spring-data-releasetrain:$springDataReleaseTrainVersion"
+		mavenBom "org.springframework.security:spring-security-bom:$springSecurityVersion"
 	}
 	dependencies {
 		dependency 'antlr:antlr:2.7.7'
