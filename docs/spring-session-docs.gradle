@@ -39,3 +39,15 @@ asciidoctor {
 		'samples-dir' : rootProject.projectDir.path + '/samples/',
 		'session-main-resources-dir' : rootProject.projectDir.path + '/spring-session/src/main/resources/'
 }
+
+javadoc {
+	configure(options) {
+		links = [
+			"http://docs.spring.io/spring/docs/current/javadoc-api/",
+			"http://docs.spring.io/spring-data/commons/docs/current/api/index.html?index-all.html",
+			"http://docs.spring.io/spring-data-gemfire/docs/current/api/",
+			"http://docs.spring.io/spring-session/docs/2.0.0.BUILD-SNAPSHOT/api/",
+			"http://geode.apache.org/releases/latest/javadoc/index.html",
+		]
+	}
+}
