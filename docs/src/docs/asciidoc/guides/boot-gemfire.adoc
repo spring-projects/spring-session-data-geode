@@ -159,12 +159,12 @@ and GemFire out-of-the-box using the following attributes:
 * `maxInactiveIntervalInSeconds` - controls _HttpSession_ idle-timeout expiration (defaults to **30 minutes**).
 * `regionName` - specifies the name of the GemFire Region used to store `HttpSession` state (defaults is "*ClusteredSpringSessions*").
 * `clientRegionShort` - specifies GemFire's http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/management_all_region_types/chapter_overview.html[data management policy]
-with a GemFire http://gemfire.docs.pivotal.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
+with a GemFire http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
 (default is `PROXY`).  This attribute is only used when configuring client Region.
 * `poolName` - name of the dedicated GemFire Pool used to connect a client to the cluster of servers.  The attribute
 is only used when the application is a GemFire cache client.  Defaults to `gemfirePool`.
 * `serverRegionShort` - specifies GemFire's http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/management_all_region_types/chapter_overview.html[data management policy]
-using a GemFire http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/com/gemstone/gemfire/cache/RegionShortcut.html[RegionShortcut]
+using a GemFire http://data-docs-samples.cfapps.io/docs-gemfire/latest/javadocs/japi/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
 (default is `PARTITION`).  This attribute is only used when configuring server Regions, or when a p2p topology is employed.
 
 NOTE: It is important to remember that the GemFire client Region name must match a server Region by the same name if

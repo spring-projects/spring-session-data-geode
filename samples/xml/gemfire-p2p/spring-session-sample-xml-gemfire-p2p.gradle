@@ -16,7 +16,6 @@ dependencies {
 	testCompile "junit:junit"
 
 	integrationTestCompile seleniumDependencies
-	integrationTestCompile "org.assertj:assertj-core"
 
 	integrationTestRuntime "org.springframework.shell:spring-shell"
 

@@ -1,5 +1,5 @@
 = Spring Session
-John Blum, Rob Winch
+John Blum
 :doctype: book
 :indexdoc-tests: {docs-test-dir}docs/IndexDocTests.java
 :websocketdoc-test-dir: {docs-test-dir}docs/websocket/
