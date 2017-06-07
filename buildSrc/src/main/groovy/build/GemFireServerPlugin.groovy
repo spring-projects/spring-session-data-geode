@@ -14,14 +14,14 @@ class GemFireServerPlugin implements Plugin<Project> {
 
 		project.tasks.integrationTest.doLast {
 			println 'Stopping GemFire Server...'
-			project.tasks.gemFireServer.process?.destroyForcibly()
+			project.tasks.gemfireServer.process?.destroyForcibly()
 		}
 
 		project.tasks.prepareAppServerForIntegrationTests {
 			dependsOn project.tasks.gemfireServer
 			doFirst {
 				project.gretty {
-					jvmArgs = ["-Dspring.session.data.gemfire.port=${project.tasks.gemFireServer.port}"]
+					jvmArgs = ["-Dspring.session.data.gemfire.port=${project.tasks.gemfireServer.port}"]
 				}
 			}
 		}
@@ -36,8 +36,9 @@ class GemFireServerPlugin implements Plugin<Project> {
 	static class GemFireServerTask extends DefaultTask {
 
 		def mainClassName = "sample.ServerConfig"
-		def process
 		def port
+		def process
+
 		boolean debug
 
 		@TaskAction
