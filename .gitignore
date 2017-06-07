@@ -7,5 +7,7 @@
 build
 buildSrc/.gradle
 buildSrc/build
+docs/build
 out
+spring-session-data-geode/build
 target
