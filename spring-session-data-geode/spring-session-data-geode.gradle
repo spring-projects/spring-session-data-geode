@@ -1,4 +1,5 @@
 apply plugin: 'io.spring.convention.spring-module'
+apply plugin: 'io.spring.convention.integration-test'
 
 description = "Spring Session Data Geode"
 
@@ -14,10 +15,10 @@ dependencies {
 
 	provided "javax.servlet:javax.servlet-api"
 
+	testCompile "org.assertj:assertj-core:$assertjVersion"
 	testCompile "junit:junit:$junitVersion"
-	testCompile "org.assertj:assertj-core"
-	testCompile "org.mockito:mockito-core"
-	testCompile "edu.umd.cs.mtc:multithreadedtc"
+	testCompile "org.mockito:mockito-core:$mockitoVersion"
+	testCompile "edu.umd.cs.mtc:multithreadedtc:$multithreadedtcVersion"
 	testCompile "org.springframework:spring-test"
 	testCompile "org.springframework:spring-web"
 	testCompile "org.springframework.security:spring-security-test"
