@@ -1,8 +1,6 @@
 = Spring Session
 John Blum
 :doctype: book
-:indexdoc-tests: {docs-test-dir}docs/IndexDocTests.java
-:websocketdoc-test-dir: {docs-test-dir}docs/websocket/
 :toc: left
 
 [[abstract]]
@@ -278,31 +276,11 @@ To use this support, you need to:
 
 If you are using the configuration support documented in <<httpsession-redis,HttpSession with Redis>>, then all you need to do is register every `HttpSessionListener` as a bean.
 For example, assume you want to support Spring Security's concurrency control and need to use `HttpSessionEventPublisher` you can simply add `HttpSessionEventPublisher` as a bean.
-In Java configuration, this might look like:
-
-[source,java,indent=0]
-----
-include::{docs-test-dir}docs/http/RedisHttpSessionConfig.java[tags=config]
-----
-
-In XML configuration, this might look like:
-
-[source,xml,indent=0]
-----
-include::{docs-test-resources-dir}docs/http/HttpSessionListenerXmlTests-context.xml[tags=config]
-----
 
 [[api-session]]
 === Session
 
 A `Session` is a simplified `Map` of key value pairs.
-
-Typical usage might look like the following:
-
-[source,java,indent=0]
-----
-include::{indexdoc-tests}[tags=repository-demo]
-----
 
 <1> We create a `SessionRepository` instance with a generic type, `S`, that extends `Session`. The generic type is defined in our class.
 <2> We create a new `Session` using our `SessionRepository` and assign it to a variable of type `S`.
@@ -316,13 +294,6 @@ include::{indexdoc-tests}[tags=repository-demo]
 
 An `ExpiringSession` extends a `Session` by providing attributes related to the `Session` instance's expiration.
 If there is no need to interact with the expiration information, prefer using the more simple `Session` API.
-
-Typical usage might look like the following:
-
-[source,java,indent=0]
-----
-include::{indexdoc-tests}[tags=expire-repository-demo]
-----
 
 <1> We create a `SessionRepository` instance with a generic type, `S`, that extends `ExpiringSession`. The generic type is defined in our class.
 <2> We create a new `ExpiringSession` using our `SessionRepository` and assign it to a variable of type `S`.
@@ -356,12 +327,6 @@ For example, Spring's Redis support implements `FindByIndexNameSessionRepository
 The `FindByIndexNameSessionRepository` adds a single method to look up all the sessions for a particular user.
 This is done by ensuring that the session attribute with the name `FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME` is populated with the username.
 It is the responsibility of the developer to ensure the attribute is populated since Spring Session is not aware of the authentication mechanism being used.
-An example of how this might be used can be seen below:
-
-[source,java,indent=0]
-----
-include::{docs-test-dir}docs/FindByIndexNameSessionRepositoryTests.java[tags=set-username]
-----
 
 [NOTE]
 ====
@@ -369,24 +334,11 @@ Some implementations of `FindByIndexNameSessionRepository` will provide hooks to
 For example, many implementations will automatically ensure the current Spring Security user name is indexed with the index name `FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME`.
 ====
 
-Once the session is indexed, it can be found using the following:
-
-[source,java,indent=0]
-----
-include::{docs-test-dir}docs/FindByIndexNameSessionRepositoryTests.java[tags=findby-username]
-----
-
 [[api-enablespringhttpsession]]
 === EnableSpringHttpSession
 
 The `@EnableSpringHttpSession` annotation can be added to an `@Configuration` class to expose the `SessionRepositoryFilter` as a bean named "springSessionRepositoryFilter".
 In order to leverage the annotation, a single `SessionRepository` bean must be provided.
-For example:
-
-[source,java,indent=0]
-----
-include::{docs-test-dir}docs/SpringHttpSessionConfig.java[tags=class]
-----
 
 It is important to note that no infrastructure for session expirations is configured for you out of the box.
 This is because things like session expiration are highly implementation dependent.
@@ -412,8 +364,8 @@ strategies for finding the principal name. The first strategy is that the value 
 
 [source,java,indent=0]
 ----
-include::{docs-itest-dir}docs/http/HttpSessionGemFireIndexingITests.java[tags=findbyindexname-set]
-include::{docs-itest-dir}docs/http/HttpSessionGemFireIndexingITests.java[tags=findbyindexname-get]
+include::{docs-itest-dir}docs/gemfire/indexing/HttpSessionGemFireIndexingIntegrationTests.java[tags=findbyindexname-set]
+include::{docs-itest-dir}docs/gemfire/indexing/HttpSessionGemFireIndexingIntegrationTests.java[tags=findbyindexname-get]
 ----
 
 [[api-gemfireoperationssessionrepository-indexing-security]]
@@ -425,8 +377,8 @@ find the current user's sessions using:
 
 [source,java,indent=0]
 ----
-include::{docs-itest-dir}docs/http/HttpSessionGemFireIndexingITests.java[tags=findbyspringsecurityindexname-context]
-include::{docs-itest-dir}docs/http/HttpSessionGemFireIndexingITests.java[tags=findbyspringsecurityindexname-get]
+include::{docs-itest-dir}docs/gemfire/indexing/HttpSessionGemFireIndexingIntegrationTests.java[tags=findbyspringsecurityindexname-context]
+include::{docs-itest-dir}docs/gemfire/indexing/HttpSessionGemFireIndexingIntegrationTests.java[tags=findbyspringsecurityindexname-get]
 ----
 
 [[api-gemfireoperationssessionrepository-indexing-custom]]
@@ -443,21 +395,10 @@ Sessions attributes to index can be specified with the `indexableSessionAttribut
 annotation.  A developer adds this annotation to their Spring application `@Configuration` class when s/he wishes to
 enable Spring Session support for HttpSession backed by GemFire.
 
-For example, the following configuration:
-
 [source,java,indent=0]
 ----
-include::{docs-itest-dir}docs/http/gemfire/indexablesessionattributes/GemFireHttpSessionConfig.java[tags=class-start]
-	// ...
-}
-----
-
-will allow searching for sessions using the following:
-
-[source,java,indent=0]
-----
-include::{docs-itest-dir}docs/http/gemfire/indexablesessionattributes/HttpSessionGemFireIndexingCustomITests.java[tags=findbyindexname-set]
-include::{docs-itest-dir}docs/http/gemfire/indexablesessionattributes/HttpSessionGemFireIndexingCustomITests.java[tags=findbyindexname-get]
+include::{docs-itest-dir}docs/gemfire/indexing/HttpSessionGemFireCustomIndexingIntegrationTests.java[tags=findbyindexname-set]
+include::{docs-itest-dir}docs/gemfire/indexing/HttpSessionGemFireCustomIndexingIntegrationTests.java[tags=findbyindexname-get]
 ----
 
 NOTE: Only Session attribute names identified in the `@EnableGemFireHttpSession` annotation's `indexableSessionAttributes`
@@ -473,24 +414,6 @@ NOTE: Any Session attribute that is not indexed may store non-`Comparable` value
 To learn more about GemFire's Range-based Indexes, see http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_index/creating_map_indexes.html[Creating Indexes on Map Fields].
 
 To learn more about GemFire Indexing in general, see http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_index/query_index.html[Working with Indexes].
-
-
-[[api-mapsessionrepository]]
-=== MapSessionRepository
-
-The `MapSessionRepository` allows for persisting `ExpiringSession` in a `Map` with the key being the `ExpiringSession` id and the value being the `ExpiringSession`.
-The implementation can be used with a `ConcurrentHashMap` as a testing or convenience mechanism.
-Alternatively, it can be used with distributed `Map` implementations. For example, it can be used with Hazelcast.
-
-[[api-mapsessionrepository-new]]
-==== Instantiating MapSessionRepository
-
-Creating a new instance is as simple as:
-
-[source,java,indent=0]
-----
-include::{indexdoc-tests}[tags=new-mapsessionrepository]
-----
 
 [[community]]
 == Spring Session Community
