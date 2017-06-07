@@ -36,9 +36,9 @@
 
 	<!--5-->
 	<gfe:cache-server auto-startup="true"
-                      bind-address="${application.gemfire.client-server.host}"
-                      host-name-for-clients="${application.gemfire.client-server.host}"
-                      port="${spring.session.data.gemfire.port:${application.gemfire.client-server.port}}"/>
+                      bind-address="${application.gemfire.client-server.host:localhost}"
+                      host-name-for-clients="${application.gemfire.client-server.host:localhost}"
+                      port="${spring.session.data.gemfire.port:${application.gemfire.client-server.port:40404}}"/>
 
 	<!--6-->
 	<bean class="org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration"
