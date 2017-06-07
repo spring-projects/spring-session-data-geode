@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.DataSerializable;
@@ -42,7 +43,6 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEvent;
@@ -106,7 +106,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 	};
 
-	private final Set<Integer> cachedSessionIds = new ConcurrentHashSet<Integer>();
+	private final Set<Integer> cachedSessionIds = new ConcurrentSkipListSet<>();
 
 	private final GemfireOperations template;
 
