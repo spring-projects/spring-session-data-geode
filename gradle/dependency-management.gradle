@@ -48,7 +48,7 @@ dependencyManagement {
 		dependency 'commons-collections:commons-collections:3.2.2'
 		dependency 'commons-io:commons-io:2.5'
 		dependency 'dom4j:dom4j:1.6.1'
-		dependency 'edu.umd.cs.mtc:multithreadedtc:1.01'
+		dependency "edu.umd.cs.mtc:multithreadedtc:$multithreadedtcVersion"
 		dependency 'io.lettuce:lettuce-core:5.0.0.M2'
 		dependency 'io.netty:netty-buffer:4.1.10.Final'
 		dependency 'io.netty:netty-codec:4.1.10.Final'
@@ -63,7 +63,7 @@ dependencyManagement {
 		dependency 'javax.servlet:javax.servlet-api:3.1.0'
 		dependency 'javax.transaction:javax.transaction-api:1.2'
 		dependency 'javax.validation:validation-api:1.1.0.Final'
-		dependency 'junit:junit:4.12'
+		dependency "junit:junit:$junitVersion"
 		dependency 'net.bytebuddy:byte-buddy-agent:1.6.11'
 		dependency 'net.bytebuddy:byte-buddy:1.6.12'
 		dependency 'net.java.dev.jna:jna-platform:4.1.0'
@@ -88,6 +88,9 @@ dependencyManagement {
 		dependency 'org.apache.commons:commons-lang3:3.5'
 		dependency 'org.apache.commons:commons-pool2:2.4.2'
 		dependency 'org.apache.derby:derby:10.13.1.1'
+		dependency "org.apache.geode:geode-core:$apacheGeodeVersion"
+		dependency "org.apache.geode:geode-cq:$apacheGeodeVersion"
+		dependency "org.apache.geode:geode-wan:$apacheGeodeVersion"
 		dependency 'org.apache.httpcomponents:httpclient:4.5.3'
 		dependency 'org.apache.httpcomponents:httpcore:4.4.6'
 		dependency 'org.apache.httpcomponents:httpmime:4.5.3'
@@ -102,7 +105,7 @@ dependencyManagement {
 		dependency 'org.apache.tomcat:tomcat-jdbc:8.5.14'
 		dependency 'org.apache.tomcat:tomcat-juli:8.5.14'
 		dependency 'org.aspectj:aspectjweaver:1.8.10'
-		dependency 'org.assertj:assertj-core:3.6.2'
+		dependency "org.assertj:assertj-core:$assertjVersion"
 		dependency 'org.codehaus.groovy:groovy-json:2.4.11'
 		dependency 'org.codehaus.groovy:groovy:2.4.10'
 		dependency 'org.codehaus.groovy:groovy:2.4.11'
@@ -132,7 +135,7 @@ dependencyManagement {
 		dependency 'org.javassist:javassist:3.21.0-GA'
 		dependency 'org.jboss.logging:jboss-logging:3.3.1.Final'
 		dependency 'org.jboss:jandex:2.0.0.Final'
-		dependency 'org.mockito:mockito-core:2.7.22'
+		dependency "org.mockito:mockito-core:$mockitoVersion"
 		dependency 'org.objenesis:objenesis:2.5.1'
 		dependency 'org.ow2.asm:asm:5.0.3'
 		dependency 'org.reactivestreams:reactive-streams:1.0.0'

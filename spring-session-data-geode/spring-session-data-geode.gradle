@@ -16,10 +16,10 @@ dependencies {
 
 	provided "javax.servlet:javax.servlet-api"
 
-	testCompile "org.assertj:assertj-core:$assertjVersion"
-	testCompile "junit:junit:$junitVersion"
-	testCompile "org.mockito:mockito-core:$mockitoVersion"
-	testCompile "edu.umd.cs.mtc:multithreadedtc:$multithreadedtcVersion"
+	testCompile "org.assertj:assertj-core"
+	testCompile "junit:junit"
+	testCompile "org.mockito:mockito-core"
+	testCompile "edu.umd.cs.mtc:multithreadedtc"
 	testCompile "org.springframework:spring-test"
 	testCompile "org.springframework:spring-web"
 	testCompile slf4jDependencies
