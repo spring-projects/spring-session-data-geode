@@ -3,6 +3,10 @@ apply plugin: "application"
 
 apply from: IDE_GRADLE
 
+repositories {
+	mavenCentral()
+}
+
 dependencies {
 
 	compile project(':spring-session-data-geode')
@@ -14,6 +18,12 @@ dependencies {
 	runtime "org.springframework.shell:spring-shell"
 
 	testCompile "org.springframework.boot:spring-boot-starter-test"
+	testCompile seleniumDependencies
+//	testCompile 'org.seleniumhq.selenium:htmlunit-driver'
+//	testCompile 'org.seleniumhq.selenium:selenium-api'
+//	testCompile 'org.seleniumhq.selenium:selenium-java'
+//	testCompile 'org.seleniumhq.selenium:selenium-remote-driver'
+//	testCompile 'org.seleniumhq.selenium:selenium-support'
 
 	integrationTestCompile seleniumDependencies
 

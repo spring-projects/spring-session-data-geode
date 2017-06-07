@@ -16,13 +16,12 @@
 
 package sample;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.WebDriver;
-import sample.client.Application;
-import sample.pages.HomePage;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -32,7 +31,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.htmlunit.webdriver.MockMvcHtmlUnitDriverBuilder;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.openqa.selenium.WebDriver;
+
+import sample.client.Application;
+import sample.pages.HomePage;
 
 /**
  * @author Eddú Meléndez
@@ -67,9 +69,9 @@ public class AttributeTests {
 	public void createAttribute() {
 		HomePage home = HomePage.go(this.driver, HomePage.class);
 		home = home.form()
-				.attributeName("a")
-				.attributeValue("b")
-				.submit(HomePage.class);
+			.attributeName("a")
+			.attributeValue("b")
+			.submit(HomePage.class);
 		assertThat(home.attributes()).extracting("attributeName").containsOnly("requestCount", "a");
 		assertThat(home.attributes()).extracting("attributeValue").containsOnly("1", "b");
 	}
