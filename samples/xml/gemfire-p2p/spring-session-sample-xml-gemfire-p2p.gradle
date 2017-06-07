@@ -1,6 +1,9 @@
 apply plugin: 'io.spring.convention.spring-sample-war'
 
+apply from: IDE_GRADLE
+
 dependencies {
+
 	compile project(':spring-session-data-geode')
 	compile "org.springframework:spring-web"
 	compile "org.webjars:bootstrap"
@@ -16,4 +19,5 @@ dependencies {
 	integrationTestCompile "org.assertj:assertj-core"
 
 	integrationTestRuntime "org.springframework.shell:spring-shell"
+
 }

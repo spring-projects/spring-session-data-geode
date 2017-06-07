@@ -17,3 +17,5 @@ description = 'Spring Session Data Geode'
 ext.releaseBuild = version.endsWith('RELEASE')
 ext.snapshotBuild = version.endsWith('SNAPSHOT')
 ext.milestoneBuild = !(releaseBuild || snapshotBuild)
+
+ext.IDE_GRADLE = "$rootDir/gradle/ide.gradle"

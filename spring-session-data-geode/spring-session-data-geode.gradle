@@ -1,5 +1,6 @@
 apply plugin: 'io.spring.convention.spring-module'
-apply plugin: 'io.spring.convention.integration-test'
+
+apply from: IDE_GRADLE
 
 description = "Spring Session Data Geode"
 
@@ -21,7 +22,6 @@ dependencies {
 	testCompile "edu.umd.cs.mtc:multithreadedtc:$multithreadedtcVersion"
 	testCompile "org.springframework:spring-test"
 	testCompile "org.springframework:spring-web"
-	testCompile "org.springframework.security:spring-security-test"
 	testCompile slf4jDependencies
 
 	integrationTestRuntime "org.springframework.shell:spring-shell"

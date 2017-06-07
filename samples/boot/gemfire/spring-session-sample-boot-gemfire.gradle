@@ -1,7 +1,10 @@
 apply plugin: 'io.spring.convention.spring-sample-boot'
 apply plugin: "application"
 
+apply from: IDE_GRADLE
+
 dependencies {
+
 	compile project(':spring-session-data-geode')
 	compile "org.springframework.boot:spring-boot-starter-thymeleaf"
 	compile "org.springframework.boot:spring-boot-starter-web"
@@ -15,6 +18,7 @@ dependencies {
 	integrationTestCompile seleniumDependencies
 
 	integrationTestRuntime "org.springframework.shell:spring-shell"
+
 }
 
 run {
