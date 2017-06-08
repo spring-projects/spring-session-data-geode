@@ -16,12 +16,18 @@
 
 package org.springframework.session.data.gemfire;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAction;
@@ -32,10 +38,6 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.gemfire.CacheFactoryBean;
@@ -52,8 +54,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration test to test the {@code findByPrincipalName} query method

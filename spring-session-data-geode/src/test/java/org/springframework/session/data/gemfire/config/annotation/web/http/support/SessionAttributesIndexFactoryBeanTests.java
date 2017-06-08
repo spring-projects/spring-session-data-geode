@@ -16,15 +16,15 @@
 
 package org.springframework.session.data.gemfire.config.annotation.web.http.support;
 
-import org.apache.geode.cache.query.Index;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
+import org.apache.geode.cache.query.Index;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 
 /**
  * Test suite of test cases testing the contract and functionality

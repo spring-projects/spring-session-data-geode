@@ -16,15 +16,17 @@
 
 package org.springframework.session.data.gemfire.config.annotation.web.http;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.QueryService;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.session.ExpiringSession;
@@ -34,8 +36,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test suite of test cases testing the configuration of Spring Session backed by GemFire

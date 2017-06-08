@@ -16,6 +16,8 @@
 
 package org.springframework.session.data.gemfire;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
@@ -24,6 +26,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.junit.Before;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -37,15 +41,11 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.server.CacheServer;
 
-import org.junit.Before;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.session.ExpiringSession;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.session.events.AbstractSessionEvent;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * {@link AbstractGemFireIntegrationTests} is an abstract base class encapsulating common functionality
