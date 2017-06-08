@@ -1,11 +1,12 @@
 def projectProperties = [
-	[$class: 'BuildDiscarderProperty',
-		strategy: [$class: 'LogRotator', numToKeepStr: '5']],
+	[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', numToKeepStr: '5']],
 	pipelineTriggers([cron('@daily')])
 ]
+
 properties(projectProperties)
 
 def SUCCESS = hudson.model.Result.SUCCESS.toString()
+
 currentBuild.result = SUCCESS
 
 try {
@@ -55,7 +56,7 @@ try {
 		}
 	}
 
-	if(currentBuild.result == 'SUCCESS') {
+	if (currentBuild.result == 'SUCCESS') {
 		parallel artifactory: {
 			stage('Artifactory Deploy') {
 				node {
@@ -77,15 +78,18 @@ try {
 			}
 		}
 	}
-} finally {
+}
+finally {
+
 	def buildStatus = currentBuild.result
 	def buildNotSuccess =  !SUCCESS.equals(buildStatus)
 	def lastBuildNotSuccess = !SUCCESS.equals(currentBuild.previousBuild?.result)
 
-	if(buildNotSuccess || lastBuildNotSuccess) {
+	if (buildNotSuccess || lastBuildNotSuccess) {
 
 		stage('Notifiy') {
 			node {
+
 				final def RECIPIENTS = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
 
 				def subject = "${buildStatus}: Build ${env.JOB_NAME} ${env.BUILD_NUMBER} status is now ${buildStatus}"
@@ -95,7 +99,7 @@ try {
 					subject: subject,
 					body: details,
 					recipientProviders: RECIPIENTS,
-					to: "$SPRING_SECURITY_TEAM_EMAILS"
+					to: "$SPRING_SESSION_TEAM_EMAILS"
 				)
 			}
 		}
