@@ -1,0 +1,15 @@
+apply plugin: 'io.spring.convention.spring-module'
+
+apply from: IDE_GRADLE
+
+description = "Spring Session Data GemFire"
+
+dependencies {
+
+	compile(project(':spring-session-data-geode')) {
+		exclude group: "org.springframework.data", module: "spring-data-geode"
+	}
+
+	compile "org.springframework.data:spring-data-gemfire"
+
+}
