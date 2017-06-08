@@ -21,8 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 
@@ -33,6 +31,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
@@ -120,6 +119,7 @@ public class GemFireServer {
 	}
 
 	@Bean(name = "Example")
+	@Profile("debug")
 	ReplicatedRegionFactoryBean<String, Object> exampleRegion(Cache gemfireCache) {
 
 		ReplicatedRegionFactoryBean<String, Object> exampleRegionFactory = new ReplicatedRegionFactoryBean<>();
@@ -130,12 +130,16 @@ public class GemFireServer {
 		return exampleRegionFactory;
 	}
 
-	@Resource(name = "Example")
-	private Region<String, Object> example;
+	@Autowired
+	private Cache gemfireCache;
 
 	@Bean
+	@Profile("debug")
 	CommandLineRunner exampleInitializer() {
+
 		return args -> {
+
+			Region<String, Object> example = this.gemfireCache.getRegion("/Example");
 			String key = "time";
 
 			example.put(key, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:ss a")));

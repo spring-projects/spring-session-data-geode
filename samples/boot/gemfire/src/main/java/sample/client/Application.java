@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 
 import org.apache.geode.cache.Region;
@@ -46,12 +45,14 @@ import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListenerAdapter;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
@@ -93,7 +94,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @SuppressWarnings("unused")
 public class Application {
 
-	static final long DEFAULT_TIMEOUT = TimeUnit.SECONDS.toMillis(60);
+	static final long DEFAULT_TIMEOUT = TimeUnit.SECONDS.toMillis(30);
 
 	static final CountDownLatch LATCH = new CountDownLatch(1);
 
@@ -178,6 +179,7 @@ public class Application {
 		}
 
 		@Bean(name = "Example")
+		@Profile("debug")
 		ClientRegionFactoryBean<String, Object> exampleRegion(ClientCache gemfireCache) {
 
 			ClientRegionFactoryBean<String, Object> exampleRegionFactory = new ClientRegionFactoryBean<>();
@@ -192,7 +194,7 @@ public class Application {
 		@Bean
 		BeanPostProcessor gemfireClientServerReadyBeanPostProcessor(
 				@Value("${spring-session-data-gemfire.cache.server.host:localhost}") final String host,
-				@Value("${spring-session-data-gemfire.cache.server.port:12480}") final int port) { // <5>
+				@Value("${spring-session-data-gemfire.cache.server.port:40404}") final int port) { // <5>
 
 			return new BeanPostProcessor() {
 
@@ -308,8 +310,8 @@ public class Application {
 		}
 	}
 
-	@Resource(name = "Example")
-	private Region<String, Object> example;
+	@Autowired(required = false)
+	private ClientCache gemfireCache;
 
 	@ExceptionHandler
 	@ResponseBody
@@ -328,7 +330,7 @@ public class Application {
 	@RequestMapping(method = RequestMethod.GET, path = "/time")
 	@ResponseBody
 	public String time() {
-		return String.valueOf(this.example.get("time"));
+		return String.valueOf(this.gemfireCache.getRegion("/Example").get("time"));
 	}
 
 	/*
