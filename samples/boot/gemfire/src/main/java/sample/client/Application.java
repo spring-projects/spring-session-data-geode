@@ -16,21 +16,28 @@
 
 package sample.client;
 
+import static java.util.Arrays.stream;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -44,8 +51,10 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
+import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.util.CollectionUtils;
@@ -55,10 +64,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * A Spring Boot, GemFire cache client, web application that reveals the current state of the HTTP Session.
@@ -76,15 +88,16 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 // tag::class[]
 @SpringBootApplication
-@EnableGemFireHttpSession(poolName = "DEFAULT")// <1>
 @Controller
+@EnableGemFireHttpSession(poolName = "DEFAULT")// <1>
+@SuppressWarnings("unused")
 public class Application {
 
 	static final long DEFAULT_TIMEOUT = TimeUnit.SECONDS.toMillis(60);
 
 	static final CountDownLatch LATCH = new CountDownLatch(1);
 
-	static final String DEFAULT_GEMFIRE_LOG_LEVEL = "warning";
+	static final String DEFAULT_GEMFIRE_LOG_LEVEL = "config";
 	static final String GEMFIRE_DEFAULT_POOL_NAME = "DEFAULT";
 	static final String INDEX_TEMPLATE_VIEW_NAME = "index";
 	static final String PING_RESPONSE = "PONG";
@@ -94,166 +107,216 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 
-	@Bean
-	static PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer() {
-		return new PropertySourcesPlaceholderConfigurer();
-	}
+	@Configuration
+	static class GemFireConfiguration {
 
-	Properties gemfireProperties() { // <2>
-		Properties gemfireProperties = new Properties();
+		@Bean
+		static PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer() {
+			return new PropertySourcesPlaceholderConfigurer();
+		}
 
-		gemfireProperties.setProperty("name", applicationName());
-		//gemfireProperties.setProperty("log-file", "gemfire-client.log");
-		gemfireProperties.setProperty("log-level", logLevel());
+		Properties gemfireProperties() { // <2>
 
-		return gemfireProperties;
-	}
+			Properties gemfireProperties = new Properties();
 
-	String applicationName() {
-		return "spring-session-data-gemfire-boot-sample.".concat(getClass().getSimpleName());
-	}
+			gemfireProperties.setProperty("name", applicationName());
+			//gemfireProperties.setProperty("log-file", "gemfire-client.log");
+			gemfireProperties.setProperty("log-level", logLevel());
 
-	String logLevel() {
-		return System.getProperty("spring-session-data-gemfire.log.level", DEFAULT_GEMFIRE_LOG_LEVEL);
-	}
+			return gemfireProperties;
+		}
 
-	@Bean
-	ClientCacheFactoryBean gemfireCache(
-			@Value("${spring-session-data-gemfire.cache.server.host:localhost}") String host,
-			@Value("${spring-session-data-gemfire.cache.server.port:12480}") int port) { // <3>
+		String applicationName() {
+			return "spring-session-data-gemfire-boot-sample.".concat(getClass().getSimpleName());
+		}
 
-		ClientCacheFactoryBean gemfireCache = new ClientCacheFactoryBean();
+		String logLevel() {
+			return System.getProperty("spring-session-data-gemfire.log.level", DEFAULT_GEMFIRE_LOG_LEVEL);
+		}
 
-		gemfireCache.setClose(true);
-		gemfireCache.setProperties(gemfireProperties());
+		@Bean
+		ClientCacheFactoryBean gemfireCache(
+				@Value("${spring-session-data-gemfire.cache.server.host:localhost}") String host,
+				@Value("${spring-session-data-gemfire.cache.server.port:40404}") int port) { // <3>
 
-		// GemFire Pool settings <4>
-		gemfireCache.setKeepAlive(false);
-		gemfireCache.setPingInterval(TimeUnit.SECONDS.toMillis(5));
-		gemfireCache.setReadTimeout(intValue(TimeUnit.SECONDS.toMillis(15)));
-		gemfireCache.setRetryAttempts(1);
-		gemfireCache.setSubscriptionEnabled(true);
-		gemfireCache.setThreadLocalConnections(false);
-		gemfireCache.setServers(Collections.singletonList(newConnectionEndpoint(host, port)));
+			ClientCacheFactoryBean gemfireCache = new ClientCacheFactoryBean();
 
-		registerClientMembershipListener(); // <5>
+			gemfireCache.setClose(true);
+			gemfireCache.setProperties(gemfireProperties());
 
-		return gemfireCache;
-	}
+			// GemFire Pool settings <4>
+			gemfireCache.setKeepAlive(false);
+			gemfireCache.setPingInterval(TimeUnit.SECONDS.toMillis(5));
+			gemfireCache.setReadTimeout(intValue(TimeUnit.SECONDS.toMillis(15)));
+			gemfireCache.setRetryAttempts(1);
+			gemfireCache.setSubscriptionEnabled(true);
+			gemfireCache.setThreadLocalConnections(false);
+			gemfireCache.setServers(Collections.singletonList(newConnectionEndpoint(host, port)));
 
-	int intValue(Number number) {
-		return number.intValue();
-	}
+			registerClientMembershipListener(); // <5>
 
-	ConnectionEndpoint newConnectionEndpoint(String host, int port) {
-		return new ConnectionEndpoint(host, port);
-	}
+			return gemfireCache;
+		}
 
-	void registerClientMembershipListener() {
-		ClientMembership.registerClientMembershipListener(new ClientMembershipListenerAdapter() {
-			@Override
-			public void memberJoined(ClientMembershipEvent event) {
-				LATCH.countDown();
-			}
-		});
-	}
+		int intValue(Number number) {
+			return number.intValue();
+		}
 
-	@Bean
-	BeanPostProcessor gemfireClientServerReadyBeanPostProcessor(
-			@Value("${spring-session-data-gemfire.cache.server.host:localhost}") final String host,
-			@Value("${spring-session-data-gemfire.cache.server.port:12480}") final int port) { // <5>
+		ConnectionEndpoint newConnectionEndpoint(String host, int port) {
+			return new ConnectionEndpoint(host, port);
+		}
 
-		return new BeanPostProcessor() {
+		void registerClientMembershipListener() {
 
-			private final AtomicBoolean checkGemFireServerIsRunning = new AtomicBoolean(true);
-			private final AtomicReference<Pool> defaultPool = new AtomicReference<Pool>(null);
+			ClientMembership.registerClientMembershipListener(new ClientMembershipListenerAdapter() {
 
-			public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-				if (shouldCheckWhetherGemFireServerIsRunning(bean, beanName)) {
-					try {
-						validateCacheClientNotified();
-						validateCacheClientSubscriptionQueueConnectionEstablished();
+				@Override
+				public void memberJoined(ClientMembershipEvent event) {
+					LATCH.countDown();
+				}
+			});
+		}
+
+		@Bean(name = "Example")
+		ClientRegionFactoryBean<String, Object> exampleRegion(ClientCache gemfireCache) {
+
+			ClientRegionFactoryBean<String, Object> exampleRegionFactory = new ClientRegionFactoryBean<>();
+
+			exampleRegionFactory.setCache(gemfireCache);
+			exampleRegionFactory.setClose(false);
+			exampleRegionFactory.setShortcut(ClientRegionShortcut.PROXY);
+
+			return exampleRegionFactory;
+		}
+
+		@Bean
+		BeanPostProcessor gemfireClientServerReadyBeanPostProcessor(
+				@Value("${spring-session-data-gemfire.cache.server.host:localhost}") final String host,
+				@Value("${spring-session-data-gemfire.cache.server.port:12480}") final int port) { // <5>
+
+			return new BeanPostProcessor() {
+
+				private final AtomicBoolean checkGemFireServerIsRunning = new AtomicBoolean(true);
+				private final AtomicReference<Pool> defaultPool = new AtomicReference<>(null);
+
+				public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+
+					if (shouldCheckWhetherGemFireServerIsRunning(bean, beanName)) {
+						try {
+							validateCacheClientNotified();
+							validateCacheClientSubscriptionQueueConnectionEstablished();
+						}
+						catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+						}
 					}
-					catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-					}
+
+					return bean;
 				}
 
-				return bean;
-			}
+				private boolean shouldCheckWhetherGemFireServerIsRunning(Object bean, String beanName) {
 
-			private boolean shouldCheckWhetherGemFireServerIsRunning(Object bean, String beanName) {
-				return (isGemFireRegion(bean, beanName)
-					? checkGemFireServerIsRunning.compareAndSet(true, false)
-					: whenGemFireCache(bean, beanName));
-			}
-
-			private boolean isGemFireRegion(Object bean, String beanName) {
-				return (GemFireHttpSessionConfiguration.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME.equals(beanName)
-					|| bean instanceof Region);
-			}
-
-			private boolean whenGemFireCache(Object bean, String beanName) {
-				if (bean instanceof ClientCache) {
-					defaultPool.compareAndSet(null, ((ClientCache) bean).getDefaultPool());
+					return (isGemFireRegion(bean, beanName)
+						? checkGemFireServerIsRunning.compareAndSet(true, false)
+						: whenGemFireCache(bean, beanName));
 				}
 
-				return false;
-			}
+				private boolean isGemFireRegion(Object bean, String beanName) {
 
-			private void validateCacheClientNotified() throws InterruptedException {
-				boolean didNotTimeout = LATCH.await(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
+					return (GemFireHttpSessionConfiguration.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME.equals(beanName)
+						|| bean instanceof Region);
+				}
 
-				Assert.state(didNotTimeout, String.format(
-					"GemFire Cache Server failed to start on host [%s] and port [%d]", host, port));
-			}
+				private boolean whenGemFireCache(Object bean, String beanName) {
 
-			@SuppressWarnings("all")
-			private void validateCacheClientSubscriptionQueueConnectionEstablished() throws InterruptedException {
-				boolean cacheClientSubscriptionQueueConnectionEstablished = false;
+					if (bean instanceof ClientCache) {
+						defaultPool.compareAndSet(null, ((ClientCache) bean).getDefaultPool());
+					}
 
-				Pool pool = defaultIfNull(this.defaultPool.get(), GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME,
-					GEMFIRE_DEFAULT_POOL_NAME);
+					return false;
+				}
 
-				if (pool instanceof PoolImpl) {
-					long timeout = (System.currentTimeMillis() + DEFAULT_TIMEOUT);
+				private void validateCacheClientNotified() throws InterruptedException {
 
-					while (System.currentTimeMillis() < timeout
-						&& !((PoolImpl) pool).isPrimaryUpdaterAlive()) {
+					boolean didNotTimeout = LATCH.await(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
 
-						synchronized (pool) {
-							TimeUnit.MILLISECONDS.timedWait(pool, 500L);
+					Assert.state(didNotTimeout, String.format(
+						"GemFire Cache Server failed to start on host [%s] and port [%d]", host, port));
+				}
+
+				@SuppressWarnings("all")
+				private void validateCacheClientSubscriptionQueueConnectionEstablished() throws InterruptedException {
+
+					boolean cacheClientSubscriptionQueueConnectionEstablished = false;
+
+					Pool pool = defaultIfNull(this.defaultPool.get(), GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME,
+						GEMFIRE_DEFAULT_POOL_NAME);
+
+					if (pool instanceof PoolImpl) {
+
+						long timeout = (System.currentTimeMillis() + DEFAULT_TIMEOUT);
+
+						while (System.currentTimeMillis() < timeout
+							&& !((PoolImpl) pool).isPrimaryUpdaterAlive()) {
+
+							synchronized (pool) {
+								TimeUnit.MILLISECONDS.timedWait(pool, 500L);
+							}
+
 						}
 
+						cacheClientSubscriptionQueueConnectionEstablished |=
+							((PoolImpl) pool).isPrimaryUpdaterAlive();
 					}
 
-					cacheClientSubscriptionQueueConnectionEstablished |=
-						((PoolImpl) pool).isPrimaryUpdaterAlive();
+					Assert.state(cacheClientSubscriptionQueueConnectionEstablished, String.format(
+						"Cache client subscription queue connection not established; GemFire Pool was [%s];"
+							+ " GemFire Pool configuration was [locators = %s, servers = %s]",
+						pool, pool.getLocators(), pool.getServers()));
 				}
 
-				Assert.state(cacheClientSubscriptionQueueConnectionEstablished, String.format(
-					"Cache client subscription queue connection not established; GemFire Pool was [%s];"
-						+ " GemFire Pool configuration was [locators = %s, servers = %s]",
-							pool, pool.getLocators(), pool.getServers()));
-			}
+				private Pool defaultIfNull(Pool pool, String... poolNames) {
 
-			private Pool defaultIfNull(Pool pool, String... poolNames) {
-				for (String poolName : poolNames) {
-					pool = (pool != null ? pool : PoolManager.find(poolName));
+					AtomicReference<Pool> poolRef = new AtomicReference<>(null);
+
+					stream(nullSafeArray(poolNames, String.class)).forEach(poolName ->
+						poolRef.set(Optional.ofNullable(pool).orElseGet(() -> PoolManager.find(poolName))));
+
+					return poolRef.get();
 				}
 
-				return pool;
-			}
-
-			public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-				return bean;
-			}
-		};
+				public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+					return bean;
+				}
+			};
+		}
 	}
 
-	@RequestMapping("/")
-	public String index() { // <6>
-		return INDEX_TEMPLATE_VIEW_NAME;
+	@Configuration
+	static class SpringWebMvcConfiguration {
+
+		@Bean
+		public WebMvcConfigurer webMvcConfig() { // <6>
+
+			return new WebMvcConfigurer() {
+
+				@Override
+				public void addViewControllers(ViewControllerRegistry registry) {
+					registry.addViewController("/").setViewName(INDEX_TEMPLATE_VIEW_NAME);
+				}
+			};
+		}
+	}
+
+	@Resource(name = "Example")
+	private Region<String, Object> example;
+
+	@ExceptionHandler
+	@ResponseBody
+	public String errorHandler(Throwable error) {
+		StringWriter writer = new StringWriter();
+		error.printStackTrace(new PrintWriter(writer));
+		return writer.toString();
 	}
 
 	@RequestMapping(method = RequestMethod.GET, path = "/ping")
@@ -261,6 +324,19 @@ public class Application {
 	public String ping() { // <7>
 		return PING_RESPONSE;
 	}
+
+	@RequestMapping(method = RequestMethod.GET, path = "/time")
+	@ResponseBody
+	public String time() {
+		return String.valueOf(this.example.get("time"));
+	}
+
+	/*
+	@RequestMapping("/")
+	public String index() { // <6>
+		return INDEX_TEMPLATE_VIEW_NAME;
+	}
+	*/
 
 	@RequestMapping(method = RequestMethod.POST, path = "/session")
 	public String session(HttpSession session, ModelMap modelMap,
@@ -276,6 +352,7 @@ public class Application {
 	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	HttpSession updateRequestCount(HttpSession session) {
+
 		synchronized (session) {
 			Integer currentRequestCount = (Integer) session.getAttribute(REQUEST_COUNT_ATTRIBUTE_NAME);
 			session.setAttribute(REQUEST_COUNT_ATTRIBUTE_NAME, nullSafeIncrement(currentRequestCount));
@@ -290,11 +367,12 @@ public class Application {
 
 	/* (non-Javadoc) */
 	int nullSafeIntValue(Number value) {
-		return (value != null ? value.intValue() : 0);
+		return Optional.ofNullable(value).map(Number::intValue).orElse(0);
 	}
 
 	/* (non-Javadoc) */
 	HttpSession setAttribute(HttpSession session, String attributeName, String attributeValue) {
+
 		if (isSet(attributeName, attributeValue)) {
 			session.setAttribute(attributeName, attributeValue);
 		}
@@ -304,6 +382,7 @@ public class Application {
 
 	/* (non-Javadoc) */
 	boolean isSet(String... values) {
+
 		boolean set = true;
 
 		for (String value : values) {
@@ -315,7 +394,8 @@ public class Application {
 
 	/* (non-Javadoc) */
 	Map<String, String> attributes(HttpSession session) {
-		Map<String, String> sessionAttributes = new HashMap<String, String>();
+
+		Map<String, String> sessionAttributes = new HashMap<>();
 
 		for (String attributeName : toIterable(session.getAttributeNames())) {
 			sessionAttributes.put(attributeName, String.valueOf(session.getAttribute(attributeName)));
@@ -325,12 +405,9 @@ public class Application {
 	}
 
 	/* (non-Javadoc) */
-	<T> Iterable<T> toIterable(final Enumeration<T> enumeration) {
-		return new Iterable<T>() {
-			public Iterator<T> iterator() {
-				return (enumeration == null ? Collections.<T>emptyIterator()
-					: CollectionUtils.toIterator(enumeration));
-			}
-		};
+	<T> Iterable<T> toIterable(Enumeration<T> enumeration) {
+
+		return () -> Optional.ofNullable(enumeration).map(CollectionUtils::toIterator)
+			.orElseGet(Collections::emptyIterator);
 	}
 }

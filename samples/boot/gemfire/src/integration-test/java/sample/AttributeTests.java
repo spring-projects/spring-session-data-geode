@@ -61,18 +61,22 @@ public class AttributeTests {
 
 	@Test
 	public void noAttributes() {
-		HomePage home = HomePage.go(this.driver, HomePage.class);
-		assertThat(home.attributes().size()).isEqualTo(0);
+
+		HomePage homePage = HomePage.go(this.driver, HomePage.class);
+
+		homePage.assertAt();
+
+		assertThat(homePage.attributes().size()).isEqualTo(0);
 	}
 
 	@Test
 	public void createAttribute() {
-		HomePage home = HomePage.go(this.driver, HomePage.class);
-		home = home.form()
-			.attributeName("a")
-			.attributeValue("b")
-			.submit(HomePage.class);
-		assertThat(home.attributes()).extracting("attributeName").containsOnly("requestCount", "a");
-		assertThat(home.attributes()).extracting("attributeValue").containsOnly("1", "b");
+
+		HomePage homePage = HomePage.go(this.driver, HomePage.class);
+
+		homePage = homePage.assertAt().form().attributeName("a").attributeValue("b").submit(HomePage.class);
+
+		assertThat(homePage.attributes()).extracting("attributeName").containsOnly("requestCount", "a");
+		assertThat(homePage.attributes()).extracting("attributeValue").containsOnly("1", "b");
 	}
 }

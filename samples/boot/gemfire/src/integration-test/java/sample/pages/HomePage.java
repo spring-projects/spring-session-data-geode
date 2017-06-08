@@ -16,6 +16,8 @@
 
 package sample.pages;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -29,15 +31,17 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.pagefactory.DefaultElementLocatorFactory;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * @author Eddú Meléndez
  * @author Rob Winch
  */
+@SuppressWarnings("unused")
 public class HomePage {
 
 	private WebDriver driver;
+
+	@FindBy(tagName = "title")
+	WebElement title;
 
 	@FindBy(tagName = "form")
 	WebElement form;
@@ -49,17 +53,26 @@ public class HomePage {
 
 	public HomePage(WebDriver driver) {
 		this.driver = driver;
-		this.attributes = new ArrayList<Attribute>();
-	}
-
-	private static void get(WebDriver driver, String get) {
-		String baseUrl = "http://localhost:" + System.getProperty("app.port", "8080");
-		driver.get(baseUrl + get);
+		this.attributes = new ArrayList<>();
 	}
 
 	public static <T> T go(WebDriver driver, Class<T> page) {
+
 		get(driver, "/");
+
 		return PageFactory.initElements(driver, page);
+	}
+
+	private static void get(WebDriver driver, String get) {
+		String baseUrl = String.format("http://localhost:%s", System.getProperty("app.port", "8080"));
+		driver.get(baseUrl + get);
+	}
+
+	public HomePage assertAt() {
+
+		assertThat(this.driver.getTitle()).isEqualTo("Session Attributes");
+
+		return this;
 	}
 
 	public void containCookie(String cookieName) {
@@ -72,27 +85,35 @@ public class HomePage {
 		assertThat(cookies).extracting("name").doesNotContain(cookieName);
 	}
 
-	public HomePage logout() {
-		WebElement logout = this.driver
-				.findElement(By.cssSelector("input[type=\"submit\"]"));
-		logout.click();
-		return PageFactory.initElements(this.driver, HomePage.class);
-	}
-
-	public List<Attribute> attributes() {
-		List<Attribute> rows = new ArrayList<Attribute>();
-		for (WebElement tr : this.trs) {
-			rows.add(new Attribute(tr));
-		}
-		this.attributes.addAll(rows);
-		return this.attributes;
-	}
-
 	public Form form() {
 		return new Form(this.form);
 	}
 
+	public List<Attribute> attributes() {
+
+		List<Attribute> rows = new ArrayList<>();
+
+		for (WebElement tr : this.trs) {
+			rows.add(new Attribute(tr));
+		}
+
+		this.attributes.addAll(rows);
+
+		return this.attributes;
+	}
+
+	public HomePage logout() {
+		WebElement logout = this.driver.findElement(By.cssSelector("input[type=\"submit\"]"));
+		logout.click();
+		return PageFactory.initElements(this.driver, HomePage.class);
+	}
+
+	public String title() {
+		return this.title.getText();
+	}
+
 	public class Form {
+
 		@FindBy(name = "attributeName")
 		WebElement attributeName;
 
@@ -123,6 +144,7 @@ public class HomePage {
 	}
 
 	public static class Attribute {
+
 		@FindBy(xpath = ".//td[1]")
 		WebElement attributeName;
 
@@ -147,5 +169,4 @@ public class HomePage {
 			return this.attributeValue.getText();
 		}
 	}
-
 }

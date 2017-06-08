@@ -16,17 +16,26 @@
 
 package sample.server;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.cache.Cache;
+import javax.annotation.Resource;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
 import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 
@@ -44,13 +53,14 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
 // tag::class[]
 @SpringBootApplication
 @EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 20) // <1>
+@SuppressWarnings("unused")
 public class GemFireServer {
 
-	static final String DEFAULT_GEMFIRE_LOG_LEVEL = "warning";
+	static final String DEFAULT_GEMFIRE_LOG_LEVEL = "config";
 
 	public static void main(String[] args) {
 		SpringApplication springApplication = new SpringApplication(GemFireServer.class);
-		springApplication.setWebEnvironment(false);
+		springApplication.setWebApplicationType(WebApplicationType.NONE);
 		springApplication.run(args);
 	}
 
@@ -60,13 +70,14 @@ public class GemFireServer {
 	}
 
 	Properties gemfireProperties() { // <2>
+
 		Properties gemfireProperties = new Properties();
 
 		gemfireProperties.setProperty("name", applicationName());
 		//gemfireProperties.setProperty("log-file", "gemfire-server.log");
 		gemfireProperties.setProperty("log-level", logLevel());
-		//gemfireProperties.setProperty("jmx-manager", "true");
-		//gemfireProperties.setProperty("jmx-manager-start", "true");
+		gemfireProperties.setProperty("jmx-manager", "true");
+		gemfireProperties.setProperty("jmx-manager-start", "true");
 
 		return gemfireProperties;
 	}
@@ -81,6 +92,7 @@ public class GemFireServer {
 
 	@Bean
 	CacheFactoryBean gemfireCache() { // <3>
+
 		CacheFactoryBean gemfireCache = new CacheFactoryBean();
 
 		gemfireCache.setClose(true);
@@ -93,7 +105,7 @@ public class GemFireServer {
 	CacheServerFactoryBean gemfireCacheServer(Cache gemfireCache,
 			@Value("${spring-session-data-gemfire.cache.server.bind-address:localhost}") String bindAddress,
 			@Value("${spring-session-data-gemfire.cache.server.hostname-for-clients:localhost}") String hostnameForClients,
-			@Value("${spring-session-data-gemfire.cache.server.port:12480}") int port) { // <4>
+			@Value("${spring-session-data-gemfire.cache.server.port:40404}") int port) { // <4>
 
 		CacheServerFactoryBean gemfireCacheServer = new CacheServerFactoryBean();
 
@@ -105,6 +117,31 @@ public class GemFireServer {
 		gemfireCacheServer.setPort(port);
 
 		return gemfireCacheServer;
+	}
+
+	@Bean(name = "Example")
+	ReplicatedRegionFactoryBean<String, Object> exampleRegion(Cache gemfireCache) {
+
+		ReplicatedRegionFactoryBean<String, Object> exampleRegionFactory = new ReplicatedRegionFactoryBean<>();
+
+		exampleRegionFactory.setCache(gemfireCache);
+		exampleRegionFactory.setClose(false);
+
+		return exampleRegionFactory;
+	}
+
+	@Resource(name = "Example")
+	private Region<String, Object> example;
+
+	@Bean
+	CommandLineRunner exampleInitializer() {
+		return args -> {
+			String key = "time";
+
+			example.put(key, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:ss a")));
+
+			System.err.printf("Example.get(%s) is [%s]%n", key, example.get(key));
+		};
 	}
 }
 // end::class[]
