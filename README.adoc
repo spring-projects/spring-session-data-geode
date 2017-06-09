@@ -3,18 +3,18 @@ image:https://badges.gitter.im/spring-projects/spring-session.svg[link="https://
 image:https://travis-ci.org/spring-projects/spring-session.svg?branch=master["Build Status", link="https://travis-ci.org/spring-projects/spring-session"]
 
 = Spring Session Data Geode
-John Blum
 
 _Spring Session_ aims to provide a common infrastructure for managing Sessions.
 
-_Spring Session Data Geode_ aims to postion Pivotal GemFire or Apache Geode as a session repository provider.
+_Spring Session Data Geode_ positions either https://pivotal.io/pivotal-gemfire[Pivotal GemFire]
+or http://geode.apache.org/[Apache Geode] as a Session Repository provider.
 
 This provides many benefits including:
 
-* Accessing a session from any environment (i.e. web, messaging infrastructure, etc)
+* Accessing a Session from any environment (i.e. web, messaging infrastructure, etc)
 * In a web environment
-** Support for clustering in a vendor neutral way
-** Pluggable strategy for determining the session id
+** Support for clustering in a vendor/technology neutral way
+** Pluggable strategy for determining the Session ID
 ** Easily keep the HttpSession alive when a WebSocket is active
 
 == Code of Conduct
