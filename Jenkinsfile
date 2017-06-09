@@ -84,7 +84,7 @@ finally {
 					subject: subject,
 					body: details,
 					recipientProviders: RECIPIENTS,
-					to: "$SPRING_SESSION_TEAM_EMAILS"
+					to: "$GEODE_TEAM_EMAILS"
 				)
 			}
 		}
