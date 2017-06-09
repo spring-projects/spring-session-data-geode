@@ -67,7 +67,7 @@ try {
 				}
 			}
 		},
-		parallel docs: {
+		docs: {
 			stage('Deploy Docs') {
 				node {
 					checkout scm
