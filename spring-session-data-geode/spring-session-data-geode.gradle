@@ -9,7 +9,7 @@ dependencies {
 	compile "org.springframework:spring-context-support"
 	compile "org.springframework:spring-jcl"
 	compile "org.springframework.data:spring-data-geode:$springDataGeodeVersion"
-	compile "org.springframework.session:spring-session"
+	compile "org.springframework.session:spring-session:$springSessionVersion"
 
 	optional "org.springframework.security:spring-security-core"
 	optional "org.springframework.security:spring-security-web"
