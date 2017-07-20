@@ -84,10 +84,10 @@ public class EnableGemFireHttpSessionEventsIntegrationTests extends AbstractGemF
 
 	@Before
 	public void setup() {
+
 		assertThat(GemFireUtils.isPeer(this.gemfireCache)).isTrue();
 		assertThat(this.gemfireSessionRepository).isNotNull();
-		assertThat(this.gemfireSessionRepository.getMaxInactiveIntervalInSeconds())
-			.isEqualTo(MAX_INACTIVE_INTERVAL_IN_SECONDS);
+		assertThat(this.gemfireSessionRepository.getMaxInactiveIntervalInSeconds()).isEqualTo(MAX_INACTIVE_INTERVAL_IN_SECONDS);
 		assertThat(this.sessionEventListener).isNotNull();
 
 		Region<Object, ExpiringSession> sessionRegion = this.gemfireCache.getRegion(SPRING_SESSION_GEMFIRE_REGION_NAME);
@@ -103,6 +103,7 @@ public class EnableGemFireHttpSessionEventsIntegrationTests extends AbstractGemF
 
 	@Test
 	public void sessionCreatedEvent() {
+
 		final long beforeOrAtCreationTime = System.currentTimeMillis();
 
 		ExpiringSession expectedSession = save(createSession());
@@ -123,6 +124,7 @@ public class EnableGemFireHttpSessionEventsIntegrationTests extends AbstractGemF
 
 	@Test
 	public void getExistingNonExpiredSession() {
+
 		ExpiringSession expectedSession = save(touch(createSession()));
 
 		assertThat(expectedSession.isExpired()).isFalse();
@@ -135,6 +137,7 @@ public class EnableGemFireHttpSessionEventsIntegrationTests extends AbstractGemF
 
 	@Test
 	public void getExistingExpiredSession() {
+
 		ExpiringSession expectedSession = save(expire(createSession()));
 
 		AbstractSessionEvent sessionEvent = this.sessionEventListener.getSessionEvent();
@@ -155,6 +158,7 @@ public class EnableGemFireHttpSessionEventsIntegrationTests extends AbstractGemF
 
 	@Test
 	public void deleteExistingNonExpiredSession() {
+
 		ExpiringSession expectedSession = save(touch(createSession()));
 		ExpiringSession savedSession = this.gemfireSessionRepository.getSession(expectedSession.getId());
 
@@ -176,6 +180,7 @@ public class EnableGemFireHttpSessionEventsIntegrationTests extends AbstractGemF
 
 	@Test
 	public void deleteExistingExpiredSession() {
+
 		ExpiringSession expectedSession = save(createSession());
 
 		AbstractSessionEvent sessionEvent = this.sessionEventListener.getSessionEvent();
@@ -208,6 +213,7 @@ public class EnableGemFireHttpSessionEventsIntegrationTests extends AbstractGemF
 
 	@Test
 	public void deleteNonExistingSession() {
+
 		String expectedSessionId = UUID.randomUUID().toString();
 
 		assertThat(this.gemfireSessionRepository.<ExpiringSession>getSession(expectedSessionId)).isNull();
@@ -226,10 +232,10 @@ public class EnableGemFireHttpSessionEventsIntegrationTests extends AbstractGemF
 
 		@Bean
 		Properties gemfireProperties() {
+
 			Properties gemfireProperties = new Properties();
 
-			gemfireProperties.setProperty("name",
-					EnableGemFireHttpSessionEventsIntegrationTests.class.getName());
+			gemfireProperties.setProperty("name", EnableGemFireHttpSessionEventsIntegrationTests.class.getName());
 			gemfireProperties.setProperty("mcast-port", "0");
 			gemfireProperties.setProperty("log-level", GEMFIRE_LOG_LEVEL);
 
@@ -238,6 +244,7 @@ public class EnableGemFireHttpSessionEventsIntegrationTests extends AbstractGemF
 
 		@Bean
 		CacheFactoryBean gemfireCache() {
+
 			CacheFactoryBean gemfireCache = new CacheFactoryBean();
 
 			gemfireCache.setClose(true);

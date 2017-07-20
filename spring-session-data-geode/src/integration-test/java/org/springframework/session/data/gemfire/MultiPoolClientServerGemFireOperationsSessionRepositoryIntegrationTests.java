@@ -35,6 +35,7 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.ClientCache;
@@ -107,6 +108,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 
 	@BeforeClass
 	public static void startGemFireServer() throws IOException {
+
 		final long t0 = System.currentTimeMillis();
 
 		final int port = SocketUtils.findAvailableTcpPort();
@@ -131,6 +133,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 
 	@AfterClass
 	public static void stopGemFireServerAndDeleteArtifacts() {
+
 		if (gemfireServer != null) {
 			gemfireServer.destroyForcibly();
 			System.err.printf("GemFire Server [exit code = %1$d]%n",
@@ -146,6 +149,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 
 	@Before
 	public void setup() {
+
 		assertThat(GemFireUtils.isClient(gemfireCache)).isTrue();
 
 		Region<Object, ExpiringSession> springSessionGemFireRegion =
@@ -166,6 +170,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 
 	@Test
 	public void getExistingNonExpiredSessionBeforeAndAfterExpiration() {
+
 		ExpiringSession expectedSession = save(touch(createSession()));
 
 		AbstractSessionEvent sessionEvent = this.sessionEventListener.waitForSessionEvent(500);
@@ -202,9 +207,12 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 
 		@Bean
 		Properties gemfireProperties() {
+
 			Properties gemfireProperties = new Properties();
+
 			gemfireProperties.setProperty("name", name());
 			gemfireProperties.setProperty("log-level", GEMFIRE_LOG_LEVEL);
+
 			return gemfireProperties;
 		}
 
@@ -214,6 +222,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 
 		@Bean
 		ClientCacheFactoryBean gemfireCache() {
+
 			ClientCacheFactoryBean gemfireCache = new ClientCacheFactoryBean();
 
 			gemfireCache.setClose(true);
@@ -225,6 +234,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 
 		@Bean
 		PoolFactoryBean gemfirePool() {
+
 			PoolFactoryBean poolFactory = new PoolFactoryBean();
 
 			poolFactory.setFreeConnectionTimeout(5000); // 5 seconds
@@ -240,7 +250,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 
 		@Bean
 		PoolFactoryBean serverPool(@Value("${spring.session.data.gemfire.port:"
-			+ DEFAULT_GEMFIRE_SERVER_PORT + "}") int port) {
+				+ DEFAULT_GEMFIRE_SERVER_PORT + "}") int port) {
 
 			PoolFactoryBean poolFactory = new PoolFactoryBean();
 
@@ -267,6 +277,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 		// used for debugging purposes
 		@SuppressWarnings("resource")
 		public static void main(final String[] args) {
+
 			ConfigurableApplicationContext applicationContext = new AnnotationConfigApplicationContext(
 				SpringSessionGemFireClientConfiguration.class);
 
@@ -294,6 +305,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 
 		@Bean
 		Properties gemfireProperties() {
+
 			Properties gemfireProperties = new Properties();
 
 			gemfireProperties.setProperty("name", name());
@@ -310,6 +322,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 
 		@Bean
 		CacheFactoryBean gemfireCache() {
+
 			CacheFactoryBean gemfireCache = new CacheFactoryBean();
 
 			gemfireCache.setClose(true);
@@ -319,14 +332,14 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 		}
 
 		@Bean
-		CacheServerFactoryBean gemfireCacheServer(Cache gemfireCache,
+		CacheServerFactoryBean gemfireCacheServer(GemFireCache gemfireCache,
 			@Value("${spring.session.data.gemfire.port:" + DEFAULT_GEMFIRE_SERVER_PORT + "}") int port) {
 
 			CacheServerFactoryBean cacheServerFactory = new CacheServerFactoryBean();
 
 			cacheServerFactory.setAutoStartup(true);
 			cacheServerFactory.setBindAddress(SERVER_HOSTNAME);
-			cacheServerFactory.setCache(gemfireCache);
+			cacheServerFactory.setCache((Cache) gemfireCache);
 			cacheServerFactory.setMaxConnections(MAX_CONNECTIONS);
 			cacheServerFactory.setPort(port);
 
@@ -335,9 +348,12 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 
 		@SuppressWarnings("resource")
 		public static void main(final String[] args) throws IOException {
+
 			AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				SpringSessionGemFireServerConfiguration.class);
+
 			context.registerShutdownHook();
+
 			writeProcessControlFile(WORKING_DIRECTORY);
 		}
 	}

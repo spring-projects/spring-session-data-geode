@@ -81,6 +81,7 @@ public class GemFireHttpSessionJavaConfigurationTests extends AbstractGemFireInt
 
 	@Test
 	public void gemfireCacheConfigurationIsValid() {
+
 		Region<Object, ExpiringSession> example =
 			assertCacheAndRegion(this.gemfireCache, "JavaExample", DataPolicy.REPLICATE);
 
@@ -89,6 +90,7 @@ public class GemFireHttpSessionJavaConfigurationTests extends AbstractGemFireInt
 
 	@Test
 	public void verifyGemFireExampleCacheRegionPrincipalNameIndexWasCreatedSuccessfully() {
+
 		Region<Object, ExpiringSession> example =
 			assertCacheAndRegion(this.gemfireCache, "JavaExample", DataPolicy.REPLICATE);
 
@@ -103,6 +105,7 @@ public class GemFireHttpSessionJavaConfigurationTests extends AbstractGemFireInt
 
 	@Test
 	public void verifyGemFireExampleCacheRegionSessionAttributesIndexWasNotCreated() {
+
 		Region<Object, ExpiringSession> example =
 			assertCacheAndRegion(this.gemfireCache, "JavaExample", DataPolicy.REPLICATE);
 
@@ -120,10 +123,13 @@ public class GemFireHttpSessionJavaConfigurationTests extends AbstractGemFireInt
 	public static class GemFireConfiguration {
 
 		Properties gemfireProperties() {
+
 			Properties gemfireProperties = new Properties();
+
 			gemfireProperties.setProperty("name", applicationName());
 			gemfireProperties.setProperty("mcast-port", "0");
 			gemfireProperties.setProperty("log-level", logLevel());
+
 			return gemfireProperties;
 		}
 
@@ -137,6 +143,7 @@ public class GemFireHttpSessionJavaConfigurationTests extends AbstractGemFireInt
 
 		@Bean
 		CacheFactoryBean gemfireCache() {
+
 			CacheFactoryBean cacheFactory = new CacheFactoryBean();
 
 			cacheFactory.setClose(true);

@@ -21,6 +21,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.GemFireCache;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -50,6 +51,7 @@ public class ServerConfig {
 	}
 
 	Properties gemfireProperties() { // <2>
+
 		Properties gemfireProperties = new Properties();
 
 		gemfireProperties.setProperty("name", applicationName());
@@ -72,6 +74,7 @@ public class ServerConfig {
 
 	@Bean
 	CacheFactoryBean gemfireCache() { // <3>
+
 		CacheFactoryBean gemfireCache = new CacheFactoryBean();
 
 		gemfireCache.setClose(true);
@@ -81,14 +84,14 @@ public class ServerConfig {
 	}
 
 	@Bean
-	CacheServerFactoryBean gemfireCacheServer(Cache gemfireCache,
+	CacheServerFactoryBean gemfireCacheServer(GemFireCache gemfireCache,
 			@Value("${spring.session.data.gemfire.port:" + SERVER_PORT + "}") int port) { // <4>
 
 		CacheServerFactoryBean gemfireCacheServer = new CacheServerFactoryBean();
 
 		gemfireCacheServer.setAutoStartup(true);
 		gemfireCacheServer.setBindAddress(SERVER_HOST);
-		gemfireCacheServer.setCache(gemfireCache);
+		gemfireCacheServer.setCache((Cache) gemfireCache);
 		gemfireCacheServer.setHostNameForClients(SERVER_HOST);
 		gemfireCacheServer.setMaxTimeBetweenPings(Long.valueOf(TimeUnit.SECONDS.toMillis(60)).intValue());
 		gemfireCacheServer.setPort(port);

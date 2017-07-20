@@ -22,6 +22,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,7 +102,7 @@ public class GemFireServer {
 	}
 
 	@Bean
-	CacheServerFactoryBean gemfireCacheServer(Cache gemfireCache,
+	CacheServerFactoryBean gemfireCacheServer(GemFireCache gemfireCache,
 			@Value("${spring-session-data-gemfire.cache.server.bind-address:localhost}") String bindAddress,
 			@Value("${spring-session-data-gemfire.cache.server.hostname-for-clients:localhost}") String hostnameForClients,
 			@Value("${spring-session-data-gemfire.cache.server.port:40404}") int port) { // <4>
@@ -110,7 +111,7 @@ public class GemFireServer {
 
 		gemfireCacheServer.setAutoStartup(true);
 		gemfireCacheServer.setBindAddress(bindAddress);
-		gemfireCacheServer.setCache(gemfireCache);
+		gemfireCacheServer.setCache((Cache) gemfireCache);
 		gemfireCacheServer.setHostNameForClients(hostnameForClients);
 		gemfireCacheServer.setMaxTimeBetweenPings(Long.valueOf(TimeUnit.SECONDS.toMillis(60)).intValue());
 		gemfireCacheServer.setPort(port);
@@ -120,7 +121,7 @@ public class GemFireServer {
 
 	@Bean(name = "Example")
 	@Profile("debug")
-	ReplicatedRegionFactoryBean<String, Object> exampleRegion(Cache gemfireCache) {
+	ReplicatedRegionFactoryBean<String, Object> exampleRegion(GemFireCache gemfireCache) {
 
 		ReplicatedRegionFactoryBean<String, Object> exampleRegionFactory = new ReplicatedRegionFactoryBean<>();
 
@@ -131,7 +132,7 @@ public class GemFireServer {
 	}
 
 	@Autowired
-	private Cache gemfireCache;
+	private GemFireCache gemfireCache;
 
 	@Bean
 	@Profile("debug")
@@ -140,6 +141,7 @@ public class GemFireServer {
 		return args -> {
 
 			Region<String, Object> example = this.gemfireCache.getRegion("/Example");
+
 			String key = "time";
 
 			example.put(key, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:ss a")));

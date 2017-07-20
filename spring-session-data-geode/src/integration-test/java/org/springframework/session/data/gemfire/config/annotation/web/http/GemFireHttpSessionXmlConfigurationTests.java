@@ -76,6 +76,7 @@ public class GemFireHttpSessionXmlConfigurationTests extends AbstractGemFireInte
 
 	@Test
 	public void gemfireCacheConfigurationIsValid() {
+
 		Region<Object, ExpiringSession> example =
 			assertCacheAndRegion(this.gemfireCache, "XmlExample", DataPolicy.NORMAL);
 
@@ -84,6 +85,7 @@ public class GemFireHttpSessionXmlConfigurationTests extends AbstractGemFireInte
 
 	@Test
 	public void verifyGemFireExampleCacheRegionPrincipalNameIndexWasCreatedSuccessfully() {
+
 		Region<Object, ExpiringSession> example =
 			assertCacheAndRegion(this.gemfireCache, "XmlExample", DataPolicy.NORMAL);
 
@@ -98,6 +100,7 @@ public class GemFireHttpSessionXmlConfigurationTests extends AbstractGemFireInte
 
 	@Test
 	public void verifyGemFireExampleCacheRegionSessionAttributesIndexWasCreatedSuccessfully() {
+
 		Region<Object, ExpiringSession> example =
 			assertCacheAndRegion(this.gemfireCache, "XmlExample", DataPolicy.NORMAL);
 

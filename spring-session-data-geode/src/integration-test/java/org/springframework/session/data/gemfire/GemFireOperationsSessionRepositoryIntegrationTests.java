@@ -90,12 +90,15 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 
 	@Before
 	public void setup() {
+
 		this.context = SecurityContextHolder.createEmptyContext();
+
 		this.context.setAuthentication(
 				new UsernamePasswordAuthenticationToken("username-" + UUID.randomUUID(),
 						"na", AuthorityUtils.createAuthorityList("ROLE_USER")));
 
 		this.changedContext = SecurityContextHolder.createEmptyContext();
+
 		this.changedContext.setAuthentication(new UsernamePasswordAuthenticationToken(
 				"changedContext-" + UUID.randomUUID(), "na",
 				AuthorityUtils.createAuthorityList("ROLE_USER")));
@@ -103,7 +106,7 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 		assertThat(this.gemfireCache).isNotNull();
 		assertThat(this.gemfireSessionRepository).isNotNull();
 		assertThat(this.gemfireSessionRepository.getMaxInactiveIntervalInSeconds())
-				.isEqualTo(MAX_INACTIVE_INTERVAL_IN_SECONDS);
+			.isEqualTo(MAX_INACTIVE_INTERVAL_IN_SECONDS);
 
 		Region<Object, ExpiringSession> sessionRegion = this.gemfireCache.getRegion(SPRING_SESSION_GEMFIRE_REGION_NAME);
 
@@ -119,13 +122,13 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 	}
 
 	protected Map<String, ExpiringSession> doFindByPrincipalName(String principalName) {
-		return doFindByIndexNameAndIndexValue(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME,
-			principalName);
+		return doFindByIndexNameAndIndexValue(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME, principalName);
 	}
 
 	@SuppressWarnings({ "unchecked" })
 	protected Map<String, ExpiringSession> doFindByPrincipalName(String regionName,
 			String principalName) {
+
 		try {
 			Region<String, ExpiringSession> region = this.gemfireCache.getRegion(regionName);
 
@@ -169,6 +172,7 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 
 	@Test
 	public void findSessionsByIndexedSessionAttributeNameValues() {
+
 		ExpiringSession johnBlumSession = save(touch(setAttribute(
 			createSession("johnBlum"), "vip", "yes")));
 		ExpiringSession robWinchSession = save(touch(setAttribute(
@@ -220,6 +224,7 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 
 	@Test
 	public void findSessionsByPrincipalName() {
+
 		ExpiringSession sessionOne = save(touch(createSession("robWinch")));
 		ExpiringSession sessionTwo = save(touch(createSession("johnBlum")));
 		ExpiringSession sessionThree = save(touch(createSession("robWinch")));
@@ -255,6 +260,7 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 
 	@Test
 	public void findSessionsBySecurityPrincipalName() {
+
 		ExpiringSession toSave = this.gemfireSessionRepository.createSession();
 
 		toSave.setAttribute(SPRING_SECURITY_CONTEXT, this.context);
@@ -269,6 +275,7 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 
 	@Test
 	public void findSessionsByChangedSecurityPrincipalName() {
+
 		ExpiringSession toSave = this.gemfireSessionRepository.createSession();
 
 		toSave.setAttribute(SPRING_SECURITY_CONTEXT, this.context);
@@ -290,8 +297,8 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 
 	@Test
 	public void findsNoSessionsByNonExistingPrincipal() {
-		Map<String, ExpiringSession> nonExistingPrincipalSessions =
-			doFindByPrincipalName("nonExistingPrincipalName");
+
+		Map<String, ExpiringSession> nonExistingPrincipalSessions = doFindByPrincipalName("nonExistingPrincipalName");
 
 		assertThat(nonExistingPrincipalSessions).isNotNull();
 		assertThat(nonExistingPrincipalSessions.isEmpty()).isTrue();
@@ -299,7 +306,9 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 
 	@Test
 	public void findsNoSessionsAfterPrincipalIsRemoved() {
+
 		String username = "doesNotFindAfterPrincipalRemoved";
+
 		ExpiringSession session = save(touch(createSession(username)));
 
 		session.setAttribute(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME, null);
@@ -314,6 +323,7 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 
 	@Test
 	public void saveAndReadSessionWithAttributes() {
+
 		ExpiringSession expectedSession = this.gemfireSessionRepository.createSession();
 
 		assertThat(expectedSession).isInstanceOf(AbstractGemFireOperationsSessionRepository.GemFireSession.class);
@@ -361,6 +371,7 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 	static class SpringSessionGemFireConfiguration {
 
 		Properties gemfireProperties() {
+
 			Properties gemfireProperties = new Properties();
 
 			gemfireProperties.setProperty("name", GemFireOperationsSessionRepositoryIntegrationTests.class.getName());
@@ -371,6 +382,7 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 
 		@Bean
 		CacheFactoryBean gemfireCache() {
+
 			CacheFactoryBean gemfireCache = new CacheFactoryBean();
 
 			gemfireCache.setClose(true);
@@ -422,14 +434,16 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 
 		@SuppressWarnings("all")
 		public int compareTo(final Person person) {
+
 			int compareValue = getLastName().compareTo(person.getLastName());
-			return (compareValue != 0 ? compareValue
-					: getFirstName().compareTo(person.getFirstName()));
+
+			return (compareValue != 0 ? compareValue : getFirstName().compareTo(person.getFirstName()));
 		}
 
 		@Override
 		public boolean equals(final Object obj) {
-			if (obj == this) {
+
+			if (this == obj) {
 				return true;
 			}
 
@@ -440,14 +454,17 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 			Person that = (Person) obj;
 
 			return ObjectUtils.nullSafeEquals(this.getFirstName(), that.getFirstName())
-					&& ObjectUtils.nullSafeEquals(this.getLastName(), that.getLastName());
+				&& ObjectUtils.nullSafeEquals(this.getLastName(), that.getLastName());
 		}
 
 		@Override
 		public int hashCode() {
+
 			int hashValue = 17;
+
 			hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getFirstName());
 			hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getLastName());
+
 			return hashValue;
 		}
 

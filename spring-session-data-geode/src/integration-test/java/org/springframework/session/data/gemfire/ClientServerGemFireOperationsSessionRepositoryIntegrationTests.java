@@ -37,6 +37,7 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.ClientCache;
@@ -113,6 +114,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 
 	@BeforeClass
 	public static void startGemFireServer() throws IOException {
+
 		long t0 = System.currentTimeMillis();
 
 		int port = SocketUtils.findAvailableTcpPort();
@@ -138,6 +140,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 
 	@AfterClass
 	public static void stopGemFireServer() {
+
 		if (gemfireServer != null) {
 			gemfireServer.destroy();
 			System.err.printf("GemFire Server [exit code = %1$d]%n",
@@ -153,6 +156,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 
 	@Before
 	public void setup() {
+
 		assertThat(GemFireUtils.isClient(gemfireCache)).isTrue();
 
 		Region<Object, ExpiringSession> springSessionGemFireRegion =
@@ -174,6 +178,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 
 	@Test
 	public void createSessionFiresSessionCreatedEvent() {
+
 		long beforeOrAtCreationTime = System.currentTimeMillis();
 
 		ExpiringSession expectedSession = save(createSession());
@@ -202,6 +207,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 
 	@Test
 	public void getExistingNonExpiredSessionBeforeAndAfterExpiration() {
+
 		ExpiringSession expectedSession = save(touch(createSession()));
 
 		AbstractSessionEvent sessionEvent = this.sessionEventListener.waitForSessionEvent(500);
@@ -227,6 +233,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 
 	@Test
 	public void deleteExistingNonExpiredSessionFiresSessionDeletedEventAndReturnsNullOnGet() {
+
 		ExpiringSession expectedSession = save(touch(createSession()));
 
 		AbstractSessionEvent sessionEvent = this.sessionEventListener.waitForSessionEvent(500);
@@ -324,6 +331,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 		}
 
 		Properties gemfireProperties() {
+
 			Properties gemfireProperties = new Properties();
 
 			gemfireProperties.setProperty("name", name());
@@ -339,6 +347,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 
 		@Bean
 		CacheFactoryBean gemfireCache() {
+
 			CacheFactoryBean gemfireCache = new CacheFactoryBean();
 
 			gemfireCache.setClose(true);
@@ -348,12 +357,12 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 		}
 
 		@Bean
-		CacheServerFactoryBean gemfireCacheServer(Cache gemfireCache,
+		CacheServerFactoryBean gemfireCacheServer(GemFireCache gemfireCache,
 				@Value("${spring.session.data.gemfire.port:" + DEFAULT_GEMFIRE_SERVER_PORT + "}") int port) {
 
 			CacheServerFactoryBean cacheServerFactory = new CacheServerFactoryBean();
 
-			cacheServerFactory.setCache(gemfireCache);
+			cacheServerFactory.setCache((Cache) gemfireCache);
 			cacheServerFactory.setAutoStartup(true);
 			cacheServerFactory.setBindAddress(SERVER_HOSTNAME);
 			cacheServerFactory.setPort(port);
@@ -363,6 +372,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 
 		@SuppressWarnings("resource")
 		public static void main(String[] args) throws IOException {
+
 			AnnotationConfigApplicationContext context =
 				new AnnotationConfigApplicationContext(SpringSessionDataGemFireServerConfiguration.class);
 

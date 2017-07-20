@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.client.ClientCache;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -88,6 +89,7 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 
 	@BeforeClass
 	public static void startGemFireServer() throws IOException {
+
 		long t0 = System.currentTimeMillis();
 
 		int port = SocketUtils.findAvailableTcpPort();
@@ -113,6 +115,7 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 
 	@AfterClass
 	public static void stopGemFireServer() {
+
 		if (gemfireServer != null) {
 			gemfireServer.destroy();
 			System.err.printf("GemFire Server [exit code = %1$d]%n",
@@ -128,6 +131,7 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 
 	@Test
 	public void sessionCreationAndAccessIsSuccessful() {
+
 		ExpiringSession session = save(touch(createSession()));
 
 		assertThat(session).isNotNull();
@@ -174,13 +178,17 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 		}
 
 		Properties gemfireProperties() {
+
 			Properties gemfireProperties = new Properties();
+
 			gemfireProperties.setProperty("log-level", GEMFIRE_LOG_LEVEL);
+
 			return gemfireProperties;
 		}
 
 		@Bean
 		ClientCacheFactoryBean gemfireCache() {
+
 			ClientCacheFactoryBean clientCacheFactory = new ClientCacheFactoryBean();
 
 			clientCacheFactory.setClose(true);
@@ -210,6 +218,7 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 		// used for debugging purposes
 		@SuppressWarnings("resource")
 		public static void main(String[] args) {
+
 			ConfigurableApplicationContext applicationContext =
 				new AnnotationConfigApplicationContext(SpringSessionDataGemFireClientConfiguration.class);
 
@@ -235,6 +244,7 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 		}
 
 		Properties gemfireProperties() {
+
 			Properties gemfireProperties = new Properties();
 
 			gemfireProperties.setProperty("name", name());
@@ -250,6 +260,7 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 
 		@Bean
 		CacheFactoryBean gemfireCache() {
+
 			CacheFactoryBean gemfireCache = new CacheFactoryBean();
 
 			gemfireCache.setClose(true);
@@ -259,12 +270,12 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 		}
 
 		@Bean
-		CacheServerFactoryBean gemfireCacheServer(Cache gemfireCache,
-			@Value("${spring.session.data.gemfire.port:" + DEFAULT_GEMFIRE_SERVER_PORT + "}") int port) {
+		CacheServerFactoryBean gemfireCacheServer(GemFireCache gemfireCache,
+				@Value("${spring.session.data.gemfire.port:" + DEFAULT_GEMFIRE_SERVER_PORT + "}") int port) {
 
 			CacheServerFactoryBean cacheServerFactory = new CacheServerFactoryBean();
 
-			cacheServerFactory.setCache(gemfireCache);
+			cacheServerFactory.setCache((Cache) gemfireCache);
 			cacheServerFactory.setAutoStartup(true);
 			cacheServerFactory.setBindAddress(SERVER_HOSTNAME);
 			cacheServerFactory.setPort(port);
@@ -274,6 +285,7 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 
 		@SuppressWarnings("resource")
 		public static void main(String[] args) throws IOException {
+
 			AnnotationConfigApplicationContext context =
 				new AnnotationConfigApplicationContext(SpringSessionDataGemFireServerConfiguration.class);
 
