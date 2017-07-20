@@ -14,7 +14,8 @@ class GemFireServerPlugin implements Plugin<Project> {
 
 		project.tasks.integrationTest.doLast {
 			println 'Stopping GemFire Server...'
-			project.tasks.gemfireServer.process?.destroyForcibly()
+			project.tasks.gemfireServer.process?.destroy()
+//			project.tasks.gemfireServer.process?.destroyForcibly()
 		}
 
 		project.tasks.prepareAppServerForIntegrationTests {
@@ -47,8 +48,8 @@ class GemFireServerPlugin implements Plugin<Project> {
 			port = availablePort()
 			println "Starting GemFire Server on port [$port]..."
 
-			def out = debug ? System.out : new StringBuilder()
-			def err = debug ? System.out : new StringBuilder()
+			def out = debug ? System.err : new StringBuilder()
+			def err = debug ? System.err : new StringBuilder()
 
 			String classpath = project.sourceSets.main.runtimeClasspath.collect { it }.join(File.pathSeparator)
 			String gemfireLogLevel = System.getProperty('spring.session.data.gemfire.log-level', 'warning')
