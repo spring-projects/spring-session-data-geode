@@ -45,7 +45,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
-import org.springframework.session.ExpiringSession;
+import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.GemFireCacheTypeAwareRegionFactoryBean;
 
@@ -87,7 +87,8 @@ public class GemFireHttpSessionConfigurationTest {
 		}
 	}
 
-	protected <T> T[] toArray(T... array) {
+	@SafeVarargs
+	private static <T> T[] toArray(T... array) {
 		return array;
 	}
 
@@ -97,7 +98,9 @@ public class GemFireHttpSessionConfigurationTest {
 	}
 
 	@Test
+	@SuppressWarnings("all")
 	public void setAndGetBeanClassLoader() {
+
 		assertThat(this.gemfireConfiguration.getBeanClassLoader()).isNull();
 
 		this.gemfireConfiguration.setBeanClassLoader(Thread.currentThread().getContextClassLoader());
@@ -112,6 +115,7 @@ public class GemFireHttpSessionConfigurationTest {
 
 	@Test
 	public void setAndGetClientRegionShortcut() {
+
 		assertThat(this.gemfireConfiguration.getClientRegionShortcut()).isEqualTo(
 			GemFireHttpSessionConfiguration.DEFAULT_CLIENT_REGION_SHORTCUT);
 
@@ -128,6 +132,7 @@ public class GemFireHttpSessionConfigurationTest {
 
 	@Test
 	public void setAndGetMaxInactiveIntervalInSeconds() {
+
 		assertThat(this.gemfireConfiguration.getMaxInactiveIntervalInSeconds()).isEqualTo(
 				GemFireHttpSessionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL_IN_SECONDS);
 
@@ -150,6 +155,7 @@ public class GemFireHttpSessionConfigurationTest {
 
 	@Test
 	public void setAndGetPoolName() {
+
 		assertThat(this.gemfireConfiguration.getPoolName()).isEqualTo(
 			GemFireHttpSessionConfiguration.DEFAULT_GEMFIRE_POOL_NAME);
 
@@ -175,6 +181,7 @@ public class GemFireHttpSessionConfigurationTest {
 
 	@Test
 	public void setAndGetServerRegionShortcut() {
+
 		assertThat(this.gemfireConfiguration.getServerRegionShortcut()).isEqualTo(
 			GemFireHttpSessionConfiguration.DEFAULT_SERVER_REGION_SHORTCUT);
 
@@ -191,6 +198,7 @@ public class GemFireHttpSessionConfigurationTest {
 
 	@Test
 	public void setAndGetSpringSessionGemFireRegionName() {
+
 		assertThat(this.gemfireConfiguration.getSpringSessionGemFireRegionName()).isEqualTo(
 			GemFireHttpSessionConfiguration.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME);
 
@@ -216,9 +224,10 @@ public class GemFireHttpSessionConfigurationTest {
 
 	@Test
 	public void setsImportMetadata() {
+
 		AnnotationMetadata mockAnnotationMetadata = mock(AnnotationMetadata.class);
 
-		Map<String, Object> annotationAttributes = new HashMap<String, Object>(4);
+		Map<String, Object> annotationAttributes = new HashMap<>(4);
 
 		annotationAttributes.put("clientRegionShortcut", ClientRegionShortcut.CACHING_PROXY);
 		annotationAttributes.put("indexableSessionAttributes", toArray("one", "two", "three"));
@@ -244,6 +253,7 @@ public class GemFireHttpSessionConfigurationTest {
 
 	@Test
 	public void createsAndInitializesSessionRepositoryBean() {
+
 		GemfireOperations mockGemfireOperations = mock(GemfireOperations.class);
 
 		this.gemfireConfiguration.setMaxInactiveIntervalInSeconds(120);
@@ -259,7 +269,9 @@ public class GemFireHttpSessionConfigurationTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void createsAndInitializesSessionRegionTemplateBean() {
+
 		GemFireCache mockGemFireCache = mock(GemFireCache.class);
+
 		Region<Object, Object> mockRegion = mock(Region.class);
 
 		given(mockGemFireCache.getRegion(eq("Example"))).willReturn(mockRegion);
@@ -278,15 +290,17 @@ public class GemFireHttpSessionConfigurationTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void createsAndInitializesSessionRegionBean() {
+
 		GemFireCache mockGemFireCache = mock(GemFireCache.class);
-		RegionAttributes<Object, ExpiringSession> mockRegionAttributes = mock(RegionAttributes.class);
+
+		RegionAttributes<Object, Session> mockRegionAttributes = mock(RegionAttributes.class);
 
 		this.gemfireConfiguration.setClientRegionShortcut(ClientRegionShortcut.CACHING_PROXY);
 		this.gemfireConfiguration.setPoolName("TestPool");
 		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.REPLICATE_PERSISTENT);
 		this.gemfireConfiguration.setSpringSessionGemFireRegionName("TestRegion");
 
-		GemFireCacheTypeAwareRegionFactoryBean<Object, ExpiringSession> sessionRegionFactoryBean =
+		GemFireCacheTypeAwareRegionFactoryBean<Object, Session> sessionRegionFactoryBean =
 			this.gemfireConfiguration.sessionRegion(mockGemFireCache, mockRegionAttributes);
 
 		assertThat(sessionRegionFactoryBean).isNotNull();
@@ -295,7 +309,7 @@ public class GemFireHttpSessionConfigurationTest {
 		assertThat(this.<GemFireCache>getField(sessionRegionFactoryBean, "gemfireCache"))
 			.isEqualTo(mockGemFireCache);
 		assertThat(this.<String>getField(sessionRegionFactoryBean, "poolName")).isEqualTo("TestPool");
-		assertThat(this.<RegionAttributes<Object, ExpiringSession>>getField(sessionRegionFactoryBean,
+		assertThat(this.<RegionAttributes<Object, Session>>getField(sessionRegionFactoryBean,
 			"regionAttributes")).isEqualTo(mockRegionAttributes);
 		assertThat(this.<String>getField(sessionRegionFactoryBean, "regionName")).isEqualTo("TestRegion");
 		assertThat(this.<RegionShortcut>getField(sessionRegionFactoryBean, "serverRegionShortcut"))
@@ -308,6 +322,7 @@ public class GemFireHttpSessionConfigurationTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void createsAndInitializesSessionRegionAttributesWithExpiration() throws Exception {
+
 		Cache mockCache = mock(Cache.class);
 
 		this.gemfireConfiguration.setMaxInactiveIntervalInSeconds(300);
@@ -320,7 +335,7 @@ public class GemFireHttpSessionConfigurationTest {
 
 		regionAttributesFactory.afterPropertiesSet();
 
-		RegionAttributes<Object, ExpiringSession> sessionRegionAttributes = regionAttributesFactory.getObject();
+		RegionAttributes<Object, Session> sessionRegionAttributes = regionAttributesFactory.getObject();
 
 		assertThat(sessionRegionAttributes).isNotNull();
 		assertThat(sessionRegionAttributes.getKeyConstraint()).isEqualTo(
@@ -338,6 +353,7 @@ public class GemFireHttpSessionConfigurationTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void createsAndInitializesSessionRegionAttributesWithoutExpiration() throws Exception {
+
 		ClientCache mockClientCache = mock(ClientCache.class);
 
 		this.gemfireConfiguration.setMaxInactiveIntervalInSeconds(300);
@@ -349,7 +365,7 @@ public class GemFireHttpSessionConfigurationTest {
 
 		regionAttributesFactory.afterPropertiesSet();
 
-		RegionAttributes<Object, ExpiringSession> sessionRegionAttributes = regionAttributesFactory.getObject();
+		RegionAttributes<Object, Session> sessionRegionAttributes = regionAttributesFactory.getObject();
 
 		assertThat(sessionRegionAttributes).isNotNull();
 		assertThat(sessionRegionAttributes.getKeyConstraint()).isEqualTo(
@@ -366,6 +382,7 @@ public class GemFireHttpSessionConfigurationTest {
 
 	@Test
 	public void expirationIsAllowed() {
+
 		Cache mockCache = mock(Cache.class);
 
 		ClientCache mockClientCache = mock(ClientCache.class);
@@ -392,7 +409,9 @@ public class GemFireHttpSessionConfigurationTest {
 
 	@Test
 	public void expirationIsNotAllowed() {
+
 		Cache mockCache = mock(Cache.class);
+
 		ClientCache mockClientCache = mock(ClientCache.class);
 
 		this.gemfireConfiguration.setClientRegionShortcut(ClientRegionShortcut.PROXY);

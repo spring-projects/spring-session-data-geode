@@ -47,7 +47,7 @@ import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.data.gemfire.client.PoolFactoryBean;
 import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
-import org.springframework.session.ExpiringSession;
+import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -63,7 +63,7 @@ import org.springframework.util.SocketUtils;
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.springframework.context.ConfigurableApplicationContext
- * @see org.springframework.session.ExpiringSession
+ * @see org.springframework.session.Session
  * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
@@ -132,7 +132,7 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 	@Test
 	public void sessionCreationAndAccessIsSuccessful() {
 
-		ExpiringSession session = save(touch(createSession()));
+		Session session = save(touch(createSession()));
 
 		assertThat(session).isNotNull();
 		assertThat(session.isExpired()).isFalse();
@@ -142,7 +142,7 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 
 		save(touch(session));
 
-		ExpiringSession loadedSession = get(session.getId());
+		Session loadedSession = get(session.getId());
 
 		assertThat(loadedSession).isNotNull();
 		assertThat(loadedSession.isExpired()).isFalse();
@@ -158,7 +158,7 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 
 		save(touch(loadedSession));
 
-		ExpiringSession reloadedSession = get(loadedSession.getId());
+		Session reloadedSession = get(loadedSession.getId());
 
 		assertThat(reloadedSession).isNotNull();
 		assertThat(reloadedSession.isExpired()).isFalse();
@@ -170,6 +170,7 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 	}
 
 	@EnableGemFireHttpSession
+	@SuppressWarnings("unused")
 	static class SpringSessionDataGemFireClientConfiguration {
 
 		@Bean
@@ -234,6 +235,7 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 	}
 
 	@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS)
+	@SuppressWarnings("unused")
 	static class SpringSessionDataGemFireServerConfiguration {
 
 		static final String SERVER_HOSTNAME = "localhost";

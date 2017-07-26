@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Properties;
@@ -54,7 +56,7 @@ import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.data.gemfire.client.PoolFactoryBean;
 import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
-import org.springframework.session.ExpiringSession;
+import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.session.events.AbstractSessionEvent;
@@ -77,7 +79,7 @@ import org.springframework.util.SocketUtils;
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.springframework.context.ConfigurableApplicationContext
- * @see org.springframework.session.ExpiringSession
+ * @see org.springframework.session.Session
  * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
@@ -142,7 +144,9 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 	public static void stopGemFireServer() {
 
 		if (gemfireServer != null) {
+
 			gemfireServer.destroy();
+
 			System.err.printf("GemFire Server [exit code = %1$d]%n",
 				waitForProcessToStop(gemfireServer, processWorkingDirectory));
 		}
@@ -159,12 +163,12 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 
 		assertThat(GemFireUtils.isClient(gemfireCache)).isTrue();
 
-		Region<Object, ExpiringSession> springSessionGemFireRegion =
+		Region<Object, Session> springSessionGemFireRegion =
 			gemfireCache.getRegion(SPRING_SESSION_GEMFIRE_REGION_NAME);
 
 		assertThat(springSessionGemFireRegion).isNotNull();
 
-		RegionAttributes<Object, ExpiringSession> springSessionGemFireRegionAttributes =
+		RegionAttributes<Object, Session> springSessionGemFireRegionAttributes =
 			springSessionGemFireRegion.getAttributes();
 
 		assertThat(springSessionGemFireRegionAttributes).isNotNull();
@@ -179,20 +183,20 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 	@Test
 	public void createSessionFiresSessionCreatedEvent() {
 
-		long beforeOrAtCreationTime = System.currentTimeMillis();
+		Instant beforeOrAtCreationTime = Instant.now();
 
-		ExpiringSession expectedSession = save(createSession());
+		Session expectedSession = save(createSession());
 
 		AbstractSessionEvent sessionEvent = this.sessionEventListener.waitForSessionEvent(500);
 
 		assertThat(sessionEvent).isInstanceOf(SessionCreatedEvent.class);
 
-		ExpiringSession createdSession = sessionEvent.getSession();
+		Session createdSession = sessionEvent.getSession();
 
 		assertThat(createdSession.getId()).isEqualTo(expectedSession.getId());
-		assertThat(createdSession.getCreationTime()).isGreaterThanOrEqualTo(beforeOrAtCreationTime);
+		assertThat(createdSession.getCreationTime().compareTo(beforeOrAtCreationTime)).isGreaterThanOrEqualTo(0);
 		assertThat(createdSession.getLastAccessedTime()).isEqualTo(createdSession.getCreationTime());
-		assertThat(createdSession.getMaxInactiveIntervalInSeconds()).isEqualTo(MAX_INACTIVE_INTERVAL_IN_SECONDS);
+		assertThat(createdSession.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(MAX_INACTIVE_INTERVAL_IN_SECONDS));
 
 		createdSession.setAttribute("attrOne", 1);
 
@@ -202,21 +206,21 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 
 		assertThat(sessionEvent).isNull();
 
-		this.gemfireSessionRepository.delete(expectedSession.getId());
+		this.gemfireSessionRepository.deleteById(expectedSession.getId());
 	}
 
 	@Test
 	public void getExistingNonExpiredSessionBeforeAndAfterExpiration() {
 
-		ExpiringSession expectedSession = save(touch(createSession()));
+		Session expectedSession = save(touch(createSession()));
 
 		AbstractSessionEvent sessionEvent = this.sessionEventListener.waitForSessionEvent(500);
 
 		assertThat(sessionEvent).isInstanceOf(SessionCreatedEvent.class);
-		assertThat(sessionEvent.<ExpiringSession>getSession()).isEqualTo(expectedSession);
+		assertThat(sessionEvent.<Session>getSession()).isEqualTo(expectedSession);
 		assertThat(this.sessionEventListener.<SessionCreatedEvent>getSessionEvent()).isNull();
 
-		ExpiringSession savedSession = this.gemfireSessionRepository.getSession(expectedSession.getId());
+		Session savedSession = this.gemfireSessionRepository.findById(expectedSession.getId());
 
 		assertThat(savedSession).isEqualTo(expectedSession);
 
@@ -226,7 +230,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 		assertThat(sessionEvent).isInstanceOf(SessionExpiredEvent.class);
 		assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSession.getId());
 
-		ExpiringSession expiredSession = this.gemfireSessionRepository.getSession(expectedSession.getId());
+		Session expiredSession = this.gemfireSessionRepository.findById(expectedSession.getId());
 
 		assertThat(expiredSession).isNull();
 	}
@@ -234,21 +238,21 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 	@Test
 	public void deleteExistingNonExpiredSessionFiresSessionDeletedEventAndReturnsNullOnGet() {
 
-		ExpiringSession expectedSession = save(touch(createSession()));
+		Session expectedSession = save(touch(createSession()));
 
 		AbstractSessionEvent sessionEvent = this.sessionEventListener.waitForSessionEvent(500);
 
 		assertThat(sessionEvent).isInstanceOf(SessionCreatedEvent.class);
-		assertThat(sessionEvent.<ExpiringSession>getSession()).isEqualTo(expectedSession);
+		assertThat(sessionEvent.<Session>getSession()).isEqualTo(expectedSession);
 
-		this.gemfireSessionRepository.delete(expectedSession.getId());
+		this.gemfireSessionRepository.deleteById(expectedSession.getId());
 
 		sessionEvent = this.sessionEventListener.waitForSessionEvent(500);
 
 		assertThat(sessionEvent).isInstanceOf(SessionDeletedEvent.class);
 		assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSession.getId());
 
-		ExpiringSession deletedSession = this.gemfireSessionRepository.getSession(expectedSession.getId());
+		Session deletedSession = this.gemfireSessionRepository.findById(expectedSession.getId());
 
 		assertThat(deletedSession).isNull();
 	}
@@ -256,6 +260,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 	@EnableGemFireHttpSession(regionName = SPRING_SESSION_GEMFIRE_REGION_NAME,
 		clientRegionShortcut = ClientRegionShortcut.CACHING_PROXY,
 			maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS)
+	@SuppressWarnings("unused")
 	static class SpringSessionDataGemFireClientConfiguration {
 
 		@Bean
@@ -264,13 +269,17 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 		}
 
 		Properties gemfireProperties() {
+
 			Properties gemfireProperties = new Properties();
+
 			gemfireProperties.setProperty("log-level", GEMFIRE_LOG_LEVEL);
+
 			return gemfireProperties;
 		}
 
 		@Bean
 		ClientCacheFactoryBean gemfireCache() {
+
 			ClientCacheFactoryBean clientCacheFactory = new ClientCacheFactoryBean();
 
 			clientCacheFactory.setClose(true);
@@ -305,6 +314,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 		// used for debugging purposes
 		@SuppressWarnings("resource")
 		public static void main(String[] args) {
+
 			ConfigurableApplicationContext applicationContext = new AnnotationConfigApplicationContext(
 					SpringSessionDataGemFireClientConfiguration.class);
 
@@ -321,6 +331,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 
 	@EnableGemFireHttpSession(regionName = SPRING_SESSION_GEMFIRE_REGION_NAME,
 		maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS)
+	@SuppressWarnings("unused")
 	static class SpringSessionDataGemFireServerConfiguration {
 
 		static final String SERVER_HOSTNAME = "localhost";

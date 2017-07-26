@@ -42,7 +42,7 @@ import org.springframework.data.gemfire.IndexFactoryBean;
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
-import org.springframework.session.ExpiringSession;
+import org.springframework.session.Session;
 import org.springframework.session.config.annotation.web.http.SpringHttpSessionConfiguration;
 import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
 import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
@@ -53,8 +53,8 @@ import org.springframework.util.StringUtils;
 
 /**
  * The {@link GemFireHttpSessionConfiguration} class is a Spring {@link Configuration @Configuration} class
- * used to configure and initialize Pivotal GemFire/Apache Geode as a clustered, replicated and distributed
- * {@link javax.servlet.http.HttpSession} provider implementation in Spring {@link ExpiringSession}.
+ * used to configure and initialize Pivotal GemFire/Apache Geode as a clustered, distributed and replicated
+ * {@link javax.servlet.http.HttpSession} provider implementation in Spring {@link Session}.
  *
  * @author John Blum
  * @see org.apache.geode.cache.ExpirationAttributes
@@ -67,14 +67,15 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.beans.factory.BeanClassLoaderAware
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
+ * @see org.springframework.context.annotation.DependsOn
  * @see org.springframework.context.annotation.ImportAware
+ * @see org.springframework.core.annotation.AnnotationAttributes
  * @see org.springframework.core.type.AnnotationMetadata
  * @see org.springframework.data.gemfire.GemfireOperations
  * @see org.springframework.data.gemfire.GemfireTemplate
  * @see org.springframework.data.gemfire.IndexFactoryBean
- * @see org.springframework.data.gemfire.IndexType
  * @see org.springframework.data.gemfire.RegionAttributesFactoryBean
- * @see org.springframework.session.ExpiringSession
+ * @see org.springframework.session.Session
  * @see org.springframework.session.config.annotation.web.http.SpringHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
@@ -221,11 +222,11 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	}
 
 	/**
-	 * Gets the maximum interval in seconds in which a Session can remain inactive before
-	 * it is considered expired.
+	 * Gets the maximum interval in seconds in which a {@link Session} can remain inactive
+	 * before it is considered expired.
 	 *
-	 * @return an integer value specifying the maximum interval in seconds that a Session
-	 * can remain inactive before it is considered expired.
+	 * @return an integer value specifying the maximum interval in seconds that a {@link Session} can remain inactive
+	 * before it is considered expired.
 	 * @see EnableGemFireHttpSession#maxInactiveIntervalInSeconds()
 	 */
 	protected int getMaxInactiveIntervalInSeconds() {
@@ -251,10 +252,7 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	 * @see Pool#getName()
 	 */
 	protected String getPoolName() {
-
-		return Optional.ofNullable(this.poolName)
-			.filter(StringUtils::hasText)
-			.orElse(DEFAULT_GEMFIRE_POOL_NAME);
+		return Optional.ofNullable(this.poolName).filter(StringUtils::hasText).orElse(DEFAULT_GEMFIRE_POOL_NAME);
 	}
 
 	/**
@@ -300,9 +298,7 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	 * @see EnableGemFireHttpSession#regionName()
 	 */
 	protected String getSpringSessionGemFireRegionName() {
-
-		return Optional.ofNullable(this.springSessionGemFireRegionName)
-			.filter(StringUtils::hasText)
+		return Optional.ofNullable(this.springSessionGemFireRegionName).filter(StringUtils::hasText)
 			.orElse(DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME);
 	}
 
@@ -319,22 +315,21 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 			AnnotationAttributes.fromMap(importMetadata.getAnnotationAttributes(
 				EnableGemFireHttpSession.class.getName()));
 
-		setClientRegionShortcut(ClientRegionShortcut.class.cast(enableGemFireHttpSessionAttributes
-			.getEnum("clientRegionShortcut")));
+		setClientRegionShortcut(ClientRegionShortcut.class.cast(
+			enableGemFireHttpSessionAttributes.getEnum("clientRegionShortcut")));
 
-		setIndexableSessionAttributes(enableGemFireHttpSessionAttributes
-			.getStringArray("indexableSessionAttributes"));
+		setIndexableSessionAttributes(
+			enableGemFireHttpSessionAttributes.getStringArray("indexableSessionAttributes"));
 
-		setMaxInactiveIntervalInSeconds(enableGemFireHttpSessionAttributes
-			.getNumber("maxInactiveIntervalInSeconds").intValue());
+		setMaxInactiveIntervalInSeconds(
+			enableGemFireHttpSessionAttributes.getNumber("maxInactiveIntervalInSeconds").intValue());
 
 		setPoolName(enableGemFireHttpSessionAttributes.getString("poolName"));
 
-		setServerRegionShortcut(RegionShortcut.class.cast(enableGemFireHttpSessionAttributes
-			.getEnum("serverRegionShortcut")));
+		setServerRegionShortcut(RegionShortcut.class.cast(
+			enableGemFireHttpSessionAttributes.getEnum("serverRegionShortcut")));
 
-		setSpringSessionGemFireRegionName(enableGemFireHttpSessionAttributes
-			.getString("regionName"));
+		setSpringSessionGemFireRegionName(enableGemFireHttpSessionAttributes.getString("regionName"));
 	}
 
 	/**
@@ -362,7 +357,7 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	 * Defines a Spring GemfireTemplate bean used to interact with GemFire's (Client)Cache
 	 * {@link Region} storing Sessions.
 	 *
-	 * @param gemFireCache reference to the single GemFire cache instance used by the
+	 * @param gemfireCache reference to the single GemFire cache instance used by the
 	 * {@link GemfireTemplate} to perform GemFire cache data access operations.
 	 * @return a {@link GemfireTemplate} used to interact with GemFire's (Client)Cache
 	 * {@link Region} storing Sessions.
@@ -371,8 +366,8 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	 */
 	@Bean
 	@DependsOn(DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME)
-	public GemfireTemplate sessionRegionTemplate(GemFireCache gemFireCache) {
-		return new GemfireTemplate(gemFireCache.getRegion(getSpringSessionGemFireRegionName()));
+	public GemfireTemplate sessionRegionTemplate(GemFireCache gemfireCache) {
+		return new GemfireTemplate(gemfireCache.getRegion(getSpringSessionGemFireRegionName()));
 	}
 
 	/**
@@ -391,11 +386,11 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	 * @see #getServerRegionShortcut()
 	 */
 	@Bean(name = DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME)
-	public GemFireCacheTypeAwareRegionFactoryBean<Object, ExpiringSession> sessionRegion(GemFireCache gemfireCache,
-			@Qualifier("sessionRegionAttributes") RegionAttributes<Object, ExpiringSession> sessionRegionAttributes) {
+	public GemFireCacheTypeAwareRegionFactoryBean<Object, Session> sessionRegion(GemFireCache gemfireCache,
+			@Qualifier("sessionRegionAttributes") RegionAttributes<Object, Session> sessionRegionAttributes) {
 
-		GemFireCacheTypeAwareRegionFactoryBean<Object, ExpiringSession> sessionRegion =
-			new GemFireCacheTypeAwareRegionFactoryBean<Object, ExpiringSession>();
+		GemFireCacheTypeAwareRegionFactoryBean<Object, Session> sessionRegion =
+			new GemFireCacheTypeAwareRegionFactoryBean<>();
 
 		sessionRegion.setClientRegionShortcut(getClientRegionShortcut());
 		sessionRegion.setGemfireCache(gemfireCache);
@@ -432,8 +427,8 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 
 		if (isExpirationAllowed(gemfireCache)) {
 			regionAttributes.setStatisticsEnabled(true);
-			regionAttributes.setEntryIdleTimeout(new ExpirationAttributes(
-				Math.max(getMaxInactiveIntervalInSeconds(), 0), ExpirationAction.INVALIDATE));
+			regionAttributes.setEntryIdleTimeout(
+				new ExpirationAttributes(Math.max(getMaxInactiveIntervalInSeconds(), 0), ExpirationAction.INVALIDATE));
 		}
 
 		return regionAttributes;

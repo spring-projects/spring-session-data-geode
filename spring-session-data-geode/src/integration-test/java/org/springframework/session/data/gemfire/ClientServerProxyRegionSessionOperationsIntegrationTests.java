@@ -48,7 +48,7 @@ import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.data.gemfire.client.PoolFactoryBean;
 import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
-import org.springframework.session.ExpiringSession;
+import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.session.events.AbstractSessionEvent;
 import org.springframework.session.events.SessionCreatedEvent;
@@ -126,7 +126,7 @@ public class ClientServerProxyRegionSessionOperationsIntegrationTests extends Ab
 	@Test
 	public void createReadUpdateExpireRecreateDeleteRecreateSessionResultsCorrectSessionCreatedEvents() {
 
-		ExpiringSession session = save(touch(createSession()));
+		Session session = save(touch(createSession()));
 
 		assertValidSession(session);
 
@@ -136,12 +136,12 @@ public class ClientServerProxyRegionSessionOperationsIntegrationTests extends Ab
 		assertThat(sessionEvent.getSessionId()).isEqualTo(session.getId());
 
 		// GET
-		ExpiringSession loadedSession = get(session.getId());
+		Session loadedSession = get(session.getId());
 
 		assertThat(loadedSession).isNotNull();
 		assertThat(loadedSession.getId()).isEqualTo(session.getId());
 		assertThat(loadedSession.getCreationTime()).isEqualTo(session.getCreationTime());
-		assertThat(loadedSession.getLastAccessedTime()).isGreaterThanOrEqualTo((session.getLastAccessedTime()));
+		assertThat(loadedSession.getLastAccessedTime().compareTo(session.getLastAccessedTime())).isGreaterThanOrEqualTo(0);
 
 		sessionEvent = this.sessionEventListener.waitForSessionEvent(500);
 
@@ -190,6 +190,7 @@ public class ClientServerProxyRegionSessionOperationsIntegrationTests extends Ab
 	}
 
 	@EnableGemFireHttpSession
+	@SuppressWarnings("unused")
 	static class SpringSessionDataGemFireClientConfiguration {
 
 		@Bean
@@ -259,6 +260,7 @@ public class ClientServerProxyRegionSessionOperationsIntegrationTests extends Ab
 	}
 
 	@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS)
+	@SuppressWarnings("unused")
 	static class SpringSessionDataGemFireServerConfiguration {
 
 		static final String SERVER_HOSTNAME = "localhost";

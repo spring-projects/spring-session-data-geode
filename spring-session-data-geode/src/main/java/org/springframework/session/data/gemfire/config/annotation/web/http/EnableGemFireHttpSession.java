@@ -29,6 +29,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.session.Session;
 import org.springframework.session.web.http.SessionRepositoryFilter;
 
 /**
@@ -149,11 +150,11 @@ public @interface EnableGemFireHttpSession {
 	String[] indexableSessionAttributes() default {};
 
 	/**
-	 * Defines the maximum interval in seconds that a Session can remain inactive before
-	 * it is considered expired. Defaults to 1800 seconds, or 30 minutes.
+	 * Defines the maximum interval in seconds that a {@link Session} can remain inactive
+	 * before it is considered expired. Defaults to 1800 seconds, or 30 minutes.
 	 *
-	 * @return an integer value defining the maximum inactive interval in seconds for
-	 * declaring a Session expired.
+	 * @return an integer value defining the maximum inactive interval in seconds
+	 * declaring the {@link Session} expired.
 	 */
 	int maxInactiveIntervalInSeconds() default 1800;
 

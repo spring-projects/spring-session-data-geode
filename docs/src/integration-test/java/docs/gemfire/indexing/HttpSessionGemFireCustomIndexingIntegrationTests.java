@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
-import org.springframework.session.ExpiringSession;
+import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.test.context.ContextConfiguration;
@@ -35,9 +35,9 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author Rob Winch
  * @author John Blum
  */
-@SuppressWarnings("unused")
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = HttpSessionGemFireCustomIndexingIntegrationTests.TestConfiguration.class)
+@ContextConfiguration
+@SuppressWarnings("unused")
 public class HttpSessionGemFireCustomIndexingIntegrationTests {
 
 	@Autowired
@@ -46,7 +46,8 @@ public class HttpSessionGemFireCustomIndexingIntegrationTests {
 	@Test
 	public void findByIndexName() {
 
-		ExpiringSession session = this.sessionRepository.createSession();
+		Session session = this.sessionRepository.createSession();
+
 		String indexValue = "HttpSessionGemFireCustomIndexingIntegrationTests-findByIndexName";
 
 		// tag::findbyindexname-set[]
@@ -58,13 +59,13 @@ public class HttpSessionGemFireCustomIndexingIntegrationTests {
 		this.sessionRepository.save(session);
 
 		// tag::findbyindexname-get[]
-		Map<String, ExpiringSession> idToSessions =
+		Map<String, Session> idToSessions =
 			this.sessionRepository.findByIndexNameAndIndexValue(indexName, indexValue);
 		// end::findbyindexname-get[]
 
 		assertThat(idToSessions.keySet()).containsOnly(session.getId());
 
-		this.sessionRepository.delete(session.getId());
+		this.sessionRepository.deleteById(session.getId());
 	}
 
 	@PeerCacheApplication(name = "HttpSessionGemFireCustomIndexingIntegrationTests", logLevel = "error")

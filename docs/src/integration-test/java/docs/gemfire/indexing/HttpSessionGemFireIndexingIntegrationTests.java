@@ -30,8 +30,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.session.ExpiringSession;
 import org.springframework.session.FindByIndexNameSessionRepository;
+import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.test.context.ContextConfiguration;
@@ -41,9 +41,9 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author Rob Winch
  * @author John Blum
  */
-@SuppressWarnings("unused")
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = HttpSessionGemFireIndexingIntegrationTests.TestConfiguration.class)
+@ContextConfiguration
+@SuppressWarnings("unused")
 public class HttpSessionGemFireIndexingIntegrationTests {
 
 	@Autowired
@@ -52,7 +52,8 @@ public class HttpSessionGemFireIndexingIntegrationTests {
 	@Test
 	public void findByIndexName() {
 
-		ExpiringSession session = this.sessionRepository.createSession();
+		Session session = this.sessionRepository.createSession();
+
 		String username = "HttpSessionGemFireIndexingIntegrationTests-findByIndexName-username";
 
 		// tag::findbyindexname-set[]
@@ -64,20 +65,20 @@ public class HttpSessionGemFireIndexingIntegrationTests {
 		this.sessionRepository.save(session);
 
 		// tag::findbyindexname-get[]
-		Map<String, ExpiringSession> idToSessions =
+		Map<String, Session> idToSessions =
 			this.sessionRepository.findByIndexNameAndIndexValue(indexName, username);
 		// end::findbyindexname-get[]
 
 		assertThat(idToSessions.keySet()).containsOnly(session.getId());
 
-		this.sessionRepository.delete(session.getId());
+		this.sessionRepository.deleteById(session.getId());
 	}
 
 	@Test
 	@WithMockUser("HttpSessionGemFireIndexingIntegrationTests-findBySpringSecurityIndexName")
 	public void findBySpringSecurityIndexName() {
 
-		ExpiringSession session = this.sessionRepository.createSession();
+		Session session = this.sessionRepository.createSession();
 
 		// tag::findbyspringsecurityindexname-context[]
 		SecurityContext securityContext = SecurityContextHolder.getContext();
@@ -91,13 +92,13 @@ public class HttpSessionGemFireIndexingIntegrationTests {
 		// tag::findbyspringsecurityindexname-get[]
 		String indexName = FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
 
-		Map<String, ExpiringSession> idToSessions =
+		Map<String, Session> idToSessions =
 			this.sessionRepository.findByIndexNameAndIndexValue(indexName, authentication.getName());
 		// end::findbyspringsecurityindexname-get[]
 
 		assertThat(idToSessions.keySet()).containsOnly(session.getId());
 
-		this.sessionRepository.delete(session.getId());
+		this.sessionRepository.deleteById(session.getId());
 	}
 
 	@PeerCacheApplication(name = "HttpSessionGemFireIndexingIntegrationTests", logLevel = "error")

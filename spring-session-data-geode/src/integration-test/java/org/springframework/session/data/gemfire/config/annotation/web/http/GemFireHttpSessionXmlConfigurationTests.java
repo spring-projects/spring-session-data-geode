@@ -29,12 +29,12 @@ import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.QueryService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.session.ExpiringSession;
+import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 /**
@@ -44,26 +44,28 @@ import org.springframework.test.context.web.WebAppConfiguration;
  * @author John Blum
  * @since 1.1.0
  * @see org.junit.Test
- * @see org.springframework.session.ExpiringSession
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.query.Index
+ * @see org.apache.geode.cache.query.QueryService
+ * @see org.springframework.session.Session
  * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
  * @see org.springframework.test.annotation.DirtiesContext
  * @see org.springframework.test.context.ContextConfiguration
- * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+ * @see org.springframework.test.context.junit4.SpringRunner
  * @see org.springframework.test.context.web.WebAppConfiguration
- * @see org.apache.geode.cache.Cache
- * @see org.apache.geode.cache.Region
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @DirtiesContext
 @WebAppConfiguration
 public class GemFireHttpSessionXmlConfigurationTests extends AbstractGemFireIntegrationTests {
 
 	@Autowired
+	@SuppressWarnings("all")
 	private Cache gemfireCache;
 
-	protected <K, V> Region<K, V> assertCacheAndRegion(Cache gemfireCache,
-			String regionName, DataPolicy dataPolicy) {
+	protected <K, V> Region<K, V> assertCacheAndRegion(Cache gemfireCache, String regionName, DataPolicy dataPolicy) {
 
 		assertThat(GemFireUtils.isPeer(gemfireCache)).isTrue();
 
@@ -77,7 +79,7 @@ public class GemFireHttpSessionXmlConfigurationTests extends AbstractGemFireInte
 	@Test
 	public void gemfireCacheConfigurationIsValid() {
 
-		Region<Object, ExpiringSession> example =
+		Region<Object, Session> example =
 			assertCacheAndRegion(this.gemfireCache, "XmlExample", DataPolicy.NORMAL);
 
 		assertEntryIdleTimeout(example, ExpirationAction.INVALIDATE, 3600);
@@ -86,7 +88,7 @@ public class GemFireHttpSessionXmlConfigurationTests extends AbstractGemFireInte
 	@Test
 	public void verifyGemFireExampleCacheRegionPrincipalNameIndexWasCreatedSuccessfully() {
 
-		Region<Object, ExpiringSession> example =
+		Region<Object, Session> example =
 			assertCacheAndRegion(this.gemfireCache, "XmlExample", DataPolicy.NORMAL);
 
 		QueryService queryService = example.getRegionService().getQueryService();
@@ -101,7 +103,7 @@ public class GemFireHttpSessionXmlConfigurationTests extends AbstractGemFireInte
 	@Test
 	public void verifyGemFireExampleCacheRegionSessionAttributesIndexWasCreatedSuccessfully() {
 
-		Region<Object, ExpiringSession> example =
+		Region<Object, Session> example =
 			assertCacheAndRegion(this.gemfireCache, "XmlExample", DataPolicy.NORMAL);
 
 		QueryService queryService = example.getRegionService().getQueryService();

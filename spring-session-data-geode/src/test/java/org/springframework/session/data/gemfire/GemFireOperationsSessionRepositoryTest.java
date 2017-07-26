@@ -28,6 +28,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -38,9 +40,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Region;
@@ -50,14 +50,13 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.gemfire.GemfireAccessor;
 import org.springframework.data.gemfire.GemfireOperations;
-import org.springframework.session.ExpiringSession;
 import org.springframework.session.FindByIndexNameSessionRepository;
+import org.springframework.session.Session;
 import org.springframework.session.events.AbstractSessionEvent;
 import org.springframework.session.events.SessionDeletedEvent;
 
 /**
- * The GemFireOperationsSessionRepositoryTest class is a test suite of test cases testing
- * the contract and functionality of the GemFireOperationsSessionRepository class.
+ * Unit tests for {@link GemFireOperationsSessionRepository}.
  *
  * @author John Blum
  * @since 1.1.0
@@ -66,9 +65,13 @@ import org.springframework.session.events.SessionDeletedEvent;
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
  * @see org.mockito.junit.MockitoJUnitRunner
- * @see org.springframework.data.gemfire.GemfireOperations
- * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
  * @see org.apache.geode.cache.Region
+ * @see org.springframework.data.gemfire.GemfireAccessor
+ * @see org.springframework.data.gemfire.GemfireOperations
+ * @see org.springframework.session.FindByIndexNameSessionRepository
+ * @see org.springframework.session.Session
+ * @see org.springframework.session.events.AbstractSessionEvent
+ * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
  */
 @RunWith(MockitoJUnitRunner.class)
 public class GemFireOperationsSessionRepositoryTest {
@@ -79,7 +82,7 @@ public class GemFireOperationsSessionRepositoryTest {
 	private ApplicationEventPublisher mockApplicationEventPublisher;
 
 	@Mock
-	private AttributesMutator<Object, ExpiringSession> mockAttributesMutator;
+	private AttributesMutator<Object, Session> mockAttributesMutator;
 
 	@Mock
 	private GemfireOperationsAccessor mockTemplate;
@@ -87,13 +90,14 @@ public class GemFireOperationsSessionRepositoryTest {
 	private GemFireOperationsSessionRepository sessionRepository;
 
 	@Mock
-	private Region<Object, ExpiringSession> mockRegion;
+	private Region<Object, Session> mockRegion;
 
 	@Before
 	public void setup() throws Exception {
+
 		given(this.mockRegion.getAttributesMutator()).willReturn(this.mockAttributesMutator);
 		given(this.mockRegion.getFullPath()).willReturn("/Example");
-		given(this.mockTemplate.<Object, ExpiringSession>getRegion()).willReturn(this.mockRegion);
+		given(this.mockTemplate.<Object, Session>getRegion()).willReturn(this.mockRegion);
 
 		this.sessionRepository = new GemFireOperationsSessionRepository(this.mockTemplate);
 		this.sessionRepository.setApplicationEventPublisher(this.mockApplicationEventPublisher);
@@ -115,23 +119,24 @@ public class GemFireOperationsSessionRepositoryTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void findByIndexNameValueFindsMatchingSession() {
-		ExpiringSession mockSession = mock(ExpiringSession.class, "MockSession");
+
+		Session mockSession = mock(Session.class, "MockSession");
 
 		given(mockSession.getId()).willReturn("1");
 
 		SelectResults<Object> mockSelectResults = mock(SelectResults.class);
 
-		given(mockSelectResults.asList()).willReturn(Collections.<Object>singletonList(mockSession));
+		given(mockSelectResults.asList()).willReturn(Collections.singletonList(mockSession));
 
 		String indexName = "vip";
 		String indexValue = "rwinch";
 
-		String expectedQql = String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_INDEX_NAME_VALUE_QUERY,
+		String expectedQql = String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_INDEX_NAME_INDEX_VALUE_QUERY,
 			this.sessionRepository.getFullyQualifiedRegionName(), indexName);
 
 		given(this.mockTemplate.find(eq(expectedQql), eq(indexValue))).willReturn(mockSelectResults);
 
-		Map<String, ExpiringSession> sessions =
+		Map<String, Session> sessions =
 			this.sessionRepository.findByIndexNameAndIndexValue(indexName, indexValue);
 
 		assertThat(sessions).isNotNull();
@@ -146,9 +151,10 @@ public class GemFireOperationsSessionRepositoryTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void findByPrincipalNameFindsMatchingSessions() throws Exception {
-		ExpiringSession mockSessionOne = mock(ExpiringSession.class, "MockSessionOne");
-		ExpiringSession mockSessionTwo = mock(ExpiringSession.class, "MockSessionTwo");
-		ExpiringSession mockSessionThree = mock(ExpiringSession.class, "MockSessionThree");
+
+		Session mockSessionOne = mock(Session.class, "MockSessionOne");
+		Session mockSessionTwo = mock(Session.class, "MockSessionTwo");
+		Session mockSessionThree = mock(Session.class, "MockSessionThree");
 
 		given(mockSessionOne.getId()).willReturn("1");
 		given(mockSessionTwo.getId()).willReturn("2");
@@ -156,8 +162,7 @@ public class GemFireOperationsSessionRepositoryTest {
 
 		SelectResults<Object> mockSelectResults = mock(SelectResults.class);
 
-		given(mockSelectResults.asList())
-			.willReturn(Arrays.<Object>asList(mockSessionOne, mockSessionTwo, mockSessionThree));
+		given(mockSelectResults.asList()).willReturn(Arrays.asList(mockSessionOne, mockSessionTwo, mockSessionThree));
 
 		String principalName = "jblum";
 
@@ -166,7 +171,7 @@ public class GemFireOperationsSessionRepositoryTest {
 
 		given(this.mockTemplate.find(eq(expectedOql), eq(principalName))).willReturn(mockSelectResults);
 
-		Map<String, ExpiringSession> sessions = this.sessionRepository.findByIndexNameAndIndexValue(
+		Map<String, Session> sessions = this.sessionRepository.findByIndexNameAndIndexValue(
 			FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME, principalName);
 
 		assertThat(sessions).isNotNull();
@@ -185,6 +190,7 @@ public class GemFireOperationsSessionRepositoryTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void findByPrincipalNameReturnsNoMatchingSessions() {
+
 		SelectResults<Object> mockSelectResults = mock(SelectResults.class);
 
 		given(mockSelectResults.asList()).willReturn(Collections.emptyList());
@@ -196,7 +202,7 @@ public class GemFireOperationsSessionRepositoryTest {
 
 		given(this.mockTemplate.find(eq(expectedOql), eq(principalName))).willReturn(mockSelectResults);
 
-		Map<String, ExpiringSession> sessions = this.sessionRepository.findByIndexNameAndIndexValue(
+		Map<String, Session> sessions = this.sessionRepository.findByIndexNameAndIndexValue(
 			FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME, principalName);
 
 		assertThat(sessions).isNotNull();
@@ -208,6 +214,7 @@ public class GemFireOperationsSessionRepositoryTest {
 
 	@Test
 	public void prepareQueryReturnsPrincipalNameOql() {
+
 		String actualQql =
 			this.sessionRepository.prepareQuery(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME);
 
@@ -219,9 +226,10 @@ public class GemFireOperationsSessionRepositoryTest {
 
 	@Test
 	public void prepareQueryReturnsIndexNameValueOql() {
+
 		String attributeName = "testAttributeName";
 		String actualOql = this.sessionRepository.prepareQuery(attributeName);
-		String expectedOql = String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_INDEX_NAME_VALUE_QUERY,
+		String expectedOql = String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_INDEX_NAME_INDEX_VALUE_QUERY,
 			this.sessionRepository.getFullyQualifiedRegionName(), attributeName);
 
 		assertThat(actualOql).isEqualTo(expectedOql);
@@ -229,47 +237,48 @@ public class GemFireOperationsSessionRepositoryTest {
 
 	@Test
 	public void createProperlyInitializedSession() {
-		long beforeOrAtCreationTime = System.currentTimeMillis();
 
-		ExpiringSession session = this.sessionRepository.createSession();
+		Instant beforeOrAtCreationTime = Instant.now();
+
+		Session session = this.sessionRepository.createSession();
 
 		assertThat(session).isInstanceOf(AbstractGemFireOperationsSessionRepository.GemFireSession.class);
 		assertThat(session.getId()).isNotNull();
-		assertThat(session.getAttributeNames().isEmpty()).isTrue();
-		assertThat(session.getCreationTime()).isGreaterThanOrEqualTo(beforeOrAtCreationTime);
-		assertThat(session.getLastAccessedTime()).isGreaterThanOrEqualTo(beforeOrAtCreationTime);
-		assertThat(session.getMaxInactiveIntervalInSeconds()).isEqualTo(MAX_INACTIVE_INTERVAL_IN_SECONDS);
+		assertThat(session.getAttributeNames()).isEmpty();
+		assertThat(session.getCreationTime().compareTo(beforeOrAtCreationTime)).isGreaterThanOrEqualTo(0);
+		assertThat(session.getLastAccessedTime().compareTo(beforeOrAtCreationTime)).isGreaterThanOrEqualTo(0);
+		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(MAX_INACTIVE_INTERVAL_IN_SECONDS));
 	}
 
 	@Test
 	public void getSessionDeletesMatchingExpiredSessionById() {
-		final String expectedSessionId = "1";
 
-		final ExpiringSession mockSession = mock(ExpiringSession.class);
+		String expectedSessionId = "1";
+
+		Session mockSession = mock(Session.class);
 
 		given(mockSession.isExpired()).willReturn(true);
 		given(mockSession.getId()).willReturn(expectedSessionId);
 		given(this.mockTemplate.get(eq(expectedSessionId))).willReturn(mockSession);
 		given(this.mockTemplate.remove(eq(expectedSessionId))).willReturn(mockSession);
 
-		willAnswer(new Answer<Void>() {
-			public Void answer(final InvocationOnMock invocation) throws Throwable {
-				ApplicationEvent applicationEvent = invocation.getArgument(0);
+		willAnswer(invocation -> {
 
-				assertThat(applicationEvent).isInstanceOf(SessionDeletedEvent.class);
+			ApplicationEvent applicationEvent = invocation.getArgument(0);
 
-				AbstractSessionEvent sessionEvent = (AbstractSessionEvent) applicationEvent;
+			assertThat(applicationEvent).isInstanceOf(SessionDeletedEvent.class);
 
-				assertThat(sessionEvent.getSource())
-					.isSameAs(GemFireOperationsSessionRepositoryTest.this.sessionRepository);
-				assertThat(sessionEvent.<ExpiringSession>getSession()).isSameAs(mockSession);
-				assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSessionId);
+			AbstractSessionEvent sessionEvent = (AbstractSessionEvent) applicationEvent;
 
-				return null;
-			}
+			assertThat(sessionEvent.getSource())
+				.isSameAs(GemFireOperationsSessionRepositoryTest.this.sessionRepository);
+			assertThat(sessionEvent.<Session>getSession()).isSameAs(mockSession);
+			assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSessionId);
+
+			return null;
 		}).given(this.mockApplicationEventPublisher).publishEvent(any(ApplicationEvent.class));
 
-		assertThat(this.sessionRepository.getSession(expectedSessionId)).isNull();
+		assertThat(this.sessionRepository.findById(expectedSessionId)).isNull();
 
 		verify(this.mockTemplate, times(1)).get(eq(expectedSessionId));
 		verify(this.mockTemplate, times(1)).remove(eq(expectedSessionId));
@@ -281,12 +290,13 @@ public class GemFireOperationsSessionRepositoryTest {
 
 	@Test
 	public void getSessionFindsMatchingNonExpiredSessionById() {
+
 		String expectedId = "1";
 
-		long expectedCreationTime = System.currentTimeMillis();
-		long currentLastAccessedTime = (expectedCreationTime + TimeUnit.MINUTES.toMillis(5));
+		Instant expectedCreationTime = Instant.now();
+		Instant currentLastAccessedTime = expectedCreationTime.plusMillis(TimeUnit.MINUTES.toMillis(5));
 
-		ExpiringSession mockSession = mock(ExpiringSession.class);
+		Session mockSession = mock(Session.class);
 
 		given(mockSession.isExpired()).willReturn(false);
 		given(mockSession.getId()).willReturn(expectedId);
@@ -296,13 +306,13 @@ public class GemFireOperationsSessionRepositoryTest {
 		given(mockSession.getAttribute(eq("attrOne"))).willReturn("test");
 		given(this.mockTemplate.get(eq(expectedId))).willReturn(mockSession);
 
-		ExpiringSession actualSession = this.sessionRepository.getSession(expectedId);
+		Session actualSession = this.sessionRepository.findById(expectedId);
 
 		assertThat(actualSession).isNotSameAs(mockSession);
 		assertThat(actualSession.getId()).isEqualTo(expectedId);
 		assertThat(actualSession.getCreationTime()).isEqualTo(expectedCreationTime);
 		assertThat(actualSession.getLastAccessedTime()).isNotEqualTo(currentLastAccessedTime);
-		assertThat(actualSession.getLastAccessedTime()).isGreaterThanOrEqualTo(expectedCreationTime);
+		assertThat(actualSession.getLastAccessedTime().compareTo(expectedCreationTime)).isGreaterThanOrEqualTo(0);
 		assertThat(actualSession.getAttributeNames()).isEqualTo(Collections.singleton("attrOne"));
 		assertThat(String.valueOf(actualSession.<String>getAttribute("attrOne"))).isEqualTo("test");
 
@@ -318,49 +328,48 @@ public class GemFireOperationsSessionRepositoryTest {
 	@Test
 	public void getSessionReturnsNull() {
 		given(this.mockTemplate.get(anyString())).willReturn(null);
-		assertThat(this.sessionRepository.getSession("1")).isNull();
+		assertThat(this.sessionRepository.findById("1")).isNull();
 	}
 
 	@Test
 	public void saveStoresSession() {
-		final String expectedSessionId = "1";
 
-		final long expectedCreationTime = System.currentTimeMillis();
-		final long expectedLastAccessTime = (expectedCreationTime + TimeUnit.MINUTES.toMillis(5));
+		String expectedSessionId = "1";
 
-		ExpiringSession mockSession = mock(ExpiringSession.class);
+		Instant expectedCreationTime = Instant.now();
+		Instant expectedLastAccessTime = expectedCreationTime.plusMillis(TimeUnit.MINUTES.toMillis(5L));
+
+		Duration expectedMaxInactiveInterval = Duration.ofSeconds(MAX_INACTIVE_INTERVAL_IN_SECONDS);
+
+		Session mockSession = mock(Session.class);
 
 		given(mockSession.getId()).willReturn(expectedSessionId);
 		given(mockSession.getCreationTime()).willReturn(expectedCreationTime);
 		given(mockSession.getLastAccessedTime()).willReturn(expectedLastAccessTime);
-		given(mockSession.getMaxInactiveIntervalInSeconds())
-				.willReturn(MAX_INACTIVE_INTERVAL_IN_SECONDS);
-		given(mockSession.getAttributeNames()).willReturn(Collections.<String>emptySet());
+		given(mockSession.getMaxInactiveInterval()).willReturn(expectedMaxInactiveInterval);
+		given(mockSession.getAttributeNames()).willReturn(Collections.emptySet());
 
 		given(this.mockTemplate.put(eq(expectedSessionId),
-			isA(AbstractGemFireOperationsSessionRepository.GemFireSession.class)))
-				.willAnswer(new Answer<ExpiringSession>() {
-					public ExpiringSession answer(InvocationOnMock invocation) throws Throwable {
-						ExpiringSession session = invocation.getArgument(1);
+			isA(AbstractGemFireOperationsSessionRepository.GemFireSession.class))).willAnswer(invocation -> {
 
-						assertThat(session).isNotNull();
-						assertThat(session.getId()).isEqualTo(expectedSessionId);
-						assertThat(session.getCreationTime()).isEqualTo(expectedCreationTime);
-						assertThat(session.getLastAccessedTime()).isEqualTo(expectedLastAccessTime);
-						assertThat(session.getMaxInactiveIntervalInSeconds())
-							.isEqualTo(MAX_INACTIVE_INTERVAL_IN_SECONDS);
-						assertThat(session.getAttributeNames().isEmpty()).isTrue();
+				Session session = invocation.getArgument(1);
 
-						return null;
-					}
-				});
+				assertThat(session).isNotNull();
+				assertThat(session.getId()).isEqualTo(expectedSessionId);
+				assertThat(session.getCreationTime()).isEqualTo(expectedCreationTime);
+				assertThat(session.getLastAccessedTime()).isEqualTo(expectedLastAccessTime);
+				assertThat(session.getMaxInactiveInterval()).isEqualTo(expectedMaxInactiveInterval);
+				assertThat(session.getAttributeNames().isEmpty()).isTrue();
+
+				return null;
+		});
 
 		this.sessionRepository.save(mockSession);
 
 		verify(mockSession, times(2)).getId();
 		verify(mockSession, times(1)).getCreationTime();
 		verify(mockSession, times(1)).getLastAccessedTime();
-		verify(mockSession, times(1)).getMaxInactiveIntervalInSeconds();
+		verify(mockSession, times(1)).getMaxInactiveInterval();
 		verify(mockSession, times(1)).getAttributeNames();
 		verify(this.mockTemplate, times(1)).put(eq(expectedSessionId),
 			isA(AbstractGemFireOperationsSessionRepository.GemFireSession.class));
@@ -368,31 +377,30 @@ public class GemFireOperationsSessionRepositoryTest {
 
 	@Test
 	public void deleteRemovesExistingSessionAndHandlesDelete() {
-		final String expectedSessionId = "1";
 
-		final ExpiringSession mockSession = mock(ExpiringSession.class);
+		String expectedSessionId = "1";
+
+		Session mockSession = mock(Session.class);
 
 		given(mockSession.getId()).willReturn(expectedSessionId);
 		given(this.mockTemplate.remove(eq(expectedSessionId))).willReturn(mockSession);
 
-		willAnswer(new Answer<Void>() {
-			public Void answer(final InvocationOnMock invocation) throws Throwable {
-				ApplicationEvent applicationEvent = invocation.getArgument(0);
+		willAnswer(invocation -> {
 
-				assertThat(applicationEvent).isInstanceOf(SessionDeletedEvent.class);
+			ApplicationEvent applicationEvent = invocation.getArgument(0);
 
-				AbstractSessionEvent sessionEvent = (AbstractSessionEvent) applicationEvent;
+			assertThat(applicationEvent).isInstanceOf(SessionDeletedEvent.class);
 
-				assertThat(sessionEvent.getSource())
-					.isSameAs(GemFireOperationsSessionRepositoryTest.this.sessionRepository);
-				assertThat(sessionEvent.<ExpiringSession>getSession()).isSameAs(mockSession);
-				assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSessionId);
+			AbstractSessionEvent sessionEvent = (AbstractSessionEvent) applicationEvent;
 
-				return null;
-			}
+			assertThat(sessionEvent.getSource()).isSameAs(GemFireOperationsSessionRepositoryTest.this.sessionRepository);
+			assertThat(sessionEvent.<Session>getSession()).isSameAs(mockSession);
+			assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSessionId);
+
+			return null;
 		}).given(this.mockApplicationEventPublisher).publishEvent(isA(SessionDeletedEvent.class));
 
-		this.sessionRepository.delete(expectedSessionId);
+		this.sessionRepository.deleteById(expectedSessionId);
 
 		verify(mockSession, times(1)).getId();
 		verify(this.mockTemplate, times(1)).remove(eq(expectedSessionId));
@@ -402,28 +410,27 @@ public class GemFireOperationsSessionRepositoryTest {
 
 	@Test
 	public void deleteRemovesNonExistingSessionAndHandlesDelete() {
-		final String expectedSessionId = "1";
+
+		String expectedSessionId = "1";
 
 		given(this.mockTemplate.remove(anyString())).willReturn(null);
 
-		willAnswer(new Answer<Void>() {
-			public Void answer(final InvocationOnMock invocation) throws Throwable {
-				ApplicationEvent applicationEvent = invocation.getArgument(0);
+		willAnswer(invocation -> {
 
-				assertThat(applicationEvent).isInstanceOf(SessionDeletedEvent.class);
+			ApplicationEvent applicationEvent = invocation.getArgument(0);
 
-				AbstractSessionEvent sessionEvent = (AbstractSessionEvent) applicationEvent;
+			assertThat(applicationEvent).isInstanceOf(SessionDeletedEvent.class);
 
-				assertThat(sessionEvent.getSource()).
-					isSameAs(GemFireOperationsSessionRepositoryTest.this.sessionRepository);
-				assertThat(sessionEvent.<ExpiringSession>getSession()).isNull();
-				assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSessionId);
+			AbstractSessionEvent sessionEvent = (AbstractSessionEvent) applicationEvent;
 
-				return null;
-			}
+			assertThat(sessionEvent.getSource()).isSameAs(GemFireOperationsSessionRepositoryTest.this.sessionRepository);
+			assertThat(sessionEvent.<Session>getSession()).isNull();
+			assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSessionId);
+
+			return null;
 		}).given(this.mockApplicationEventPublisher).publishEvent(isA(SessionDeletedEvent.class));
 
-		this.sessionRepository.delete(expectedSessionId);
+		this.sessionRepository.deleteById(expectedSessionId);
 
 		verify(this.mockTemplate, times(1)).remove(eq(expectedSessionId));
 		verify(this.mockApplicationEventPublisher, times(1))

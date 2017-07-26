@@ -20,9 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -38,7 +36,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.gemfire.client.Interest;
-import org.springframework.session.ExpiringSession;
+import org.springframework.session.Session;
 
 /**
  * The GemFireCacheTypeAwareRegionFactoryBeanTest class is a test suite of test cases
@@ -64,9 +62,6 @@ import org.springframework.session.ExpiringSession;
 @RunWith(MockitoJUnitRunner.class)
 public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-
 	@Mock
 	Cache mockCache;
 
@@ -74,30 +69,31 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 	ClientCache mockClientCache;
 
 	@Mock
-	Region<Object, ExpiringSession> mockClientRegion;
+	Region<Object, Session> mockClientRegion;
 
 	@Mock
-	Region<Object, ExpiringSession> mockServerRegion;
+	Region<Object, Session> mockServerRegion;
 
-	private GemFireCacheTypeAwareRegionFactoryBean<Object, ExpiringSession> regionFactoryBean;
+	private GemFireCacheTypeAwareRegionFactoryBean<Object, Session> regionFactoryBean;
 
 	@Before
 	public void setup() {
-		this.regionFactoryBean = new GemFireCacheTypeAwareRegionFactoryBean<Object, ExpiringSession>();
+		this.regionFactoryBean = new GemFireCacheTypeAwareRegionFactoryBean<>();
 	}
 
 	protected void afterPropertiesSetCreatesCorrectRegionForGemFireCacheType(final GemFireCache expectedCache,
-		Region<Object, ExpiringSession> expectedRegion) throws Exception {
+		Region<Object, Session> expectedRegion) throws Exception {
 
-		this.regionFactoryBean = new GemFireCacheTypeAwareRegionFactoryBean<Object, ExpiringSession>() {
+		this.regionFactoryBean = new GemFireCacheTypeAwareRegionFactoryBean<Object, Session>() {
+
 			@Override
-			protected Region<Object, ExpiringSession> newClientRegion(GemFireCache gemfireCache) throws Exception {
+			protected Region<Object, Session> newClientRegion(GemFireCache gemfireCache) throws Exception {
 				assertThat(gemfireCache).isSameAs(expectedCache);
 				return GemFireCacheTypeAwareRegionFactoryBeanTest.this.mockClientRegion;
 			}
 
 			@Override
-			protected Region<Object, ExpiringSession> newServerRegion(GemFireCache gemfireCache) throws Exception {
+			protected Region<Object, Session> newServerRegion(GemFireCache gemfireCache) throws Exception {
 				assertThat(gemfireCache).isSameAs(expectedCache);
 				return GemFireCacheTypeAwareRegionFactoryBeanTest.this.mockServerRegion;
 			}
@@ -123,6 +119,7 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 
 	@Test
 	public void allKeysInterestsRegistration() {
+
 		Interest<Object>[] interests = this.regionFactoryBean.registerInterests(true);
 
 		assertThat(interests).isNotNull();
@@ -135,6 +132,7 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 
 	@Test
 	public void emptyInterestsRegistration() {
+
 		Interest<Object>[] interests = this.regionFactoryBean.registerInterests(false);
 
 		assertThat(interests).isNotNull();
@@ -153,6 +151,7 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 
 	@Test
 	public void setAndGetBeanFactory() {
+
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 
 		this.regionFactoryBean.setBeanFactory(mockBeanFactory);
@@ -160,22 +159,36 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 		assertThat(this.regionFactoryBean.getBeanFactory()).isEqualTo(mockBeanFactory);
 	}
 
-	@Test
+	@Test(expected = IllegalArgumentException.class)
+	@SuppressWarnings("all")
 	public void setBeanFactoryToNullThrowsIllegalArgumentException() {
-		this.exception.expect(IllegalArgumentException.class);
-		this.exception.expectMessage("BeanFactory is required");
-		this.regionFactoryBean.setBeanFactory(null);
+		try {
+			this.regionFactoryBean.setBeanFactory(null);
+		}
+		catch (IllegalArgumentException expected) {
+			assertThat(expected).hasMessage("BeanFactory is required");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
-	@Test
+	@Test(expected = IllegalStateException.class)
 	public void getBeanFactoryWhenNullThrowsIllegalStateException() {
-		this.exception.expect(IllegalStateException.class);
-		this.exception.expectMessage("A reference to the BeanFactory was not properly configured");
-		this.regionFactoryBean.getBeanFactory();
+		try {
+			this.regionFactoryBean.getBeanFactory();
+		}
+		catch (IllegalStateException expected) {
+			assertThat(expected).hasMessage("A reference to the BeanFactory was not properly configured");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
 	@Test
 	public void setAndGetClientRegionShortcut() {
+
 		assertThat(this.regionFactoryBean.getClientRegionShortcut()).isEqualTo(
 			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_CLIENT_REGION_SHORTCUT);
 
@@ -192,6 +205,7 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 
 	@Test
 	public void setAndGetGemfireCache() {
+
 		Cache mockCache = mock(Cache.class);
 
 		this.regionFactoryBean.setGemfireCache(mockCache);
@@ -199,22 +213,35 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 		assertThat(this.regionFactoryBean.getGemfireCache()).isEqualTo(mockCache);
 	}
 
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void setGemfireCacheToNullThrowsIllegalArgumentException() {
-		this.exception.expect(IllegalArgumentException.class);
-		this.exception.expectMessage("GemFireCache is required");
-		this.regionFactoryBean.setGemfireCache(null);
+		try {
+			this.regionFactoryBean.setGemfireCache(null);
+		}
+		catch (IllegalArgumentException expected) {
+			assertThat(expected).hasMessage("GemFireCache is required");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
-	@Test
+	@Test(expected = IllegalStateException.class)
 	public void getGemfireCacheWhenNullThrowsIllegalStateException() {
-		this.exception.expect(IllegalStateException.class);
-		this.exception.expectMessage("A reference to the GemFireCache was not properly configured");
-		this.regionFactoryBean.getGemfireCache();
+		try {
+			this.regionFactoryBean.getGemfireCache();
+		}
+		catch (IllegalStateException expected) {
+			assertThat(expected).hasMessage("A reference to the GemFireCache was not properly configured");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
 	@Test
 	public void setAndGetPoolName() {
+
 		assertThat(this.regionFactoryBean.getPoolName()).isEqualTo(
 			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_GEMFIRE_POOL_NAME);
 
@@ -241,7 +268,8 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void setAndGetRegionAttributes() {
-		RegionAttributes<Object, ExpiringSession> mockRegionAttributes = mock(RegionAttributes.class);
+
+		RegionAttributes<Object, Session> mockRegionAttributes = mock(RegionAttributes.class);
 
 		assertThat(this.regionFactoryBean.getRegionAttributes()).isNull();
 
@@ -256,6 +284,7 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 
 	@Test
 	public void setAndGetRegionName() {
+
 		assertThat(this.regionFactoryBean.getRegionName()).isEqualTo(
 			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME);
 
@@ -281,6 +310,7 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 
 	@Test
 	public void setAndGetServerRegionShortcut() {
+
 		assertThat(this.regionFactoryBean.getServerRegionShortcut()).isEqualTo(
 			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_SERVER_REGION_SHORTCUT);
 

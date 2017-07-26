@@ -21,11 +21,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 
@@ -43,24 +45,26 @@ import org.apache.geode.cache.server.CacheServer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
-import org.springframework.session.ExpiringSession;
+import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.session.events.AbstractSessionEvent;
 
 /**
  * {@link AbstractGemFireIntegrationTests} is an abstract base class encapsulating common functionality
- * for writing Spring Session GemFire integration tests.
+ * for writing Spring Session Data GemFire & Geode integration tests.
  *
  * @author John Blum
  * @since 1.1.0
  * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.ExpirationAttributes
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.query.Index
  * @see org.apache.geode.cache.server.CacheServer
- * @see org.springframework.session.ExpiringSession
+ * @see org.springframework.session.Session
  */
+@SuppressWarnings("unused")
 public abstract class AbstractGemFireIntegrationTests {
 
 	protected static final boolean DEFAULT_ENABLE_QUERY_DEBUGGING = false;
@@ -95,6 +99,7 @@ public abstract class AbstractGemFireIntegrationTests {
 
 	/* (non-Javadoc) */
 	protected static File createDirectory(String pathname) {
+
 		File directory = new File(WORKING_DIRECTORY, pathname);
 
 		assertThat(directory.isDirectory() || directory.mkdirs())
@@ -107,9 +112,11 @@ public abstract class AbstractGemFireIntegrationTests {
 
 	/* (non-Javadoc) */
 	protected static List<String> createJavaProcessCommandLine(Class<?> type, String... args) {
-		List<String> commandLine = new ArrayList<String>();
+
+		List<String> commandLine = new ArrayList<>();
 
 		String javaHome = System.getProperty("java.home");
+
 		String javaExe = new File(new File(javaHome, "bin"), "java").getAbsolutePath();
 
 		commandLine.add(javaExe);
@@ -130,29 +137,13 @@ public abstract class AbstractGemFireIntegrationTests {
 	}
 
 	/* (non-Javadoc) */
-	protected static List<String> extractJvmArguments(final String... args) {
-		List<String> jvmArgs = new ArrayList<String>(args.length);
-
-		for (String arg : args) {
-			if (arg.startsWith("-")) {
-				jvmArgs.add(arg);
-			}
-		}
-
-		return jvmArgs;
+	protected static List<String> extractJvmArguments(String... args) {
+		return Arrays.stream(args).filter(arg -> arg.startsWith("-")).collect(Collectors.toList());
 	}
 
 	/* (non-Javadoc) */
-	protected static List<String> extractProgramArguments(final String... args) {
-		List<String> jvmArgs = new ArrayList<String>(args.length);
-
-		for (String arg : args) {
-			if (!arg.startsWith("-")) {
-				jvmArgs.add(arg);
-			}
-		}
-
-		return jvmArgs;
+	protected static List<String> extractProgramArguments(String... args) {
+		return Arrays.stream(args).filter(arg -> !arg.startsWith("-")).collect(Collectors.toList());
 	}
 
 	/* (non-Javadoc) */
@@ -177,10 +168,13 @@ public abstract class AbstractGemFireIntegrationTests {
 
 	/* (non-Javadoc) */
 	protected static boolean waitForCacheServerToStart(final String host, final int port, long duration) {
+
 		return waitOnCondition(new Condition() {
+
 			AtomicBoolean connected = new AtomicBoolean(false);
 
 			public boolean evaluate() {
+
 				Socket socket = null;
 
 				try {
@@ -211,15 +205,10 @@ public abstract class AbstractGemFireIntegrationTests {
 	/* (non-Javadoc) */
 	protected static boolean waitForClientCacheToClose(long duration) {
 		try {
-			final ClientCache clientCache = ClientCacheFactory.getAnyInstance();
+			ClientCache clientCache = ClientCacheFactory.getAnyInstance();
 
 			clientCache.close();
-
-			waitOnCondition(new Condition() {
-				public boolean evaluate() {
-					return clientCache.isClosed();
-				}
-			}, duration);
+			waitOnCondition(clientCache::isClosed, duration);
 
 			return clientCache.isClosed();
 		}
@@ -237,7 +226,8 @@ public abstract class AbstractGemFireIntegrationTests {
 	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	protected static boolean waitForProcessToStart(Process process, File directory, long duration) {
-		final File processControl = new File(directory, DEFAULT_PROCESS_CONTROL_FILENAME);
+
+		File processControl = new File(directory, DEFAULT_PROCESS_CONTROL_FILENAME);
 
 		waitOnCondition(new Condition() {
 			public boolean evaluate() {
@@ -255,6 +245,7 @@ public abstract class AbstractGemFireIntegrationTests {
 
 	/* (non-Javadoc) */
 	protected static int waitForProcessToStop(Process process, File directory, long duration) {
+
 		long timeout = (System.currentTimeMillis() + duration);
 
 		try {
@@ -279,6 +270,7 @@ public abstract class AbstractGemFireIntegrationTests {
 	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	protected static boolean waitOnCondition(Condition condition, long duration) {
+
 		long timeout = (System.currentTimeMillis() + duration);
 
 		try {
@@ -296,7 +288,9 @@ public abstract class AbstractGemFireIntegrationTests {
 	}
 
 	/* (non-Javadoc) */
+	@SuppressWarnings("all")
 	protected static File writeProcessControlFile(File path) throws IOException {
+
 		assertThat(path != null && path.isDirectory()).isTrue();
 
 		File processControl = new File(path, DEFAULT_PROCESS_CONTROL_FILENAME);
@@ -309,7 +303,7 @@ public abstract class AbstractGemFireIntegrationTests {
 	}
 
 	/* (non-Javadoc) */
-	protected void assertValidSession(ExpiringSession session) {
+	protected void assertValidSession(Session session) {
 		assertThat(session).isNotNull();
 		assertThat(session.getId()).isNotEmpty();
 		assertThat(session.isExpired()).isFalse();
@@ -357,60 +351,59 @@ public abstract class AbstractGemFireIntegrationTests {
 
 	/* (non-Javadoc) */
 	protected List<String> listRegions(GemFireCache gemfireCache) {
-		Set<Region<?, ?>> regions = gemfireCache.rootRegions();
-
-		List<String> regionList = new ArrayList<String>(regions.size());
-
-		for (Region<?, ?> region : regions) {
-			regionList.add(region.getFullPath());
-		}
-
-		return regionList;
+		return gemfireCache.rootRegions().stream().map(Region::getFullPath).collect(Collectors.toList());
 	}
 
 	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
-	protected <T extends ExpiringSession> T createSession() {
-		T expiringSession = (T) this.gemfireSessionRepository.createSession();
-		assertThat(expiringSession).isNotNull();
-		return expiringSession;
+	protected <T extends Session> T createSession() {
+
+		T session = (T) this.gemfireSessionRepository.createSession();
+
+		assertThat(session).isNotNull();
+
+		return session;
 	}
 
 	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
-	protected <T extends ExpiringSession> T createSession(String principalName) {
+	protected <T extends Session> T createSession(String principalName) {
+
 		GemFireOperationsSessionRepository.GemFireSession session = createSession();
+
 		session.setPrincipalName(principalName);
+
 		return (T) session;
 	}
 
 	/* (non-Javadoc) */
-	protected <T extends ExpiringSession> T delete(T session) {
+	@SuppressWarnings("all")
+	protected <T extends Session> T delete(T session) {
 		this.gemfireSessionRepository.delete(session);
 		return session;
 	}
 
 	/* (non-Javadoc) */
-	protected <T extends ExpiringSession> T expire(T session) {
-		session.setLastAccessedTime(0L);
+	protected <T extends Session> T expire(T session) {
+		session.setLastAccessedTime(Instant.ofEpochMilli(0L));
 		return session;
 	}
 
 	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
-	protected <T extends ExpiringSession> T get(String sessionId) {
-		return (T) this.gemfireSessionRepository.getSession(sessionId);
+	protected <T extends Session> T get(String sessionId) {
+		return (T) this.gemfireSessionRepository.findById(sessionId);
 	}
 
 	/* (non-Javadoc) */
-	protected <T extends ExpiringSession> T save(T session) {
+	protected <T extends Session> T save(T session) {
 		this.gemfireSessionRepository.save(session);
 		return session;
 	}
 
 	/* (non-Javadoc) */
-	protected <T extends ExpiringSession> T touch(T session) {
-		session.setLastAccessedTime(System.currentTimeMillis());
+	protected <T extends Session> T touch(T session) {
+		session.setLastAccessedTime(Instant.now());
 		return session;
 	}
 
@@ -428,8 +421,11 @@ public abstract class AbstractGemFireIntegrationTests {
 		/* (non-Javadoc) */
 		@SuppressWarnings("unchecked")
 		public <T extends AbstractSessionEvent> T getSessionEvent() {
+
 			T sessionEvent = (T) this.sessionEvent;
+
 			this.sessionEvent = null;
+
 			return sessionEvent;
 		}
 
@@ -440,11 +436,8 @@ public abstract class AbstractGemFireIntegrationTests {
 
 		/* (non-Javadoc) */
 		public <T extends AbstractSessionEvent> T waitForSessionEvent(long duration) {
-			waitOnCondition(new Condition() {
-				public boolean evaluate() {
-					return (SessionEventListener.this.sessionEvent != null);
-				}
-			}, duration);
+
+			waitOnCondition(() -> (SessionEventListener.this.sessionEvent != null), duration);
 
 			return getSessionEvent();
 		}

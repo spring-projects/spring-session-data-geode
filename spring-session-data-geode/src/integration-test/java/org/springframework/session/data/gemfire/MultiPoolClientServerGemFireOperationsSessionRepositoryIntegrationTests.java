@@ -51,7 +51,7 @@ import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.data.gemfire.client.PoolFactoryBean;
 import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
-import org.springframework.session.ExpiringSession;
+import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.session.events.AbstractSessionEvent;
@@ -86,8 +86,8 @@ import org.springframework.util.SocketUtils;
  * @since 1.3.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationTests
-	.SpringSessionGemFireClientConfiguration.class)
+@ContextConfiguration(classes =
+	MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationTests.SpringSessionGemFireClientConfiguration.class)
 @DirtiesContext
 @WebAppConfiguration
 public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationTests
@@ -152,12 +152,12 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 
 		assertThat(GemFireUtils.isClient(gemfireCache)).isTrue();
 
-		Region<Object, ExpiringSession> springSessionGemFireRegion =
+		Region<Object, Session> springSessionGemFireRegion =
 			gemfireCache.getRegion(SPRING_SESSION_GEMFIRE_REGION_NAME);
 
 		assertThat(springSessionGemFireRegion).isNotNull();
 
-		RegionAttributes<Object, ExpiringSession> springSessionGemFireRegionAttributes =
+		RegionAttributes<Object, Session> springSessionGemFireRegionAttributes =
 			springSessionGemFireRegion.getAttributes();
 
 		assertThat(springSessionGemFireRegionAttributes).isNotNull();
@@ -171,15 +171,15 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 	@Test
 	public void getExistingNonExpiredSessionBeforeAndAfterExpiration() {
 
-		ExpiringSession expectedSession = save(touch(createSession()));
+		Session expectedSession = save(touch(createSession()));
 
 		AbstractSessionEvent sessionEvent = this.sessionEventListener.waitForSessionEvent(500);
 
 		assertThat(sessionEvent).isInstanceOf(SessionCreatedEvent.class);
-		assertThat(sessionEvent.<ExpiringSession>getSession()).isEqualTo(expectedSession);
+		assertThat(sessionEvent.<Session>getSession()).isEqualTo(expectedSession);
 		assertThat(this.sessionEventListener.<SessionCreatedEvent>getSessionEvent()).isNull();
 
-		ExpiringSession savedSession = this.gemfireSessionRepository.getSession(expectedSession.getId());
+		Session savedSession = this.gemfireSessionRepository.findById(expectedSession.getId());
 
 		assertThat(savedSession).isEqualTo(expectedSession);
 
@@ -191,13 +191,14 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 		assertThat(sessionEvent).isInstanceOf(SessionExpiredEvent.class);
 		assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSession.getId());
 
-		ExpiringSession expiredSession = this.gemfireSessionRepository.getSession(expectedSession.getId());
+		Session expiredSession = this.gemfireSessionRepository.findById(expectedSession.getId());
 
 		assertThat(expiredSession).isNull();
 	}
 
 	@EnableGemFireHttpSession(regionName = SPRING_SESSION_GEMFIRE_REGION_NAME, poolName = "serverPool",
 		maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS)
+	@SuppressWarnings("unused")
 	static class SpringSessionGemFireClientConfiguration {
 
 		@Bean
@@ -292,7 +293,9 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 		}
 	}
 
-	@EnableGemFireHttpSession(regionName = SPRING_SESSION_GEMFIRE_REGION_NAME, maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS)
+	@EnableGemFireHttpSession(regionName = SPRING_SESSION_GEMFIRE_REGION_NAME,
+		maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS)
+	@SuppressWarnings("unused")
 	static class SpringSessionGemFireServerConfiguration {
 
 		static final int MAX_CONNECTIONS = 50;

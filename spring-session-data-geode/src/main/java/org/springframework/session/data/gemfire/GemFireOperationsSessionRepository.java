@@ -16,13 +16,14 @@
 
 package org.springframework.session.data.gemfire;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.geode.cache.query.SelectResults;
 
 import org.springframework.data.gemfire.GemfireOperations;
-import org.springframework.session.ExpiringSession;
+import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 
 /**
@@ -31,14 +32,15 @@ import org.springframework.session.SessionRepository;
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.GemfireOperations
- * @see org.springframework.session.ExpiringSession
+ * @see org.springframework.session.Session
+ * @see org.springframework.session.SessionRepository
  * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository
  * @since 1.1.0
  */
 public class GemFireOperationsSessionRepository extends AbstractGemFireOperationsSessionRepository {
 
 	// GemFire OQL query used to lookup Sessions by arbitrary attributes.
-	protected static final String FIND_SESSIONS_BY_INDEX_NAME_VALUE_QUERY =
+	protected static final String FIND_SESSIONS_BY_INDEX_NAME_INDEX_VALUE_QUERY =
 		"SELECT s FROM %1$s s WHERE s.attributes['%2$s'] = $1";
 
 	// GemFire OQL query used to look up Sessions by principal name.
@@ -68,17 +70,17 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @param indexValue value of the indexed Session attribute to search on (e.g.
 	 * username).
 	 * @return a mapping of Session ID to Session instances.
-	 * @see org.springframework.session.ExpiringSession
+	 * @see org.springframework.session.Session
 	 * @see java.util.Map
 	 * @see #prepareQuery(String)
 	 */
-	public Map<String, ExpiringSession> findByIndexNameAndIndexValue(String indexName, String indexValue) {
+	public Map<String, Session> findByIndexNameAndIndexValue(String indexName, String indexValue) {
 
-		SelectResults<ExpiringSession> results = getTemplate().find(prepareQuery(indexName), indexValue);
+		SelectResults<Session> results = getTemplate().find(prepareQuery(indexName), indexValue);
 
-		Map<String, ExpiringSession> sessions = new HashMap<String, ExpiringSession>(results.size());
+		Map<String, Session> sessions = new HashMap<>(results.size());
 
-		for (ExpiringSession session : results.asList()) {
+		for (Session session : results.asList()) {
 			sessions.put(session.getId(), session);
 		}
 
@@ -97,34 +99,34 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 
 		return (PRINCIPAL_NAME_INDEX_NAME.equals(indexName)
 			? String.format(FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY, getFullyQualifiedRegionName())
-			: String.format(FIND_SESSIONS_BY_INDEX_NAME_VALUE_QUERY, getFullyQualifiedRegionName(), indexName));
+			: String.format(FIND_SESSIONS_BY_INDEX_NAME_INDEX_VALUE_QUERY, getFullyQualifiedRegionName(), indexName));
 	}
 
 	/**
-	 * Constructs a new {@link ExpiringSession} instance backed by GemFire.
+	 * Constructs a new {@link Session} instance backed by GemFire.
 	 *
-	 * @return an instance of {@link ExpiringSession} backed by GemFire.
-	 * @see AbstractGemFireOperationsSessionRepository.GemFireSession#create(int)
-	 * @see org.springframework.session.ExpiringSession
+	 * @return an instance of {@link Session} backed by GemFire.
+	 * @see AbstractGemFireOperationsSessionRepository.GemFireSession#create(Duration)
+	 * @see org.springframework.session.Session
 	 * @see #getMaxInactiveIntervalInSeconds()
 	 */
-	public ExpiringSession createSession() {
-		return GemFireSession.create(getMaxInactiveIntervalInSeconds());
+	public Session createSession() {
+		return GemFireSession.create(getMaxInactiveInterval());
 	}
 
 	/**
-	 * Gets a copy of an existing, non-expired {@link ExpiringSession} by ID. If the
+	 * Gets a copy of an existing, non-expired {@link Session} by ID. If the
 	 * Session is expired, then it is deleted.
 	 *
 	 * @param sessionId a String indicating the ID of the Session to get.
-	 * @return an existing {@link ExpiringSession} by ID or null if not Session exists.
-	 * @see AbstractGemFireOperationsSessionRepository.GemFireSession#from(ExpiringSession)
-	 * @see org.springframework.session.ExpiringSession
-	 * @see #delete(String)
+	 * @return an existing {@link Session} by ID or null if not Session exists.
+	 * @see AbstractGemFireOperationsSessionRepository.GemFireSession#from(Session)
+	 * @see org.springframework.session.Session
+	 * @see #deleteById(String)
 	 */
-	public ExpiringSession getSession(String sessionId) {
+	public Session findById(String sessionId) {
 
-		ExpiringSession storedSession = getTemplate().get(sessionId);
+		Session storedSession = getTemplate().get(sessionId);
 
 		if (storedSession != null) {
 			storedSession = storedSession.isExpired()
@@ -136,25 +138,25 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	}
 
 	/**
-	 * Saves the specified {@link ExpiringSession} to GemFire.
+	 * Saves the specified {@link Session} to GemFire.
 	 *
-	 * @param session the {@link ExpiringSession} to save.
+	 * @param session the {@link Session} to save.
 	 * @see org.springframework.data.gemfire.GemfireOperations#put(Object, Object)
-	 * @see org.springframework.session.ExpiringSession
+	 * @see org.springframework.session.Session
 	 */
-	public void save(ExpiringSession session) {
+	public void save(Session session) {
 		getTemplate().put(session.getId(), GemFireSession.from(session));
 	}
 
 	/**
-	 * Deletes (removes) any existing {@link ExpiringSession} from GemFire. This operation
+	 * Deletes (removes) any existing {@link Session} from GemFire. This operation
 	 * also results in a SessionDeletedEvent.
 	 *
 	 * @param sessionId a String indicating the ID of the Session to remove from GemFire.
 	 * @see org.springframework.data.gemfire.GemfireOperations#remove(Object)
-	 * @see #handleDeleted(String, ExpiringSession)
+	 * @see #handleDeleted(String, Session)
 	 */
-	public void delete(String sessionId) {
-		handleDeleted(sessionId, getTemplate().<Object, ExpiringSession>remove(sessionId));
+	public void deleteById(String sessionId) {
+		handleDeleted(sessionId, getTemplate().<Object, Session>remove(sessionId));
 	}
 }
