@@ -17,86 +17,38 @@
 package sample;
 
 import java.io.IOException;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.GemFireCache;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.data.gemfire.CacheFactoryBean;
-import org.springframework.data.gemfire.server.CacheServerFactoryBean;
+import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
+import org.springframework.data.gemfire.config.annotation.CacheServerConfigurer;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 
 // tag::class[]
-@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 30) // <1>
+@CacheServerApplication(name = "SpringSessionSampleJavaConfigGemFireClientServer", logLevel = "warning") // <1>
+@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 30) // <2>
 public class ServerConfig {
 
-	static final int SERVER_PORT = 12480;
-
-	static final String DEFAULT_GEMFIRE_LOG_LEVEL = "warning";
-	static final String SERVER_HOST = "localhost";
-
 	@SuppressWarnings("resource")
-	public static void main(String[] args) throws IOException { // <5>
+	public static void main(String[] args) throws IOException {
 		new AnnotationConfigApplicationContext(ServerConfig.class).registerShutdownHook();
 	}
 
+	// Required to resolve property placeholders in Spring @Value annotations.
 	@Bean
 	static PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer() {
 		return new PropertySourcesPlaceholderConfigurer();
 	}
 
-	Properties gemfireProperties() { // <2>
-
-		Properties gemfireProperties = new Properties();
-
-		gemfireProperties.setProperty("name", applicationName());
-		gemfireProperties.setProperty("mcast-port", "0");
-		// gemfireProperties.setProperty("log-file", "gemfire-server.log");
-		gemfireProperties.setProperty("log-level", logLevel());
-		// gemfireProperties.setProperty("jmx-manager", "true");
-		// gemfireProperties.setProperty("jmx-manager-start", "true");
-
-		return gemfireProperties;
-	}
-
-	String applicationName() {
-		return "samples:httpsession-gemfire-clientserver:".concat(getClass().getSimpleName());
-	}
-
-	String logLevel() {
-		return System.getProperty("sample.httpsession.gemfire.log-level", DEFAULT_GEMFIRE_LOG_LEVEL);
-	}
-
 	@Bean
-	CacheFactoryBean gemfireCache() { // <3>
+	CacheServerConfigurer cacheServerPortConfigurer(
+			@Value("${spring.session.data.geode.cache.server.port:40404}") int port) { // <3>
 
-		CacheFactoryBean gemfireCache = new CacheFactoryBean();
-
-		gemfireCache.setClose(true);
-		gemfireCache.setProperties(gemfireProperties());
-
-		return gemfireCache;
-	}
-
-	@Bean
-	CacheServerFactoryBean gemfireCacheServer(GemFireCache gemfireCache,
-			@Value("${spring.session.data.gemfire.port:" + SERVER_PORT + "}") int port) { // <4>
-
-		CacheServerFactoryBean gemfireCacheServer = new CacheServerFactoryBean();
-
-		gemfireCacheServer.setAutoStartup(true);
-		gemfireCacheServer.setBindAddress(SERVER_HOST);
-		gemfireCacheServer.setCache((Cache) gemfireCache);
-		gemfireCacheServer.setHostNameForClients(SERVER_HOST);
-		gemfireCacheServer.setMaxTimeBetweenPings(Long.valueOf(TimeUnit.SECONDS.toMillis(60)).intValue());
-		gemfireCacheServer.setPort(port);
-
-		return gemfireCacheServer;
+		return (beanName, cacheServerFactoryBean) -> {
+			cacheServerFactoryBean.setPort(port);
+		};
 	}
 }
 // end::class[]

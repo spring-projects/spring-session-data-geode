@@ -1,5 +1,6 @@
 apply plugin: 'io.spring.convention.spring-sample-war'
 apply plugin: "gemfire-server"
+apply plugin: "application"
 
 apply from: IDE_GRADLE
 
@@ -25,3 +26,5 @@ dependencies {
 	integrationTestRuntime "org.springframework.shell:spring-shell"
 
 }
+
+mainClassName = "sample.ServerConfig"

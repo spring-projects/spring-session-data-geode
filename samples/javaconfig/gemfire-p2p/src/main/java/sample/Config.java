@@ -16,38 +16,15 @@
 
 package sample;
 
-import java.util.Properties;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.data.gemfire.config.annotation.EnableManager;
+import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 
 // tag::class[]
-@EnableGemFireHttpSession // <1>
+@PeerCacheApplication(name = "SpringSessionSampleJavaConfigGemFireP2p", logLevel = "warning") // <1>
+@EnableGemFireHttpSession // <2>
+@EnableManager(start = true) // <3>
 public class Config {
 
-	@Bean
-	Properties gemfireProperties() { // <2>
-		Properties gemfireProperties = new Properties();
-
-		gemfireProperties.setProperty("name", "GemFireP2PHttpSessionSample");
-		gemfireProperties.setProperty("mcast-port", "0");
-		gemfireProperties.setProperty("log-level",
-				System.getProperty("sample.httpsession.gemfire.log-level", "warning"));
-		gemfireProperties.setProperty("jmx-manager", "true");
-		gemfireProperties.setProperty("jmx-manager-start", "true");
-
-		return gemfireProperties;
-	}
-
-	@Bean
-	CacheFactoryBean gemfireCache() { // <3>
-		CacheFactoryBean gemfireCache = new CacheFactoryBean();
-
-		gemfireCache.setClose(true);
-		gemfireCache.setProperties(gemfireProperties());
-
-		return gemfireCache;
-	}
 }
 // end::class[]

@@ -13,17 +13,13 @@
 ">
 
 	<!-- tag::beans[] -->
-	<!--1-->
 	<context:annotation-config/>
 
-	<!--2-->
 	<context:property-placeholder location="classpath:META-INF/spring/application.properties"/>
 
-	<!--3-->
+	<!--1-->
 	<util:properties id="gemfireProperties">
-		<prop key="name">GemFireClientServerHttpSessionXmlSample</prop>
-		<prop key="mcast-port">0</prop>
-		<!--<prop key="log-file">gemfire-server.log</prop>-->
+		<prop key="name">SpringSessionSampleXmlGemFireClientServer</prop>
 		<prop key="log-level">${spring.session.data.gemfire.log-level:warning}</prop>
 <!--
 		<prop key="jmx-manager">true</prop>
@@ -31,16 +27,16 @@
 -->
 	</util:properties>
 
-	<!--4-->
+	<!--2-->
 	<gfe:cache properties-ref="gemfireProperties"/>
 
-	<!--5-->
+	<!--3-->
 	<gfe:cache-server auto-startup="true"
-                      bind-address="${application.gemfire.client-server.host:localhost}"
-                      host-name-for-clients="${application.gemfire.client-server.host:localhost}"
-                      port="${spring.session.data.gemfire.port:${application.gemfire.client-server.port:40404}}"/>
+                      bind-address="${application.geode.client-server.host:localhost}"
+                      host-name-for-clients="${application.geode.client-server.host:localhost}"
+                      port="${spring.session.data.geode.cache.server.port:${application.geode.client-server.port:40404}}"/>
 
-	<!--6-->
+	<!--4-->
 	<bean class="org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration"
 		  p:maxInactiveIntervalInSeconds="30"/>
 	<!-- end::beans[] -->

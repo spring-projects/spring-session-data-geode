@@ -13,43 +13,33 @@ _Spring Session_ provides an API and implementations for managing a user's sessi
 _Spring Session_ provides an API and implementations for managing a user's session information.
 It also provides transparent integration with:
 
-* <<httpsession,HttpSession>> - allows replacing the HttpSession in an application container (e.g. Tomcat) neutral way.
+* <<httpsession,HttpSession>> - allows replacing the `javax.servlet.http.HttpSession` in an application container
+(e.g. Tomcat) neutral way.
 
 Additional features include:
 
 ** **Clustered Sessions** - _Spring Session_ makes it trivial to support <<httpsession-gemfire,clustered sessions>>
 without being tied to an application container specific solution.
-** **Multiple Browser Sessions** - _Spring Session_ supports <<httpsession-multi,managing multiple users' sessions>>
-in a single browser instance (i.e. multiple authenticated accounts similar to Google).
-** **RESTful APIs** - _Spring Session_ allows providing session ids in headers to work
-with <<httpsession-rest,RESTful APIs>>
-
-* <<websocket,WebSocket>> - provides the ability to keep the `HttpSession` alive when receiving WebSocket messages
+** **Multiple Browser Sessions** - _Spring Session_ supports managing _multiple user sessions_ in a single browser
+instance (i.e. multiple authenticated accounts similar to Google).
+** **REST API** - _Spring Session_ allows providing the session ID in headers to work with REST APIs.
+** **WebSocket** - provides the ability to keep the `javax.servlet.http.HttpSession` alive
+when receiving `WebSocket` messages
 
 [[samples]]
 == Samples and Guides (Start Here)
 
-If you are looking to get started with Spring Session, the best place to start is our Sample Applications.
+If you are looking to get started with _Spring Session_ right of way, the best place to start
+is with our Sample Applications.
 
 .Sample Applications using Spring Boot
 |===
 | Source | Description | Guide
 
-| {gh-samples-url}boot/gemfire[HttpSession with GemFire]
-| Demonstrates how to use Spring Session to replace the `HttpSession` with GemFire using a Client/Server topology.
-| link:guides/boot-gemfire.html[HttpSession with GemFire Guide]
-
-| {gh-samples-url}boot/findbyusername[Find by Username]
-| Demonstrates how to use Spring Session to find sessions by username.
-| link:guides/boot-findbyusername.html[Find by Username Guide]
-
-| {gh-samples-url}boot/websocket[WebSockets]
-| Demonstrates how to use Spring Session with WebSockets.
-| link:guides/boot-websocket.html[WebSockets Guide]
-
-| {gh-samples-url}boot/redis-json[HttpSession with Redis JSON serialization]
-| Demonstrates how to use Spring Session to replace the `HttpSession` with Redis using JSON serialization.
-| TBD
+| {gh-samples-url}boot/gemfire[HttpSession with Spring Boot and Apache Geode]
+| Demonstrates how to use _Spring Session_ to manage the `HttpSession` with Apache Geode in a _Spring Boot_ application
+using a Client/Server topology.
+| link:guides/boot-gemfire.html[HttpSession with Spring Boot and Apache Geode Guide]
 
 |===
 
@@ -57,13 +47,13 @@ If you are looking to get started with Spring Session, the best place to start i
 |===
 | Source | Description | Guide
 
-| {gh-samples-url}javaconfig/gemfire-clientserver[HttpSession with GemFire (Client/Server)]
-| Demonstrates how to use Spring Session to replace the `HttpSession` with GemFire using a Client/Server topology.
-| link:guides/java-gemfire-clientserver.html[HttpSession with GemFire (Client/Server) Guide]
+| {gh-samples-url}javaconfig/gemfire-clientserver[HttpSession with Apache Geode (Client/Server)]
+| Demonstrates how to use _Spring Session_ to manage the `HttpSession` with Apache Geode using a Client/Server topology.
+| link:guides/java-gemfire-clientserver.html[HttpSession with Apache Geode (Client/Server) Guide]
 
-| {gh-samples-url}javaconfig/gemfire-p2p[HttpSession with GemFire (P2P)]
-| Demonstrates how to use Spring Session to replace the `HttpSession` with GemFire using a P2P topology.
-| link:guides/java-gemfire-p2p.html[HttpSession with GemFire (P2P) Guide]
+| {gh-samples-url}javaconfig/gemfire-p2p[HttpSession with Apache Geode (P2P)]
+| Demonstrates how to use _Spring Session_ to manage the `HttpSession` with Apache Geode using a P2P topology.
+| link:guides/java-gemfire-p2p.html[HttpSession with Apache Geode (P2P) Guide]
 
 |===
 
@@ -71,66 +61,67 @@ If you are looking to get started with Spring Session, the best place to start i
 |===
 | Source | Description | Guide
 
-| {gh-samples-url}xml/gemfire-clientserver[HttpSession with GemFire (Client/Server)]
-| Demonstrates how to use Spring Session to replace the `HttpSession` with GemFire using a Client/Server topology.
-| link:guides/xml-gemfire-clientserver.html[HttpSession with GemFire (Client/Server) Guide]
+| {gh-samples-url}xml/gemfire-clientserver[HttpSession with Apache Geode (Client/Server)]
+| Demonstrates how to use _Spring Session_ to manage the `HttpSession` with Apache Geode using a Client/Server topology.
+| link:guides/xml-gemfire-clientserver.html[HttpSession with Apache Geode (Client/Server) Guide]
 
-| {gh-samples-url}xml/gemfire-p2p[HttpSession with GemFire (P2P)]
-| Demonstrates how to use Spring Session to replace the `HttpSession` with GemFire using a P2P topology.
-| link:guides/xml-gemfire-p2p.html[HttpSession with GemFire (P2P) Guide]
+| {gh-samples-url}xml/gemfire-p2p[HttpSession with Apache Geode (P2P)]
+| Demonstrates how to use _Spring Session_ to manage the `HttpSession` with Apache Geode using a P2P topology.
+| link:guides/xml-gemfire-p2p.html[HttpSession with Apache Geode (P2P) Guide]
 
 |===
 
 [[httpsession]]
 == HttpSession Integration
 
-_Spring Session_ provides transparent integration with `HttpSession`. This means that developers
-can switch the `HttpSession` implementation out with an implementation that is backed by _Spring Session_.
+_Spring Session_ provides transparent integration with `HttpSession`. This means that developers can switch
+the `javax.servlet.http.HttpSession` implementation out with an implementation that is backed by _Spring Session_.
 
 [[httpsession-why]]
 === Why Spring Session & HttpSession?
 
-We have already mentioned that _Spring Session_ provides transparent integration with `HttpSession`,
-but what benefits do we get out of this?
+We already mentioned that _Spring Session_ provides transparent integration with `HttpSession`, but what benefits
+do we get out of this?
 
 * **Clustered Sessions** - _Spring Session_ makes it trivial to support <<httpsession-gemfire,clustered sessions>>
 without being tied to an application container specific solution.
-* **Multiple Browser Sessions** - _Spring Session_ supports <<httpsession-multi,managing multiple users' sessions>>
-in a single browser instance (i.e. multiple authenticated accounts similar to Google).
-* **RESTful APIs** - _Spring Session_ allows providing session ids in headers to work
-with <<httpsession-rest,RESTful APIs>>
+* **Multiple Browser Sessions** - _Spring Session_ supports _multiple user sessions_ in a single browser instance
+(i.e. multiple authenticated accounts similar to Google).
+* **RESTful APIs** - _Spring Session_ allows providing the session ID in headers to work with REST APIs.
+* **WebSocket** - provides the ability to keep the `javax.servlet.http.HttpSession` alive
+when receiving `WebSocket` messages
 
 [[httpsession-gemfire]]
-=== HttpSession with Pivotal GemFire
+=== HttpSession with Apache Geode
 
-When https://pivotal.io/big-data/pivotal-gemfire[Pivotal GemFire] is used with _Spring Session_, a web application's
-`HttpSession` can be replaced with a **clustered** implementation managed by _Pivotal GemFire_ and conveniently
-accessed with _Spring Session's_ API.
+When http://geode.apache.org/[Apache Geode] is used with _Spring Session_, a web application's
+`javax.servlet.http.HttpSession` can be replaced with a **clustered** implementation managed by _Apache Geode_
+and conveniently accessed using _Spring Session's_ API.
 
-The two most common topologies to manage _Spring Sessions_ using _Pivotal GemFire_ include:
+The two most common topologies to manage _Spring Sessions_ using _Apache Geode_ include:
 
 * <<httpsession-gemfire-clientserver,Client-Server>>
 * <<httpsession-gemfire-p2p,Peer-To-Peer (P2P)>>
 
-Additionally, _Pivotal GemFire_ supports site-to-site replication using
-http://gemfire.docs.pivotal.io/docs-gemfire/topologies_and_comm/multi_site_configuration/chapter_overview.html[WAN functionality].
-The ability to configure and use _Pivotal GemFire's_ WAN support is independent of _Spring Session_,
-and is beyond the scope of this document.
+Additionally, _Apache Geode_ supports site-to-site replication using
+http://geode.apache.org/docs/guide/12/topologies_and_comm/multi_site_configuration/chapter_overview.html[WAN technology].
+The ability to configure and use _Apache Geode's_ WAN support is independent of _Spring Session_,
+and beyond the scope of this document.
 
-More details on _Pivotal GemFire_ WAN functionality can be found
+More details on configuring _Apache Geode_ WAN functionality using _Spring Data Geode_ can be found
 http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#bootstrap:gateway[here].
 
 [[httpsession-gemfire-clientserver]]
-==== Pivotal GemFire Client-Server
+==== Apache Geode Client-Server
 
-The http://gemfire.docs.pivotal.io/docs-gemfire/latest/topologies_and_comm/cs_configuration/chapter_overview.html[Client-Server]
-topology will probably be the more common configuration preference for users when using GemFire as a provider in
-Spring Session since a GemFire server will have significantly different and unique JVM heap requirements when compared
-to the application. Using a client-server topology enables an application to manage (e.g. replicate) application state
+The http://geode.apache.org/docs/guide/12/topologies_and_comm/cs_configuration/chapter_overview.html[Client-Server]
+topology will probably be the more common configuration choice among users when using Apache Geode as a provider in
+_Spring Session_ since a Geode server will have significantly different and unique JVM heap requirements as compared
+to the application. Using a Client-Server topology enables an application to manage (e.g. replicate) application state
 independently from other application processes.
 
-In a client-server topology, an application using Spring Session will open a client cache connection to a (remote)
-GemFire server cluster to manage and provide consistent access to all `HttpSession` state.
+In a Client-Server topology, an application using _Spring Session_ will open 1 or more connections to a remote cluster
+of Geode servers that will manage access to all `HttpSession` state.
 
 You can configure a Client-Server topology with either:
 
@@ -138,46 +129,47 @@ You can configure a Client-Server topology with either:
 * <<httpsession-gemfire-clientserver-xml,XML-based Configuration>>
 
 [[httpsession-gemfire-clientserver-java]]
-===== Pivotal GemFire Client-Server Java-based Configuration
+===== Apache Geode Client-Server Java-based Configuration
 
-This section describes how to use GemFire's Client-Server topology to back an `HttpSession` with Java-based configuration.
+This section describes how to configure Apache Geode's Client-Server topology with Java-based configuration.
 
-NOTE: The <<samples,HttpSession with GemFire (Client-Server) Sample>> provides a working sample on how to integrate
-Spring Session and GemFire to replace the HttpSession using Java configuration. You can read the basic steps for
-integration below, but you are encouraged to follow along with the detailed HttpSession with GemFire (Client-Server)
-Guide when integrating with your own application.
+NOTE: The <<samples,HttpSession with Apache Geode (Client-Server)>> provides a working sample demonstrating how to
+integrate _Spring Session_ with Apache Geode to manage the `HttpSession` using Java configuration. You can read
+through the basic steps of integration below, but you are encouraged to follow along in the detailed _`HttpSession`
+with Apache Geode (Client-Server) Guide_ when integrating with your own application.
 
 include::guides/java-gemfire-clientserver.adoc[tags=config,leveloffset=+3]
 
 [[http-session-gemfire-clientserver-xml]]
-===== Pivotal GemFire Client-Server XML-based Configuration
+===== Apache Geode Client-Server XML-based Configuration
 
-This section describes how to use GemFire's Client-Server topology to back an `HttpSession` with XML-based configuration.
+This section describes how to use Apache Geode's Client-Server topology to back an `HttpSession`
+with XML-based configuration.
 
-NOTE: The <<samples,HttpSession with GemFire (Client-Server) using XML Sample>> provides a working sample on how to
-integrate Spring Session and GemFire to replace the `HttpSession` using XML configuration. You can read the basic steps
-for integration below, but you are encouraged to follow along with the detailed HttpSession with GemFire (Client-Server)
-using XML Guide when integrating with your own application.
+NOTE: The <<samples,HttpSession with Apache Geode (Client-Server) using XML>> provides a working sample demonstrating
+how to integrate _Spring Session_ with Apache Geode to manage the `HttpSession` using XML configuration. You can read
+through the basic steps of integration below, but you are encouraged to follow along in the detailed _`HttpSession`
+with Apache Geode (Client-Server) using XML Guide_ when integrating with your own application.
 
 include::guides/xml-gemfire-clientserver.adoc[tags=config,leveloffset=+3]
 
 [[httpsession-gemfire-p2p]]
-==== Pivotal GemFire Peer-To-Peer (P2P)
+==== Apache Geode Peer-To-Peer (P2P)
 
-Perhaps less common would be to configure the Spring Session application as a peer member in the GemFire cluster using
-the http://gemfire.docs.pivotal.io/docs-gemfire/latest/topologies_and_comm/p2p_configuration/chapter_overview.html[Peer-To-Peer (P2P)] topology.
-In this configuration, a Spring Session application would be an actual data node (server) in the GemFire cluster,
+Perhaps a less common approach is to configure the _Spring Session_ application as a peer member in the Geode cluster
+using the http://geode.apache.org/docs/guide/12/topologies_and_comm/p2p_configuration/chapter_overview.html[Peer-To-Peer (P2P)] topology.
+In this configuration, the _Spring Session_ application would be an actual server (data node) in the Geode cluster,
 and **not** a cache client as before.
 
-One advantage to this approach is the proximity of the application to the application's state (i.e. it's data). However,
-there are other effective means of accomplishing similar data dependent computations, such as using GemFire's
-http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/function_exec/chapter_overview.html[Function Execution].
-Any of GemFire's other http://gemfire.docs.pivotal.io/docs-gemfire/latest/getting_started/product_intro.html[features]
-can be used when GemFire is serving as a provider in Spring Session.
+One advantage to this approach is the proximity of the application to the application's state (i.e. its data). However,
+there are other effective means of accomplishing similar data dependent computations, such as using Geode's
+http://geode.apache.org/docs/guide/12/developing/function_exec/chapter_overview.html[Function Execution].
+Any of Geode's other http://geode.apache.org/docs/guide/12/getting_started/product_intro.html[features] can be used
+when Geode is serving as a provider in _Spring Session_.
 
-P2P is very useful for both testing purposes as well as smaller, more focused and self-contained applications,
-such as those found in a microservices architecture, and will most certainly improve on your application's latency,
-throughput and consistency needs.
+P2P is very useful for testing purposes as well as for smaller, more focused and self-contained applications,
+such as those found in a microservices architecture, and will most certainly improve on your application's perceived
+latency, throughput and consistency needs.
 
 You can configure a Peer-To-Peer (P2P) topology with either:
 
@@ -185,39 +177,44 @@ You can configure a Peer-To-Peer (P2P) topology with either:
 * <<httpsession-gemfire-p2p-xml,XML-based Configuration>>
 
 [[httpsession-gemfire-p2p-java]]
-===== Pivotal GemFire Peer-To-Peer (P2P) Java-based Configuration
+===== Apache Geode Peer-To-Peer (P2P) Java-based Configuration
 
-This section describes how to use GemFire's Peer-To-Peer (P2P) topology to back an `HttpSession` using Java-based configuration.
+This section describes how to configure Apache Geode's Peer-To-Peer (P2P) topology to manage an `HttpSession`
+using Java-based configuration.
 
-NOTE: The <<samples, HttpSession with GemFire (P2P) Sample>> provides a working sample on how to integrate
-Spring Session and GemFire to replace the `HttpSession` using Java configuration. You can read the basic steps
-for integration below, but you are encouraged to follow along with the detailed HttpSession with GemFire (P2P) Guide
-when integrating with your own application.
+NOTE: The <<samples, HttpSession with Apache Geode (P2P)>> provides a working sample demonstrating how to
+integrate _Spring Session_ with Apache Geode to manage the `HttpSession` using Java configuration. You can read
+through the basic steps of integration below, but you are encouraged to follow along in the detailed _`HttpSession`
+with Apache Geode (P2P) Guide_ when integrating with your own application.
 
 include::guides/java-gemfire-p2p.adoc[tags=config,leveloffset=+3]
 
 [[httpsession-gemfire-p2p-xml]]
-===== Pivotal GemFire Peer-To-Peer (P2P) XML-based Configuration
+===== Apache Geode Peer-To-Peer (P2P) XML-based Configuration
 
-This section describes how to use GemFire's Peer-To-Peer (P2P) topology to back an `HttpSession` using XML-based configuration.
+This section describes how to use Apache Geode's Peer-To-Peer (P2P) topology to back an `HttpSession`
+using XML-based configuration.
 
-NOTE: The <<samples, HttpSession with GemFire (P2P) using XML Sample>> provides a working sample on how to integrate
-Spring Session and GemFire to replace the `HttpSession` using XML configuration. You can read the basic steps for
-integration below, but you are encouraged to follow along with the detailed HttpSession with GemFire (P2P) using XML
-Guide when integrating with your own application.
+NOTE: The <<samples, HttpSession with Apache Geode (P2P) using XML>> provides a working sample demonstrating how to
+integrate _Spring Session_ with Apache Geode to manage the `HttpSession` using XML configuration. You can read
+through the basic steps of integration below, but you are encouraged to follow along in the detailed _`HttpSession`
+with Apache Geode (P2P) using XML Guide_ when integrating with your own application.
 
 include::guides/xml-gemfire-p2p.adoc[tags=config,leveloffset=+3]
 
 [[httpsession-how]]
 === How HttpSession Integration Works
 
-Fortunately both `HttpSession` and `HttpServletRequest` (the API for obtaining an `HttpSession`) are both interfaces.
-This means that we can provide our own implementations for each of these APIs.
+Fortunately both `javax.servlet.http.HttpSession` and `javax.servlet.http.HttpServletRequest` (the API for
+obtaining an `HttpSession`) are both interfaces. This means that we can provide our own implementations
+for each of these APIs.
 
-NOTE: This section describes how Spring Session provides transparent integration with `HttpSession`. The intent is so that user's can understand what is happening under the covers. This functionality is already integrated and you do NOT need to implement this logic yourself.
+NOTE: This section describes how _Spring Session_ provides transparent integration with `javax.servlet.http.HttpSession`.
+The intent is so users understand what is happening under the hood. This functionality is already integrated
+and you do NOT need to implement this logic yourself.
 
-First we create a custom `HttpServletRequest` that returns a custom implementation of `HttpSession`.
-It looks something like the following:
+First, we create a custom `javax.servlet.http.HttpServletRequest` that returns a custom implementation of
+`javax.servlet.http.HttpSession`.  It looks something like the following:
 
 [source, java]
 ----
@@ -239,10 +236,11 @@ public class SessionRepositoryRequestWrapper extends HttpServletRequestWrapper {
 }
 ----
 
-Any method that returns an `HttpSession` is overridden.
-All other methods are implemented by `HttpServletRequestWrapper` and simply delegate to the original `HttpServletRequest` implementation.
+Any method that returns an `javax.servlet.http.HttpSession` is overridden.  All other methods are implemented by
+`javax.servlet.http.HttpServletRequestWrapper` and simply delegate to the original `javax.servlet.http.HttpServletRequest`
+implementation.
 
-We replace the `HttpServletRequest` implementation using a servlet `Filter` called `SessionRepositoryFilter`.
+We replace the `javax.servlet.http.HttpServletRequest` implementation using a Servlet `Filter` called `SessionRepositoryFilter`.
 The pseudocode can be found below:
 
 [source, java]
@@ -250,9 +248,10 @@ The pseudocode can be found below:
 public class SessionRepositoryFilter implements Filter {
 
 	public doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
+
 		HttpServletRequest httpRequest = (HttpServletRequest) request;
-		SessionRepositoryRequestWrapper customRequest =
-			new SessionRepositoryRequestWrapper(httpRequest);
+
+		SessionRepositoryRequestWrapper customRequest = new SessionRepositoryRequestWrapper(httpRequest);
 
 		chain.doFilter(customRequest, response, chain);
 	}
@@ -261,87 +260,107 @@ public class SessionRepositoryFilter implements Filter {
 }
 ----
 
-By passing in a custom `HttpServletRequest` implementation into the `FilterChain` we ensure that anything invoked after our `Filter` uses the custom `HttpSession` implementation.
-This highlights why it is important that Spring Session's `SessionRepositoryFilter` must be placed before anything that interacts with the `HttpSession`.
+By passing in a custom `javax.servlet.http.HttpServletRequest` implementation into the `FilterChain` we ensure that
+anything invoked after our `Filter` uses the custom `javax.servlet.http.HttpSession` implementation.
+
+This highlights why it is important that _Spring Session's_ `SessionRepositoryFilter` must be placed before anything
+that interacts with the `javax.servlet.http.HttpSession`.
 
 [[httpsession-httpsessionlistener]]
 === HttpSessionListener
 
-Spring Session supports `HttpSessionListener` by translating `SessionDestroyedEvent` and `SessionCreatedEvent` into `HttpSessionEvent` by declaring `SessionEventHttpSessionListenerAdapter`.
+_Spring Session_ supports `HttpSessionListener` by translating `SessionDestroyedEvent` and `SessionCreatedEvent` into
+`HttpSessionEvent` by declaring `SessionEventHttpSessionListenerAdapter`.
+
 To use this support, you need to:
 
 * Ensure your `SessionRepository` implementation supports and is configured to fire `SessionDestroyedEvent` and `SessionCreatedEvent`.
-* Configure `SessionEventHttpSessionListenerAdapter` as a Spring bean.
+* Configure `SessionEventHttpSessionListenerAdapter` as a _Spring_ bean.
 * Inject every `HttpSessionListener` into the `SessionEventHttpSessionListenerAdapter`
 
-If you are using the configuration support documented in <<httpsession-redis,HttpSession with Redis>>, then all you need to do is register every `HttpSessionListener` as a bean.
-For example, assume you want to support Spring Security's concurrency control and need to use `HttpSessionEventPublisher` you can simply add `HttpSessionEventPublisher` as a bean.
+If you are using the configuration support documented in <<httpsession-gemfire,HttpSession with Apache Geode>>,
+then all you need to do is register every `HttpSessionListener` as a bean.
+
+For example, assume you want to support _Spring Security's_ concurrency control and need to use `HttpSessionEventPublisher`
+you can simply add `HttpSessionEventPublisher` as a bean.
 
 [[api-session]]
 === Session
 
-A `Session` is a simplified `Map` of key value pairs.
-
-[[api-expiringsession]]
-=== ExpiringSession
-
-An `ExpiringSession` extends a `Session` by providing attributes related to the `Session` instance's expiration.
-If there is no need to interact with the expiration information, prefer using the more simple `Session` API.
+A `Session` is a simplified `Map` of key/value pairs with support for expiration.
 
 [[api-sessionrepository]]
 === SessionRepository
 
 A `SessionRepository` is in charge of creating, retrieving, and persisting `Session` instances.
 
-If possible, developers should not interact directly with a `SessionRepository` or a `Session`.
-Instead, developers should prefer interacting with `SessionRepository` and `Session` indirectly through the <<httpsession,HttpSession>> and <<websocket,WebSocket>> integration.
+If possible, developers should not interact directly with a `SessionRepository` or a `Session`.  Instead, developers
+should prefer to interact with `SessionRepository` and `Session` indirectly through the `javax.servlet.http.HttpSession`
+and `WebSocket` integration.
 
 [[api-findbyindexnamesessionrepository]]
 === FindByIndexNameSessionRepository
 
-Spring Session's most basic API for using a `Session` is the `SessionRepository`.
-This API is intentionally very simple, so that it is easy to provide additional implementations with basic functionality.
+_Spring Session's_ most basic API for using a `Session` is the `SessionRepository`.  The API is intentionally
+very simple so that it is easy to provide additional implementations with basic functionality.
 
 Some `SessionRepository` implementations may choose to implement `FindByIndexNameSessionRepository` also.
-For example, Spring's Redis support implements `FindByIndexNameSessionRepository`.
+For example, _Spring Session's Apache Geode_ support implements `FindByIndexNameSessionRepository`.
 
-The `FindByIndexNameSessionRepository` adds a single method to look up all the sessions for a particular user.
-This is done by ensuring that the session attribute with the name `FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME` is populated with the username.
-It is the responsibility of the developer to ensure the attribute is populated since Spring Session is not aware of the authentication mechanism being used.
+The `FindByIndexNameSessionRepository` provides a single method to look up all the `Sessions` for a particular user.
+This is done by ensuring that the session attribute with the name `FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME`
+is populated with the username.  It is the responsibility of the developer to ensure the attribute is populated
+since _Spring Session_ is not aware of the authentication mechanism being used.
 
 [NOTE]
 ====
 Some implementations of `FindByIndexNameSessionRepository` will provide hooks to automatically index other session attributes.
-For example, many implementations will automatically ensure the current Spring Security user name is indexed with the index name `FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME`.
+For example, many implementations will automatically ensure the current _Spring Security_ user name is indexed with
+the index name `FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME`.
 ====
 
 [[api-enablespringhttpsession]]
 === EnableSpringHttpSession
 
-The `@EnableSpringHttpSession` annotation can be added to an `@Configuration` class to expose the `SessionRepositoryFilter` as a bean named "springSessionRepositoryFilter".
+The `@EnableSpringHttpSession` annotation can be added to any `@Configuration` class to expose the `SessionRepositoryFilter`
+as a bean in the _Spring_ application context named "springSessionRepositoryFilter".
+
 In order to leverage the annotation, a single `SessionRepository` bean must be provided.
 
-It is important to note that no infrastructure for session expirations is configured for you out of the box.
-This is because things like session expiration are highly implementation dependent.
-This means if you require cleaning up expired sessions, you are responsible for cleaning up the expired sessions.
+[[api-enablegemfirehttpsession]]
+=== EnableGemFireHttpSession
+
+The `@EnableGemFireHttpSession` annotation can be added to any `@Configuration` class in place of
+the `@EnableSpringHttpSession` annotation to expose the `SessionRepositoryFilter` as a bean
+in the _Spring_ application context named "springSessionRepositoryFilter" and to position Apache Geode as a provider
+to manage the `javax.servlet.http.HttpSession`.
+
+When using the `@EnableGemFireHttpSession` annotation, additional configuration is imported out-of-the-box
+that also provides a Geode specific implementation of the `SessionRepository` interface, the `GemFireOperationsSessionRepository`.
 
 [[api-gemfireoperationssessionrepository]]
 === GemFireOperationsSessionRepository
 
-`GemFireOperationsSessionRepository` is a `SessionRepository` that is implemented using Spring Data's `GemFireOperationsSessionRepository`.
-In a web environment, this is typically used in combination with `SessionRepositoryFilter`.
-The implementation supports `SessionDestroyedEvent` and `SessionCreatedEvent` through `SessionMessageListener`.
+`GemFireOperationsSessionRepository` is a `SessionRepository` implementation that is implemented using _Spring Session Data Geode's_
+`GemFireOperationsSessionRepository`.
+
+In a web environment, this repository is used in conjunction with the `SessionRepositoryFilter`.
+
+This implementation supports `SessionCreatedEvents`, `SessionDeletedEvents` and `SessionDestroyedEvents`
+through `SessionEventHttpSessionListenerAdapter`.
 
 [[api-gemfireoperationssessionrepository-indexing]]
-==== Using Indexes with GemFire
+==== Using Indexes with Apache Geode
 
-While best practices concerning the proper definition of indexes that positively impact GemFire's performance is beyond
-the scope of this document, it is important to realize that Spring Session Data GemFire creates and uses indexes to
+While best practices concerning the proper definition of Indexes that positively impact Geode's performance is beyond
+the scope of this document, it is important to realize that _Spring Session Data Geode_ creates and uses Indexes to
 query and find Sessions efficiently.
 
-Out-of-the-box, Spring Session Data GemFire creates 1 Hash-typed Index on the principal name. There are two different buit in
-strategies for finding the principal name. The first strategy is that the value of the session attribute with the name
-`FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME` will be indexed to the same index name. For example:
+Out-of-the-box, _Spring Session Data Geode_ creates 1 Hash-typed Index on the principal name. There are two different
+built-in strategies for finding the principal name. The first strategy is that the value of the Session attribute
+with the name `FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME` will be Indexed to the same index name.
+
+For example:
 
 [source,java,indent=0]
 ----
@@ -350,11 +369,12 @@ include::{docs-itest-dir}docs/gemfire/indexing/HttpSessionGemFireIndexingIntegra
 ----
 
 [[api-gemfireoperationssessionrepository-indexing-security]]
-==== Using Indexes with GemFire & Spring Security
+==== Using Indexes with Apache Geode & Spring Security
 
-Alternatively, Spring Session Data GemFire will map Spring Security's current `Authentication#getName()` to the index
-`FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME`. For example, if you are using Spring Security you can
-find the current user's sessions using:
+Alternatively, _Spring Session Data Geode_ will map _Spring Security's_ current `Authentication#getName()` to the Index
+`FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME`.
+
+For example, if you are using _Spring Security_ you can find the current user's sessions using:
 
 [source,java,indent=0]
 ----
@@ -368,13 +388,13 @@ include::{docs-itest-dir}docs/gemfire/indexing/HttpSessionGemFireIndexingIntegra
 This enables developers using the `GemFireOperationsSessionRepository` programmatically to query and find all Sessions
 with a given principal name efficiently.
 
-Additionally, Spring Session Data GemFire will create a Range-based Index on the implementing Session's Map-type
+Additionally, _Spring Session Data Geode_ will create a Range-based Index on the implementing Session's Map-type
 `attributes` property (i.e. on any arbitrary Session attribute) when a developer identifies 1 or more named Session
-attributes that should be indexed by GemFire.
+attributes that should be indexed by Geode.
 
 Sessions attributes to index can be specified with the `indexableSessionAttributes` attribute on the `@EnableGemFireHttpSession`
-annotation.  A developer adds this annotation to their Spring application `@Configuration` class when s/he wishes to
-enable Spring Session support for HttpSession backed by GemFire.
+annotation.  A developer adds this annotation to their _Spring_ application `@Configuration` class when s/he wishes to
+enable _Spring Session's_ support for `HttpSession` backed by Apache Geode.
 
 [source,java,indent=0]
 ----
@@ -406,17 +426,17 @@ Please find additional information below.
 === Support
 
 You can get help by asking questions on http://stackoverflow.com/questions/tagged/spring-session[StackOverflow with the tag spring-session].
-Similarly we encourage helping others by answering questions on StackOverflow.
+Similarly we encourage helping others by answering questions on _StackOverflow_.
 
 [[community-source]]
 === Source Code
 
-Our source code can be found on github at https://github.com/spring-projects/spring-session/
+The source code can be found on GitHub at https://github.com/spring-projects/spring-session-data-geode
 
 [[community-issues]]
 === Issue Tracking
 
-We track issues in github issues at https://github.com/spring-projects/spring-session/issues
+We track issues in GitHub Issues at https://github.com/spring-projects/spring-session-data-geode/issues
 
 [[community-contributing]]
 === Contributing
@@ -426,26 +446,21 @@ We appreciate https://help.github.com/articles/using-pull-requests/[Pull Request
 [[community-license]]
 === License
 
-Spring Session is Open Source software released under the http://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].
-
-[[community-extensions]]
-=== Community Extensions
-https://github.com/maseev/spring-session-orientdb[Spring Session OrientDB]
-http://infinispan.org/docs/dev/user_guide/user_guide.html#externalizing_session_using_spring_session[Spring Session Infinispan]
+_Spring Session Data Geode_ and _Spring Session Data GemFire_ are Open Source Software released under the
+http://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].
 
 [[minimum-requirements]]
 == Minimum Requirements
 
-The minimum requirements for Spring Session are:
+The minimum requirements for _Spring Session_ are:
 
-* Java 5+
-* If you are running in a Servlet Container (not required), Servlet 2.5+
-* If you are using other Spring libraries (not required), the minimum required version is Spring 3.2.14.
-While we re-run all unit tests against Spring 3.2.x, we recommend using the latest Spring 4.x version when possible.
-* `@EnableRedisHttpSession` requires Redis 2.8+. This is necessary to support <<api-redisoperationssessionrepository-expiration,Session Expiration>>
+* Java 8+
+* If you are running in a Servlet container (not required), Servlet 2.5+
+* If you are using other _Spring_ libraries (not required), the minimum required version is _Spring Framework_ 5.0.0.RC2.
+* `@EnableGemFireHttpSession` requires _Spring Data Geode_ 2.0.0.RC2 and _Spring Data GemFire_ 2.0.0.RC2.
+* `@EnableGemFireHttpSession` requires Apache Geode 1.2.0 or Pivotal GemFire 9.1.0.
 
 [NOTE]
 ====
-At its core Spring Session only has a required dependency on `spring-jcl`.
-For an example of using Spring Session without any other Spring dependencies, refer to the <<samples,hazelcast sample>> application.
+At its core _Spring Session_ only has a required dependency on `spring-jcl`.
 ====

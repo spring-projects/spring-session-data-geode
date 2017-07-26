@@ -13,7 +13,7 @@ class GemFireServerPlugin implements Plugin<Project> {
 		project.tasks.create('gemfireServer', GemFireServerTask)
 
 		project.tasks.integrationTest.doLast {
-			println 'Stopping GemFire Server...'
+			println 'Stopping Apache Geode Server...'
 			project.tasks.gemfireServer.process?.destroy()
 //			project.tasks.gemfireServer.process?.destroyForcibly()
 		}
@@ -22,7 +22,7 @@ class GemFireServerPlugin implements Plugin<Project> {
 			dependsOn project.tasks.gemfireServer
 			doFirst {
 				project.gretty {
-					jvmArgs = ["-Dspring.session.data.gemfire.port=${project.tasks.gemfireServer.port}"]
+					jvmArgs = [ "-Dspring.session.data.geode.cache.server.port=${project.tasks.gemfireServer.port}" ]
 				}
 			}
 		}
@@ -46,20 +46,19 @@ class GemFireServerPlugin implements Plugin<Project> {
 		def greet() {
 
 			port = availablePort()
-			println "Starting GemFire Server on port [$port]..."
+			println "Starting Apache Geode Server on port [$port]..."
 
 			def out = debug ? System.err : new StringBuilder()
 			def err = debug ? System.err : new StringBuilder()
 
 			String classpath = project.sourceSets.main.runtimeClasspath.collect { it }.join(File.pathSeparator)
-			String gemfireLogLevel = System.getProperty('spring.session.data.gemfire.log-level', 'warning')
+			String gemfireLogLevel = System.getProperty('spring.session.data.geode.log-level', 'warning')
 
 			String[] commandLine = [
 				'java', '-server', '-ea', '-classpath', classpath,
 				//"-Dgemfire.log-file=gemfire-server.log",
-				//"-Dgemfire.log-level=config",
-				"-Dspring.session.data.gemfire.log-level=" + gemfireLogLevel,
-				"-Dspring.session.data.gemfire.port=${port}",
+				"-Dgemfire.log-level=" + gemfireLogLevel,
+				"-Dspring.session.data.geode.cache.server.port=${port}",
 				mainClassName
 			]
 

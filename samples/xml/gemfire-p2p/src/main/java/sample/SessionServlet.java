@@ -26,15 +26,17 @@ import javax.servlet.http.HttpServletResponse;
 // tag::class[]
 public class SessionServlet extends HttpServlet {
 
+	private static final long serialVersionUID = 2878267318695777395L;
+
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+
 		String attributeName = request.getParameter("attributeName");
 		String attributeValue = request.getParameter("attributeValue");
+
 		request.getSession().setAttribute(attributeName, attributeValue);
 		response.sendRedirect(request.getContextPath() + "/");
 	}
-
-	private static final long serialVersionUID = 2878267318695777395L;
 }
 // end::class[]

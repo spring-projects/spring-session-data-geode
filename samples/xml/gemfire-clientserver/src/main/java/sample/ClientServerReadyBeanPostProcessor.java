@@ -36,7 +36,7 @@ import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 import org.springframework.util.Assert;
 
-public class GemFireClientServerReadyBeanPostProcessor implements BeanPostProcessor {
+public class ClientServerReadyBeanPostProcessor implements BeanPostProcessor {
 
 	private static final long DEFAULT_TIMEOUT = TimeUnit.SECONDS.toMillis(60);
 
@@ -55,16 +55,17 @@ public class GemFireClientServerReadyBeanPostProcessor implements BeanPostProces
 		);
 	}
 
-	@Value("${spring.session.data.gemfire.port:${application.gemfire.client-server.port}}")
+	@Value("${spring.session.data.geode.cache.server.port:${application.geode.client-server.port:40404}}")
 	private int port;
 
-	@Value("${application.gemfire.client-server.host:localhost}")
+	@Value("${application.geode.client-server.host:localhost}")
 	private String host;
 
 	private final AtomicBoolean checkGemFireServerIsRunning = new AtomicBoolean(true);
 	private final AtomicReference<Pool> gemfirePool = new AtomicReference<Pool>(null);
 
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+
 		if (shouldCheckWhetherGemFireServerIsRunning(bean, beanName)) {
 			try {
 				validateCacheClientNotified();
@@ -79,17 +80,20 @@ public class GemFireClientServerReadyBeanPostProcessor implements BeanPostProces
 	}
 
 	private boolean shouldCheckWhetherGemFireServerIsRunning(Object bean, String beanName) {
+
 		return (isGemFireRegion(bean, beanName)
 			? this.checkGemFireServerIsRunning.compareAndSet(true, false)
 			: whenGemFirePool(bean, beanName));
 	}
 
 	private boolean isGemFireRegion(Object bean, String beanName) {
+
 		return (GemFireHttpSessionConfiguration.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME.equals(beanName)
 			|| bean instanceof Region);
 	}
 
 	private boolean whenGemFirePool(Object bean, String beanName) {
+
 		if (bean instanceof Pool) {
 			this.gemfirePool.compareAndSet(null, (Pool) bean);
 		}
@@ -98,24 +102,26 @@ public class GemFireClientServerReadyBeanPostProcessor implements BeanPostProces
 	}
 
 	private void validateCacheClientNotified() throws InterruptedException {
+
 		boolean didNotTimeout = LATCH.await(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
 
 		Assert.state(didNotTimeout, String.format(
-			"GemFire Cache Server failed to start on host [%s] and port [%d]", this.host, this.port));
+			"Apache Geode Cache Server failed to start on host [%s] and port [%d]", this.host, this.port));
 	}
 
 	@SuppressWarnings("all")
 	private void validateCacheClientSubscriptionQueueConnectionEstablished() throws InterruptedException {
+
 		boolean cacheClientSubscriptionQueueConnectionEstablished = false;
 
 		Pool pool = defaultIfNull(this.gemfirePool.get(),
 			GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, GEMFIRE_DEFAULT_POOL_NAME);
 
 		if (pool instanceof PoolImpl) {
+
 			long timeout = (System.currentTimeMillis() + DEFAULT_TIMEOUT);
 
-			while (System.currentTimeMillis() < timeout
-				&& !((PoolImpl) pool).isPrimaryUpdaterAlive()) {
+			while (System.currentTimeMillis() < timeout && !((PoolImpl) pool).isPrimaryUpdaterAlive()) {
 
 				synchronized (pool) {
 					TimeUnit.MILLISECONDS.timedWait(pool, 500L);
@@ -127,13 +133,14 @@ public class GemFireClientServerReadyBeanPostProcessor implements BeanPostProces
 				((PoolImpl) pool).isPrimaryUpdaterAlive();
 		}
 
-		Assert.state(cacheClientSubscriptionQueueConnectionEstablished, String.format(
-			"Cache client subscription queue connection not established; GemFire Pool was [%s];"
-				+ " GemFire Pool configuration was [locators = %s, servers = %s]",
+		Assert.state(cacheClientSubscriptionQueueConnectionEstablished,
+			String.format("Cache client subscription queue connection not established; Geode Pool was [%s];"
+				+ " Geode Pool configuration was [locators = %s, servers = %s]",
 					pool, pool.getLocators(), pool.getServers()));
 	}
 
 	private Pool defaultIfNull(Pool pool, String... poolNames) {
+
 		for (String poolName : poolNames) {
 			pool = (pool != null ? pool : PoolManager.find(poolName));
 		}
@@ -145,4 +152,3 @@ public class GemFireClientServerReadyBeanPostProcessor implements BeanPostProces
 		return bean;
 	}
 }
-// tag::end[]

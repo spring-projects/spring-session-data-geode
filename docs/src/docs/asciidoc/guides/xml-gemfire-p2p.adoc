@@ -1,15 +1,17 @@
-= Spring Session - HttpSession with GemFire P2P using XML (Quick Start)
+= Spring Session - HttpSession with Apache Geode P2P using XML Configuration
 John Blum
 :toc:
 
-This guide describes how to configure Pivotal GemFire as a provider in Spring Session to transparently back
-a web application's `HttpSession` using XML Configuration.
+This guide describes how to configure Apache Geode as a provider in _Spring Session_ to transparently manage
+a Web application's `javax.servlet.http.HttpSession` using XML configuration.
 
-NOTE: The completed guide can be found in the <<httpsession-gemfire-p2p-xml-sample-app,HttpSession with GemFire (P2P) using XML Sample Application>>.
+NOTE: The completed guide can be found in the
+<<spring-session-sample-xml-gemfire-p2p,HttpSession with Apache Geode (P2P) using XML Sample Application>>.
 
 == Updating Dependencies
-Before using Spring Session, you must ensure that the required dependencies are included.
-If you are using Maven, include the following `dependencies` in your _pom.xml_:
+
+Before using _Spring Session_, you must ensure that the required dependencies are included.
+If you are using _Maven_, include the following `dependencies` in your `pom.xml`:
 
 .pom.xml
 [source,xml]
@@ -20,21 +22,21 @@ If you are using Maven, include the following `dependencies` in your _pom.xml_:
 
 	<dependency>
 		<groupId>org.springframework.session</groupId>
-		<artifactId>spring-session-data-gemfire</artifactId>
-		<version>{spring-session-version}</version>
+		<artifactId>spring-session-data-geode</artifactId>
+		<version>{spring-session-data-geode-version}</version>
 		<type>pom</type>
 	</dependency>
 	<dependency>
-		<groupId>org.springframework</groupId>
+		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-web</artifactId>
-		<version>{spring-version}</version>
+		<version>${spring-version}</version>
 	</dependency>
 </dependencies>
 ----
 
 ifeval::["{version-snapshot}" == "true"]
-Since we are using a SNAPSHOT version, we need to add the Spring Snapshot Maven Repository.
-If you are using Maven, include the following `repository` declaration in your _pom.xml_:
+Since we are using a SNAPSHOT version, we need to add the _Spring_ Snapshot Maven Repository.
+If you are using _Maven_, include the following `repository` declaration in your `pom.xml`:
 
 .pom.xml
 [source,xml]
@@ -51,8 +53,8 @@ If you are using Maven, include the following `repository` declaration in your _
 endif::[]
 
 ifeval::["{version-milestone}" == "true"]
-Since we are using a Milestone version, we need to add the Spring Milestone Maven Repository.
-If you are using Maven, include the following `repository` declaration in your _pom.xml_:
+Since we are using a Milestone version, we need to add the _Spring_ Milestone Maven Repository.
+If you are using _Maven_, include the following `repository` declaration in your `pom.xml`:
 
 .pom.xml
 [source,xml]
@@ -69,14 +71,15 @@ If you are using Maven, include the following `repository` declaration in your _
 endif::[]
 
 // tag::config[]
-[[httpsession-spring-xml-configuration-gemfire-p2p]]
+[[httpsession-spring-xml-configuration]]
 == Spring XML Configuration
 
-After adding the required dependencies and repository declarations, we can create our Spring configuration.
-The Spring configuration is responsible for creating a Servlet Filter that replaces the `HttpSession`
-with an implementation backed by Spring Session and GemFire.
+After adding the required dependencies and repository declarations, we can create the _Spring_ configuration.
 
-Add the following Spring Configuration:
+The _Spring_ configuration is responsible for creating a `Servlet` `Filter` that replaces the `javax.servlet.http.HttpSession`
+with an implementation backed by _Spring Session_ and Apache Geode.
+
+Add the following Spring configuration:
 
 .src/main/webapp/WEB-INF/spring/session.xml
 [source,xml,indent=0]
@@ -84,31 +87,27 @@ Add the following Spring Configuration:
 include::{samples-dir}xml/gemfire-p2p/src/main/webapp/WEB-INF/spring/session.xml[tags=beans]
 ----
 
-<1> We use the combination of `<context:annotation-config/>` and `GemFireHttpSessionConfiguration` because Spring Session
-does not yet provide XML Namespace support (see https://github.com/spring-projects/spring-session/issues/104[gh-104]).
-This creates a Spring bean with the name of `springSessionRepositoryFilter` that implements `Filter`. The filter is what
-replaces the `HttpSession` with an implementation backed by Spring Session.
-In this instance, Spring Session is backed by GemFire.
-<2> Then, we configure a GemFire peer cache using standard GemFire System properties.  We give the GemFire data node
-a name using the `name` property and set `mcast-port` to 0.  With the absence of a `locators` property, this data node
-will be a standalone server. GemFire's `log-level` is set using an application-specific System property
-(`sample.httpsession.gemfire.log-level`) that a user can specify on the command-line when running this application
-using either Maven or Gradle (default is "_warning_").
-<3> Finally, we create an instance of the GemFire peer cache that embeds GemFire in the same JVM process as the running
-Spring Session sample application.
+<1> (Optional) First, we can include a `Properties` bean to configure certain aspects of the Apache Geode peer `Cache`
+using http://geode.apache.org/docs/guide/12/reference/topics/gemfire_properties.html[GemFire Properties]. In this case,
+we are just setting Apache Geode's "`log-level`" from a application-specific System property, defaulting to "`warning`"
+if unspecified.
+<2> We must configure an Apache Geode peer `Cache` instance initialized with the Apache Geode properties.
+<3> Finally, we enable _Spring Session_ functionality  by registering an instance of `GemFireHttpSessionConfiguration`.
 
-TIP: Additionally, we have configured this data node (server) as a GemFire Manager as well using GemFire-specific
-JMX System properties that enable JMX client (e.g. _Gfsh_) to connect to this running data node.
+TIP: Additionally, we have configured this data node (server) as a Apache Geode Manager as well using Geode-specific
+JMX properties that enable JMX client (e.g. _Gfsh_) to connect to this running server.
 
-NOTE: For more information on configuring _Spring Data GemFire_, refer to the http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[reference guide].
+NOTE: For more information on configuring _Spring Data Geode, refer to the
+http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[Reference Guide].
 
 == XML Servlet Container Initialization
 
-Our <<httpsession-spring-xml-configuration,Spring XML Configuration>> created a Spring bean named `springSessionRepositoryFilter`
-that implements `Filter`. The `springSessionRepositoryFilter` bean is responsible for replacing the `HttpSession` with
-a custom implementation that is backed by Spring Session and GemFire.
+The <<httpsession-spring-xml-configuration,Spring XML Configuration>> created a _Spring_ bean named `springSessionRepositoryFilter`
+that implements `javax.servlet.Filter`. The `springSessionRepositoryFilter` bean is responsible for replacing
+the `javax.servlet.http.HttpSession` with a custom implementation that is backed by _Spring Session_ and Apache Geode.
 
-In order for our `Filter` to do its magic, we need to instruct Spring to load our `session.xml` configuration file.
+In order for our `Filter` to do its magic, we need to instruct _Spring_ to load our `session.xml` configuration file.
+
 We do this with the following configuration:
 
 .src/main/webapp/WEB-INF/web.xml
@@ -121,8 +120,8 @@ include::{samples-dir}xml/gemfire-p2p/src/main/webapp/WEB-INF/web.xml[tags=liste
 The http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#context-create[ContextLoaderListener]
 reads the `contextConfigLocation` context parameter value and picks up our _session.xml_ configuration file.
 
-Finally, we need to ensure that our Servlet Container (i.e. Tomcat) uses our `springSessionRepositoryFilter`
-for every request.
+Finally, we need to ensure that our Servlet container (i.e. Tomcat) uses our `springSessionRepositoryFilter`
+for every HTTP request.
 
 The following snippet performs this last step for us:
 
@@ -133,25 +132,24 @@ include::{samples-dir}xml/gemfire-p2p/src/main/webapp/WEB-INF/web.xml[tags=sprin
 ----
 
 The http://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/filter/DelegatingFilterProxy.html[DelegatingFilterProxy]
-will look up a bean by the name of `springSessionRepositoryFilter` and cast it to a `Filter`. For every request that `DelegatingFilterProxy`
-is invoked, the `springSessionRepositoryFilter` will be invoked.
+will look up a bean by the name of `springSessionRepositoryFilter` and cast it to a `Filter`. For every HTTP request
+the `DelegatingFilterProxy` is invoked, delegating to the `springSessionRepositoryFilter`.
 // end::config[]
 
-[[httpsession-gemfire-p2p-xml-sample-app]]
-== HttpSession with GemFire (P2P) using XML Sample Application
+[[spring-session-sample-xml-gemfire-p2p]]
+== HttpSession with Apache Geode (P2P) using XML Sample Application
 
-
-=== Running the httpsession-gemfire-p2p-xml Sample Application
+=== Running the Geode XML Sample Application
 
 You can run the sample by obtaining the {download-url}[source code] and invoking the following command:
 
 ----
-$ ./gradlew :samples:httpsession-gemfire-p2p-xml:tomcatRun [-Dsample.httpsession.gemfire.log-level=info]
+$ ./gradlew :spring-session-sample-xml-gemfire-p2p:tomcatRun [-Dgemfire.log-level=info]
 ----
 
-You should now be able to access the application at http://localhost:8080/
+You should now be able to access the application at http://localhost:8080/.
 
-=== Exploring the httpsession-gemfire-p2p-xml Sample Application
+=== Exploring the Geode XML Sample Application
 
 Try using the application. Fill out the form with the following information:
 
@@ -170,21 +168,23 @@ We interact with the standard `HttpSession` in the `SessionServlet` shown below:
 include::{samples-dir}xml/gemfire-p2p/src/main/java/sample/SessionServlet.java[tags=class]
 ----
 
-Instead of using Tomcat's `HttpSession`, we are actually persisting the values in GemFire.
-Spring Session creates a cookie named SESSION in your browser that contains the id of your session.
+Instead of using Tomcat's `HttpSession`, we are actually persisting the Session in Apache Geode.
+
+_Spring Session_ creates a cookie named SESSION in your browser that contains the id of your session.
 Go ahead and view the cookies (click for help with https://developer.chrome.com/devtools/docs/resources#cookies[Chrome]
 or https://getfirebug.com/wiki/index.php/Cookies_Panel#Cookies_List[Firefox]).
 
-NOTE: The following instructions assume you have a local GemFire installation.  For more information on installation,
-see http://gemfire.docs.pivotal.io/docs-gemfire/latest/getting_started/installation/install_intro.html[Installing Pivotal GemFire].
+NOTE: The following instructions assume you have a local Apache Geode installation.  For more information on installation,
+see http://geode.apache.org/docs/guide/12/prereq_and_install.html[Prerequisites and Installation Instructions].
 
-If you like, you can easily remove the session using `gfsh`. For example, on a Linux-based system type the following
-at the command-line:
+If you like, you can easily remove the session using `gfsh`.
+
+For example, on a Linux-based system type the following at the command-line:
 
 	$ gfsh
 
-Then, enter the following into _Gfsh_ ensuring to replace `70002719-3c54-4c20-82c3-e7faa6b718f3` with the value
-of your SESSION cookie, or the session ID returned by the GemFire OQL query (which should match):
+Then, enter the following into _Gfsh_, ensuring to replace `70002719-3c54-4c20-82c3-e7faa6b718f3` with the value
+of your SESSION cookie, or the Session id returned by the Apache Geode OQL query (which should match):
 
 ....
 gfsh>connect --jmx-manager=localhost[1099]
@@ -205,6 +205,7 @@ NEXT_STEP_NAME : END
 gfsh>remove --region=/ClusteredSpringSessions --key="70002719-3c54-4c20-82c3-e7faa6b718f3"
 ....
 
-NOTE: The _GemFire User Guide_ has more detailed instructions on using http://gemfire.docs.pivotal.io/docs-gemfire/latest/tools_modules/gfsh/chapter_overview.html[gfsh].
+NOTE: The _Apache Geode User Guide_ contains more detailed instructions on using
+http://geode.apache.org/docs/guide/12/tools_modules/gfsh/chapter_overview.html[gfsh].
 
-Now visit the application at http://localhost:8080/ and observe that the attribute we added is no longer displayed.
+Now visit the application at `http://localhost:8080/` again and observe the attribute we added is no longer displayed.

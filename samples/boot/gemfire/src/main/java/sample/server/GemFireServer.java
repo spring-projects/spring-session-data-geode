@@ -16,27 +16,15 @@
 
 package sample.server;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.cache.Region;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Profile;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.data.gemfire.CacheFactoryBean;
-import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
-import org.springframework.data.gemfire.server.CacheServerFactoryBean;
+import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
+import org.springframework.data.gemfire.config.annotation.CacheServerConfigurer;
+import org.springframework.data.gemfire.config.annotation.EnableManager;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 
 /**
@@ -51,12 +39,12 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
  * @since 1.2.1
  */
 // tag::class[]
-@SpringBootApplication
-@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 20) // <1>
+@SpringBootApplication // <1>
+@CacheServerApplication(name = "SpringSessionDataGeodeServerBootSample", logLevel = "warning") // <2>
+@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 20) // <3>
+@EnableManager(start = true) // <4>
 @SuppressWarnings("unused")
 public class GemFireServer {
-
-	static final String DEFAULT_GEMFIRE_LOG_LEVEL = "config";
 
 	public static void main(String[] args) {
 		SpringApplication springApplication = new SpringApplication(GemFireServer.class);
@@ -64,90 +52,18 @@ public class GemFireServer {
 		springApplication.run(args);
 	}
 
+	// Required to resolve property placeholders in Spring @Value annotations.
 	@Bean
 	static PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer() {
 		return new PropertySourcesPlaceholderConfigurer();
 	}
 
-	Properties gemfireProperties() { // <2>
-
-		Properties gemfireProperties = new Properties();
-
-		gemfireProperties.setProperty("name", applicationName());
-		//gemfireProperties.setProperty("log-file", "gemfire-server.log");
-		gemfireProperties.setProperty("log-level", logLevel());
-		gemfireProperties.setProperty("jmx-manager", "true");
-		gemfireProperties.setProperty("jmx-manager-start", "true");
-
-		return gemfireProperties;
-	}
-
-	String applicationName() {
-		return "spring-session-data-gemfire-boot-sample:".concat(getClass().getSimpleName());
-	}
-
-	String logLevel() {
-		return System.getProperty("spring-session-data-gemfire.log.level", DEFAULT_GEMFIRE_LOG_LEVEL);
-	}
-
 	@Bean
-	CacheFactoryBean gemfireCache() { // <3>
+	CacheServerConfigurer cacheServerPortConfigurer(
+			@Value("${spring.session.data.geode.cache.server.port:40404}") int port) { // <5>
 
-		CacheFactoryBean gemfireCache = new CacheFactoryBean();
-
-		gemfireCache.setClose(true);
-		gemfireCache.setProperties(gemfireProperties());
-
-		return gemfireCache;
-	}
-
-	@Bean
-	CacheServerFactoryBean gemfireCacheServer(GemFireCache gemfireCache,
-			@Value("${spring-session-data-gemfire.cache.server.bind-address:localhost}") String bindAddress,
-			@Value("${spring-session-data-gemfire.cache.server.hostname-for-clients:localhost}") String hostnameForClients,
-			@Value("${spring-session-data-gemfire.cache.server.port:40404}") int port) { // <4>
-
-		CacheServerFactoryBean gemfireCacheServer = new CacheServerFactoryBean();
-
-		gemfireCacheServer.setAutoStartup(true);
-		gemfireCacheServer.setBindAddress(bindAddress);
-		gemfireCacheServer.setCache((Cache) gemfireCache);
-		gemfireCacheServer.setHostNameForClients(hostnameForClients);
-		gemfireCacheServer.setMaxTimeBetweenPings(Long.valueOf(TimeUnit.SECONDS.toMillis(60)).intValue());
-		gemfireCacheServer.setPort(port);
-
-		return gemfireCacheServer;
-	}
-
-	@Bean(name = "Example")
-	@Profile("debug")
-	ReplicatedRegionFactoryBean<String, Object> exampleRegion(GemFireCache gemfireCache) {
-
-		ReplicatedRegionFactoryBean<String, Object> exampleRegionFactory = new ReplicatedRegionFactoryBean<>();
-
-		exampleRegionFactory.setCache(gemfireCache);
-		exampleRegionFactory.setClose(false);
-
-		return exampleRegionFactory;
-	}
-
-	@Autowired
-	private GemFireCache gemfireCache;
-
-	@Bean
-	@Profile("debug")
-	CommandLineRunner exampleInitializer() {
-
-		return args -> {
-
-			Region<String, Object> example = this.gemfireCache.getRegion("/Example");
-
-			String key = "time";
-
-			example.put(key, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:ss a")));
-
-			System.err.printf("Example.get(%s) is [%s]%n", key, example.get(key));
-		};
+		return (beanName, cacheServerFactoryBean) ->
+			cacheServerFactoryBean.setPort(port);
 	}
 }
 // end::class[]

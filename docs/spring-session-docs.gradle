@@ -23,14 +23,14 @@ def versions = dependencyManagement.managedVersions
 asciidoctor {
 
 	def ghTag = snapshotBuild ? 'master' : project.version
-	def ghUrl = "https://github.com/spring-projects/spring-session/tree/$ghTag"
+	def ghUrl = "https://github.com/spring-projects/spring-session-data-geode/tree/$ghTag"
 
 	attributes	'version-snapshot': snapshotBuild,
 		'version-milestone': milestoneBuild,
 		'version-release': releaseBuild,
 		'gh-url': ghUrl,
 		'gh-samples-url': "$ghUrl/samples/",
-		'download-url' : "https://github.com/spring-projects/spring-session/archive/${ghTag}.zip",
+		'download-url' : "https://github.com/spring-projects/spring-session-data-geode/archive/${ghTag}.zip",
 		'spring-version' : versions['org.springframework:spring-core'],
 		'spring-session-version' : version,
 		'docs-itest-dir' : rootProject.projectDir.path + '/docs/src/integration-test/java/',

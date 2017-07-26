@@ -19,11 +19,6 @@ dependencies {
 
 	testCompile "org.springframework.boot:spring-boot-starter-test"
 	testCompile seleniumDependencies
-//	testCompile 'org.seleniumhq.selenium:htmlunit-driver'
-//	testCompile 'org.seleniumhq.selenium:selenium-api'
-//	testCompile 'org.seleniumhq.selenium:selenium-java'
-//	testCompile 'org.seleniumhq.selenium:selenium-remote-driver'
-//	testCompile 'org.seleniumhq.selenium:selenium-support'
 
 	integrationTestCompile seleniumDependencies
 
@@ -45,7 +40,7 @@ task runGemFireServer() {
 	doLast {
 		ext.port = reservePort()
 
-		println "Starting GemFire Server on port [$port] ..."
+		println "Starting Apache Geode Server on port [$port] ..."
 
 		def out = new StringBuilder()
 		def err = new StringBuilder()
@@ -56,9 +51,7 @@ task runGemFireServer() {
 			'java', '-server', '-ea', '-classpath', classpath,
 			//"-Dgemfire.log-file=gemfire-server.log",
 			//"-Dgemfire.log-level=config",
-			"-Dspring-session-data-gemfire.cache.server.port=$port",
-			"-Dspring-session-data-gemfire.log.level="
-				+ System.getProperty('spring-session-data-gemfire.log.level', 'warning'),
+			"-Dspring.session.data.geode.cache.server.port=$port",
 			'sample.server.GemFireServer'
 		]
 
@@ -83,11 +76,10 @@ integrationTest {
 		systemProperties['server.port'] = port
 		//systemProperties['gemfire.log-file'] = "gemfire-client.log"
 		//systemProperties['gemfire.log-level'] = "config"
-		systemProperties['spring-session-data-gemfire.cache.server.port'] = runGemFireServer.port
-		systemProperties['spring-session-data-gemfire.log.level'] = System.getProperty("spring-session-data-gemfire.log.level", "warning")
+		systemProperties['spring.session.data.geode.cache.server.port'] = runGemFireServer.port
 	}
 	doLast {
-		println 'Stopping GemFire Server...'
+		println 'Stopping Apache Geode Server...'
 		runGemFireServer.process?.destroyForcibly()
 	}
 }

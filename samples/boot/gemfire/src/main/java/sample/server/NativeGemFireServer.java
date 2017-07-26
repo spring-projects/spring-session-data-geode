@@ -76,6 +76,7 @@ public final class NativeGemFireServer implements Runnable {
 	}
 
 	private static void writeStringTo(File file, String fileContents) {
+
 		PrintWriter fileWriter = null;
 
 		try {
@@ -92,6 +93,7 @@ public final class NativeGemFireServer implements Runnable {
 			}
 		}
 	}
+
 	private NativeGemFireServer(String[] args) {
 		this.args = nullSafeStringArray(args);
 	}
@@ -122,11 +124,13 @@ public final class NativeGemFireServer implements Runnable {
 	}
 
 	private String applicationName(String applicationName) {
+
 		return StringUtils.hasText(applicationName) ? applicationName
 			: "spring-session-data-gemfire.boot.sample." + NativeGemFireServer.class.getSimpleName();
 	}
 
 	private Properties gemfireProperties(String applicationName) {
+
 		Properties gemfireProperties = new Properties();
 
 		gemfireProperties.setProperty("name", applicationName);
@@ -143,6 +147,7 @@ public final class NativeGemFireServer implements Runnable {
 	}
 
 	private Cache createRegion(Cache gemfireCache) {
+
 		RegionFactory<Object, AbstractGemFireOperationsSessionRepository.GemFireSession> regionFactory =
 			gemfireCache.createRegionFactory(RegionShortcut.PARTITION);
 
@@ -162,6 +167,7 @@ public final class NativeGemFireServer implements Runnable {
 	}
 
 	private Cache addCacheServer(Cache gemfireCache) throws IOException {
+
 		CacheServer cacheServer = gemfireCache.addCacheServer();
 
 		cacheServer.setBindAddress(GEMFIRE_CACHE_SERVER_HOST);
@@ -173,6 +179,7 @@ public final class NativeGemFireServer implements Runnable {
 	}
 
 	private Cache registerShutdownHook(final Cache gemfireCache) {
+
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
 				if (gemfireCache != null) {
