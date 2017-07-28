@@ -1,0 +1,1285 @@
+:buildSrc:compileJava NO-SOURCE
+:buildSrc:compileGroovy UP-TO-DATE
+:buildSrc:processResources UP-TO-DATE
+:buildSrc:classes UP-TO-DATE
+:buildSrc:jar UP-TO-DATE
+:buildSrc:assemble UP-TO-DATE
+:buildSrc:compileTestJava NO-SOURCE
+:buildSrc:compileTestGroovy NO-SOURCE
+:buildSrc:processTestResources NO-SOURCE
+:buildSrc:testClasses UP-TO-DATE
+:buildSrc:test NO-SOURCE
+:buildSrc:check UP-TO-DATE
+:buildSrc:build UP-TO-DATE
+Attributes found in options. Existing attributes will be replaced due to assignment. Please use 'attributes' method instead as current behaviour will be removed in future
+:spring-session-data-gemfire:dependencies
+
+------------------------------------------------------------
+Project :spring-session-data-gemfire - Spring Session Data GemFire
+------------------------------------------------------------
+
+apiElements - API elements for main. (n)
+No dependencies
+
+archives - Configuration for archive artifacts.
+No dependencies
+
+compile - Dependencies for source set 'main' (deprecated, use 'implementation ' instead).
++--- project :spring-session-data-geode
+|    +--- org.springframework:spring-context-support: -> 5.0.0.RC2
+|    |    +--- org.springframework:spring-beans:5.0.0.RC2
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-jcl:5.0.0.RC2
+|    |    +--- org.springframework:spring-context:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-aop:5.0.0.RC2
+|    |    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-expression:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    +--- org.springframework:spring-jcl: -> 5.0.0.RC2
+|    +--- org.springframework.data:spring-data-gemfire:2.0.0.M4
+|    |    +--- org.springframework:spring-context-support:5.0.0.RC2 (*)
+|    |    +--- org.springframework:spring-tx:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    +--- org.springframework.data:spring-data-commons:2.0.0.M4
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    +--- io.pivotal.gemfire:geode-core:9.0.4
+|    |    |    +--- com.github.stephenc.findbugs:findbugs-annotations:1.3.9-1
+|    |    |    +--- org.jgroups:jgroups:3.6.10.Final
+|    |    |    +--- antlr:antlr:2.7.7
+|    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.8.2 -> 2.9.0.pr4
+|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr4
+|    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.9.0.pr4
+|    |    |    +--- commons-io:commons-io:2.3 -> 2.5
+|    |    |    +--- commons-lang:commons-lang:2.5 -> 2.6
+|    |    |    +--- it.unimi.dsi:fastutil:7.0.2 -> 7.1.0
+|    |    |    +--- javax.resource:javax.resource-api:1.7
+|    |    |    |    \--- javax.transaction:javax.transaction-api:1.2
+|    |    |    +--- net.java.dev.jna:jna:4.0.0 -> 4.4.0
+|    |    |    +--- net.sf.jopt-simple:jopt-simple:5.0.1 -> 5.0.4
+|    |    |    +--- org.apache.logging.log4j:log4j-api:2.6.1 -> 2.8.2
+|    |    |    +--- org.apache.logging.log4j:log4j-core:2.6.1 -> 2.8.2
+|    |    |    |    \--- org.apache.logging.log4j:log4j-api:2.8.2
+|    |    |    +--- org.apache.shiro:shiro-core:1.3.2 -> 1.4.0
+|    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    +--- org.apache.shiro:shiro-cache:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-hash:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0
+|    |    |    |    |         \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-cipher:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-ogdl:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-event:1.4.0
+|    |    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- commons-beanutils:commons-beanutils:1.9.3
+|    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
+|    |    |    |    |    |    \--- commons-collections:commons-collections:3.2.2
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    \--- org.apache.shiro:shiro-event:1.4.0 (*)
+|    |    |    +--- commons-beanutils:commons-beanutils:1.9.3 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    \--- io.pivotal.gemfire:geode-json:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-cq:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-lucene:9.0.4
+|    |    |    +--- io.pivotal.gemfire:geode-core:9.0.4 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    +--- org.apache.lucene:lucene-analyzers-common:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    +--- org.apache.lucene:lucene-core:6.0.0 -> 6.4.1
+|    |    |    +--- org.apache.lucene:lucene-queries:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    \--- org.apache.lucene:lucene-queryparser:6.0.0 -> 6.4.1
+|    |    |         +--- org.apache.lucene:lucene-core:6.4.1
+|    |    |         +--- org.apache.lucene:lucene-queries:6.4.1 (*)
+|    |    |         \--- org.apache.lucene:lucene-sandbox:6.4.1
+|    |    +--- io.pivotal.gemfire:geode-wan:9.0.4
+|    |    +--- antlr:antlr:2.7.7
+|    |    +--- org.aspectj:aspectjweaver:1.8.10
+|    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr3 -> 2.9.0.pr4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3 -> 2.9.0.pr4 (*)
+|    |    +--- org.slf4j:jcl-over-slf4j:1.7.25
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    \--- org.slf4j:slf4j-api:1.7.25
+|    \--- org.springframework.session:spring-session:2.0.0.M2
+|         \--- org.springframework:spring-jcl:5.0.0.RC2
+\--- org.springframework.data:spring-data-gemfire: -> 2.0.0.M4 (*)
+
+compileClasspath - Compile classpath for source set 'main'.
++--- project :spring-session-data-geode
+|    +--- org.springframework:spring-context-support: -> 5.0.0.RC2
+|    |    +--- org.springframework:spring-beans:5.0.0.RC2
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-jcl:5.0.0.RC2
+|    |    +--- org.springframework:spring-context:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-aop:5.0.0.RC2
+|    |    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-expression:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    +--- org.springframework:spring-jcl: -> 5.0.0.RC2
+|    +--- org.springframework.data:spring-data-gemfire:2.0.0.M4
+|    |    +--- org.springframework:spring-context-support:5.0.0.RC2 (*)
+|    |    +--- org.springframework:spring-tx:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    +--- org.springframework.data:spring-data-commons:2.0.0.M4
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    +--- io.pivotal.gemfire:geode-core:9.0.4
+|    |    |    +--- com.github.stephenc.findbugs:findbugs-annotations:1.3.9-1
+|    |    |    +--- org.jgroups:jgroups:3.6.10.Final
+|    |    |    +--- antlr:antlr:2.7.7
+|    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.8.2 -> 2.9.0.pr4
+|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr4
+|    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.9.0.pr4
+|    |    |    +--- commons-io:commons-io:2.3 -> 2.5
+|    |    |    +--- commons-lang:commons-lang:2.5 -> 2.6
+|    |    |    +--- it.unimi.dsi:fastutil:7.0.2 -> 7.1.0
+|    |    |    +--- javax.resource:javax.resource-api:1.7
+|    |    |    |    \--- javax.transaction:javax.transaction-api:1.2
+|    |    |    +--- net.java.dev.jna:jna:4.0.0 -> 4.4.0
+|    |    |    +--- net.sf.jopt-simple:jopt-simple:5.0.1 -> 5.0.4
+|    |    |    +--- org.apache.logging.log4j:log4j-api:2.6.1 -> 2.8.2
+|    |    |    +--- org.apache.logging.log4j:log4j-core:2.6.1 -> 2.8.2
+|    |    |    |    \--- org.apache.logging.log4j:log4j-api:2.8.2
+|    |    |    +--- org.apache.shiro:shiro-core:1.3.2 -> 1.4.0
+|    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    +--- org.apache.shiro:shiro-cache:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-hash:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0
+|    |    |    |    |         \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-cipher:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-ogdl:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-event:1.4.0
+|    |    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- commons-beanutils:commons-beanutils:1.9.3
+|    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
+|    |    |    |    |    |    \--- commons-collections:commons-collections:3.2.2
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    \--- org.apache.shiro:shiro-event:1.4.0 (*)
+|    |    |    +--- commons-beanutils:commons-beanutils:1.9.3 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    \--- io.pivotal.gemfire:geode-json:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-cq:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-lucene:9.0.4
+|    |    |    +--- io.pivotal.gemfire:geode-core:9.0.4 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    +--- org.apache.lucene:lucene-analyzers-common:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    +--- org.apache.lucene:lucene-core:6.0.0 -> 6.4.1
+|    |    |    +--- org.apache.lucene:lucene-queries:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    \--- org.apache.lucene:lucene-queryparser:6.0.0 -> 6.4.1
+|    |    |         +--- org.apache.lucene:lucene-core:6.4.1
+|    |    |         +--- org.apache.lucene:lucene-queries:6.4.1 (*)
+|    |    |         \--- org.apache.lucene:lucene-sandbox:6.4.1
+|    |    +--- io.pivotal.gemfire:geode-wan:9.0.4
+|    |    +--- antlr:antlr:2.7.7
+|    |    +--- org.aspectj:aspectjweaver:1.8.10
+|    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr3 -> 2.9.0.pr4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3 -> 2.9.0.pr4 (*)
+|    |    +--- org.slf4j:jcl-over-slf4j:1.7.25
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    \--- org.slf4j:slf4j-api:1.7.25
+|    \--- org.springframework.session:spring-session:2.0.0.M2
+|         \--- org.springframework:spring-jcl:5.0.0.RC2
+\--- org.springframework.data:spring-data-gemfire: -> 2.0.0.M4 (*)
+
+compileOnly - Compile only dependencies for source set 'main'.
+No dependencies
+
+default - Configuration for default artifacts.
++--- project :spring-session-data-geode
+|    +--- org.springframework:spring-context-support: -> 5.0.0.RC2
+|    |    +--- org.springframework:spring-beans:5.0.0.RC2
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-jcl:5.0.0.RC2
+|    |    +--- org.springframework:spring-context:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-aop:5.0.0.RC2
+|    |    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-expression:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    +--- org.springframework:spring-jcl: -> 5.0.0.RC2
+|    +--- org.springframework.data:spring-data-gemfire:2.0.0.M4
+|    |    +--- org.springframework:spring-context-support:5.0.0.RC2 (*)
+|    |    +--- org.springframework:spring-tx:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    +--- org.springframework.data:spring-data-commons:2.0.0.M4
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    +--- io.pivotal.gemfire:geode-core:9.0.4
+|    |    |    +--- com.github.stephenc.findbugs:findbugs-annotations:1.3.9-1
+|    |    |    +--- org.jgroups:jgroups:3.6.10.Final
+|    |    |    +--- antlr:antlr:2.7.7
+|    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.8.2 -> 2.9.0.pr4
+|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr4
+|    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.9.0.pr4
+|    |    |    +--- commons-io:commons-io:2.3 -> 2.5
+|    |    |    +--- commons-lang:commons-lang:2.5 -> 2.6
+|    |    |    +--- it.unimi.dsi:fastutil:7.0.2 -> 7.1.0
+|    |    |    +--- javax.resource:javax.resource-api:1.7
+|    |    |    |    \--- javax.transaction:javax.transaction-api:1.2
+|    |    |    +--- net.java.dev.jna:jna:4.0.0 -> 4.4.0
+|    |    |    +--- net.sf.jopt-simple:jopt-simple:5.0.1 -> 5.0.4
+|    |    |    +--- org.apache.logging.log4j:log4j-api:2.6.1 -> 2.8.2
+|    |    |    +--- org.apache.logging.log4j:log4j-core:2.6.1 -> 2.8.2
+|    |    |    |    \--- org.apache.logging.log4j:log4j-api:2.8.2
+|    |    |    +--- org.apache.shiro:shiro-core:1.3.2 -> 1.4.0
+|    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    +--- org.apache.shiro:shiro-cache:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-hash:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0
+|    |    |    |    |         \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-cipher:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-ogdl:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-event:1.4.0
+|    |    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- commons-beanutils:commons-beanutils:1.9.3
+|    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
+|    |    |    |    |    |    \--- commons-collections:commons-collections:3.2.2
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    \--- org.apache.shiro:shiro-event:1.4.0 (*)
+|    |    |    +--- commons-beanutils:commons-beanutils:1.9.3 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    \--- io.pivotal.gemfire:geode-json:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-cq:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-lucene:9.0.4
+|    |    |    +--- io.pivotal.gemfire:geode-core:9.0.4 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    +--- org.apache.lucene:lucene-analyzers-common:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    +--- org.apache.lucene:lucene-core:6.0.0 -> 6.4.1
+|    |    |    +--- org.apache.lucene:lucene-queries:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    \--- org.apache.lucene:lucene-queryparser:6.0.0 -> 6.4.1
+|    |    |         +--- org.apache.lucene:lucene-core:6.4.1
+|    |    |         +--- org.apache.lucene:lucene-queries:6.4.1 (*)
+|    |    |         \--- org.apache.lucene:lucene-sandbox:6.4.1
+|    |    +--- io.pivotal.gemfire:geode-wan:9.0.4
+|    |    +--- antlr:antlr:2.7.7
+|    |    +--- org.aspectj:aspectjweaver:1.8.10
+|    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr3 -> 2.9.0.pr4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3 -> 2.9.0.pr4 (*)
+|    |    +--- org.slf4j:jcl-over-slf4j:1.7.25
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    \--- org.slf4j:slf4j-api:1.7.25
+|    \--- org.springframework.session:spring-session:2.0.0.M2
+|         \--- org.springframework:spring-jcl:5.0.0.RC2
+\--- org.springframework.data:spring-data-gemfire: -> 2.0.0.M4 (*)
+
+implementation - Implementation only dependencies for source set 'main'. (n)
+No dependencies
+
+jacocoAgent - The Jacoco agent to use to get coverage data.
+\--- org.jacoco:org.jacoco.agent:0.7.6.201602180812
+
+jacocoAnt - The Jacoco ant tasks to use to get execute Gradle tasks.
+\--- org.jacoco:org.jacoco.ant:0.7.6.201602180812
+     +--- org.jacoco:org.jacoco.core:0.7.6.201602180812
+     |    \--- org.ow2.asm:asm-debug-all:5.0.4
+     +--- org.jacoco:org.jacoco.report:0.7.6.201602180812
+     |    +--- org.jacoco:org.jacoco.core:0.7.6.201602180812 (*)
+     |    \--- org.ow2.asm:asm-debug-all:5.0.4
+     \--- org.jacoco:org.jacoco.agent:0.7.6.201602180812
+
+merging
+No dependencies
+
+optional
+No dependencies
+
+provided
+No dependencies
+
+runtime - Runtime dependencies for source set 'main' (deprecated, use 'runtimeOnly ' instead).
++--- project :spring-session-data-geode
+|    +--- org.springframework:spring-context-support: -> 5.0.0.RC2
+|    |    +--- org.springframework:spring-beans:5.0.0.RC2
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-jcl:5.0.0.RC2
+|    |    +--- org.springframework:spring-context:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-aop:5.0.0.RC2
+|    |    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-expression:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    +--- org.springframework:spring-jcl: -> 5.0.0.RC2
+|    +--- org.springframework.data:spring-data-gemfire:2.0.0.M4
+|    |    +--- org.springframework:spring-context-support:5.0.0.RC2 (*)
+|    |    +--- org.springframework:spring-tx:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    +--- org.springframework.data:spring-data-commons:2.0.0.M4
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    +--- io.pivotal.gemfire:geode-core:9.0.4
+|    |    |    +--- com.github.stephenc.findbugs:findbugs-annotations:1.3.9-1
+|    |    |    +--- org.jgroups:jgroups:3.6.10.Final
+|    |    |    +--- antlr:antlr:2.7.7
+|    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.8.2 -> 2.9.0.pr4
+|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr4
+|    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.9.0.pr4
+|    |    |    +--- commons-io:commons-io:2.3 -> 2.5
+|    |    |    +--- commons-lang:commons-lang:2.5 -> 2.6
+|    |    |    +--- it.unimi.dsi:fastutil:7.0.2 -> 7.1.0
+|    |    |    +--- javax.resource:javax.resource-api:1.7
+|    |    |    |    \--- javax.transaction:javax.transaction-api:1.2
+|    |    |    +--- net.java.dev.jna:jna:4.0.0 -> 4.4.0
+|    |    |    +--- net.sf.jopt-simple:jopt-simple:5.0.1 -> 5.0.4
+|    |    |    +--- org.apache.logging.log4j:log4j-api:2.6.1 -> 2.8.2
+|    |    |    +--- org.apache.logging.log4j:log4j-core:2.6.1 -> 2.8.2
+|    |    |    |    \--- org.apache.logging.log4j:log4j-api:2.8.2
+|    |    |    +--- org.apache.shiro:shiro-core:1.3.2 -> 1.4.0
+|    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    +--- org.apache.shiro:shiro-cache:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-hash:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0
+|    |    |    |    |         \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-cipher:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-ogdl:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-event:1.4.0
+|    |    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- commons-beanutils:commons-beanutils:1.9.3
+|    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
+|    |    |    |    |    |    \--- commons-collections:commons-collections:3.2.2
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    \--- org.apache.shiro:shiro-event:1.4.0 (*)
+|    |    |    +--- commons-beanutils:commons-beanutils:1.9.3 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    \--- io.pivotal.gemfire:geode-json:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-cq:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-lucene:9.0.4
+|    |    |    +--- io.pivotal.gemfire:geode-core:9.0.4 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    +--- org.apache.lucene:lucene-analyzers-common:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    +--- org.apache.lucene:lucene-core:6.0.0 -> 6.4.1
+|    |    |    +--- org.apache.lucene:lucene-queries:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    \--- org.apache.lucene:lucene-queryparser:6.0.0 -> 6.4.1
+|    |    |         +--- org.apache.lucene:lucene-core:6.4.1
+|    |    |         +--- org.apache.lucene:lucene-queries:6.4.1 (*)
+|    |    |         \--- org.apache.lucene:lucene-sandbox:6.4.1
+|    |    +--- io.pivotal.gemfire:geode-wan:9.0.4
+|    |    +--- antlr:antlr:2.7.7
+|    |    +--- org.aspectj:aspectjweaver:1.8.10
+|    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr3 -> 2.9.0.pr4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3 -> 2.9.0.pr4 (*)
+|    |    +--- org.slf4j:jcl-over-slf4j:1.7.25
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    \--- org.slf4j:slf4j-api:1.7.25
+|    \--- org.springframework.session:spring-session:2.0.0.M2
+|         \--- org.springframework:spring-jcl:5.0.0.RC2
+\--- org.springframework.data:spring-data-gemfire: -> 2.0.0.M4 (*)
+
+runtimeClasspath - Runtime classpath of source set 'main'.
++--- project :spring-session-data-geode
+|    +--- org.springframework:spring-context-support: -> 5.0.0.RC2
+|    |    +--- org.springframework:spring-beans:5.0.0.RC2
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-jcl:5.0.0.RC2
+|    |    +--- org.springframework:spring-context:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-aop:5.0.0.RC2
+|    |    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-expression:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    +--- org.springframework:spring-jcl: -> 5.0.0.RC2
+|    +--- org.springframework.data:spring-data-gemfire:2.0.0.M4
+|    |    +--- org.springframework:spring-context-support:5.0.0.RC2 (*)
+|    |    +--- org.springframework:spring-tx:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    +--- org.springframework.data:spring-data-commons:2.0.0.M4
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    +--- io.pivotal.gemfire:geode-core:9.0.4
+|    |    |    +--- com.github.stephenc.findbugs:findbugs-annotations:1.3.9-1
+|    |    |    +--- org.jgroups:jgroups:3.6.10.Final
+|    |    |    +--- antlr:antlr:2.7.7
+|    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.8.2 -> 2.9.0.pr4
+|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr4
+|    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.9.0.pr4
+|    |    |    +--- commons-io:commons-io:2.3 -> 2.5
+|    |    |    +--- commons-lang:commons-lang:2.5 -> 2.6
+|    |    |    +--- it.unimi.dsi:fastutil:7.0.2 -> 7.1.0
+|    |    |    +--- javax.resource:javax.resource-api:1.7
+|    |    |    |    \--- javax.transaction:javax.transaction-api:1.2
+|    |    |    +--- net.java.dev.jna:jna:4.0.0 -> 4.4.0
+|    |    |    +--- net.sf.jopt-simple:jopt-simple:5.0.1 -> 5.0.4
+|    |    |    +--- org.apache.logging.log4j:log4j-api:2.6.1 -> 2.8.2
+|    |    |    +--- org.apache.logging.log4j:log4j-core:2.6.1 -> 2.8.2
+|    |    |    |    \--- org.apache.logging.log4j:log4j-api:2.8.2
+|    |    |    +--- org.apache.shiro:shiro-core:1.3.2 -> 1.4.0
+|    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    +--- org.apache.shiro:shiro-cache:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-hash:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0
+|    |    |    |    |         \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-cipher:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-ogdl:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-event:1.4.0
+|    |    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- commons-beanutils:commons-beanutils:1.9.3
+|    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
+|    |    |    |    |    |    \--- commons-collections:commons-collections:3.2.2
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    \--- org.apache.shiro:shiro-event:1.4.0 (*)
+|    |    |    +--- commons-beanutils:commons-beanutils:1.9.3 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    \--- io.pivotal.gemfire:geode-json:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-cq:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-lucene:9.0.4
+|    |    |    +--- io.pivotal.gemfire:geode-core:9.0.4 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    +--- org.apache.lucene:lucene-analyzers-common:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    +--- org.apache.lucene:lucene-core:6.0.0 -> 6.4.1
+|    |    |    +--- org.apache.lucene:lucene-queries:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    \--- org.apache.lucene:lucene-queryparser:6.0.0 -> 6.4.1
+|    |    |         +--- org.apache.lucene:lucene-core:6.4.1
+|    |    |         +--- org.apache.lucene:lucene-queries:6.4.1 (*)
+|    |    |         \--- org.apache.lucene:lucene-sandbox:6.4.1
+|    |    +--- io.pivotal.gemfire:geode-wan:9.0.4
+|    |    +--- antlr:antlr:2.7.7
+|    |    +--- org.aspectj:aspectjweaver:1.8.10
+|    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr3 -> 2.9.0.pr4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3 -> 2.9.0.pr4 (*)
+|    |    +--- org.slf4j:jcl-over-slf4j:1.7.25
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    \--- org.slf4j:slf4j-api:1.7.25
+|    \--- org.springframework.session:spring-session:2.0.0.M2
+|         \--- org.springframework:spring-jcl:5.0.0.RC2
+\--- org.springframework.data:spring-data-gemfire: -> 2.0.0.M4 (*)
+
+runtimeElements - Elements of runtime for main. (n)
+No dependencies
+
+runtimeMerge
+No dependencies
+
+runtimeOnly - Runtime only dependencies for source set 'main'. (n)
+No dependencies
+
+signatures
+No dependencies
+
+springIoTestCompile - Dependencies for source set 'spring io test' (deprecated, use 'springIoTestImplementation ' instead).
+No dependencies
+
+springIoTestCompileClasspath - Compile classpath for source set 'spring io test'.
+No dependencies
+
+springIoTestCompileOnly - Compile only dependencies for source set 'spring io test'.
+No dependencies
+
+springIoTestImplementation - Implementation only dependencies for source set 'spring io test'. (n)
+No dependencies
+
+springIoTestRuntime - Runtime dependencies for source set 'spring io test' (deprecated, use 'springIoTestRuntimeOnly ' instead).
++--- project :spring-session-data-geode
+|    +--- org.springframework:spring-context-support: -> 5.0.0.RC2
+|    |    +--- org.springframework:spring-beans:5.0.0.RC2
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-jcl:5.0.0.RC2
+|    |    +--- org.springframework:spring-context:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-aop:5.0.0.RC2
+|    |    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-expression:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    +--- org.springframework:spring-jcl: -> 5.0.0.RC2
+|    +--- org.springframework.data:spring-data-gemfire:2.0.0.M4
+|    |    +--- org.springframework:spring-context-support:5.0.0.RC2 (*)
+|    |    +--- org.springframework:spring-tx:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    +--- org.springframework.data:spring-data-commons:2.0.0.M4
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    +--- io.pivotal.gemfire:geode-core:9.0.4
+|    |    |    +--- com.github.stephenc.findbugs:findbugs-annotations:1.3.9-1
+|    |    |    +--- org.jgroups:jgroups:3.6.10.Final
+|    |    |    +--- antlr:antlr:2.7.7
+|    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.8.2 -> 2.9.0.pr4
+|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr4
+|    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.9.0.pr4
+|    |    |    +--- commons-io:commons-io:2.3 -> 2.5
+|    |    |    +--- commons-lang:commons-lang:2.5 -> 2.6
+|    |    |    +--- it.unimi.dsi:fastutil:7.0.2 -> 7.1.0
+|    |    |    +--- javax.resource:javax.resource-api:1.7
+|    |    |    |    \--- javax.transaction:javax.transaction-api:1.2
+|    |    |    +--- net.java.dev.jna:jna:4.0.0 -> 4.4.0
+|    |    |    +--- net.sf.jopt-simple:jopt-simple:5.0.1 -> 5.0.4
+|    |    |    +--- org.apache.logging.log4j:log4j-api:2.6.1 -> 2.8.2
+|    |    |    +--- org.apache.logging.log4j:log4j-core:2.6.1 -> 2.8.2
+|    |    |    |    \--- org.apache.logging.log4j:log4j-api:2.8.2
+|    |    |    +--- org.apache.shiro:shiro-core:1.3.2 -> 1.4.0
+|    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    +--- org.apache.shiro:shiro-cache:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-hash:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0
+|    |    |    |    |         \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-cipher:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-ogdl:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-event:1.4.0
+|    |    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- commons-beanutils:commons-beanutils:1.9.3
+|    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
+|    |    |    |    |    |    \--- commons-collections:commons-collections:3.2.2
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    \--- org.apache.shiro:shiro-event:1.4.0 (*)
+|    |    |    +--- commons-beanutils:commons-beanutils:1.9.3 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    \--- io.pivotal.gemfire:geode-json:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-cq:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-lucene:9.0.4
+|    |    |    +--- io.pivotal.gemfire:geode-core:9.0.4 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    +--- org.apache.lucene:lucene-analyzers-common:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    +--- org.apache.lucene:lucene-core:6.0.0 -> 6.4.1
+|    |    |    +--- org.apache.lucene:lucene-queries:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    \--- org.apache.lucene:lucene-queryparser:6.0.0 -> 6.4.1
+|    |    |         +--- org.apache.lucene:lucene-core:6.4.1
+|    |    |         +--- org.apache.lucene:lucene-queries:6.4.1 (*)
+|    |    |         \--- org.apache.lucene:lucene-sandbox:6.4.1
+|    |    +--- io.pivotal.gemfire:geode-wan:9.0.4
+|    |    +--- antlr:antlr:2.7.7
+|    |    +--- org.aspectj:aspectjweaver:1.8.10
+|    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr3 -> 2.9.0.pr4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3 -> 2.9.0.pr4 (*)
+|    |    +--- org.slf4j:jcl-over-slf4j:1.7.25
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    \--- org.slf4j:slf4j-api:1.7.25
+|    \--- org.springframework.session:spring-session:2.0.0.M2
+|         \--- org.springframework:spring-jcl:5.0.0.RC2
++--- org.springframework.data:spring-data-gemfire: -> 2.0.0.M4 (*)
++--- junit:junit: -> 4.12
+|    \--- org.hamcrest:hamcrest-core:1.3
++--- org.mockito:mockito-core: -> 2.8.9
+|    +--- net.bytebuddy:byte-buddy:1.6.14
+|    +--- net.bytebuddy:byte-buddy-agent:1.6.14
+|    \--- org.objenesis:objenesis:2.5 -> 2.6
++--- org.springframework:spring-test: -> 5.0.0.RC2
+|    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+\--- org.assertj:assertj-core: -> 3.8.0
+
+springIoTestRuntimeClasspath - Runtime classpath of source set 'spring io test'.
++--- project :spring-session-data-geode
+|    +--- org.springframework:spring-context-support: -> 5.0.0.RC2
+|    |    +--- org.springframework:spring-beans:5.0.0.RC2
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-jcl:5.0.0.RC2
+|    |    +--- org.springframework:spring-context:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-aop:5.0.0.RC2
+|    |    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-expression:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    +--- org.springframework:spring-jcl: -> 5.0.0.RC2
+|    +--- org.springframework.data:spring-data-gemfire:2.0.0.M4
+|    |    +--- org.springframework:spring-context-support:5.0.0.RC2 (*)
+|    |    +--- org.springframework:spring-tx:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    +--- org.springframework.data:spring-data-commons:2.0.0.M4
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    +--- io.pivotal.gemfire:geode-core:9.0.4
+|    |    |    +--- com.github.stephenc.findbugs:findbugs-annotations:1.3.9-1
+|    |    |    +--- org.jgroups:jgroups:3.6.10.Final
+|    |    |    +--- antlr:antlr:2.7.7
+|    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.8.2 -> 2.9.0.pr4
+|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr4
+|    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.9.0.pr4
+|    |    |    +--- commons-io:commons-io:2.3 -> 2.5
+|    |    |    +--- commons-lang:commons-lang:2.5 -> 2.6
+|    |    |    +--- it.unimi.dsi:fastutil:7.0.2 -> 7.1.0
+|    |    |    +--- javax.resource:javax.resource-api:1.7
+|    |    |    |    \--- javax.transaction:javax.transaction-api:1.2
+|    |    |    +--- net.java.dev.jna:jna:4.0.0 -> 4.4.0
+|    |    |    +--- net.sf.jopt-simple:jopt-simple:5.0.1 -> 5.0.4
+|    |    |    +--- org.apache.logging.log4j:log4j-api:2.6.1 -> 2.8.2
+|    |    |    +--- org.apache.logging.log4j:log4j-core:2.6.1 -> 2.8.2
+|    |    |    |    \--- org.apache.logging.log4j:log4j-api:2.8.2
+|    |    |    +--- org.apache.shiro:shiro-core:1.3.2 -> 1.4.0
+|    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    +--- org.apache.shiro:shiro-cache:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-hash:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0
+|    |    |    |    |         \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-cipher:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-ogdl:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-event:1.4.0
+|    |    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- commons-beanutils:commons-beanutils:1.9.3
+|    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
+|    |    |    |    |    |    \--- commons-collections:commons-collections:3.2.2
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    \--- org.apache.shiro:shiro-event:1.4.0 (*)
+|    |    |    +--- commons-beanutils:commons-beanutils:1.9.3 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    \--- io.pivotal.gemfire:geode-json:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-cq:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-lucene:9.0.4
+|    |    |    +--- io.pivotal.gemfire:geode-core:9.0.4 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    +--- org.apache.lucene:lucene-analyzers-common:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    +--- org.apache.lucene:lucene-core:6.0.0 -> 6.4.1
+|    |    |    +--- org.apache.lucene:lucene-queries:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    \--- org.apache.lucene:lucene-queryparser:6.0.0 -> 6.4.1
+|    |    |         +--- org.apache.lucene:lucene-core:6.4.1
+|    |    |         +--- org.apache.lucene:lucene-queries:6.4.1 (*)
+|    |    |         \--- org.apache.lucene:lucene-sandbox:6.4.1
+|    |    +--- io.pivotal.gemfire:geode-wan:9.0.4
+|    |    +--- antlr:antlr:2.7.7
+|    |    +--- org.aspectj:aspectjweaver:1.8.10
+|    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr3 -> 2.9.0.pr4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3 -> 2.9.0.pr4 (*)
+|    |    +--- org.slf4j:jcl-over-slf4j:1.7.25
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    \--- org.slf4j:slf4j-api:1.7.25
+|    \--- org.springframework.session:spring-session:2.0.0.M2
+|         \--- org.springframework:spring-jcl:5.0.0.RC2
++--- org.springframework.data:spring-data-gemfire: -> 2.0.0.M4 (*)
++--- junit:junit: -> 4.12
+|    \--- org.hamcrest:hamcrest-core:1.3
++--- org.mockito:mockito-core: -> 2.8.9
+|    +--- net.bytebuddy:byte-buddy:1.6.14
+|    +--- net.bytebuddy:byte-buddy-agent:1.6.14
+|    \--- org.objenesis:objenesis:2.5 -> 2.6
++--- org.springframework:spring-test: -> 5.0.0.RC2
+|    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+\--- org.assertj:assertj-core: -> 3.8.0
+
+springIoTestRuntimeOnly - Runtime only dependencies for source set 'spring io test'. (n)
+No dependencies
+
+testCompile - Dependencies for source set 'test' (deprecated, use 'testImplementation ' instead).
++--- project :spring-session-data-geode
+|    +--- org.springframework:spring-context-support: -> 5.0.0.RC2
+|    |    +--- org.springframework:spring-beans:5.0.0.RC2
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-jcl:5.0.0.RC2
+|    |    +--- org.springframework:spring-context:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-aop:5.0.0.RC2
+|    |    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-expression:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    +--- org.springframework:spring-jcl: -> 5.0.0.RC2
+|    +--- org.springframework.data:spring-data-gemfire:2.0.0.M4
+|    |    +--- org.springframework:spring-context-support:5.0.0.RC2 (*)
+|    |    +--- org.springframework:spring-tx:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    +--- org.springframework.data:spring-data-commons:2.0.0.M4
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    +--- io.pivotal.gemfire:geode-core:9.0.4
+|    |    |    +--- com.github.stephenc.findbugs:findbugs-annotations:1.3.9-1
+|    |    |    +--- org.jgroups:jgroups:3.6.10.Final
+|    |    |    +--- antlr:antlr:2.7.7
+|    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.8.2 -> 2.9.0.pr4
+|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr4
+|    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.9.0.pr4
+|    |    |    +--- commons-io:commons-io:2.3 -> 2.5
+|    |    |    +--- commons-lang:commons-lang:2.5 -> 2.6
+|    |    |    +--- it.unimi.dsi:fastutil:7.0.2 -> 7.1.0
+|    |    |    +--- javax.resource:javax.resource-api:1.7
+|    |    |    |    \--- javax.transaction:javax.transaction-api:1.2
+|    |    |    +--- net.java.dev.jna:jna:4.0.0 -> 4.4.0
+|    |    |    +--- net.sf.jopt-simple:jopt-simple:5.0.1 -> 5.0.4
+|    |    |    +--- org.apache.logging.log4j:log4j-api:2.6.1 -> 2.8.2
+|    |    |    +--- org.apache.logging.log4j:log4j-core:2.6.1 -> 2.8.2
+|    |    |    |    \--- org.apache.logging.log4j:log4j-api:2.8.2
+|    |    |    +--- org.apache.shiro:shiro-core:1.3.2 -> 1.4.0
+|    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    +--- org.apache.shiro:shiro-cache:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-hash:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0
+|    |    |    |    |         \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-cipher:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-ogdl:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-event:1.4.0
+|    |    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- commons-beanutils:commons-beanutils:1.9.3
+|    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
+|    |    |    |    |    |    \--- commons-collections:commons-collections:3.2.2
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    \--- org.apache.shiro:shiro-event:1.4.0 (*)
+|    |    |    +--- commons-beanutils:commons-beanutils:1.9.3 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    \--- io.pivotal.gemfire:geode-json:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-cq:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-lucene:9.0.4
+|    |    |    +--- io.pivotal.gemfire:geode-core:9.0.4 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    +--- org.apache.lucene:lucene-analyzers-common:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    +--- org.apache.lucene:lucene-core:6.0.0 -> 6.4.1
+|    |    |    +--- org.apache.lucene:lucene-queries:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    \--- org.apache.lucene:lucene-queryparser:6.0.0 -> 6.4.1
+|    |    |         +--- org.apache.lucene:lucene-core:6.4.1
+|    |    |         +--- org.apache.lucene:lucene-queries:6.4.1 (*)
+|    |    |         \--- org.apache.lucene:lucene-sandbox:6.4.1
+|    |    +--- io.pivotal.gemfire:geode-wan:9.0.4
+|    |    +--- antlr:antlr:2.7.7
+|    |    +--- org.aspectj:aspectjweaver:1.8.10
+|    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr3 -> 2.9.0.pr4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3 -> 2.9.0.pr4 (*)
+|    |    +--- org.slf4j:jcl-over-slf4j:1.7.25
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    \--- org.slf4j:slf4j-api:1.7.25
+|    \--- org.springframework.session:spring-session:2.0.0.M2
+|         \--- org.springframework:spring-jcl:5.0.0.RC2
++--- org.springframework.data:spring-data-gemfire: -> 2.0.0.M4 (*)
++--- junit:junit: -> 4.12
+|    \--- org.hamcrest:hamcrest-core:1.3
++--- org.mockito:mockito-core: -> 2.8.9
+|    +--- net.bytebuddy:byte-buddy:1.6.14
+|    +--- net.bytebuddy:byte-buddy-agent:1.6.14
+|    \--- org.objenesis:objenesis:2.5 -> 2.6
++--- org.springframework:spring-test: -> 5.0.0.RC2
+|    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+\--- org.assertj:assertj-core: -> 3.8.0
+
+testCompileClasspath - Compile classpath for source set 'test'.
++--- project :spring-session-data-geode
+|    +--- org.springframework:spring-context-support: -> 5.0.0.RC2
+|    |    +--- org.springframework:spring-beans:5.0.0.RC2
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-jcl:5.0.0.RC2
+|    |    +--- org.springframework:spring-context:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-aop:5.0.0.RC2
+|    |    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-expression:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    +--- org.springframework:spring-jcl: -> 5.0.0.RC2
+|    +--- org.springframework.data:spring-data-gemfire:2.0.0.M4
+|    |    +--- org.springframework:spring-context-support:5.0.0.RC2 (*)
+|    |    +--- org.springframework:spring-tx:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    +--- org.springframework.data:spring-data-commons:2.0.0.M4
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    +--- io.pivotal.gemfire:geode-core:9.0.4
+|    |    |    +--- com.github.stephenc.findbugs:findbugs-annotations:1.3.9-1
+|    |    |    +--- org.jgroups:jgroups:3.6.10.Final
+|    |    |    +--- antlr:antlr:2.7.7
+|    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.8.2 -> 2.9.0.pr4
+|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr4
+|    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.9.0.pr4
+|    |    |    +--- commons-io:commons-io:2.3 -> 2.5
+|    |    |    +--- commons-lang:commons-lang:2.5 -> 2.6
+|    |    |    +--- it.unimi.dsi:fastutil:7.0.2 -> 7.1.0
+|    |    |    +--- javax.resource:javax.resource-api:1.7
+|    |    |    |    \--- javax.transaction:javax.transaction-api:1.2
+|    |    |    +--- net.java.dev.jna:jna:4.0.0 -> 4.4.0
+|    |    |    +--- net.sf.jopt-simple:jopt-simple:5.0.1 -> 5.0.4
+|    |    |    +--- org.apache.logging.log4j:log4j-api:2.6.1 -> 2.8.2
+|    |    |    +--- org.apache.logging.log4j:log4j-core:2.6.1 -> 2.8.2
+|    |    |    |    \--- org.apache.logging.log4j:log4j-api:2.8.2
+|    |    |    +--- org.apache.shiro:shiro-core:1.3.2 -> 1.4.0
+|    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    +--- org.apache.shiro:shiro-cache:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-hash:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0
+|    |    |    |    |         \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-cipher:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-ogdl:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-event:1.4.0
+|    |    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- commons-beanutils:commons-beanutils:1.9.3
+|    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
+|    |    |    |    |    |    \--- commons-collections:commons-collections:3.2.2
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    \--- org.apache.shiro:shiro-event:1.4.0 (*)
+|    |    |    +--- commons-beanutils:commons-beanutils:1.9.3 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    \--- io.pivotal.gemfire:geode-json:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-cq:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-lucene:9.0.4
+|    |    |    +--- io.pivotal.gemfire:geode-core:9.0.4 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    +--- org.apache.lucene:lucene-analyzers-common:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    +--- org.apache.lucene:lucene-core:6.0.0 -> 6.4.1
+|    |    |    +--- org.apache.lucene:lucene-queries:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    \--- org.apache.lucene:lucene-queryparser:6.0.0 -> 6.4.1
+|    |    |         +--- org.apache.lucene:lucene-core:6.4.1
+|    |    |         +--- org.apache.lucene:lucene-queries:6.4.1 (*)
+|    |    |         \--- org.apache.lucene:lucene-sandbox:6.4.1
+|    |    +--- io.pivotal.gemfire:geode-wan:9.0.4
+|    |    +--- antlr:antlr:2.7.7
+|    |    +--- org.aspectj:aspectjweaver:1.8.10
+|    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr3 -> 2.9.0.pr4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3 -> 2.9.0.pr4 (*)
+|    |    +--- org.slf4j:jcl-over-slf4j:1.7.25
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    \--- org.slf4j:slf4j-api:1.7.25
+|    \--- org.springframework.session:spring-session:2.0.0.M2
+|         \--- org.springframework:spring-jcl:5.0.0.RC2
++--- org.springframework.data:spring-data-gemfire: -> 2.0.0.M4 (*)
++--- junit:junit: -> 4.12
+|    \--- org.hamcrest:hamcrest-core:1.3
++--- org.mockito:mockito-core: -> 2.8.9
+|    +--- net.bytebuddy:byte-buddy:1.6.14
+|    +--- net.bytebuddy:byte-buddy-agent:1.6.14
+|    \--- org.objenesis:objenesis:2.5 -> 2.6
++--- org.springframework:spring-test: -> 5.0.0.RC2
+|    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+\--- org.assertj:assertj-core: -> 3.8.0
+
+testCompileOnly - Compile only dependencies for source set 'test'.
+No dependencies
+
+testImplementation - Implementation only dependencies for source set 'test'. (n)
+No dependencies
+
+testRuntime - Runtime dependencies for source set 'test' (deprecated, use 'testRuntimeOnly ' instead).
++--- project :spring-session-data-geode
+|    +--- org.springframework:spring-context-support: -> 5.0.0.RC2
+|    |    +--- org.springframework:spring-beans:5.0.0.RC2
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-jcl:5.0.0.RC2
+|    |    +--- org.springframework:spring-context:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-aop:5.0.0.RC2
+|    |    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-expression:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    +--- org.springframework:spring-jcl: -> 5.0.0.RC2
+|    +--- org.springframework.data:spring-data-gemfire:2.0.0.M4
+|    |    +--- org.springframework:spring-context-support:5.0.0.RC2 (*)
+|    |    +--- org.springframework:spring-tx:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    +--- org.springframework.data:spring-data-commons:2.0.0.M4
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    +--- io.pivotal.gemfire:geode-core:9.0.4
+|    |    |    +--- com.github.stephenc.findbugs:findbugs-annotations:1.3.9-1
+|    |    |    +--- org.jgroups:jgroups:3.6.10.Final
+|    |    |    +--- antlr:antlr:2.7.7
+|    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.8.2 -> 2.9.0.pr4
+|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr4
+|    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.9.0.pr4
+|    |    |    +--- commons-io:commons-io:2.3 -> 2.5
+|    |    |    +--- commons-lang:commons-lang:2.5 -> 2.6
+|    |    |    +--- it.unimi.dsi:fastutil:7.0.2 -> 7.1.0
+|    |    |    +--- javax.resource:javax.resource-api:1.7
+|    |    |    |    \--- javax.transaction:javax.transaction-api:1.2
+|    |    |    +--- net.java.dev.jna:jna:4.0.0 -> 4.4.0
+|    |    |    +--- net.sf.jopt-simple:jopt-simple:5.0.1 -> 5.0.4
+|    |    |    +--- org.apache.logging.log4j:log4j-api:2.6.1 -> 2.8.2
+|    |    |    +--- org.apache.logging.log4j:log4j-core:2.6.1 -> 2.8.2
+|    |    |    |    \--- org.apache.logging.log4j:log4j-api:2.8.2
+|    |    |    +--- org.apache.shiro:shiro-core:1.3.2 -> 1.4.0
+|    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    +--- org.apache.shiro:shiro-cache:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-hash:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0
+|    |    |    |    |         \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-cipher:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-ogdl:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-event:1.4.0
+|    |    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- commons-beanutils:commons-beanutils:1.9.3
+|    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
+|    |    |    |    |    |    \--- commons-collections:commons-collections:3.2.2
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    \--- org.apache.shiro:shiro-event:1.4.0 (*)
+|    |    |    +--- commons-beanutils:commons-beanutils:1.9.3 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    \--- io.pivotal.gemfire:geode-json:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-cq:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-lucene:9.0.4
+|    |    |    +--- io.pivotal.gemfire:geode-core:9.0.4 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    +--- org.apache.lucene:lucene-analyzers-common:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    +--- org.apache.lucene:lucene-core:6.0.0 -> 6.4.1
+|    |    |    +--- org.apache.lucene:lucene-queries:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    \--- org.apache.lucene:lucene-queryparser:6.0.0 -> 6.4.1
+|    |    |         +--- org.apache.lucene:lucene-core:6.4.1
+|    |    |         +--- org.apache.lucene:lucene-queries:6.4.1 (*)
+|    |    |         \--- org.apache.lucene:lucene-sandbox:6.4.1
+|    |    +--- io.pivotal.gemfire:geode-wan:9.0.4
+|    |    +--- antlr:antlr:2.7.7
+|    |    +--- org.aspectj:aspectjweaver:1.8.10
+|    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr3 -> 2.9.0.pr4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3 -> 2.9.0.pr4 (*)
+|    |    +--- org.slf4j:jcl-over-slf4j:1.7.25
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    \--- org.slf4j:slf4j-api:1.7.25
+|    \--- org.springframework.session:spring-session:2.0.0.M2
+|         \--- org.springframework:spring-jcl:5.0.0.RC2
++--- org.springframework.data:spring-data-gemfire: -> 2.0.0.M4 (*)
++--- junit:junit: -> 4.12
+|    \--- org.hamcrest:hamcrest-core:1.3
++--- org.mockito:mockito-core: -> 2.8.9
+|    +--- net.bytebuddy:byte-buddy:1.6.14
+|    +--- net.bytebuddy:byte-buddy-agent:1.6.14
+|    \--- org.objenesis:objenesis:2.5 -> 2.6
++--- org.springframework:spring-test: -> 5.0.0.RC2
+|    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+\--- org.assertj:assertj-core: -> 3.8.0
+
+testRuntimeClasspath - Runtime classpath of source set 'test'.
++--- project :spring-session-data-geode
+|    +--- org.springframework:spring-context-support: -> 5.0.0.RC2
+|    |    +--- org.springframework:spring-beans:5.0.0.RC2
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-jcl:5.0.0.RC2
+|    |    +--- org.springframework:spring-context:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-aop:5.0.0.RC2
+|    |    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-expression:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    +--- org.springframework:spring-jcl: -> 5.0.0.RC2
+|    +--- org.springframework.data:spring-data-gemfire:2.0.0.M4
+|    |    +--- org.springframework:spring-context-support:5.0.0.RC2 (*)
+|    |    +--- org.springframework:spring-tx:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    +--- org.springframework.data:spring-data-commons:2.0.0.M4
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    +--- io.pivotal.gemfire:geode-core:9.0.4
+|    |    |    +--- com.github.stephenc.findbugs:findbugs-annotations:1.3.9-1
+|    |    |    +--- org.jgroups:jgroups:3.6.10.Final
+|    |    |    +--- antlr:antlr:2.7.7
+|    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.8.2 -> 2.9.0.pr4
+|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr4
+|    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.9.0.pr4
+|    |    |    +--- commons-io:commons-io:2.3 -> 2.5
+|    |    |    +--- commons-lang:commons-lang:2.5 -> 2.6
+|    |    |    +--- it.unimi.dsi:fastutil:7.0.2 -> 7.1.0
+|    |    |    +--- javax.resource:javax.resource-api:1.7
+|    |    |    |    \--- javax.transaction:javax.transaction-api:1.2
+|    |    |    +--- net.java.dev.jna:jna:4.0.0 -> 4.4.0
+|    |    |    +--- net.sf.jopt-simple:jopt-simple:5.0.1 -> 5.0.4
+|    |    |    +--- org.apache.logging.log4j:log4j-api:2.6.1 -> 2.8.2
+|    |    |    +--- org.apache.logging.log4j:log4j-core:2.6.1 -> 2.8.2
+|    |    |    |    \--- org.apache.logging.log4j:log4j-api:2.8.2
+|    |    |    +--- org.apache.shiro:shiro-core:1.3.2 -> 1.4.0
+|    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    +--- org.apache.shiro:shiro-cache:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-hash:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0
+|    |    |    |    |         \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-cipher:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-ogdl:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-event:1.4.0
+|    |    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- commons-beanutils:commons-beanutils:1.9.3
+|    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
+|    |    |    |    |    |    \--- commons-collections:commons-collections:3.2.2
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    \--- org.apache.shiro:shiro-event:1.4.0 (*)
+|    |    |    +--- commons-beanutils:commons-beanutils:1.9.3 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    \--- io.pivotal.gemfire:geode-json:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-cq:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-lucene:9.0.4
+|    |    |    +--- io.pivotal.gemfire:geode-core:9.0.4 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    +--- org.apache.lucene:lucene-analyzers-common:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    +--- org.apache.lucene:lucene-core:6.0.0 -> 6.4.1
+|    |    |    +--- org.apache.lucene:lucene-queries:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    \--- org.apache.lucene:lucene-queryparser:6.0.0 -> 6.4.1
+|    |    |         +--- org.apache.lucene:lucene-core:6.4.1
+|    |    |         +--- org.apache.lucene:lucene-queries:6.4.1 (*)
+|    |    |         \--- org.apache.lucene:lucene-sandbox:6.4.1
+|    |    +--- io.pivotal.gemfire:geode-wan:9.0.4
+|    |    +--- antlr:antlr:2.7.7
+|    |    +--- org.aspectj:aspectjweaver:1.8.10
+|    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr3 -> 2.9.0.pr4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3 -> 2.9.0.pr4 (*)
+|    |    +--- org.slf4j:jcl-over-slf4j:1.7.25
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    \--- org.slf4j:slf4j-api:1.7.25
+|    \--- org.springframework.session:spring-session:2.0.0.M2
+|         \--- org.springframework:spring-jcl:5.0.0.RC2
++--- org.springframework.data:spring-data-gemfire: -> 2.0.0.M4 (*)
++--- junit:junit: -> 4.12
+|    \--- org.hamcrest:hamcrest-core:1.3
++--- org.mockito:mockito-core: -> 2.8.9
+|    +--- net.bytebuddy:byte-buddy:1.6.14
+|    +--- net.bytebuddy:byte-buddy-agent:1.6.14
+|    \--- org.objenesis:objenesis:2.5 -> 2.6
++--- org.springframework:spring-test: -> 5.0.0.RC2
+|    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+\--- org.assertj:assertj-core: -> 3.8.0
+
+testRuntimeOnly - Runtime only dependencies for source set 'test'. (n)
+No dependencies
+
+tests
++--- project :spring-session-data-geode
+|    +--- org.springframework:spring-context-support: -> 5.0.0.RC2
+|    |    +--- org.springframework:spring-beans:5.0.0.RC2
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-jcl:5.0.0.RC2
+|    |    +--- org.springframework:spring-context:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-aop:5.0.0.RC2
+|    |    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-expression:5.0.0.RC2
+|    |    |         \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    +--- org.springframework:spring-jcl: -> 5.0.0.RC2
+|    +--- org.springframework.data:spring-data-gemfire:2.0.0.M4
+|    |    +--- org.springframework:spring-context-support:5.0.0.RC2 (*)
+|    |    +--- org.springframework:spring-tx:5.0.0.RC2
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    +--- org.springframework.data:spring-data-commons:2.0.0.M4
+|    |    |    +--- org.springframework:spring-core:5.0.0.RC2 (*)
+|    |    |    +--- org.springframework:spring-beans:5.0.0.RC2 (*)
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    +--- io.pivotal.gemfire:geode-core:9.0.4
+|    |    |    +--- com.github.stephenc.findbugs:findbugs-annotations:1.3.9-1
+|    |    |    +--- org.jgroups:jgroups:3.6.10.Final
+|    |    |    +--- antlr:antlr:2.7.7
+|    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.8.2 -> 2.9.0.pr4
+|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr4
+|    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.9.0.pr4
+|    |    |    +--- commons-io:commons-io:2.3 -> 2.5
+|    |    |    +--- commons-lang:commons-lang:2.5 -> 2.6
+|    |    |    +--- it.unimi.dsi:fastutil:7.0.2 -> 7.1.0
+|    |    |    +--- javax.resource:javax.resource-api:1.7
+|    |    |    |    \--- javax.transaction:javax.transaction-api:1.2
+|    |    |    +--- net.java.dev.jna:jna:4.0.0 -> 4.4.0
+|    |    |    +--- net.sf.jopt-simple:jopt-simple:5.0.1 -> 5.0.4
+|    |    |    +--- org.apache.logging.log4j:log4j-api:2.6.1 -> 2.8.2
+|    |    |    +--- org.apache.logging.log4j:log4j-core:2.6.1 -> 2.8.2
+|    |    |    |    \--- org.apache.logging.log4j:log4j-api:2.8.2
+|    |    |    +--- org.apache.shiro:shiro-core:1.3.2 -> 1.4.0
+|    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    +--- org.apache.shiro:shiro-cache:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-hash:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0
+|    |    |    |    |         \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-crypto-cipher:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    \--- org.apache.shiro:shiro-crypto-core:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0
+|    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    +--- org.apache.shiro:shiro-config-ogdl:1.4.0
+|    |    |    |    |    +--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-config-core:1.4.0 (*)
+|    |    |    |    |    +--- org.apache.shiro:shiro-event:1.4.0
+|    |    |    |    |    |    \--- org.apache.shiro:shiro-lang:1.4.0 (*)
+|    |    |    |    |    +--- commons-beanutils:commons-beanutils:1.9.3
+|    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
+|    |    |    |    |    |    \--- commons-collections:commons-collections:3.2.2
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.21 -> 1.7.25
+|    |    |    |    \--- org.apache.shiro:shiro-event:1.4.0 (*)
+|    |    |    +--- commons-beanutils:commons-beanutils:1.9.3 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    \--- io.pivotal.gemfire:geode-json:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-cq:9.0.4
+|    |    +--- io.pivotal.gemfire:geode-lucene:9.0.4
+|    |    |    +--- io.pivotal.gemfire:geode-core:9.0.4 (*)
+|    |    |    +--- io.pivotal.gemfire:geode-common:9.0.4
+|    |    |    +--- org.apache.lucene:lucene-analyzers-common:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    +--- org.apache.lucene:lucene-core:6.0.0 -> 6.4.1
+|    |    |    +--- org.apache.lucene:lucene-queries:6.0.0 -> 6.4.1
+|    |    |    |    \--- org.apache.lucene:lucene-core:6.4.1
+|    |    |    \--- org.apache.lucene:lucene-queryparser:6.0.0 -> 6.4.1
+|    |    |         +--- org.apache.lucene:lucene-core:6.4.1
+|    |    |         +--- org.apache.lucene:lucene-queries:6.4.1 (*)
+|    |    |         \--- org.apache.lucene:lucene-sandbox:6.4.1
+|    |    +--- io.pivotal.gemfire:geode-wan:9.0.4
+|    |    +--- antlr:antlr:2.7.7
+|    |    +--- org.aspectj:aspectjweaver:1.8.10
+|    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.0.pr3 -> 2.9.0.pr4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3 -> 2.9.0.pr4 (*)
+|    |    +--- org.slf4j:jcl-over-slf4j:1.7.25
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25
+|    |    \--- org.slf4j:slf4j-api:1.7.25
+|    \--- org.springframework.session:spring-session:2.0.0.M2
+|         \--- org.springframework:spring-jcl:5.0.0.RC2
++--- org.springframework.data:spring-data-gemfire: -> 2.0.0.M4 (*)
++--- junit:junit: -> 4.12
+|    \--- org.hamcrest:hamcrest-core:1.3
++--- org.mockito:mockito-core: -> 2.8.9
+|    +--- net.bytebuddy:byte-buddy:1.6.14
+|    +--- net.bytebuddy:byte-buddy-agent:1.6.14
+|    \--- org.objenesis:objenesis:2.5 -> 2.6
++--- org.springframework:spring-test: -> 5.0.0.RC2
+|    \--- org.springframework:spring-core:5.0.0.RC2 (*)
+\--- org.assertj:assertj-core: -> 3.8.0
+
+(*) - dependencies omitted (listed previously)
+
+BUILD SUCCESSFUL
+
+Total time: 0.982 secs
