@@ -886,6 +886,16 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 
 		/* (non-Javadoc) */
+		public static GemFireSessionAttributes create() {
+			return new GemFireSessionAttributes();
+		}
+
+		/* (non-Javadoc) */
+		public static GemFireSessionAttributes create(Object lock) {
+			return new GemFireSessionAttributes(lock);
+		}
+
+		/* (non-Javadoc) */
 		public void setAttribute(String attributeName, Object attributeValue) {
 
 			synchronized (this.lock) {

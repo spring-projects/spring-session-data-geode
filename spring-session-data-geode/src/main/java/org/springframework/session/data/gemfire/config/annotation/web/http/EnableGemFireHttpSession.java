@@ -24,102 +24,63 @@ import java.lang.annotation.Target;
 
 import javax.servlet.http.HttpSession;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.Pool;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.session.Session;
+import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 import org.springframework.session.web.http.SessionRepositoryFilter;
 
 /**
- * Add this annotation to a Spring {@code @Configuration} class to expose the {@link SessionRepositoryFilter}
- * as a bean named {@literal springSessionRepositoryFilter} back the {@link HttpSession}
- * by Pivotal GemFire or Apache Geode.
+ * Add this annotation to a Spring application defined {@code @Configuration} class exposing
+ * the {@link SessionRepositoryFilter} as a bean named {@literal springSessionRepositoryFilter}
+ * to back the {@link HttpSession} by Apache Geode or Pivotal GemFire.
  *
- * In order to use this annotation, a single Pivotal GemFire/Apache Geode {@link org.apache.geode.cache.Cache}
- * or {@link org.apache.geode.cache.client.ClientCache} instance must be provided.
+ * In order to use this annotation, a single Apache Geode / Pivotal GemFire {@link Cache} or {@link ClientCache}
+ * instance must be provided.
  *
  * For example:
  *
  * <pre>
  * <code>
  * {@literal @Configuration}
+ * {@literal @PeerCacheApplication}
  * {@literal @EnableGemFireHttpSession}
- * public class GemFirePeerCacheHttpSessionConfiguration {
+ * public class PeerCacheHttpSessionConfiguration {
  *
- *     {@literal @Bean}
- *     public Properties gemfireProperties() {
- *
- *       Properties gemfireProperties = new Properties();
- *
- *       gemfireProperties.setProperty("name", "ExamplePeer");
- *       gemfireProperties.setProperty("mcast-port", "0");
- *       gemfireProperties.setProperty("log-level", "warning");
- *
- *       return gemfireProperties;
- *     }
- *
- *     {@literal @Bean}
- *     public CacheFactoryBean gemfireCache() throws Exception {
- *
- *       CacheFactoryBean cache  = new CacheFactoryBean();
- *
- *       cache.setClose(true);
- *       cache.setProperties(gemfireProperties());
- *
- *       return cache;
- *     }
  * }
  * </code> </pre>
  *
- * Alternatively, Spring Session can be configured to use Pivotal GemFire/Apache Geode as a cache client
- * with a dedicated Pivotal GemFire/Apache Geode cluster and a {@link org.apache.geode.cache.client.ClientCache}.
+ * Alternatively, Spring Session can be configured to use Apache Geode / Pivotal GemFire as a cache client
+ * with a dedicated Apache Geode / Pivotal GemFire cluster.
  *
  * For example:
  *
  * <code>
  * {@literal @Configuration}
+ * {@literal @ClientCacheApplication}
  * {@literal @EnableGemFireHttpSession}
- * public class GemFireClientCacheHttpSessionConfiguration {
+ * public class ClientCacheHttpSessionConfiguration {
  *
- *     {@literal @Bean}
- *     public Properties gemfireProperties() {
- *
- *       Properties gemfireProperties = new Properties();
- *
- *       gemfireProperties.setProperty("name", "ExampleClient");
- *       gemfireProperties.setProperty("log-level", "warning");
- *
- *       return gemfireProperties;
- *     }
- *
- *     {@literal @Bean}
- *     public ClientCacheFactoryBean gemfireCache() throws Exception {
- *
- *       ClientCacheFactoryBean clientCache = new ClientCacheFactoryBean();
- *
- *       clientCache.setClose(true)
- *       clientCache.setProperties(gemfireProperties());
- *
- *       return clientCache;
- *     }
- *
- *     {@literal @Bean}
- *     public PoolFactoryBean gemfirePool() {
- *
- *         PoolFactoryBean pool = new PoolFactoryBean();
- *
- *         pool.addServer(new ConnectionEndpoint("localhost", 40404);
- *
- *         return pool;
- *     }
  * }
  * </code>
  *
  * More advanced configurations can extend {@link GemFireHttpSessionConfiguration} instead.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.client.Pool
+ * @see org.springframework.context.annotation.Configuration
+ * @see org.springframework.context.annotation.Import
+ * @see org.springframework.session.Session
  * @see org.springframework.session.config.annotation.web.http.EnableSpringHttpSession
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @since 1.1.0
@@ -132,59 +93,74 @@ import org.springframework.session.web.http.SessionRepositoryFilter;
 public @interface EnableGemFireHttpSession {
 
 	/**
-	 * Defines the GemFire ClientCache Region DataPolicy.
+	 * Defines the {@link ClientCache} {@link Region} data management policy.
 	 *
-	 * @return a ClientRegionShortcut used to specify and configure the ClientCache Region
-	 * DataPolicy.
+	 * @return a {@link ClientRegionShortcut} used to configure the {@link ClientCache} {@link Region}
+	 * data management policy.
 	 * @see org.apache.geode.cache.client.ClientRegionShortcut
 	 */
 	ClientRegionShortcut clientRegionShortcut() default ClientRegionShortcut.PROXY;
 
 	/**
-	 * Identifies the Session attributes by name that should be indexed for query
-	 * operations. For instance, find all Sessions in GemFire having attribute A defined
-	 * with value X.
+	 * Identifies the {@link Session} attributes by name that will be indexed for query operations.
 	 *
-	 * @return an array of Strings identifying the names of Session attributes to index.
+	 * For instance, find all {@link Session Sessions} in GemFire or Geode having attribute A defined with value X.
+	 *
+	 * @return an array of {@link String Strings} identifying the names of {@link Session} attributes to index.
 	 */
 	String[] indexableSessionAttributes() default {};
 
 	/**
-	 * Defines the maximum interval in seconds that a {@link Session} can remain inactive
-	 * before it is considered expired. Defaults to 1800 seconds, or 30 minutes.
+	 * Defines the maximum interval in seconds that a {@link Session} can remain inactive before it expires.
 	 *
-	 * @return an integer value defining the maximum inactive interval in seconds
-	 * declaring the {@link Session} expired.
+	 * Defaults to 1800 seconds, or 30 minutes.
+	 *
+	 * @return an integer value defining the maximum inactive interval in seconds before the {@link Session} expires.
 	 */
 	int maxInactiveIntervalInSeconds() default 1800;
 
 	/**
-	 * Specifies the name of the specific GemFire {@link org.apache.geode.cache.client.Pool} used
-	 * by the Spring Session Data GemFire client Region ('ClusteredSpringSessions') when performing
-	 * cache operations.  This is attribute is only used in the client/server topology.
+	 * Specifies the name of the specific {@link Pool} used by the client cache {@link Region}
+	 * (i.e. {@literal ClusteredSpringSessions}) when performing cache data access operations.
 	 *
-	 * @return the name of the GemFire {@link org.apache.geode.cache.client.Pool} to be used
-	 * by the client Region used to manage (HTTP) Sessions.
-	 * @see org.springframework.data.gemfire.config.xml.GemfireConstants#DEFAULT_GEMFIRE_POOL_NAME
+	 * This is attribute is only used in the client/server topology.
+	 *
+	 * @return the name of the {@link Pool} to be used by the client cache Region to send {@link Session} state
+	 * to the cluster of servers.
+	 * @see GemFireHttpSessionConfiguration#DEFAULT_POOL_NAME
 	 */
-	String poolName() default GemFireHttpSessionConfiguration.DEFAULT_GEMFIRE_POOL_NAME;
+	String poolName() default GemFireHttpSessionConfiguration.DEFAULT_POOL_NAME;
 
 	/**
-	 * Defines the name of the GemFire (Client)Cache Region used to store Sessions.
+	 * Defines the name of the (client)cache {@link Region} used to store {@link Session} state.
 	 *
-	 * @return a String specifying the name of the GemFire (Client)Cache Region used to
-	 * store Sessions.
-	 * @see org.apache.geode.cache.Region#getName()
+	 * @return a {@link String} specifying the name of the (client)cace {@link Region}
+	 * used to store {@link Session} state.
+	 * @see GemFireHttpSessionConfiguration#DEFAULT_SESSION_REGION_NAME
 	 */
-	String regionName() default "ClusteredSpringSessions";
+	String regionName() default GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME;
 
 	/**
-	 * Defines the GemFire, Peer Cache Region DataPolicy.
+	 * Defines the {@link Cache} {@link Region} data management policy.
 	 *
-	 * @return a RegionShortcut used to specify and configure the Peer Cache Region
-	 * DataPolicy.
+	 * @return a {@link RegionShortcut} used to specify and configure the {@link Cache} {@link Region}
+	 * data management policy.
 	 * @see org.apache.geode.cache.RegionShortcut
 	 */
 	RegionShortcut serverRegionShortcut() default RegionShortcut.PARTITION;
+
+	/**
+	 * Defines the bean name of the {@link SessionSerializer} used to serialize {@link Session} state
+	 * between client and server or to disk when persisting or overflowing {@link Session} state.
+	 *
+	 * The bean referred to by its name must be of type {@link SessionSerializer}.
+	 *
+	 * Defaults to {@literal SessionDataSerializer}.
+	 *
+	 * @return a {@link String} containing the bean name of the configured {@link SessionSerializer}.
+	 * @see org.springframework.session.data.gemfire.serialization.data.provider.DataSerializableSessionSerializer
+	 * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
+	 */
+	String sessionSerializerBeanName() default GemFireHttpSessionConfiguration.DEFAULT_SESSION_SERIALIZER_BEAN_NAME;
 
 }

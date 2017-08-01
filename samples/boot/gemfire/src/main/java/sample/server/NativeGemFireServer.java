@@ -157,7 +157,7 @@ public final class NativeGemFireServer implements Runnable {
 		regionFactory.setEntryIdleTimeout(newExpirationAttributes(1800, ExpirationAction.INVALIDATE));
 
 		Region region = regionFactory.create(
-			GemFireHttpSessionConfiguration.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME);
+			GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
 
 		return gemfireCache;
 	}

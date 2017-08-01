@@ -87,7 +87,7 @@ public abstract class IntegrationTestConfig {
 
 			private boolean isGemFireRegion(Object bean, String beanName) {
 
-				return (GemFireHttpSessionConfiguration.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME.equals(beanName)
+				return (GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME.equals(beanName)
 					|| bean instanceof Region);
 			}
 

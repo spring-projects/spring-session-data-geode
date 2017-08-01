@@ -70,11 +70,11 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	protected static final RegionShortcut DEFAULT_SERVER_REGION_SHORTCUT =
 		GemFireHttpSessionConfiguration.DEFAULT_SERVER_REGION_SHORTCUT;
 
-	protected static final String DEFAULT_GEMFIRE_POOL_NAME =
-		GemFireHttpSessionConfiguration.DEFAULT_GEMFIRE_POOL_NAME;
+	protected static final String DEFAULT_POOL_NAME =
+		GemFireHttpSessionConfiguration.DEFAULT_POOL_NAME;
 
-	protected static final String DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME =
-		GemFireHttpSessionConfiguration.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME;
+	protected static final String DEFAULT_SESSION_REGION_NAME =
+		GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME;
 
 	private BeanFactory beanFactory;
 
@@ -325,7 +325,7 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	 * @see Pool#getName()
 	 */
 	protected String getPoolName() {
-		return Optional.ofNullable(this.poolName).filter(StringUtils::hasText).orElse(DEFAULT_GEMFIRE_POOL_NAME);
+		return Optional.ofNullable(this.poolName).filter(StringUtils::hasText).orElse(DEFAULT_POOL_NAME);
 	}
 
 	/**
@@ -370,8 +370,7 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	 * @see org.apache.geode.cache.Region#getName()
 	 */
 	protected String getRegionName() {
-		return Optional.ofNullable(this.regionName).filter(StringUtils::hasText)
-			.orElse(DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME);
+		return Optional.ofNullable(this.regionName).filter(StringUtils::hasText).orElse(DEFAULT_SESSION_REGION_NAME);
 	}
 
 	/**

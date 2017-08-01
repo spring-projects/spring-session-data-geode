@@ -243,7 +243,7 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 	public void setAndGetPoolName() {
 
 		assertThat(this.regionFactoryBean.getPoolName()).isEqualTo(
-			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_GEMFIRE_POOL_NAME);
+			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_POOL_NAME);
 
 		this.regionFactoryBean.setPoolName("TestPoolName");
 
@@ -252,17 +252,17 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 		this.regionFactoryBean.setPoolName("  ");
 
 		assertThat(this.regionFactoryBean.getPoolName()).isEqualTo(
-			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_GEMFIRE_POOL_NAME);
+			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_POOL_NAME);
 
 		this.regionFactoryBean.setPoolName("");
 
 		assertThat(this.regionFactoryBean.getPoolName()).isEqualTo(
-			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_GEMFIRE_POOL_NAME);
+			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_POOL_NAME);
 
 		this.regionFactoryBean.setPoolName(null);
 
 		assertThat(this.regionFactoryBean.getPoolName()).isEqualTo(
-			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_GEMFIRE_POOL_NAME);
+			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_POOL_NAME);
 	}
 
 	@Test
@@ -286,7 +286,7 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 	public void setAndGetRegionName() {
 
 		assertThat(this.regionFactoryBean.getRegionName()).isEqualTo(
-			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME);
+			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_SESSION_REGION_NAME);
 
 		this.regionFactoryBean.setRegionName("Example");
 
@@ -295,17 +295,17 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 		this.regionFactoryBean.setRegionName("  ");
 
 		assertThat(this.regionFactoryBean.getRegionName()).isEqualTo(
-			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME);
+			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_SESSION_REGION_NAME);
 
 		this.regionFactoryBean.setRegionName("");
 
 		assertThat(this.regionFactoryBean.getRegionName()).isEqualTo(
-			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME);
+			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_SESSION_REGION_NAME);
 
 		this.regionFactoryBean.setRegionName(null);
 
 		assertThat(this.regionFactoryBean.getRegionName()).isEqualTo(
-			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME);
+			GemFireCacheTypeAwareRegionFactoryBean.DEFAULT_SESSION_REGION_NAME);
 	}
 
 	@Test

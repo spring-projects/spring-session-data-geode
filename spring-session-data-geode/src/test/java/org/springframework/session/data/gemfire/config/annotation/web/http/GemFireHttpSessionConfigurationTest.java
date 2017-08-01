@@ -157,7 +157,7 @@ public class GemFireHttpSessionConfigurationTest {
 	public void setAndGetPoolName() {
 
 		assertThat(this.gemfireConfiguration.getPoolName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_GEMFIRE_POOL_NAME);
+			GemFireHttpSessionConfiguration.DEFAULT_POOL_NAME);
 
 		this.gemfireConfiguration.setPoolName("TestPoolName");
 
@@ -166,17 +166,17 @@ public class GemFireHttpSessionConfigurationTest {
 		this.gemfireConfiguration.setPoolName("  ");
 
 		assertThat(this.gemfireConfiguration.getPoolName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_GEMFIRE_POOL_NAME);
+			GemFireHttpSessionConfiguration.DEFAULT_POOL_NAME);
 
 		this.gemfireConfiguration.setPoolName("");
 
 		assertThat(this.gemfireConfiguration.getPoolName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_GEMFIRE_POOL_NAME);
+			GemFireHttpSessionConfiguration.DEFAULT_POOL_NAME);
 
 		this.gemfireConfiguration.setPoolName(null);
 
 		assertThat(this.gemfireConfiguration.getPoolName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_GEMFIRE_POOL_NAME);
+			GemFireHttpSessionConfiguration.DEFAULT_POOL_NAME);
 	}
 
 	@Test
@@ -199,27 +199,27 @@ public class GemFireHttpSessionConfigurationTest {
 	@Test
 	public void setAndGetSpringSessionGemFireRegionName() {
 
-		assertThat(this.gemfireConfiguration.getSpringSessionGemFireRegionName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME);
+		assertThat(this.gemfireConfiguration.getSessionRegionName()).isEqualTo(
+			GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
 
-		this.gemfireConfiguration.setSpringSessionGemFireRegionName("test");
+		this.gemfireConfiguration.setSessionRegionName("test");
 
-		assertThat(this.gemfireConfiguration.getSpringSessionGemFireRegionName()).isEqualTo("test");
+		assertThat(this.gemfireConfiguration.getSessionRegionName()).isEqualTo("test");
 
-		this.gemfireConfiguration.setSpringSessionGemFireRegionName("  ");
+		this.gemfireConfiguration.setSessionRegionName("  ");
 
-		assertThat(this.gemfireConfiguration.getSpringSessionGemFireRegionName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME);
+		assertThat(this.gemfireConfiguration.getSessionRegionName()).isEqualTo(
+			GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
 
-		this.gemfireConfiguration.setSpringSessionGemFireRegionName("");
+		this.gemfireConfiguration.setSessionRegionName("");
 
-		assertThat(this.gemfireConfiguration.getSpringSessionGemFireRegionName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME);
+		assertThat(this.gemfireConfiguration.getSessionRegionName()).isEqualTo(
+			GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
 
-		this.gemfireConfiguration.setSpringSessionGemFireRegionName(null);
+		this.gemfireConfiguration.setSessionRegionName(null);
 
-		assertThat(this.gemfireConfiguration.getSpringSessionGemFireRegionName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_SPRING_SESSION_GEMFIRE_REGION_NAME);
+		assertThat(this.gemfireConfiguration.getSessionRegionName()).isEqualTo(
+			GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
 	}
 
 	@Test
@@ -246,7 +246,7 @@ public class GemFireHttpSessionConfigurationTest {
 		assertThat(this.gemfireConfiguration.getMaxInactiveIntervalInSeconds()).isEqualTo(600);
 		assertThat(this.gemfireConfiguration.getPoolName()).isEqualTo("TestPool");
 		assertThat(this.gemfireConfiguration.getServerRegionShortcut()).isEqualTo(RegionShortcut.REPLICATE);
-		assertThat(this.gemfireConfiguration.getSpringSessionGemFireRegionName()).isEqualTo("TEST");
+		assertThat(this.gemfireConfiguration.getSessionRegionName()).isEqualTo("TEST");
 
 		verify(mockAnnotationMetadata, times(1)).getAnnotationAttributes(eq(EnableGemFireHttpSession.class.getName()));
 	}
@@ -276,11 +276,11 @@ public class GemFireHttpSessionConfigurationTest {
 
 		given(mockGemFireCache.getRegion(eq("Example"))).willReturn(mockRegion);
 
-		this.gemfireConfiguration.setSpringSessionGemFireRegionName("Example");
+		this.gemfireConfiguration.setSessionRegionName("Example");
 
 		GemfireTemplate template = this.gemfireConfiguration.sessionRegionTemplate(mockGemFireCache);
 
-		assertThat(this.gemfireConfiguration.getSpringSessionGemFireRegionName()).isEqualTo("Example");
+		assertThat(this.gemfireConfiguration.getSessionRegionName()).isEqualTo("Example");
 		assertThat(template).isNotNull();
 		assertThat(template.getRegion()).isSameAs(mockRegion);
 
@@ -298,7 +298,7 @@ public class GemFireHttpSessionConfigurationTest {
 		this.gemfireConfiguration.setClientRegionShortcut(ClientRegionShortcut.CACHING_PROXY);
 		this.gemfireConfiguration.setPoolName("TestPool");
 		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.REPLICATE_PERSISTENT);
-		this.gemfireConfiguration.setSpringSessionGemFireRegionName("TestRegion");
+		this.gemfireConfiguration.setSessionRegionName("TestRegion");
 
 		GemFireCacheTypeAwareRegionFactoryBean<Object, Session> sessionRegionFactoryBean =
 			this.gemfireConfiguration.sessionRegion(mockGemFireCache, mockRegionAttributes);
@@ -339,9 +339,9 @@ public class GemFireHttpSessionConfigurationTest {
 
 		assertThat(sessionRegionAttributes).isNotNull();
 		assertThat(sessionRegionAttributes.getKeyConstraint()).isEqualTo(
-			GemFireHttpSessionConfiguration.SPRING_SESSION_GEMFIRE_REGION_KEY_CONSTRAINT);
+			GemFireHttpSessionConfiguration.SESSION_REGION_KEY_CONSTRAINT);
 		assertThat(sessionRegionAttributes.getValueConstraint()).isEqualTo(
-			GemFireHttpSessionConfiguration.SPRING_SESSION_GEMFIRE_REGION_VALUE_CONSTRAINT);
+			GemFireHttpSessionConfiguration.SESSION_REGION_VALUE_CONSTRAINT);
 
 		ExpirationAttributes entryIdleTimeoutExpiration = sessionRegionAttributes.getEntryIdleTimeout();
 
@@ -369,9 +369,9 @@ public class GemFireHttpSessionConfigurationTest {
 
 		assertThat(sessionRegionAttributes).isNotNull();
 		assertThat(sessionRegionAttributes.getKeyConstraint()).isEqualTo(
-			GemFireHttpSessionConfiguration.SPRING_SESSION_GEMFIRE_REGION_KEY_CONSTRAINT);
+			GemFireHttpSessionConfiguration.SESSION_REGION_KEY_CONSTRAINT);
 		assertThat(sessionRegionAttributes.getValueConstraint()).isEqualTo(
-			GemFireHttpSessionConfiguration.SPRING_SESSION_GEMFIRE_REGION_VALUE_CONSTRAINT);
+			GemFireHttpSessionConfiguration.SESSION_REGION_VALUE_CONSTRAINT);
 
 		ExpirationAttributes entryIdleTimeoutExpiration = sessionRegionAttributes.getEntryIdleTimeout();
 
