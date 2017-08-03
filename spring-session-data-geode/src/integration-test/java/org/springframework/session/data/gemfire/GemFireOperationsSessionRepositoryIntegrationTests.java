@@ -48,29 +48,33 @@ import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
- * Integration test to test the {@code findByPrincipalName} query method
- * on {@link GemFireOperationsSessionRepository}.
+ * Integration test to test the {@code findByPrincipalName} query method on {@link GemFireOperationsSessionRepository}.
  *
  * @author John Blum
  * @since 1.1.0
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.query.QueryService
+ * @see org.apache.geode.pdx.PdxSerializable
+ * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
+ * @see org.springframework.security.core.context.SecurityContext
+ * @see org.springframework.session.Session
  * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
  * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
  * @see org.springframework.test.annotation.DirtiesContext
  * @see org.springframework.test.context.ContextConfiguration
- * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+ * @see org.springframework.test.context.junit4.SpringRunner
  * @see org.springframework.test.context.web.WebAppConfiguration
- * @see org.apache.geode.cache.Cache
- * @see org.apache.geode.cache.Region
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @DirtiesContext
 @WebAppConfiguration
@@ -328,8 +332,8 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 
 		((AbstractGemFireOperationsSessionRepository.GemFireSession) expectedSession).setPrincipalName("jblum");
 
-		List<String> expectedAttributeNames = Arrays.asList("booleanAttribute", "numericAttribute", "stringAttribute",
-			"personAttribute");
+		List<String> expectedAttributeNames =
+			Arrays.asList("booleanAttribute", "numericAttribute", "stringAttribute", "personAttribute");
 
 		Person jonDoe = new Person("Jon", "Doe");
 
@@ -406,13 +410,13 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 			pdxWriter.writeString("lastName", getLastName());
 		}
 
-		public void fromData(final PdxReader pdxReader) {
+		public void fromData(PdxReader pdxReader) {
 			this.firstName = pdxReader.readString("firstName");
 			this.lastName = pdxReader.readString("lastName");
 		}
 
 		@SuppressWarnings("all")
-		public int compareTo(final Person person) {
+		public int compareTo(Person person) {
 
 			int compareValue = getLastName().compareTo(person.getLastName());
 
@@ -420,7 +424,7 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 		}
 
 		@Override
-		public boolean equals(final Object obj) {
+		public boolean equals(Object obj) {
 
 			if (this == obj) {
 				return true;

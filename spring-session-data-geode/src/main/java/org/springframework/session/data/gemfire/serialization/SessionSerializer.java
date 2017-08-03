@@ -28,28 +28,6 @@ import java.util.Optional;
 public interface SessionSerializer<T, IN, OUT> {
 
 	/**
-	 * Determines whether the given {@link Object} can be de/serialized by this {@link SessionSerializer}.
-	 *
-	 * @param obj {@link Object} to evaluate for whether de/serialization is supported.
-	 * @return a boolean value indicating whether the specified {@link Object} can be de/serialized
-	 * by this {@link SessionSerializer}.
-	 * @see #canSerialize(Class)
-	 */
-	default boolean canSerialize(Object obj) {
-		return Optional.ofNullable(obj).map(Object::getClass).map(this::canSerialize).orElse(false);
-	}
-
-	/**
-	 * Determines whether the given {@link Class type} can be de/serialized by this {@link SessionSerializer}.
-	 *
-	 * @param type {@link Class} to evaluate for whether de/serialization is supported.
-	 * @return a boolean value indicating whether the specified {@link Class type} can be de/serialized
-	 * by this {@link SessionSerializer}.
-	 * @see #canSerialize(Object)
-	 */
-	boolean canSerialize(Class<?> type);
-
-	/**
 	 * Serializes the given {@link Object} to the provided {@code out} stream.
 	 *
 	 * @param session {@link Object} to serialize.
@@ -64,5 +42,27 @@ public interface SessionSerializer<T, IN, OUT> {
 	 * @return the deserialized {@link Object}.
 	 */
 	T deserialize(IN in);
+
+	/**
+	 * Determines whether the given {@link Class type} can be de/serialized by this {@link SessionSerializer}.
+	 *
+	 * @param type {@link Class} to evaluate for whether de/serialization is supported.
+	 * @return a boolean value indicating whether the specified {@link Class type} can be de/serialized
+	 * by this {@link SessionSerializer}.
+	 * @see #canSerialize(Object)
+	 */
+	boolean canSerialize(Class<?> type);
+
+	/**
+	 * Determines whether the given {@link Object} can be de/serialized by this {@link SessionSerializer}.
+	 *
+	 * @param obj {@link Object} to evaluate for whether de/serialization is supported.
+	 * @return a boolean value indicating whether the specified {@link Object} can be de/serialized
+	 * by this {@link SessionSerializer}.
+	 * @see #canSerialize(Class)
+	 */
+	default boolean canSerialize(Object obj) {
+		return Optional.ofNullable(obj).map(Object::getClass).map(this::canSerialize).orElse(false);
+	}
 
 }

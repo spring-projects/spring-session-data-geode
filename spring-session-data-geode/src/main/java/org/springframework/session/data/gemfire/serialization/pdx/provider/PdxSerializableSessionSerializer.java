@@ -17,11 +17,12 @@
 package org.springframework.session.data.gemfire.serialization.pdx.provider;
 
 import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
-import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSessionAttributes;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -56,11 +57,16 @@ public class PdxSerializableSessionSerializer extends AbstractPdxSerializableSes
 			writer.writeLong("lastAccessedTime", session.getLastAccessedTime().toEpochMilli());
 			writer.writeLong("maxInactiveIntervalInSeconds", session.getMaxInactiveInterval().getSeconds());
 			writer.writeString("principalName", session.getPrincipalName());
-			writer.writeObject("attributes", session.getAttributes());
+			writer.writeObject("attributes", newMap(session.getAttributes()));
 		}
 	}
 
+	protected <K, V> Map<K, V> newMap(Map<K, V> map) {
+		return new HashMap<>(map);
+	}
+
 	@Override
+	@SuppressWarnings("unchecked")
 	public GemFireSession deserialize(PdxReader reader) {
 
 		GemFireSession session = GemFireSession.from(new AbstractSession() {
@@ -92,7 +98,7 @@ public class PdxSerializableSessionSerializer extends AbstractPdxSerializableSes
 		});
 
 		session.setPrincipalName(reader.readString("principalName"));
-		session.getAttributes().from((GemFireSessionAttributes) reader.readObject("attributes"));
+		session.getAttributes().from((Map<String, Object>) reader.readObject("attributes"));
 
 		return session;
 	}

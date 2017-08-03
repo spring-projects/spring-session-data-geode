@@ -17,6 +17,7 @@
 package org.springframework.session.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.gemfire.util.ArrayUtils.asArray;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,9 +26,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
@@ -37,9 +36,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.ClientCache;
@@ -51,10 +48,10 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.data.gemfire.CacheFactoryBean;
-import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
-import org.springframework.data.gemfire.client.PoolFactoryBean;
-import org.springframework.data.gemfire.server.CacheServerFactoryBean;
+import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
+import org.springframework.data.gemfire.config.annotation.CacheServerConfigurer;
+import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
+import org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
@@ -71,31 +68,36 @@ import org.springframework.util.FileSystemUtils;
 import org.springframework.util.SocketUtils;
 
 /**
- * Integration tests to test the functionality of GemFire-backed Spring Sessions using
- * the GemFire client-server topology.
+ * Integration tests testing the functionality of Apache Geode / Pivotal GemFire backed Spring Sessions
+ * using the GemFire client-server topology.
  *
  * @author John Blum
  * @since 1.1.0
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
- * @see org.springframework.context.ConfigurableApplicationContext
- * @see org.springframework.session.Session
- * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
- * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
- * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
- * @see org.springframework.test.annotation.DirtiesContext
- * @see org.springframework.test.context.ContextConfiguration
- * @see org.springframework.test.context.junit4.SpringRunner
- * @see org.springframework.test.context.web.WebAppConfiguration
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.client.Pool
  * @see org.apache.geode.cache.server.CacheServer
+ * @see org.springframework.context.ConfigurableApplicationContext
+ * @see org.springframework.data.gemfire.config.annotation.CacheServerApplication
+ * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
+ * @see org.springframework.session.Session
+ * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
+ * @see org.springframework.session.events.SessionCreatedEvent
+ * @see org.springframework.session.events.SessionDeletedEvent
+ * @see org.springframework.session.events.SessionExpiredEvent
+ * @see org.springframework.test.annotation.DirtiesContext
+ * @see org.springframework.test.context.ContextConfiguration
+ * @see org.springframework.test.context.junit4.SpringRunner
+ * @see org.springframework.test.context.web.WebAppConfiguration
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes =
-	ClientServerGemFireOperationsSessionRepositoryIntegrationTests.SpringSessionDataGemFireClientConfiguration.class)
+	ClientServerGemFireOperationsSessionRepositoryIntegrationTests.TestGemFireClientConfiguration.class)
 @DirtiesContext
 @WebAppConfiguration
 public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
@@ -109,9 +111,10 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 
 	private static Process gemfireServer;
 
-	private static final String SPRING_SESSION_GEMFIRE_REGION_NAME = "TestClientServerSessions";
+	private static final String TEST_SESSION_REGION_NAME = "TestClientServerSessions";
 
 	@Autowired
+	@SuppressWarnings("all")
 	private SessionEventListener sessionEventListener;
 
 	@BeforeClass
@@ -122,7 +125,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 		int port = SocketUtils.findAvailableTcpPort();
 
 		System.err.printf("Starting a GemFire Server running on host [%1$s] listening on port [%2$d]%n",
-			SpringSessionDataGemFireServerConfiguration.SERVER_HOSTNAME, port);
+			TestGemFireServerConfiguration.SERVER_HOSTNAME, port);
 
 		System.setProperty("spring.session.data.gemfire.port", String.valueOf(port));
 
@@ -131,10 +134,10 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 
 		processWorkingDirectory = createDirectory(processWorkingDirectoryPathname);
 
-		gemfireServer = run(SpringSessionDataGemFireServerConfiguration.class, processWorkingDirectory,
+		gemfireServer = run(TestGemFireServerConfiguration.class, processWorkingDirectory,
 			String.format("-Dspring.session.data.gemfire.port=%1$d", port));
 
-		assertThat(waitForCacheServerToStart(SpringSessionDataGemFireServerConfiguration.SERVER_HOSTNAME, port))
+		assertThat(waitForCacheServerToStart(TestGemFireServerConfiguration.SERVER_HOSTNAME, port))
 			.isTrue();
 
 		System.err.printf("GemFire Server [startup time = %1$d ms]%n", System.currentTimeMillis() - t0);
@@ -164,7 +167,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 		assertThat(GemFireUtils.isClient(gemfireCache)).isTrue();
 
 		Region<Object, Session> springSessionGemFireRegion =
-			gemfireCache.getRegion(SPRING_SESSION_GEMFIRE_REGION_NAME);
+			gemfireCache.getRegion(TEST_SESSION_REGION_NAME);
 
 		assertThat(springSessionGemFireRegion).isNotNull();
 
@@ -257,53 +260,25 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 		assertThat(deletedSession).isNull();
 	}
 
-	@EnableGemFireHttpSession(regionName = SPRING_SESSION_GEMFIRE_REGION_NAME,
+	@ClientCacheApplication(logLevel = "warning", pingInterval = 5000, readTimeout = 2500, retryAttempts = 1,
+		subscriptionEnabled = true)
+	@EnableGemFireHttpSession(regionName = TEST_SESSION_REGION_NAME, poolName = "DEFAULT",
 		clientRegionShortcut = ClientRegionShortcut.CACHING_PROXY,
 			maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS)
 	@SuppressWarnings("unused")
-	static class SpringSessionDataGemFireClientConfiguration {
+	static class TestGemFireClientConfiguration {
 
 		@Bean
 		static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
 			return new PropertySourcesPlaceholderConfigurer();
 		}
 
-		Properties gemfireProperties() {
-
-			Properties gemfireProperties = new Properties();
-
-			gemfireProperties.setProperty("log-level", GEMFIRE_LOG_LEVEL);
-
-			return gemfireProperties;
-		}
-
 		@Bean
-		ClientCacheFactoryBean gemfireCache() {
-
-			ClientCacheFactoryBean clientCacheFactory = new ClientCacheFactoryBean();
-
-			clientCacheFactory.setClose(true);
-			clientCacheFactory.setProperties(gemfireProperties());
-
-			return clientCacheFactory;
-		}
-
-		@Bean
-		PoolFactoryBean gemfirePool(
+		ClientCacheConfigurer clientCacheDefaultPoolPortConfigurer(
 				@Value("${spring.session.data.gemfire.port:" + DEFAULT_GEMFIRE_SERVER_PORT + "}") int port) {
 
-			PoolFactoryBean poolFactory = new PoolFactoryBean();
-
-			poolFactory.setKeepAlive(false);
-			poolFactory.setPingInterval(TimeUnit.SECONDS.toMillis(5));
-			poolFactory.setReadTimeout(2000); // 2 seconds
-			poolFactory.setRetryAttempts(1);
-			poolFactory.setSubscriptionEnabled(true);
-
-			poolFactory.setServers(Collections.singletonList(new ConnectionEndpoint(
-				SpringSessionDataGemFireServerConfiguration.SERVER_HOSTNAME, port)));
-
-			return poolFactory;
+			return (beanName, clientCacheFactoryBean) ->
+				clientCacheFactoryBean.setServers(asArray(new ConnectionEndpoint("localhost", port)));
 		}
 
 		@Bean
@@ -316,7 +291,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 		public static void main(String[] args) {
 
 			ConfigurableApplicationContext applicationContext = new AnnotationConfigApplicationContext(
-					SpringSessionDataGemFireClientConfiguration.class);
+					TestGemFireClientConfiguration.class);
 
 			applicationContext.registerShutdownHook();
 
@@ -329,10 +304,12 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 		}
 	}
 
-	@EnableGemFireHttpSession(regionName = SPRING_SESSION_GEMFIRE_REGION_NAME,
+	@CacheServerApplication(name = "ClientServerGemFireOperationsSessionRepositoryIntegrationTests",
+		logLevel = "warning")
+	@EnableGemFireHttpSession(regionName = TEST_SESSION_REGION_NAME,
 		maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS)
 	@SuppressWarnings("unused")
-	static class SpringSessionDataGemFireServerConfiguration {
+	static class TestGemFireServerConfiguration {
 
 		static final String SERVER_HOSTNAME = "localhost";
 
@@ -341,53 +318,20 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 			return new PropertySourcesPlaceholderConfigurer();
 		}
 
-		Properties gemfireProperties() {
-
-			Properties gemfireProperties = new Properties();
-
-			gemfireProperties.setProperty("name", name());
-			gemfireProperties.setProperty("mcast-port", "0");
-			gemfireProperties.setProperty("log-level", GEMFIRE_LOG_LEVEL);
-
-			return gemfireProperties;
-		}
-
-		String name() {
-			return ClientServerGemFireOperationsSessionRepositoryIntegrationTests.class.getName();
-		}
-
 		@Bean
-		CacheFactoryBean gemfireCache() {
-
-			CacheFactoryBean gemfireCache = new CacheFactoryBean();
-
-			gemfireCache.setClose(true);
-			gemfireCache.setProperties(gemfireProperties());
-
-			return gemfireCache;
-		}
-
-		@Bean
-		CacheServerFactoryBean gemfireCacheServer(GemFireCache gemfireCache,
+		CacheServerConfigurer cacheServerPortConfigurer(
 				@Value("${spring.session.data.gemfire.port:" + DEFAULT_GEMFIRE_SERVER_PORT + "}") int port) {
 
-			CacheServerFactoryBean cacheServerFactory = new CacheServerFactoryBean();
-
-			cacheServerFactory.setCache((Cache) gemfireCache);
-			cacheServerFactory.setAutoStartup(true);
-			cacheServerFactory.setBindAddress(SERVER_HOSTNAME);
-			cacheServerFactory.setPort(port);
-
-			return cacheServerFactory;
+			return (beanName, cacheServerFactoryBean) -> cacheServerFactoryBean.setPort(port);
 		}
 
 		@SuppressWarnings("resource")
 		public static void main(String[] args) throws IOException {
 
-			AnnotationConfigApplicationContext context =
-				new AnnotationConfigApplicationContext(SpringSessionDataGemFireServerConfiguration.class);
+			AnnotationConfigApplicationContext applicationContext =
+				new AnnotationConfigApplicationContext(TestGemFireServerConfiguration.class);
 
-			context.registerShutdownHook();
+			applicationContext.registerShutdownHook();
 
 			writeProcessControlFile(WORKING_DIRECTORY);
 		}

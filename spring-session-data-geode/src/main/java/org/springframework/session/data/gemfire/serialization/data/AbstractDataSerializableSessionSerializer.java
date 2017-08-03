@@ -42,6 +42,8 @@ import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 public abstract class AbstractDataSerializableSessionSerializer<T> extends DataSerializer
 		implements SessionSerializer<T, DataInput, DataOutput> {
 
+	protected static final boolean DEFAULT_ALLOW_JAVA_SERIALIZATION = true;
+
 	@Override
 	public int getId() {
 		return 0x0A11ACE5;
@@ -50,6 +52,10 @@ public abstract class AbstractDataSerializableSessionSerializer<T> extends DataS
 	@Override
 	public Class<?>[] getSupportedClasses() {
 		return new Class[0];
+	}
+
+	protected boolean allowJavaSerialization() {
+		return DEFAULT_ALLOW_JAVA_SERIALIZATION;
 	}
 
 	@Override
@@ -72,9 +78,21 @@ public abstract class AbstractDataSerializableSessionSerializer<T> extends DataS
 			.orElse(false);
 	}
 
+	public void serializeObject(Object obj, DataOutput out) throws IOException {
+		serializeObject(obj, out, allowJavaSerialization());
+	}
+
+	public void serializeObject(Object obj, DataOutput out, boolean allowJavaSerialization) throws IOException {
+		writeObject(obj, out, allowJavaSerialization);
+	}
+
 	@Override
 	public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
 		return deserialize(in);
+	}
+
+	public <T> T deserializeObject(DataInput in) throws ClassNotFoundException, IOException {
+		return DataSerializer.readObject(in);
 	}
 
 	protected <T> T safeRead(DataInput in, DataInputReader<T> reader) {

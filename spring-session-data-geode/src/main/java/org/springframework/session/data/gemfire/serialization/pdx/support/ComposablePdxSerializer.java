@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -57,7 +58,8 @@ public class ComposablePdxSerializer implements Iterable<PdxSerializer>, PdxSeri
 	public static PdxSerializer compose(Iterable<PdxSerializer> pdxSerializers) {
 
 		List<PdxSerializer> pdxSerializerList =
-			stream(nullSafeIterable(pdxSerializers).spliterator(), false).collect(Collectors.toList());
+			stream(nullSafeIterable(pdxSerializers).spliterator(), false)
+				.filter(Objects::nonNull).collect(Collectors.toList());
 
 		return (pdxSerializerList.isEmpty() ? null
 			: (pdxSerializerList.size() == 1 ? pdxSerializerList.get(0)

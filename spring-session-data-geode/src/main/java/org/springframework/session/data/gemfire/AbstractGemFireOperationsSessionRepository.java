@@ -16,6 +16,8 @@
 
 package org.springframework.session.data.gemfire;
 
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -32,6 +34,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -93,7 +96,7 @@ import org.apache.commons.logging.LogFactory;
 public abstract class AbstractGemFireOperationsSessionRepository extends CacheListenerAdapter<Object, Session>
 		implements ApplicationEventPublisherAware, FindByIndexNameSessionRepository<Session>, InitializingBean {
 
-	private boolean usingDataSerialization = false;
+	private static final AtomicBoolean usingDataSerialization = new AtomicBoolean(false);
 
 	private ApplicationEventPublisher applicationEventPublisher = new ApplicationEventPublisher() {
 
@@ -246,7 +249,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 * @param useDataSerialization boolean indicating whether the DataSerialization framework has been configured.
 	 */
 	public void setUseDataSerialization(boolean useDataSerialization) {
-		this.usingDataSerialization = useDataSerialization;
+		usingDataSerialization.set(useDataSerialization);
 	}
 
 	/**
@@ -254,8 +257,8 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 *
 	 * @return a boolean indicating whether the DataSerialization framework has been configured.
 	 */
-	protected boolean isUsingDataSerialization() {
-		return this.usingDataSerialization;
+	protected static boolean isUsingDataSerialization() {
+		return usingDataSerialization.get();
 	}
 
 	/**
@@ -292,9 +295,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		this.fullyQualifiedRegionName = region.getFullPath();
 
 		region.getAttributesMutator().addCacheListener(this);
-
-		Instantiator.register(GemFireSessionInstantiator.create());
-		Instantiator.register(GemFireSessionAttributesInstantiator.create());
 	}
 
 	/* (non-Javadoc) */
@@ -524,22 +524,57 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		return session;
 	}
 
+	@SuppressWarnings("unused")
+	public static class DeltaCapableGemFireSession extends GemFireSession<DeltaCapableGemFireSessionAttributes>
+			implements Delta {
+
+		public DeltaCapableGemFireSession() { }
+
+		public DeltaCapableGemFireSession(String id) {
+			super(id);
+		}
+
+		public DeltaCapableGemFireSession(Session session) {
+			super(session);
+		}
+
+		@Override
+		protected DeltaCapableGemFireSessionAttributes newSessionAttributes(Object lock) {
+			return new DeltaCapableGemFireSessionAttributes();
+		}
+
+		/* (non-Javadoc) */
+		public synchronized void toDelta(DataOutput out) throws IOException {
+
+			out.writeUTF(getId());
+			out.writeLong(getLastAccessedTime().toEpochMilli());
+			out.writeLong(getMaxInactiveInterval().getSeconds());
+			getAttributes().toDelta(out);
+			clearDelta();
+		}
+
+		/* (non-Javadoc) */
+		public synchronized void fromDelta(DataInput in) throws IOException {
+
+			setId(in.readUTF());
+			setLastAccessedTime(Instant.ofEpochMilli(in.readLong()));
+			setMaxInactiveInterval(Duration.ofSeconds(in.readLong()));
+			getAttributes().fromDelta(in);
+			clearDelta();
+		}
+	}
+
 	/**
-	 * {@link GemFireSession} is a GemFire model for a Spring {@link Session} that stores and manages {@link Session}
-	 * state in GemFire. This class implements GemFire's {@link DataSerializable} interface to better handle
-	 * replication of {@link Session} state across the GemFire cluster.
+	 * {@link GemFireSession} is a Abstract Data Type (ADT) for a Spring {@link Session} that stores and manages
+	 * {@link Session} state in Apache Geode or Pivotal GemFire.
 	 *
 	 * @see java.lang.Comparable
-	 * @see org.apache.geode.DataSerializable
-	 * @see org.apache.geode.Delta
 	 * @see org.springframework.session.Session
 	 */
 	@SuppressWarnings("serial")
-	public static class GemFireSession implements Comparable<Session>, DataSerializable, Delta, Session {
+	public static class GemFireSession<T extends GemFireSessionAttributes> implements Comparable<Session>, Session {
 
-		protected static final boolean DEFAULT_ALLOW_JAVA_SERIALIZATION = true;
-
-		private static final Duration DEFAULT_MAX_INACTIVE_INTERVAL = Duration.ZERO;
+		protected static final Duration DEFAULT_MAX_INACTIVE_INTERVAL = Duration.ZERO;
 
 		protected static final String SPRING_SECURITY_CONTEXT = "SPRING_SECURITY_CONTEXT";
 
@@ -547,14 +582,14 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		private Duration maxInactiveInterval = DEFAULT_MAX_INACTIVE_INTERVAL;
 
-		private transient final GemFireSessionAttributes sessionAttributes = new GemFireSessionAttributes(this);
-
 		private Instant creationTime;
 		private Instant lastAccessedTime;
 
 		private transient final SpelExpressionParser parser = new SpelExpressionParser();
 
 		private String id;
+
+		private transient final T sessionAttributes = newSessionAttributes(this);
 
 		/* (non-Javadoc) */
 		protected GemFireSession() {
@@ -582,13 +617,19 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public static GemFireSession copy(Session session) {
-			return new GemFireSession(session);
+			return (isUsingDataSerialization() ? new DeltaCapableGemFireSession(session) : new GemFireSession(session));
+		}
+
+		/* (non-Javadoc) */
+		public static GemFireSession create() {
+			return create(DEFAULT_MAX_INACTIVE_INTERVAL);
 		}
 
 		/* (non-Javadoc) */
 		public static GemFireSession create(Duration maxInactiveInterval) {
 
-			GemFireSession session = new GemFireSession();
+			GemFireSession session =
+				(isUsingDataSerialization() ? new DeltaCapableGemFireSession() : new GemFireSession());
 
 			session.setMaxInactiveInterval(maxInactiveInterval);
 
@@ -596,8 +637,9 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 
 		/* (non-Javadoc) */
-		public static GemFireSession from(Session session) {
-			return (session instanceof GemFireSession ? (GemFireSession) session : copy(session));
+		@SuppressWarnings("unchecked")
+		public static <T extends GemFireSession> T from(Session session) {
+			return (T) (session instanceof GemFireSession ? (GemFireSession) session : copy(session));
 		}
 
 		/**
@@ -612,32 +654,53 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		private static String validateId(String id) {
-
 			return Optional.ofNullable(id).filter(StringUtils::hasText)
-				.orElseThrow(() -> new IllegalArgumentException("ID is required"));
+				.orElseThrow(() -> newIllegalArgumentException("ID is required"));
+		}
+
+		@SuppressWarnings("unchecked")
+		protected T newSessionAttributes(Object lock) {
+			return (T) new GemFireSessionAttributes(lock);
 		}
 
 		/* (non-Javadoc) */
-		protected boolean allowJavaSerialization() {
-			return DEFAULT_ALLOW_JAVA_SERIALIZATION;
-		}
-
 		@Override
 		public synchronized String changeSessionId() {
 
 			this.id = generateId();
+			triggerDelta();
 
 			return getId();
 		}
 
 		/* (non-Javadoc) */
-		public synchronized String getId() {
-			return this.id;
+		public synchronized void clearDelta() {
+			this.delta = false;
 		}
 
 		/* (non-Javadoc) */
-		public synchronized Instant getCreationTime() {
-			return this.creationTime;
+		public synchronized boolean hasDelta() {
+			return (this.delta || this.sessionAttributes.hasDelta());
+		}
+
+		/* (non-Javadoc) */
+		@SuppressWarnings("unused")
+		protected void triggerDelta() {
+			triggerDelta(true);
+		}
+
+		/* (non-Javadoc) */
+		protected synchronized void triggerDelta(boolean condition) {
+			this.delta |= condition;
+		}
+
+		synchronized void setId(String id) {
+			this.id = validateId(id);
+		}
+
+		/* (non-Javadoc) */
+		public synchronized String getId() {
+			return this.id;
 		}
 
 		/* (non-Javadoc) */
@@ -661,8 +724,13 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 
 		/* (non-Javadoc) */
-		public GemFireSessionAttributes getAttributes() {
+		public T getAttributes() {
 			return this.sessionAttributes;
+		}
+
+		/* (non-Javadoc) */
+		public synchronized Instant getCreationTime() {
+			return this.creationTime;
 		}
 
 		/* (non-Javadoc) */
@@ -688,7 +756,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public synchronized void setLastAccessedTime(Instant lastAccessedTime) {
-			this.delta |= !ObjectUtils.nullSafeEquals(this.lastAccessedTime, lastAccessedTime);
+			triggerDelta(!ObjectUtils.nullSafeEquals(this.lastAccessedTime, lastAccessedTime));
 			this.lastAccessedTime = lastAccessedTime;
 		}
 
@@ -699,7 +767,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		/* (non-Javadoc) */
 		public synchronized void setMaxInactiveInterval(Duration maxInactiveIntervalInSeconds) {
-			this.delta |= !ObjectUtils.nullSafeEquals(this.maxInactiveInterval, maxInactiveIntervalInSeconds);
+			triggerDelta(!ObjectUtils.nullSafeEquals(this.maxInactiveInterval, maxInactiveIntervalInSeconds));
 			this.maxInactiveInterval = maxInactiveIntervalInSeconds;
 		}
 
@@ -731,79 +799,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			}
 
 			return principalName;
-		}
-
-		/* (non-Javadoc) */
-		public synchronized void toData(DataOutput out) throws IOException {
-
-			out.writeUTF(getId());
-			out.writeLong(getCreationTime().toEpochMilli());
-			out.writeLong(getLastAccessedTime().toEpochMilli());
-			out.writeLong(getMaxInactiveInterval().getSeconds());
-
-			String principalName = getPrincipalName();
-
-			int length = (StringUtils.hasText(principalName) ? principalName.length() : 0);
-
-			out.writeInt(length);
-
-			if (length > 0) {
-				out.writeUTF(principalName);
-			}
-
-			writeObject(this.sessionAttributes, out);
-
-			this.delta = false;
-		}
-
-		/* (non-Javadoc) */
-		void writeObject(Object obj, DataOutput out) throws IOException {
-			DataSerializer.writeObject(obj, out, allowJavaSerialization());
-		}
-
-		/* (non-Javadoc) */
-		public synchronized void fromData(DataInput in) throws ClassNotFoundException, IOException {
-
-			this.id = in.readUTF();
-			this.creationTime = Instant.ofEpochMilli(in.readLong());
-			setLastAccessedTime(Instant.ofEpochMilli(in.readLong()));
-			setMaxInactiveInterval(Duration.ofSeconds(in.readLong()));
-
-			int principalNameLength = in.readInt();
-
-			if (principalNameLength > 0) {
-				setPrincipalName(in.readUTF());
-			}
-
-			this.sessionAttributes.from(this.<GemFireSessionAttributes>readObject(in));
-
-			this.delta = false;
-		}
-
-		/* (non-Javadoc) */
-		<T> T readObject(DataInput in) throws ClassNotFoundException, IOException {
-			return DataSerializer.readObject(in);
-		}
-
-		/* (non-Javadoc) */
-		public synchronized boolean hasDelta() {
-			return (this.delta || this.sessionAttributes.hasDelta());
-		}
-
-		/* (non-Javadoc) */
-		public synchronized void toDelta(DataOutput out) throws IOException {
-			out.writeLong(getLastAccessedTime().toEpochMilli());
-			out.writeLong(getMaxInactiveInterval().getSeconds());
-			getAttributes().toDelta(out);
-			this.delta = false;
-		}
-
-		/* (non-Javadoc) */
-		public synchronized void fromDelta(DataInput in) throws IOException {
-			setLastAccessedTime(Instant.ofEpochMilli(in.readLong()));
-			setMaxInactiveInterval(Duration.ofSeconds(in.readLong()));
-			getAttributes().fromDelta(in);
-			this.delta = false;
 		}
 
 		/* (non-Javadoc) */
@@ -851,24 +846,120 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 	}
 
-	/**
-	 * GemFireSessionInstantiator is a GemFire {@link Instantiator} use to instantiate instances
-	 * of the {@link GemFireSession} object used in GemFire's data serialization framework when
-	 * persisting Session state in GemFire.
-	 */
-	public static class GemFireSessionInstantiator extends Instantiator {
+	@SuppressWarnings("unused")
+	public static class DeltaCapableGemFireSessionAttributes extends GemFireSessionAttributes implements Delta {
 
-		public static GemFireSessionInstantiator create() {
-			return new GemFireSessionInstantiator(GemFireSession.class, 800813552);
+		private transient final Map<String, Object> sessionAttributeDeltas = new HashMap<>();
+
+		public DeltaCapableGemFireSessionAttributes() {
 		}
 
-		public GemFireSessionInstantiator(Class<? extends DataSerializable> type, int id) {
-			super(type, id);
+		public DeltaCapableGemFireSessionAttributes(Object lock) {
+			super(lock);
 		}
 
+		/* (non-Javadoc) */
+		public Object setAttribute(String attributeName, Object attributeValue) {
+
+			synchronized (getLock()) {
+
+				if (attributeValue != null) {
+
+					Object previousAttributeValue = super.setAttribute(attributeName, attributeValue);
+
+					if (!attributeValue.equals(previousAttributeValue)) {
+						this.sessionAttributeDeltas.put(attributeName, attributeValue);
+					}
+
+					return previousAttributeValue;
+				}
+				else {
+					return removeAttribute(attributeName);
+				}
+			}
+		}
+
+		/* (non-Javadoc) */
 		@Override
-		public DataSerializable newInstance() {
-			return new GemFireSession();
+		public Object removeAttribute(String attributeName) {
+
+			synchronized (getLock()) {
+
+				return Optional.ofNullable(super.removeAttribute(attributeName))
+					.map(previousAttributeValue -> {
+						this.sessionAttributeDeltas.put(attributeName, null);
+						return previousAttributeValue;
+					})
+					.orElse(null);
+			}
+		}
+
+		/* (non-Javadoc) */
+		public void toDelta(DataOutput out) throws IOException {
+
+			synchronized (getLock()) {
+
+				out.writeInt(this.sessionAttributeDeltas.size());
+
+				for (Map.Entry<String, Object> entry : this.sessionAttributeDeltas.entrySet()) {
+					out.writeUTF(entry.getKey());
+					writeObject(entry.getValue(), out);
+				}
+
+				clearDelta();
+			}
+		}
+
+		/* (non-Javadoc) */
+		protected void writeObject(Object value, DataOutput out) throws IOException {
+			DataSerializer.writeObject(value, out);
+		}
+
+		/* (non-Javadoc) */
+		@Override
+		public boolean hasDelta() {
+
+			synchronized (getLock()) {
+				return !this.sessionAttributeDeltas.isEmpty();
+			}
+		}
+
+		/* (non-Javadoc) */
+		public void fromDelta(DataInput in) throws InvalidDeltaException, IOException {
+
+			synchronized (getLock()) {
+				try {
+					int count = in.readInt();
+
+					Map<String, Object> deltas = new HashMap<>(count);
+
+					while (count-- > 0) {
+						deltas.put(in.readUTF(), readObject(in));
+					}
+
+					deltas.forEach((key, value) -> {
+						setAttribute(key, value);
+						this.sessionAttributeDeltas.remove(key);
+					});
+				}
+				catch (ClassNotFoundException cause) {
+					throw new InvalidDeltaException("Class type in data not found", cause);
+				}
+			}
+		}
+
+		/* (non-Javadoc) */
+		protected <T> T readObject(DataInput in) throws ClassNotFoundException, IOException {
+			return DataSerializer.readObject(in);
+		}
+
+		/* (non-Javadoc) */
+		@Override
+		public void clearDelta() {
+
+			synchronized (getLock()) {
+				this.sessionAttributeDeltas.clear();
+			}
 		}
 	}
 
@@ -885,13 +976,9 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 * @see org.apache.geode.Delta
 	 */
 	@SuppressWarnings("serial")
-	public static class GemFireSessionAttributes extends AbstractMap<String, Object>
-			implements DataSerializable, Delta {
-
-		protected static final boolean DEFAULT_ALLOW_JAVA_SERIALIZATION = true;
+	public static class GemFireSessionAttributes extends AbstractMap<String, Object> {
 
 		private transient final Map<String, Object> sessionAttributes = new HashMap<>();
-		private transient final Map<String, Object> sessionAttributeDeltas = new HashMap<>();
 
 		private transient final Object lock;
 
@@ -916,50 +1003,38 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 
 		/* (non-Javadoc) */
-		public void setAttribute(String attributeName, Object attributeValue) {
+		protected Object getLock() {
+			return this.lock;
+		}
 
-			synchronized (this.lock) {
-				if (attributeValue != null) {
-					if (!attributeValue.equals(this.sessionAttributes.put(attributeName, attributeValue))) {
-						this.sessionAttributeDeltas.put(attributeName, attributeValue);
-					}
-				}
-				else {
-					removeAttribute(attributeName);
-				}
+		/* (non-Javadoc) */
+		public Object setAttribute(String attributeName, Object attributeValue) {
+			synchronized (getLock()) {
+				return (attributeValue != null ? this.sessionAttributes.put(attributeName, attributeValue)
+					: removeAttribute(attributeName));
 			}
 		}
 
 		/* (non-Javadoc) */
-		public void removeAttribute(String attributeName) {
-
-			synchronized (this.lock) {
-				if (this.sessionAttributes.remove(attributeName) != null) {
-					this.sessionAttributeDeltas.put(attributeName, null);
-				}
+		public Object removeAttribute(String attributeName) {
+			synchronized (getLock()) {
+				return this.sessionAttributes.remove(attributeName);
 			}
 		}
 
 		/* (non-Javadoc) */
 		@SuppressWarnings("unchecked")
 		public <T> T getAttribute(String attributeName) {
-
-			synchronized (this.lock) {
+			synchronized (getLock()) {
 				return (T) this.sessionAttributes.get(attributeName);
 			}
 		}
 
 		/* (non-Javadoc) */
 		public Set<String> getAttributeNames() {
-
-			synchronized (this.lock) {
+			synchronized (getLock()) {
 				return Collections.unmodifiableSet(new HashSet<>(this.sessionAttributes.keySet()));
 			}
-		}
-
-		/* (non-Javadoc) */
-		protected boolean allowJavaSerialization() {
-			return DEFAULT_ALLOW_JAVA_SERIALIZATION;
 		}
 
 		/* (non-Javadoc); NOTE: entrySet implementation is not Thread-safe. */
@@ -983,134 +1058,43 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 
 		/* (non-Javadoc) */
+		public void clearDelta() {
+		}
+
+		/* (non-Javadoc) */
 		public void from(Session session) {
 
-			synchronized (this.lock) {
+			synchronized (getLock()) {
 				session.getAttributeNames().forEach(attributeName ->
 					setAttribute(attributeName, session.getAttribute(attributeName)));
 			}
 		}
 
 		/* (non-Javadoc) */
+		public void from(Map<String, Object> map) {
+
+			synchronized (getLock()) {
+				map.forEach(this::setAttribute);
+			}
+		}
+
+		/* (non-Javadoc) */
 		public void from(GemFireSessionAttributes sessionAttributes) {
 
-			synchronized (this.lock) {
+			synchronized (getLock()) {
 				sessionAttributes.getAttributeNames().forEach(attributeName ->
 					setAttribute(attributeName, sessionAttributes.getAttribute(attributeName)));
 			}
 		}
 
 		/* (non-Javadoc) */
-		public void toData(DataOutput out) throws IOException {
-
-			synchronized (this.lock) {
-
-				Set<String> attributeNames = getAttributeNames();
-
-				out.writeInt(attributeNames.size());
-
-				for (String attributeName : attributeNames) {
-					out.writeUTF(attributeName);
-					writeObject(getAttribute(attributeName), out);
-				}
-			}
-		}
-
-		/* (non-Javadoc) */
-		void writeObject(Object obj, DataOutput out) throws IOException {
-			DataSerializer.writeObject(obj, out, allowJavaSerialization());
-		}
-
-		/* (non-Javadoc) */
-		public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-
-			synchronized (this.lock) {
-
-				for (int count = in.readInt(); count > 0; count--) {
-					setAttribute(in.readUTF(), readObject(in));
-				}
-
-				this.sessionAttributeDeltas.clear();
-			}
-		}
-
-		/* (non-Javadoc) */
-		<T> T readObject(DataInput in) throws ClassNotFoundException, IOException {
-			return DataSerializer.readObject(in);
-		}
-
-		/* (non-Javadoc) */
 		public boolean hasDelta() {
-
-			synchronized (this.lock) {
-				return !this.sessionAttributeDeltas.isEmpty();
-			}
-		}
-
-		/* (non-Javadoc) */
-		public void toDelta(DataOutput out) throws IOException {
-
-			synchronized (this.lock) {
-
-				out.writeInt(this.sessionAttributeDeltas.size());
-
-				for (Map.Entry<String, Object> entry : this.sessionAttributeDeltas.entrySet()) {
-					out.writeUTF(entry.getKey());
-					writeObject(entry.getValue(), out);
-				}
-
-				this.sessionAttributeDeltas.clear();
-			}
-		}
-
-		/* (non-Javadoc) */
-		public void fromDelta(DataInput in) throws InvalidDeltaException, IOException {
-
-			synchronized (this.lock) {
-				try {
-					int count = in.readInt();
-
-					Map<String, Object> deltas = new HashMap<>(count);
-
-					while (count-- > 0) {
-						deltas.put(in.readUTF(), readObject(in));
-					}
-
-					deltas.forEach((key, value) -> {
-						setAttribute(key, value);
-						this.sessionAttributeDeltas.remove(key);
-					});
-				}
-				catch (ClassNotFoundException e) {
-					throw new InvalidDeltaException("class type in data not found", e);
-				}
-			}
+			return false;
 		}
 
 		@Override
 		public String toString() {
 			return this.sessionAttributes.toString();
-		}
-	}
-
-	/**
-	 * GemFireSessionAttributesInstantiator is a GemFire {@link Instantiator} use to instantiate instances
-	 * of the {@link GemFireSessionAttributes} object used in GemFire's data serialization framework when
-	 * persisting Session attributes state in GemFire.
-	 */
-	public static class GemFireSessionAttributesInstantiator extends Instantiator {
-
-		public static GemFireSessionAttributesInstantiator create() {
-			return new GemFireSessionAttributesInstantiator(GemFireSessionAttributes.class, 800828008);
-		}
-
-		public GemFireSessionAttributesInstantiator(Class<? extends DataSerializable> type, int id) {
-			super(type, id);
-		}
-
-		@Override
-		public DataSerializable newInstance() {
-			return new GemFireSessionAttributes();
 		}
 	}
 }

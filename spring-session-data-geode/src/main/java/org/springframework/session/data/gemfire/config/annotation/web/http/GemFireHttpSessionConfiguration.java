@@ -21,6 +21,8 @@ import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newI
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.ExpirationAction;
@@ -43,7 +45,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
@@ -408,6 +409,14 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 			.orElse(DEFAULT_SESSION_SERIALIZER_BEAN_NAME);
 	}
 
+	/**
+	 * Determine whether the configured serialization strategy is using Apache Geode / Pivotal GemFire's
+	 * DataSerialization framework.
+	 *
+	 * @return a boolean value indicating whether the configured serialization strategy is using Apache Geode
+	 * / Pivotal GemFire's DataSerialization framework.
+	 * @see #getSessionSerializerBeanName()
+	 */
 	protected boolean isUsingDataSerialization() {
 		return SESSION_DATA_SERIALIZER_BEAN_NAME.equals(getSessionSerializerBeanName());
 	}
@@ -444,13 +453,20 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 
 		setSessionSerializerBeanName(
 			enableGemFireHttpSessionAttributes.getString("sessionSerializerBeanName"));
+	}
+
+	@PostConstruct
+	public void init() {
+
+		System.err.printf("SETTING SYSTEM PROPERTY (%s) TO (%s) %n", SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME,
+			getSessionSerializerBeanName());
 
 		System.setProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME, getSessionSerializerBeanName());
-
 		getBeanFactory().registerAlias(getSessionSerializerBeanName(), SESSION_SERIALIZER_REGISTERED_ALIAS);
 	}
 
 	@Bean
+	@DependsOn({ SESSION_DATA_SERIALIZER_BEAN_NAME, SESSION_PDX_SERIALIZER_BEAN_NAME })
 	public ClientCacheConfigurer sessionClientCacheConfigurer(
 			@Qualifier(SESSION_SERIALIZER_REGISTERED_ALIAS) SessionSerializer sessionSerializer) {
 
@@ -458,6 +474,7 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	}
 
 	@Bean
+	@DependsOn({ SESSION_DATA_SERIALIZER_BEAN_NAME, SESSION_PDX_SERIALIZER_BEAN_NAME })
 	public PeerCacheConfigurer sessionPeerCacheConfigurer(
 			@Qualifier(SESSION_SERIALIZER_REGISTERED_ALIAS) SessionSerializer sessionSerializer) {
 
@@ -618,13 +635,13 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	}
 
 	@Bean(SESSION_DATA_SERIALIZER_BEAN_NAME)
-	@Conditional(DataSerializableSessionSerializerCondition.class)
+	//@Conditional(DataSerializableSessionSerializerCondition.class)
 	public Object sessionDataSerializer() {
 		return new PdxSerializableSessionSerializer();
 	}
 
 	@Bean(SESSION_PDX_SERIALIZER_BEAN_NAME)
-	@Conditional(PdxSerializableSessionSerializerCondition.class)
+	//@Conditional(PdxSerializableSessionSerializerCondition.class)
 	public Object sessionPdxSerializer() {
 		return new DataSerializableSessionSerializer();
 	}
@@ -683,6 +700,15 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 
 		@Override
 		public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+
+			System.err.printf("%1$s-System.getProperty(%2$s) = '%3$s'%n", getClass().getSimpleName(),
+				SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME,
+					System.getProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME));
+
+			System.err.printf("%1$s-Environment.get(%2$s) = '%3$s'%n", getClass().getSimpleName(),
+				SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME,
+					context.getEnvironment().getProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME));
+
 			return SESSION_DATA_SERIALIZER_BEAN_NAME
 				.equals(context.getEnvironment().getProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME));
 		}
@@ -692,6 +718,15 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 
 		@Override
 		public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+
+			System.err.printf("%1$s-System.getProperty(%2$s) = '%3$s'%n", getClass().getSimpleName(),
+				SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME,
+					System.getProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME));
+
+			System.err.printf("%1$s-Environment.get(%2$s) = '%3$s'%n", getClass().getSimpleName(),
+				SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME,
+					context.getEnvironment().getProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME));
+
 			return SESSION_PDX_SERIALIZER_BEAN_NAME
 				.equals(context.getEnvironment().getProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME));
 		}

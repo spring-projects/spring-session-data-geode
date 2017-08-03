@@ -24,8 +24,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.util.Set;
 
-import org.apache.geode.DataSerializer;
-
 import org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer;
 
 /**
@@ -64,8 +62,10 @@ public class DataSerializableSessionAttributesSerializer
 
 			attributeNames.forEach(attributeName -> {
 				safeWrite(out, output -> output.writeUTF(attributeName));
-				safeWrite(out, output -> writeObject(sessionAttributes.getAttribute(attributeName), output));
+				safeWrite(out, output -> serializeObject(sessionAttributes.getAttribute(attributeName), output));
 			});
+
+			sessionAttributes.clearDelta();
 		}
 	}
 
@@ -75,8 +75,10 @@ public class DataSerializableSessionAttributesSerializer
 		GemFireSessionAttributes sessionAttributes = GemFireSessionAttributes.create();
 
 		for (int count = safeRead(in, DataInput::readInt); count > 0; count--) {
-			sessionAttributes.setAttribute(safeRead(in, DataInput::readUTF), safeRead(in, DataSerializer::readObject));
+			sessionAttributes.setAttribute(safeRead(in, DataInput::readUTF), safeRead(in, this::deserializeObject));
 		}
+
+		sessionAttributes.clearDelta();
 
 		return sessionAttributes;
 	}

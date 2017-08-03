@@ -74,7 +74,7 @@ import org.springframework.session.events.SessionDeletedEvent;
  * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
  */
 @RunWith(MockitoJUnitRunner.class)
-public class GemFireOperationsSessionRepositoryTest {
+public class GemFireOperationsSessionRepositoryTests {
 
 	protected static final int MAX_INACTIVE_INTERVAL_IN_SECONDS = 600;
 
@@ -271,7 +271,7 @@ public class GemFireOperationsSessionRepositoryTest {
 			AbstractSessionEvent sessionEvent = (AbstractSessionEvent) applicationEvent;
 
 			assertThat(sessionEvent.getSource())
-				.isSameAs(GemFireOperationsSessionRepositoryTest.this.sessionRepository);
+				.isSameAs(GemFireOperationsSessionRepositoryTests.this.sessionRepository);
 			assertThat(sessionEvent.<Session>getSession()).isSameAs(mockSession);
 			assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSessionId);
 
@@ -393,7 +393,7 @@ public class GemFireOperationsSessionRepositoryTest {
 
 			AbstractSessionEvent sessionEvent = (AbstractSessionEvent) applicationEvent;
 
-			assertThat(sessionEvent.getSource()).isSameAs(GemFireOperationsSessionRepositoryTest.this.sessionRepository);
+			assertThat(sessionEvent.getSource()).isSameAs(GemFireOperationsSessionRepositoryTests.this.sessionRepository);
 			assertThat(sessionEvent.<Session>getSession()).isSameAs(mockSession);
 			assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSessionId);
 
@@ -423,7 +423,7 @@ public class GemFireOperationsSessionRepositoryTest {
 
 			AbstractSessionEvent sessionEvent = (AbstractSessionEvent) applicationEvent;
 
-			assertThat(sessionEvent.getSource()).isSameAs(GemFireOperationsSessionRepositoryTest.this.sessionRepository);
+			assertThat(sessionEvent.getSource()).isSameAs(GemFireOperationsSessionRepositoryTests.this.sessionRepository);
 			assertThat(sessionEvent.<Session>getSession()).isNull();
 			assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSessionId);
 

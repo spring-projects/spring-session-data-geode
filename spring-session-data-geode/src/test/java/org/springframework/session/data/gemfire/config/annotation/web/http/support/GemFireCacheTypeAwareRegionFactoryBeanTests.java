@@ -39,7 +39,7 @@ import org.springframework.data.gemfire.client.Interest;
 import org.springframework.session.Session;
 
 /**
- * The GemFireCacheTypeAwareRegionFactoryBeanTest class is a test suite of test cases
+ * The GemFireCacheTypeAwareRegionFactoryBeanTests class is a test suite of test cases
  * testing the contract and functionality of the GemFireCacheTypeAwareRegionFactoryBean
  * class.
  *
@@ -60,7 +60,7 @@ import org.springframework.session.Session;
  * @see org.apache.geode.cache.client.ClientRegionShortcut
  */
 @RunWith(MockitoJUnitRunner.class)
-public class GemFireCacheTypeAwareRegionFactoryBeanTest {
+public class GemFireCacheTypeAwareRegionFactoryBeanTests {
 
 	@Mock
 	Cache mockCache;
@@ -89,13 +89,13 @@ public class GemFireCacheTypeAwareRegionFactoryBeanTest {
 			@Override
 			protected Region<Object, Session> newClientRegion(GemFireCache gemfireCache) throws Exception {
 				assertThat(gemfireCache).isSameAs(expectedCache);
-				return GemFireCacheTypeAwareRegionFactoryBeanTest.this.mockClientRegion;
+				return GemFireCacheTypeAwareRegionFactoryBeanTests.this.mockClientRegion;
 			}
 
 			@Override
 			protected Region<Object, Session> newServerRegion(GemFireCache gemfireCache) throws Exception {
 				assertThat(gemfireCache).isSameAs(expectedCache);
-				return GemFireCacheTypeAwareRegionFactoryBeanTest.this.mockServerRegion;
+				return GemFireCacheTypeAwareRegionFactoryBeanTests.this.mockServerRegion;
 			}
 		};
 

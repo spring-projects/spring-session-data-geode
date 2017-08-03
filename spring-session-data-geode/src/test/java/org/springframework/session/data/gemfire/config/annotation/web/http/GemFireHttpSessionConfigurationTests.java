@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,6 +42,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.data.gemfire.GemfireTemplate;
@@ -50,25 +53,35 @@ import org.springframework.session.data.gemfire.GemFireOperationsSessionReposito
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.GemFireCacheTypeAwareRegionFactoryBean;
 
 /**
- * The GemFireHttpSessionConfigurationTest class is a test suite of test cases testing the
- * contract and functionality of the {@link GemFireHttpSessionConfiguration} class.
+ * Unit tests for {@link GemFireHttpSessionConfiguration} class.
  *
  * @author John Blum
  * @since 1.1.0
  * @see org.junit.Test
  * @see org.mockito.Mockito
- * @see org.springframework.data.gemfire.GemfireOperations
- * @see org.springframework.data.gemfire.GemfireTemplate
- * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
- * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.ExpirationAttributes
+ * @see org.apache.geode.cache.RegionAttributes
  * @see org.apache.geode.cache.client.ClientCache
+ * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory
+ * @see org.springframework.context.ConfigurableApplicationContext
+ * @see org.springframework.core.type.AnnotationMetadata
+ * @see org.springframework.data.gemfire.GemfireOperations
+ * @see org.springframework.data.gemfire.GemfireTemplate
+ * @see org.springframework.session.Session
+ * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  */
-public class GemFireHttpSessionConfigurationTest {
+public class GemFireHttpSessionConfigurationTests {
 
 	private GemFireHttpSessionConfiguration gemfireConfiguration;
+
+	@AfterClass
+	public static void tearDown() {
+		System.clearProperty(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME);
+	}
 
 	@SuppressWarnings("unchecked")
 	protected <T> T getField(Object obj, String fieldName) {
@@ -197,7 +210,7 @@ public class GemFireHttpSessionConfigurationTest {
 	}
 
 	@Test
-	public void setAndGetSpringSessionGemFireRegionName() {
+	public void setAndGetSessionRegionName() {
 
 		assertThat(this.gemfireConfiguration.getSessionRegionName()).isEqualTo(
 			GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
@@ -223,6 +236,61 @@ public class GemFireHttpSessionConfigurationTest {
 	}
 
 	@Test
+	public void setAndGetSessionSerializerBeanName() {
+
+		assertThat(this.gemfireConfiguration.getSessionSerializerBeanName())
+			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SESSION_SERIALIZER_BEAN_NAME);
+
+		this.gemfireConfiguration.setSessionSerializerBeanName(
+			GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME);
+
+		assertThat(this.gemfireConfiguration.getSessionSerializerBeanName())
+			.isEqualTo(GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME);
+
+		this.gemfireConfiguration.setSessionSerializerBeanName(null);
+
+		assertThat(this.gemfireConfiguration.getSessionSerializerBeanName())
+			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SESSION_SERIALIZER_BEAN_NAME);
+
+		this.gemfireConfiguration.setSessionSerializerBeanName(
+			GemFireHttpSessionConfiguration.SESSION_PDX_SERIALIZER_BEAN_NAME);
+
+		assertThat(this.gemfireConfiguration.getSessionSerializerBeanName())
+			.isEqualTo(GemFireHttpSessionConfiguration.SESSION_PDX_SERIALIZER_BEAN_NAME);
+	}
+
+	@Test
+	public void isUsingDataSerializationIsFalse() {
+
+		this.gemfireConfiguration.setSessionSerializerBeanName("test");
+
+		assertThat(this.gemfireConfiguration.getSessionSerializerBeanName()).isEqualTo("test");
+		assertThat(this.gemfireConfiguration.isUsingDataSerialization()).isFalse();
+
+		this.gemfireConfiguration.setSessionSerializerBeanName(
+			GemFireHttpSessionConfiguration.SESSION_PDX_SERIALIZER_BEAN_NAME);
+
+		assertThat(this.gemfireConfiguration.getSessionSerializerBeanName())
+			.isEqualTo(GemFireHttpSessionConfiguration.SESSION_PDX_SERIALIZER_BEAN_NAME);
+
+		assertThat(this.gemfireConfiguration.isUsingDataSerialization()).isFalse();
+	}
+
+	@Test
+	public void isUsingDataSerializationIsTrue() {
+
+		assertThat(this.gemfireConfiguration.getSessionSerializerBeanName())
+			.isEqualTo(GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME);
+		assertThat(this.gemfireConfiguration.isUsingDataSerialization()).isTrue();
+
+		this.gemfireConfiguration.setSessionSerializerBeanName(null);
+
+		assertThat(this.gemfireConfiguration.getSessionSerializerBeanName())
+			.isEqualTo(GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME);
+		assertThat(this.gemfireConfiguration.isUsingDataSerialization()).isTrue();
+	}
+
+	@Test
 	public void setsImportMetadata() {
 
 		AnnotationMetadata mockAnnotationMetadata = mock(AnnotationMetadata.class);
@@ -235,6 +303,7 @@ public class GemFireHttpSessionConfigurationTest {
 		annotationAttributes.put("poolName", "TestPool");
 		annotationAttributes.put("serverRegionShortcut", RegionShortcut.REPLICATE);
 		annotationAttributes.put("regionName", "TEST");
+		annotationAttributes.put("sessionSerializerBeanName", "testSessionSerializer");
 
 		given(mockAnnotationMetadata.getAnnotationAttributes(eq(EnableGemFireHttpSession.class.getName())))
 			.willReturn(annotationAttributes);
@@ -247,8 +316,36 @@ public class GemFireHttpSessionConfigurationTest {
 		assertThat(this.gemfireConfiguration.getPoolName()).isEqualTo("TestPool");
 		assertThat(this.gemfireConfiguration.getServerRegionShortcut()).isEqualTo(RegionShortcut.REPLICATE);
 		assertThat(this.gemfireConfiguration.getSessionRegionName()).isEqualTo("TEST");
+		assertThat(this.gemfireConfiguration.getSessionSerializerBeanName()).isEqualTo("testSessionSerializer");
 
-		verify(mockAnnotationMetadata, times(1)).getAnnotationAttributes(eq(EnableGemFireHttpSession.class.getName()));
+		verify(mockAnnotationMetadata, times(1))
+			.getAnnotationAttributes(eq(EnableGemFireHttpSession.class.getName()));
+
+	}
+
+	@Test
+	public void postConstructInitSetsSystemPropertyAndRegistersBeanAlias() {
+
+		ConfigurableListableBeanFactory mockBeanFactory = mock(ConfigurableListableBeanFactory.class);
+
+		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class);
+
+		given(mockApplicationContext.getBeanFactory()).willReturn(mockBeanFactory);
+
+		assertThat(System.getProperty(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_REGISTERED_ALIAS)).isNull();
+
+		this.gemfireConfiguration.setApplicationContext(mockApplicationContext);
+		this.gemfireConfiguration.setSessionSerializerBeanName("testSessionSerializer");
+		this.gemfireConfiguration.init();
+
+		assertThat(this.gemfireConfiguration.getApplicationContext()).isSameAs(mockApplicationContext);
+		assertThat(System.getProperty(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME))
+			.isEqualTo("testSessionSerializer");
+
+		verify(mockApplicationContext, times(1)).getBeanFactory();
+
+		verify(mockBeanFactory, times(1)).registerAlias(eq("testSessionSerializer"),
+			eq(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_REGISTERED_ALIAS));
 	}
 
 	@Test

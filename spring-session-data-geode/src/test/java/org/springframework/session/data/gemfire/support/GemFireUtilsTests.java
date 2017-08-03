@@ -47,7 +47,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
  * @see org.mockito.Mockito
  * @see org.springframework.session.data.gemfire.support.GemFireUtils
  */
-public class GemFireUtilsTest {
+public class GemFireUtilsTests {
 
 	@Test
 	public void closeNonNullCloseableSuccessfullyReturnsTrue() throws IOException {
