@@ -93,6 +93,8 @@ import org.apache.commons.logging.LogFactory;
 public abstract class AbstractGemFireOperationsSessionRepository extends CacheListenerAdapter<Object, Session>
 		implements ApplicationEventPublisherAware, FindByIndexNameSessionRepository<Session>, InitializingBean {
 
+	private boolean usingDataSerialization = false;
+
 	private ApplicationEventPublisher applicationEventPublisher = new ApplicationEventPublisher() {
 
 		public void publishEvent(ApplicationEvent event) {
@@ -236,6 +238,24 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	public int getMaxInactiveIntervalInSeconds() {
 		return Optional.ofNullable(getMaxInactiveInterval()).map(Duration::getSeconds)
 			.map(Long::intValue).orElse(0);
+	}
+
+	/**
+	 * Sets a condition indicating whether the DataSerialization framework has been configured.
+	 *
+	 * @param useDataSerialization boolean indicating whether the DataSerialization framework has been configured.
+	 */
+	public void setUseDataSerialization(boolean useDataSerialization) {
+		this.usingDataSerialization = useDataSerialization;
+	}
+
+	/**
+	 * Determines whether the DataSerialization framework has been configured.
+	 *
+	 * @return a boolean indicating whether the DataSerialization framework has been configured.
+	 */
+	protected boolean isUsingDataSerialization() {
+		return this.usingDataSerialization;
 	}
 
 	/**

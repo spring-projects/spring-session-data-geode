@@ -16,9 +16,12 @@
 
 package org.springframework.session.data.gemfire.config.annotation.web.http;
 
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
+
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
@@ -29,21 +32,33 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.pdx.PdxSerializer;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.IndexFactoryBean;
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
+import org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer;
+import org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
@@ -55,7 +70,10 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.suppo
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 import org.springframework.session.data.gemfire.serialization.data.provider.DataSerializableSessionSerializer;
 import org.springframework.session.data.gemfire.serialization.pdx.provider.PdxSerializableSessionSerializer;
+import org.springframework.session.data.gemfire.serialization.pdx.support.ComposablePdxSerializer;
+import org.springframework.session.data.gemfire.serialization.pdx.support.PdxSerializerSessionSerializerAdapter;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -134,8 +152,12 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	 */
 	public static final String SESSION_DATA_SERIALIZER_BEAN_NAME = "SessionDataSerializer";
 	public static final String SESSION_PDX_SERIALIZER_BEAN_NAME = "SessionPdxSerializer";
+
 	public static final String SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME =
 		"spring.session.data.geode.serializer.qualifier";
+
+	public static final String SESSION_SERIALIZER_REGISTERED_ALIAS =
+		"org.springframework.session.data.geode.serializer.registeredAlias";
 
 	public static final String DEFAULT_SESSION_SERIALIZER_BEAN_NAME = SESSION_DATA_SERIALIZER_BEAN_NAME;
 
@@ -145,6 +167,8 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	public static final String[] DEFAULT_INDEXABLE_SESSION_ATTRIBUTES = {};
 
 	private int maxInactiveIntervalInSeconds = DEFAULT_MAX_INACTIVE_INTERVAL_IN_SECONDS;
+
+	private ApplicationContext applicationContext;
 
 	private ClassLoader beanClassLoader;
 
@@ -160,6 +184,17 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 
 	private String[] indexableSessionAttributes = DEFAULT_INDEXABLE_SESSION_ATTRIBUTES;
 
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		super.setApplicationContext(applicationContext);
+		this.applicationContext = applicationContext;
+	}
+
+	protected ApplicationContext getApplicationContext() {
+		return Optional.ofNullable(this.applicationContext)
+			.orElseThrow(() -> newIllegalStateException("The ApplicationContext was not properly configured"));
+	}
+
 	/**
 	 * Sets a reference to the {@link ClassLoader} used by the Spring container to load bean class types.
 	 *
@@ -169,6 +204,17 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	 */
 	public void setBeanClassLoader(ClassLoader beanClassLoader) {
 		this.beanClassLoader = beanClassLoader;
+	}
+
+	protected ConfigurableBeanFactory getBeanFactory() {
+
+		ApplicationContext applicationContext = getApplicationContext();
+
+		return Optional.of(applicationContext)
+			.filter(it -> it instanceof ConfigurableApplicationContext)
+			.map(it -> ((ConfigurableApplicationContext) it).getBeanFactory())
+			.orElseThrow(() -> newIllegalStateException("Unable to resolve a reference to a [%1$s] from a [%2$s]",
+				ConfigurableBeanFactory.class.getName(), ObjectUtils.nullSafeClassName(applicationContext)));
 	}
 
 	/**
@@ -362,6 +408,10 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 			.orElse(DEFAULT_SESSION_SERIALIZER_BEAN_NAME);
 	}
 
+	protected boolean isUsingDataSerialization() {
+		return SESSION_DATA_SERIALIZER_BEAN_NAME.equals(getSessionSerializerBeanName());
+	}
+
 	/**
 	 * Callback with the {@link AnnotationMetadata} of the class containing {@link Import @Import} annotation
 	 * that imported this {@link Configuration @Configuration} class.
@@ -396,6 +446,49 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 			enableGemFireHttpSessionAttributes.getString("sessionSerializerBeanName"));
 
 		System.setProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME, getSessionSerializerBeanName());
+
+		getBeanFactory().registerAlias(getSessionSerializerBeanName(), SESSION_SERIALIZER_REGISTERED_ALIAS);
+	}
+
+	@Bean
+	public ClientCacheConfigurer sessionClientCacheConfigurer(
+			@Qualifier(SESSION_SERIALIZER_REGISTERED_ALIAS) SessionSerializer sessionSerializer) {
+
+		return (beanName, clientCacheFactoryBean) -> configureSerialization(clientCacheFactoryBean, sessionSerializer);
+	}
+
+	@Bean
+	public PeerCacheConfigurer sessionPeerCacheConfigurer(
+			@Qualifier(SESSION_SERIALIZER_REGISTERED_ALIAS) SessionSerializer sessionSerializer) {
+
+		return (beanName, cacheFactoryBean) -> configureSerialization(cacheFactoryBean, sessionSerializer);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void configureSerialization(CacheFactoryBean cacheFactoryBean, SessionSerializer sessionSerializer) {
+
+		if (sessionSerializer instanceof DataSerializer) {
+			if (sessionSerializer instanceof DataSerializableSessionSerializer) {
+				DataSerializableSessionSerializer.register();
+			}
+			else {
+				DataSerializer.register(sessionSerializer.getClass());
+			}
+		}
+		else if (sessionSerializer instanceof PdxSerializer) {
+			cacheFactoryBean.setPdxSerializer(ComposablePdxSerializer.compose(
+				(PdxSerializer) sessionSerializer, cacheFactoryBean.getPdxSerializer()));
+		}
+		else {
+			// TODO add more intelligence to figure out what type of serializer has been configured
+			// (e.g. PDX or DataSerialization based serializers)
+			Optional.ofNullable(sessionSerializer)
+				.ifPresent(serializer ->
+					cacheFactoryBean.setPdxSerializer(ComposablePdxSerializer.compose(
+						new PdxSerializerSessionSerializerAdapter<>(sessionSerializer),
+							cacheFactoryBean.getPdxSerializer()))
+				);
+		}
 	}
 
 	/**
@@ -417,6 +510,7 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 			new GemFireOperationsSessionRepository(gemfireOperations);
 
 		sessionRepository.setMaxInactiveIntervalInSeconds(getMaxInactiveIntervalInSeconds());
+		sessionRepository.setUseDataSerialization(isUsingDataSerialization());
 
 		return sessionRepository;
 	}
@@ -524,11 +618,13 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	}
 
 	@Bean(SESSION_DATA_SERIALIZER_BEAN_NAME)
+	@Conditional(DataSerializableSessionSerializerCondition.class)
 	public Object sessionDataSerializer() {
 		return new PdxSerializableSessionSerializer();
 	}
 
 	@Bean(SESSION_PDX_SERIALIZER_BEAN_NAME)
+	@Conditional(PdxSerializableSessionSerializerCondition.class)
 	public Object sessionPdxSerializer() {
 		return new DataSerializableSessionSerializer();
 	}
@@ -581,5 +677,23 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 		sessionAttributesIndex.setRegionName(getSessionRegionName());
 
 		return sessionAttributesIndex;
+	}
+
+	public static class DataSerializableSessionSerializerCondition implements Condition {
+
+		@Override
+		public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+			return SESSION_DATA_SERIALIZER_BEAN_NAME
+				.equals(context.getEnvironment().getProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME));
+		}
+	}
+
+	public static class PdxSerializableSessionSerializerCondition implements Condition {
+
+		@Override
+		public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+			return SESSION_PDX_SERIALIZER_BEAN_NAME
+				.equals(context.getEnvironment().getProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME));
+		}
 	}
 }
