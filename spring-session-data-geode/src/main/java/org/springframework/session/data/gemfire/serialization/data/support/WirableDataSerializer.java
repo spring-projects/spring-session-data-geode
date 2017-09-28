@@ -18,31 +18,47 @@ package org.springframework.session.data.gemfire.serialization.data.support;
 
 import static org.springframework.data.gemfire.support.GemfireBeanFactoryLocator.newBeanFactoryLocator;
 
+import java.util.Optional;
+
+import org.apache.geode.DataSerializer;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.wiring.BeanConfigurerSupport;
 import org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer;
+import org.springframework.stereotype.Component;
 
 /**
- * The WirableDataSerializer class...
+ * {@link WirableDataSerializer} is an abstract base class supporting auto-wiring of a non-managed,
+ * GemFire/Geode {@link DataSerializer}, Spring {@link Component}.
  *
  * @author John Blum
+ * @see org.apache.geode.DataSerializer
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.beans.factory.wiring.BeanConfigurerSupport
+ * @see org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer
  * @since 2.0.0
  */
-public abstract class WirableDataSerializer<T> extends AbstractDataSerializableSessionSerializer<T> {
+abstract class WirableDataSerializer<T> extends AbstractDataSerializableSessionSerializer<T> {
 
 	protected final void autowire() {
 
-		BeanConfigurerSupport beanConfigurer = newBeanConfigurer(locateBeanFactory());
-
-		beanConfigurer.configureBean(this);
-		beanConfigurer.destroy();
+		locateBeanFactory().map(this::newBeanConfigurer).ifPresent(beanConfigurer -> {
+			beanConfigurer.configureBean(this);
+			beanConfigurer.destroy();
+		});
 	}
 
-	private BeanFactory locateBeanFactory() {
-		return newBeanFactoryLocator().useBeanFactory();
+	Optional<BeanFactory> locateBeanFactory() {
+
+		try {
+			return Optional.ofNullable(newBeanFactoryLocator().useBeanFactory());
+		}
+		catch (Exception ignore) {
+			return Optional.empty();
+		}
 	}
 
-	private BeanConfigurerSupport newBeanConfigurer(BeanFactory beanFactory) {
+	BeanConfigurerSupport newBeanConfigurer(BeanFactory beanFactory) {
 
 		BeanConfigurerSupport beanConfigurer = new BeanConfigurerSupport();
 

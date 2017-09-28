@@ -26,6 +26,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.data.gemfire.util.CollectionUtils.asSet;
+import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSessionAttributes;
 import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSessionAttributes;
 
 import java.io.DataInput;
@@ -62,8 +63,9 @@ public class DataSerializableSessionAttributesSerializerTests {
 	}
 
 	@Test
-	public void supportedClassesContainsGemFireSessionAttributes() {
+	public void supportedClassesContainsGemFireSessionAttributesAndSubTypes() {
 		assertThat(this.sessionAttributesSerializer.getSupportedClasses()).contains(GemFireSessionAttributes.class);
+		assertThat(this.sessionAttributesSerializer.getSupportedClasses()).contains(DeltaCapableGemFireSessionAttributes.class);
 	}
 
 	@Test

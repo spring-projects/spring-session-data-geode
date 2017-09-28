@@ -28,7 +28,6 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -77,11 +76,6 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.suppo
 public class GemFireHttpSessionConfigurationTests {
 
 	private GemFireHttpSessionConfiguration gemfireConfiguration;
-
-	@AfterClass
-	public static void tearDown() {
-		System.clearProperty(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME);
-	}
 
 	@SuppressWarnings("unchecked")
 	protected <T> T getField(Object obj, String fieldName) {
@@ -324,7 +318,7 @@ public class GemFireHttpSessionConfigurationTests {
 	}
 
 	@Test
-	public void postConstructInitSetsSystemPropertyAndRegistersBeanAlias() {
+	public void postConstructInitRegistersBeanAlias() {
 
 		ConfigurableListableBeanFactory mockBeanFactory = mock(ConfigurableListableBeanFactory.class);
 
@@ -332,20 +326,18 @@ public class GemFireHttpSessionConfigurationTests {
 
 		given(mockApplicationContext.getBeanFactory()).willReturn(mockBeanFactory);
 
-		assertThat(System.getProperty(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_REGISTERED_ALIAS)).isNull();
+		assertThat(System.getProperty(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_BEAN_ALIAS)).isNull();
 
 		this.gemfireConfiguration.setApplicationContext(mockApplicationContext);
 		this.gemfireConfiguration.setSessionSerializerBeanName("testSessionSerializer");
 		this.gemfireConfiguration.init();
 
 		assertThat(this.gemfireConfiguration.getApplicationContext()).isSameAs(mockApplicationContext);
-		assertThat(System.getProperty(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME))
-			.isEqualTo("testSessionSerializer");
 
 		verify(mockApplicationContext, times(1)).getBeanFactory();
 
 		verify(mockBeanFactory, times(1)).registerAlias(eq("testSessionSerializer"),
-			eq(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_REGISTERED_ALIAS));
+			eq(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_BEAN_ALIAS));
 	}
 
 	@Test

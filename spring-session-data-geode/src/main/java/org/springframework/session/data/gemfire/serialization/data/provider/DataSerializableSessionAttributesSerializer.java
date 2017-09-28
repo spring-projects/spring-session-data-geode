@@ -18,18 +18,28 @@ package org.springframework.session.data.gemfire.serialization.data.provider;
 
 import static org.springframework.data.gemfire.util.ArrayUtils.asArray;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeSet;
+import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSessionAttributes;
 import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSessionAttributes;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.util.Set;
 
+import org.springframework.session.Session;
+import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 import org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer;
 
 /**
- * The {@link DataSerializableSessionAttributesSerializer} class...
+ * The {@link DataSerializableSessionAttributesSerializer} class is an implementation of the {@link SessionSerializer}
+ * interface used to serialize a Spring {@link Session} attributes using the GemFire/Geode's Data Serialization
+ * framework.
  *
  * @author John Blum
+ * @see java.io.DataInput
+ * @see java.io.DataOutput
+ * @see org.springframework.session.Session
+ * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
+ * @see org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer
  * @since 2.0.0
  */
 @SuppressWarnings("unused")
@@ -47,7 +57,7 @@ public class DataSerializableSessionAttributesSerializer
 
 	@Override
 	public Class<?>[] getSupportedClasses() {
-		return asArray(GemFireSessionAttributes.class);
+		return asArray(GemFireSessionAttributes.class, DeltaCapableGemFireSessionAttributes.class);
 	}
 
 	@Override

@@ -25,16 +25,12 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.client.ClientCache;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -42,13 +38,14 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.data.gemfire.CacheFactoryBean;
-import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
-import org.springframework.data.gemfire.client.PoolFactoryBean;
-import org.springframework.data.gemfire.server.CacheServerFactoryBean;
+import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
+import org.springframework.data.gemfire.config.annotation.CacheServerConfigurer;
+import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
+import org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
+import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.FileSystemUtils;
@@ -169,7 +166,9 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 		assertThat(reloadedSession.<Integer>getAttribute("attrOne")).isEqualTo(1);
 	}
 
-	@EnableGemFireHttpSession
+	@ClientCacheApplication
+	@EnableGemFireHttpSession(poolName = "DEFAULT", sessionSerializerBeanName =
+		GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME)
 	@SuppressWarnings("unused")
 	static class SpringSessionDataGemFireClientConfiguration {
 
@@ -178,42 +177,16 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 			return new PropertySourcesPlaceholderConfigurer();
 		}
 
-		Properties gemfireProperties() {
+		@Bean ClientCacheConfigurer clientCachePoolPortConfigurer(
+				@Value("${spring.session.data.gemfire.port:" + DEFAULT_GEMFIRE_SERVER_PORT + "}") int port) {
 
-			Properties gemfireProperties = new Properties();
+			return (beanName, clientCacheFactoryBean) -> {
 
-			gemfireProperties.setProperty("log-level", GEMFIRE_LOG_LEVEL);
+				clientCacheFactoryBean.setServers(Collections.singleton(
+					new ConnectionEndpoint(SpringSessionDataGemFireServerConfiguration.SERVER_HOSTNAME, port)));
 
-			return gemfireProperties;
-		}
-
-		@Bean
-		ClientCacheFactoryBean gemfireCache() {
-
-			ClientCacheFactoryBean clientCacheFactory = new ClientCacheFactoryBean();
-
-			clientCacheFactory.setClose(true);
-			clientCacheFactory.setProperties(gemfireProperties());
-
-			return clientCacheFactory;
-		}
-
-		@Bean
-		PoolFactoryBean gemfirePool(@Value("${spring.session.data.gemfire.port:"
-				+ DEFAULT_GEMFIRE_SERVER_PORT + "}") int port) {
-
-			PoolFactoryBean poolFactory = new PoolFactoryBean();
-
-			poolFactory.setKeepAlive(false);
-			poolFactory.setPingInterval(TimeUnit.SECONDS.toMillis(5));
-			poolFactory.setReadTimeout(2000); // 2 seconds
-			poolFactory.setRetryAttempts(1);
-			poolFactory.setSubscriptionEnabled(true);
-
-			poolFactory.setServers(Collections.singletonList(new ConnectionEndpoint(
-				SpringSessionDataGemFireServerConfiguration.SERVER_HOSTNAME, port)));
-
-			return poolFactory;
+				clientCacheFactoryBean.setSubscriptionEnabled(true);
+			};
 		}
 
 		// used for debugging purposes
@@ -234,7 +207,9 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 		}
 	}
 
-	@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS)
+	@CacheServerApplication(name = "ClientServerHttpSessionAttributesDeltaIntegrationTests")
+	@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS,
+		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME)
 	@SuppressWarnings("unused")
 	static class SpringSessionDataGemFireServerConfiguration {
 
@@ -245,53 +220,24 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 			return new PropertySourcesPlaceholderConfigurer();
 		}
 
-		Properties gemfireProperties() {
-
-			Properties gemfireProperties = new Properties();
-
-			gemfireProperties.setProperty("name", name());
-			gemfireProperties.setProperty("mcast-port", "0");
-			gemfireProperties.setProperty("log-level", GEMFIRE_LOG_LEVEL);
-
-			return gemfireProperties;
-		}
-
-		String name() {
-			return ClientServerHttpSessionAttributesDeltaIntegrationTests.class.getName();
-		}
-
 		@Bean
-		CacheFactoryBean gemfireCache() {
-
-			CacheFactoryBean gemfireCache = new CacheFactoryBean();
-
-			gemfireCache.setClose(true);
-			gemfireCache.setProperties(gemfireProperties());
-
-			return gemfireCache;
-		}
-
-		@Bean
-		CacheServerFactoryBean gemfireCacheServer(GemFireCache gemfireCache,
+		CacheServerConfigurer cacheServerPortConfigurer(
 				@Value("${spring.session.data.gemfire.port:" + DEFAULT_GEMFIRE_SERVER_PORT + "}") int port) {
 
-			CacheServerFactoryBean cacheServerFactory = new CacheServerFactoryBean();
-
-			cacheServerFactory.setCache((Cache) gemfireCache);
-			cacheServerFactory.setAutoStartup(true);
-			cacheServerFactory.setBindAddress(SERVER_HOSTNAME);
-			cacheServerFactory.setPort(port);
-
-			return cacheServerFactory;
+			return (beanName, cacheServerFactoryBean) -> {
+				cacheServerFactoryBean.setAutoStartup(true);
+				cacheServerFactoryBean.setBindAddress(SERVER_HOSTNAME);
+				cacheServerFactoryBean.setPort(port);
+			};
 		}
 
 		@SuppressWarnings("resource")
 		public static void main(String[] args) throws IOException {
 
-			AnnotationConfigApplicationContext context =
+			AnnotationConfigApplicationContext applicationContext =
 				new AnnotationConfigApplicationContext(SpringSessionDataGemFireServerConfiguration.class);
 
-			context.registerShutdownHook();
+			applicationContext.registerShutdownHook();
 
 			writeProcessControlFile(WORKING_DIRECTORY);
 		}

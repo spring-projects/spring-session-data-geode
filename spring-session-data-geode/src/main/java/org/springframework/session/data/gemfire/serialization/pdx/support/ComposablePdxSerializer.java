@@ -34,22 +34,18 @@ import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.PdxWriter;
 
 /**
- * The ComposablePdxSerializer class...
+ * The {@link ComposablePdxSerializer} class is a composite of {@link PdxSerializer} objects implementing
+ * the Composite Software Design Pattern.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see java.lang.Iterable
+ * @see org.apache.geode.pdx.PdxSerializer
+ * @since 2.0.0
  */
 @SuppressWarnings("unused")
-public class ComposablePdxSerializer implements Iterable<PdxSerializer>, PdxSerializer {
+public class ComposablePdxSerializer implements PdxSerializer, Iterable<PdxSerializer> {
 
 	private final List<PdxSerializer> pdxSerializers;
-
-	private ComposablePdxSerializer(List<PdxSerializer> pdxSerializers) {
-
-		this.pdxSerializers = Optional.ofNullable(pdxSerializers)
-			.map(it -> Collections.unmodifiableList(pdxSerializers))
-			.orElseThrow(() -> newIllegalArgumentException("PdxSerializers [%s] are required", pdxSerializers));
-	}
 
 	public static PdxSerializer compose(PdxSerializer... pdxSerializers) {
 		return compose(Arrays.asList(nullSafeArray(pdxSerializers, PdxSerializer.class)));
@@ -64,6 +60,13 @@ public class ComposablePdxSerializer implements Iterable<PdxSerializer>, PdxSeri
 		return (pdxSerializerList.isEmpty() ? null
 			: (pdxSerializerList.size() == 1 ? pdxSerializerList.get(0)
 			: new ComposablePdxSerializer(pdxSerializerList)));
+	}
+
+	private ComposablePdxSerializer(List<PdxSerializer> pdxSerializers) {
+
+		this.pdxSerializers = Optional.ofNullable(pdxSerializers)
+			.map(it -> Collections.unmodifiableList(pdxSerializers))
+			.orElseThrow(() -> newIllegalArgumentException("PdxSerializers [%s] are required", pdxSerializers));
 	}
 
 	@Override

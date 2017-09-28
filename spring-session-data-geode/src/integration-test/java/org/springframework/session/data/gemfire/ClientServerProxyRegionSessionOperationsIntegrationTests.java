@@ -141,7 +141,8 @@ public class ClientServerProxyRegionSessionOperationsIntegrationTests extends Ab
 		assertThat(loadedSession).isNotNull();
 		assertThat(loadedSession.getId()).isEqualTo(session.getId());
 		assertThat(loadedSession.getCreationTime()).isEqualTo(session.getCreationTime());
-		assertThat(loadedSession.getLastAccessedTime().compareTo(session.getLastAccessedTime())).isGreaterThanOrEqualTo(0);
+		assertThat(loadedSession.getLastAccessedTime().compareTo(session.getLastAccessedTime()))
+			.isGreaterThanOrEqualTo(0);
 
 		sessionEvent = this.sessionEventListener.waitForSessionEvent(500);
 

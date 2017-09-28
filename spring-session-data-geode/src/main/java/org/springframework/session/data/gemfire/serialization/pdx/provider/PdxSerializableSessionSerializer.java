@@ -29,29 +29,31 @@ import java.util.Set;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxWriter;
 
+import org.springframework.session.Session;
+import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 import org.springframework.session.data.gemfire.serialization.pdx.AbstractPdxSerializableSessionSerializer;
 import org.springframework.session.data.gemfire.support.AbstractSession;
 
 /**
- * The PdxSerializableSessionSerializer class...
+ * The {@link PdxSerializableSessionSerializer} class is an implementation of the {@link SessionSerializer} interface
+ * used to serialize a Spring {@link Session} using the GemFire/Geode's PDX Serialization framework.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.apache.geode.pdx.PdxReader
+ * @see org.apache.geode.pdx.PdxWriter
+ * @see org.springframework.session.Session
+ * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
+ * @see org.springframework.session.data.gemfire.serialization.pdx.AbstractPdxSerializableSessionSerializer
+ * @since 2.0.0
  */
 @SuppressWarnings("unused")
 public class PdxSerializableSessionSerializer extends AbstractPdxSerializableSessionSerializer<GemFireSession> {
-
-	@Override
-	public boolean canSerialize(Class<?> type) {
-		return Optional.ofNullable(type).map(GemFireSession.class::isAssignableFrom).orElse(false);
-	}
 
 	@Override
 	@SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
 	public void serialize(GemFireSession session, PdxWriter writer) {
 
 		synchronized (session) {
-
 			writer.writeString("id", session.getId());
 			writer.writeLong("creationTime", session.getCreationTime().toEpochMilli());
 			writer.writeLong("lastAccessedTime", session.getLastAccessedTime().toEpochMilli());
@@ -101,5 +103,10 @@ public class PdxSerializableSessionSerializer extends AbstractPdxSerializableSes
 		session.getAttributes().from((Map<String, Object>) reader.readObject("attributes"));
 
 		return session;
+	}
+
+	@Override
+	public boolean canSerialize(Class<?> type) {
+		return Optional.ofNullable(type).map(GemFireSession.class::isAssignableFrom).orElse(false);
 	}
 }

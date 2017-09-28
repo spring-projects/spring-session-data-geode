@@ -39,18 +39,16 @@ import org.apache.geode.pdx.PdxSerializer;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Condition;
-import org.springframework.context.annotation.ConditionContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.GemfireOperations;
@@ -58,8 +56,6 @@ import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.IndexFactoryBean;
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
-import org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer;
-import org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
@@ -153,14 +149,9 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	 */
 	public static final String SESSION_DATA_SERIALIZER_BEAN_NAME = "SessionDataSerializer";
 	public static final String SESSION_PDX_SERIALIZER_BEAN_NAME = "SessionPdxSerializer";
+	public static final String SESSION_SERIALIZER_BEAN_ALIAS = "SessionSerializerRegisteredBeanAlias";
 
-	public static final String SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME =
-		"spring.session.data.geode.serializer.qualifier";
-
-	public static final String SESSION_SERIALIZER_REGISTERED_ALIAS =
-		"org.springframework.session.data.geode.serializer.registeredAlias";
-
-	public static final String DEFAULT_SESSION_SERIALIZER_BEAN_NAME = SESSION_DATA_SERIALIZER_BEAN_NAME;
+	public static final String DEFAULT_SESSION_SERIALIZER_BEAN_NAME = SESSION_PDX_SERIALIZER_BEAN_NAME;
 
 	/**
 	 * Defaults names of all {@link Session} attributes that will be indexed by Apache Geode.
@@ -185,21 +176,34 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 
 	private String[] indexableSessionAttributes = DEFAULT_INDEXABLE_SESSION_ATTRIBUTES;
 
+	/**
+	 * Sets a reference the Spring {@link ApplicationContext}.
+	 *
+	 * @param applicationContext reference to the Spring {@link ApplicationContext}.
+	 * @throws BeansException if the reference cannot be stored.
+	 * @see org.springframework.context.ApplicationContext
+	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		super.setApplicationContext(applicationContext);
 		this.applicationContext = applicationContext;
 	}
 
+	/**
+	 * Returns a reference to the Spring {@link ApplicationContext}.
+	 *
+	 * @return a reference to the Spring {@link ApplicationContext}.
+	 * @see org.springframework.context.ApplicationContext
+	 */
 	protected ApplicationContext getApplicationContext() {
 		return Optional.ofNullable(this.applicationContext)
 			.orElseThrow(() -> newIllegalStateException("The ApplicationContext was not properly configured"));
 	}
 
 	/**
-	 * Sets a reference to the {@link ClassLoader} used by the Spring container to load bean class types.
+	 * Sets a reference to the {@link ClassLoader} used by the Spring container to load bean {@link Class class types}.
 	 *
-	 * @param beanClassLoader {@link ClassLoader} used by the Spring container to load bean class types.
+	 * @param beanClassLoader {@link ClassLoader} used by the Spring container to load bean {@link Class class types}.
 	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(ClassLoader)
 	 * @see java.lang.ClassLoader
 	 */
@@ -207,6 +211,24 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 		this.beanClassLoader = beanClassLoader;
 	}
 
+	/**
+	 * Returns a reference to the {@link ClassLoader} used by the Spring container to load bean
+	 * {@link Class class types}.
+	 *
+	 * @return the {@link ClassLoader} used by the Spring container to load bean {@link Class class types}.
+	 * @see java.lang.ClassLoader
+	 */
+	protected ClassLoader getBeanClassLoader() {
+		return this.beanClassLoader;
+	}
+
+	/**
+	 * Returns a reference to the Spring container {@link ConfigurableBeanFactory}.
+	 *
+	 * @return a reference to the Spring container {@link ConfigurableBeanFactory}.
+	 * @see org.springframework.beans.factory.config.ConfigurableBeanFactory
+	 * @see #getApplicationContext()
+	 */
 	protected ConfigurableBeanFactory getBeanFactory() {
 
 		ApplicationContext applicationContext = getApplicationContext();
@@ -216,16 +238,6 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 			.map(it -> ((ConfigurableApplicationContext) it).getBeanFactory())
 			.orElseThrow(() -> newIllegalStateException("Unable to resolve a reference to a [%1$s] from a [%2$s]",
 				ConfigurableBeanFactory.class.getName(), ObjectUtils.nullSafeClassName(applicationContext)));
-	}
-
-	/**
-	 * Returns a reference to the {@link ClassLoader} used by the Spring container to load bean class types.
-	 *
-	 * @return the {@link ClassLoader} used by the Spring container to load bean class types.
-	 * @see java.lang.ClassLoader
-	 */
-	protected ClassLoader getBeanClassLoader() {
-		return this.beanClassLoader;
 	}
 
 	/**
@@ -457,28 +469,31 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 
 	@PostConstruct
 	public void init() {
-
-		System.err.printf("SETTING SYSTEM PROPERTY (%s) TO (%s) %n", SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME,
-			getSessionSerializerBeanName());
-
-		System.setProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME, getSessionSerializerBeanName());
-		getBeanFactory().registerAlias(getSessionSerializerBeanName(), SESSION_SERIALIZER_REGISTERED_ALIAS);
+		getBeanFactory().registerAlias(getSessionSerializerBeanName(), SESSION_SERIALIZER_BEAN_ALIAS);
 	}
 
 	@Bean
-	@DependsOn({ SESSION_DATA_SERIALIZER_BEAN_NAME, SESSION_PDX_SERIALIZER_BEAN_NAME })
-	public ClientCacheConfigurer sessionClientCacheConfigurer(
-			@Qualifier(SESSION_SERIALIZER_REGISTERED_ALIAS) SessionSerializer sessionSerializer) {
+	BeanPostProcessor sessionSerializerConfigurationBeanPostProcessor() {
 
-		return (beanName, clientCacheFactoryBean) -> configureSerialization(clientCacheFactoryBean, sessionSerializer);
+		return new BeanPostProcessor() {
+
+			@Override
+			public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+
+				if (bean instanceof CacheFactoryBean) {
+
+					SessionSerializer sessionSerializer = resolveSessionSerializer();
+
+					configureSerialization((CacheFactoryBean) bean, sessionSerializer);
+				}
+
+				return bean;
+			}
+		};
 	}
 
-	@Bean
-	@DependsOn({ SESSION_DATA_SERIALIZER_BEAN_NAME, SESSION_PDX_SERIALIZER_BEAN_NAME })
-	public PeerCacheConfigurer sessionPeerCacheConfigurer(
-			@Qualifier(SESSION_SERIALIZER_REGISTERED_ALIAS) SessionSerializer sessionSerializer) {
-
-		return (beanName, cacheFactoryBean) -> configureSerialization(cacheFactoryBean, sessionSerializer);
+	private SessionSerializer resolveSessionSerializer() {
+		return getApplicationContext().getBean(SESSION_SERIALIZER_BEAN_ALIAS, SessionSerializer.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -497,8 +512,6 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 				(PdxSerializer) sessionSerializer, cacheFactoryBean.getPdxSerializer()));
 		}
 		else {
-			// TODO add more intelligence to figure out what type of serializer has been configured
-			// (e.g. PDX or DataSerialization based serializers)
 			Optional.ofNullable(sessionSerializer)
 				.ifPresent(serializer ->
 					cacheFactoryBean.setPdxSerializer(ComposablePdxSerializer.compose(
@@ -508,28 +521,14 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 		}
 	}
 
-	/**
-	 * Defines the {@link SessionRepository} bean used to interact with Apache Geode or Pivotal GemFire
-	 * as the Spring Session provider.
-	 *
-	 * @param gemfireOperations instance of {@link GemfireOperations} used to manage {@link Session} state
-	 * in Apache Geode or Pivotal GemFire.
-	 * @return a {@link GemFireOperationsSessionRepository} for managing (clustering/replicating) {@link Session} state
-	 * in Apache Geode or Pivotal GemFire.
-	 * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
-	 * @see org.springframework.data.gemfire.GemfireOperations
-	 */
-	@Bean
-	public GemFireOperationsSessionRepository sessionRepository(
-			@Qualifier("sessionRegionTemplate") GemfireOperations gemfireOperations) {
+	@Bean(SESSION_DATA_SERIALIZER_BEAN_NAME)
+	public Object sessionDataSerializer() {
+		return new DataSerializableSessionSerializer();
+	}
 
-		GemFireOperationsSessionRepository sessionRepository =
-			new GemFireOperationsSessionRepository(gemfireOperations);
-
-		sessionRepository.setMaxInactiveIntervalInSeconds(getMaxInactiveIntervalInSeconds());
-		sessionRepository.setUseDataSerialization(isUsingDataSerialization());
-
-		return sessionRepository;
+	@Bean(SESSION_PDX_SERIALIZER_BEAN_NAME)
+	public Object sessionPdxSerializer() {
+		return new PdxSerializableSessionSerializer();
 	}
 
 	/**
@@ -634,16 +633,28 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 		return new GemfireTemplate(gemfireCache.getRegion(getSessionRegionName()));
 	}
 
-	@Bean(SESSION_DATA_SERIALIZER_BEAN_NAME)
-	//@Conditional(DataSerializableSessionSerializerCondition.class)
-	public Object sessionDataSerializer() {
-		return new PdxSerializableSessionSerializer();
-	}
+	/**
+	 * Defines the {@link SessionRepository} bean used to interact with Apache Geode or Pivotal GemFire
+	 * as the Spring Session provider.
+	 *
+	 * @param gemfireOperations instance of {@link GemfireOperations} used to manage {@link Session} state
+	 * in Apache Geode or Pivotal GemFire.
+	 * @return a {@link GemFireOperationsSessionRepository} for managing (clustering/replicating) {@link Session} state
+	 * in Apache Geode or Pivotal GemFire.
+	 * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
+	 * @see org.springframework.data.gemfire.GemfireOperations
+	 */
+	@Bean
+	public GemFireOperationsSessionRepository sessionRepository(
+		@Qualifier("sessionRegionTemplate") GemfireOperations gemfireOperations) {
 
-	@Bean(SESSION_PDX_SERIALIZER_BEAN_NAME)
-	//@Conditional(PdxSerializableSessionSerializerCondition.class)
-	public Object sessionPdxSerializer() {
-		return new DataSerializableSessionSerializer();
+		GemFireOperationsSessionRepository sessionRepository =
+			new GemFireOperationsSessionRepository(gemfireOperations);
+
+		sessionRepository.setMaxInactiveIntervalInSeconds(getMaxInactiveIntervalInSeconds());
+		sessionRepository.setUseDataSerialization(isUsingDataSerialization());
+
+		return sessionRepository;
 	}
 
 	/**
@@ -694,41 +705,5 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 		sessionAttributesIndex.setRegionName(getSessionRegionName());
 
 		return sessionAttributesIndex;
-	}
-
-	public static class DataSerializableSessionSerializerCondition implements Condition {
-
-		@Override
-		public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-
-			System.err.printf("%1$s-System.getProperty(%2$s) = '%3$s'%n", getClass().getSimpleName(),
-				SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME,
-					System.getProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME));
-
-			System.err.printf("%1$s-Environment.get(%2$s) = '%3$s'%n", getClass().getSimpleName(),
-				SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME,
-					context.getEnvironment().getProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME));
-
-			return SESSION_DATA_SERIALIZER_BEAN_NAME
-				.equals(context.getEnvironment().getProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME));
-		}
-	}
-
-	public static class PdxSerializableSessionSerializerCondition implements Condition {
-
-		@Override
-		public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-
-			System.err.printf("%1$s-System.getProperty(%2$s) = '%3$s'%n", getClass().getSimpleName(),
-				SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME,
-					System.getProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME));
-
-			System.err.printf("%1$s-Environment.get(%2$s) = '%3$s'%n", getClass().getSimpleName(),
-				SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME,
-					context.getEnvironment().getProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME));
-
-			return SESSION_PDX_SERIALIZER_BEAN_NAME
-				.equals(context.getEnvironment().getProperty(SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME));
-		}
 	}
 }

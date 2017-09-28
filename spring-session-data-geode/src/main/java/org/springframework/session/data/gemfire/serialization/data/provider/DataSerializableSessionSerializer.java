@@ -25,16 +25,25 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Set;
 
+import org.springframework.session.Session;
+import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSession;
 import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
 import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSessionAttributes;
+import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 import org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer;
 import org.springframework.session.data.gemfire.support.AbstractSession;
 import org.springframework.util.StringUtils;
 
 /**
- * The {@link DataSerializableSessionSerializer} class...
+ * The {@link DataSerializableSessionSerializer} class is an implementation of the {@link SessionSerializer} interface
+ * used to serialize a Spring {@link Session} using the GemFire/Geode's Data Serialization framework.
  *
  * @author John Blum
+ * @see java.io.DataInput
+ * @see java.io.DataOutput
+ * @see org.springframework.session.Session
+ * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
+ * @see org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer
  * @since 2.0.0
  */
 @SuppressWarnings("unused")
@@ -52,7 +61,7 @@ public class DataSerializableSessionSerializer extends AbstractDataSerializableS
 
 	@Override
 	public Class<?>[] getSupportedClasses() {
-		return asArray(GemFireSession.class);
+		return asArray(GemFireSession.class, DeltaCapableGemFireSession.class);
 	}
 
 	@Override

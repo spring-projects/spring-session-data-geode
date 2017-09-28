@@ -21,6 +21,7 @@ import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newI
 import java.util.Optional;
 
 import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.PdxWriter;
 
 import org.springframework.session.Session;
@@ -28,9 +29,15 @@ import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 import org.springframework.session.data.gemfire.serialization.pdx.AbstractPdxSerializableSessionSerializer;
 
 /**
- * The {@link PdxSerializerSessionSerializerAdapter} class...
+ * The {@link PdxSerializerSessionSerializerAdapter} class is a two-way Adapter adapting a {@link SessionSerializer}
+ * instance as an instance of {@link PdxSerializer} in a GemFire/Geode context, or adapting a {@link PdxSerializer}
+ * as a {@link SessionSerializer} in a Spring Session context.
  *
  * @author John Blum
+ * @see org.apache.geode.pdx.PdxSerializer
+ * @see org.springframework.session.Session
+ * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
+ * @see org.springframework.session.data.gemfire.serialization.pdx.AbstractPdxSerializableSessionSerializer
  * @since 2.0.0
  */
 @SuppressWarnings("unused")

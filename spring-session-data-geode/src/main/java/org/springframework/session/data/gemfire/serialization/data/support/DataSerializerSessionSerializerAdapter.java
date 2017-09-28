@@ -24,41 +24,56 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.util.Optional;
 
-import javax.annotation.Resource;
+import org.apache.geode.DataSerializer;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.session.Session;
+import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSession;
+import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSessionAttributes;
+import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
+import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSessionAttributes;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
+import org.springframework.stereotype.Component;
 
 /**
- * The DataSerializerSessionSerializerAdapter class...
+ * The {@link DataSerializerSessionSerializerAdapter} class is a two-way Adapter adapting a {@link SessionSerializer}
+ * instance as an instance of {@link DataSerializer} in a GemFire/Geode context, or adapting a {@link DataSerializer}
+ * as a {@link SessionSerializer} in a Spring Session context.
  *
  * @author John Blum
+ * @see org.apache.geode.DataSerializer
+ * @see org.springframework.session.Session
+ * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
+ * @see org.springframework.session.data.gemfire.serialization.data.support.WirableDataSerializer
+ * @see org.springframework.stereotype.Component
  * @since 2.0.0
  */
 @SuppressWarnings("unused")
+@Component("org.springfamework.session.data.gemfire.serialization.data.support.DataSerializerSessionSerializerAdapter")
 public class DataSerializerSessionSerializerAdapter<T extends Session> extends WirableDataSerializer<T> {
 
 	static {
 		register(DataSerializerSessionSerializerAdapter.class);
 	}
 
-	@Resource(name = "${" + GemFireHttpSessionConfiguration.SESSION_SERIALIZER_QUALIFIER_PROPERTY_NAME
-		+ ":" + GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME + "}")
 	private SessionSerializer<T, DataInput, DataOutput> sessionSerializer;
 
 	public DataSerializerSessionSerializerAdapter() {
 		autowire();
 	}
 
-	public DataSerializerSessionSerializerAdapter(SessionSerializer<T, DataInput, DataOutput> sessionSerializer) {
-		this.sessionSerializer = Optional.ofNullable(sessionSerializer)
-			.orElseThrow(() -> newIllegalArgumentException("SessionSerializer is required"));
-	}
-
 	@Override
 	public int getId() {
 		return 0x0BAC2BAC;
+	}
+
+	@Autowired
+	@Qualifier(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_BEAN_ALIAS)
+	public final void setSessionSerializer(SessionSerializer<T, DataInput, DataOutput> sessionSerializer) {
+		this.sessionSerializer = Optional.ofNullable(sessionSerializer)
+			.orElseThrow(() -> newIllegalArgumentException("SessionSerializer is required"));
 	}
 
 	protected SessionSerializer<T, DataInput, DataOutput> getSessionSerializer() {
@@ -68,7 +83,8 @@ public class DataSerializerSessionSerializerAdapter<T extends Session> extends W
 
 	@Override
 	public Class<?>[] getSupportedClasses() {
-		return asArray(Session.class);
+		return asArray(GemFireSession.class, GemFireSessionAttributes.class, DeltaCapableGemFireSession.class,
+			DeltaCapableGemFireSessionAttributes.class);
 	}
 
 	@Override

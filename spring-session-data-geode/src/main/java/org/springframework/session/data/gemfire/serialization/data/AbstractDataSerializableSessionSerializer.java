@@ -60,13 +60,6 @@ public abstract class AbstractDataSerializableSessionSerializer<T> extends DataS
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public boolean canSerialize(Class<?> type) {
-		return stream(nullSafeArray(getSupportedClasses(), Class.class))
-			.anyMatch(supportedClass -> supportedClass.isAssignableFrom(type));
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
 	public boolean toData(Object session, DataOutput out) throws IOException {
 
 		return Optional.ofNullable(session)
@@ -93,6 +86,14 @@ public abstract class AbstractDataSerializableSessionSerializer<T> extends DataS
 
 	public <T> T deserializeObject(DataInput in) throws ClassNotFoundException, IOException {
 		return DataSerializer.readObject(in);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public boolean canSerialize(Class<?> type) {
+		return stream(nullSafeArray(getSupportedClasses(), Class.class))
+			.filter(it -> type != null)
+			.anyMatch(supportedClass -> supportedClass.isAssignableFrom(type));
 	}
 
 	protected <T> T safeRead(DataInput in, DataInputReader<T> reader) {
