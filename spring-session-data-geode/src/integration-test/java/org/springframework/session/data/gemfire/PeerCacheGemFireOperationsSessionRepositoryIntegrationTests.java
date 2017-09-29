@@ -78,7 +78,7 @@ import org.springframework.util.ObjectUtils;
 @ContextConfiguration
 @DirtiesContext
 @WebAppConfiguration
-public class GemFireOperationsSessionRepositoryIntegrationTests extends AbstractGemFireIntegrationTests {
+public class PeerCacheGemFireOperationsSessionRepositoryIntegrationTests extends AbstractGemFireIntegrationTests {
 
 	private static final int MAX_INACTIVE_INTERVAL_IN_SECONDS = 300;
 
@@ -369,7 +369,7 @@ public class GemFireOperationsSessionRepositoryIntegrationTests extends Abstract
 		return this.changedContext.getAuthentication().getName();
 	}
 
-	@PeerCacheApplication(name = "GemFireOperationsSessionRepositoryIntegrationTests", logLevel = GEMFIRE_LOG_LEVEL)
+	@PeerCacheApplication(name = "PeerCacheGemFireOperationsSessionRepositoryIntegrationTests", logLevel = GEMFIRE_LOG_LEVEL)
 	@EnableGemFireHttpSession(regionName = SPRING_SESSION_GEMFIRE_REGION_NAME,
 		maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS)
 	static class SpringSessionGemFireConfiguration {
