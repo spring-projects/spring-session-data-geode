@@ -16,14 +16,15 @@
 
 package org.springframework.session.data.gemfire;
 
+import static java.util.Arrays.stream;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Before;
 
-import org.apache.geode.cache.Cache;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAction;
@@ -42,6 +43,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.internal.InternalDataSerializer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -55,13 +57,15 @@ import org.springframework.session.events.AbstractSessionEvent;
  *
  * @author John Blum
  * @since 1.1.0
- * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.DataSerializer
+ * @see org.apache.geode.cache.DataPolicy
  * @see org.apache.geode.cache.ExpirationAttributes
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.query.Index
  * @see org.apache.geode.cache.server.CacheServer
+ * @see org.apache.geode.internal.InternalDataSerializer
  * @see org.springframework.session.Session
  */
 @SuppressWarnings("unused")
@@ -86,10 +90,10 @@ public abstract class AbstractGemFireIntegrationTests {
 	protected static final String GEMFIRE_LOG_LEVEL =
 		System.getProperty("spring.session.data.gemfire.log-level", "error");
 
-	@Autowired
-	protected Cache gemfireCache;
+	@Autowired(required = false)
+	protected GemFireCache gemfireCache;
 
-	@Autowired
+	@Autowired(required = false)
 	protected GemFireOperationsSessionRepository gemfireSessionRepository;
 
 	@Before
@@ -138,17 +142,23 @@ public abstract class AbstractGemFireIntegrationTests {
 
 	/* (non-Javadoc) */
 	protected static List<String> extractJvmArguments(String... args) {
-		return Arrays.stream(args).filter(arg -> arg.startsWith("-")).collect(Collectors.toList());
+		return stream(args).filter(arg -> arg.startsWith("-")).collect(Collectors.toList());
 	}
 
 	/* (non-Javadoc) */
 	protected static List<String> extractProgramArguments(String... args) {
-		return Arrays.stream(args).filter(arg -> !arg.startsWith("-")).collect(Collectors.toList());
+		return stream(args).filter(arg -> !arg.startsWith("-")).collect(Collectors.toList());
 	}
 
 	/* (non-Javadoc) */
 	protected static Process run(Class<?> type, File directory, String... args) throws IOException {
 		return new ProcessBuilder().command(createJavaProcessCommandLine(type, args)).directory(directory).start();
+	}
+
+	/* (non-Javadoc) */
+	protected static void unregisterAllDataSerializers() {
+		stream(nullSafeArray(InternalDataSerializer.getSerializers(), DataSerializer.class))
+			.map(DataSerializer::getId).forEach(InternalDataSerializer::unregister);
 	}
 
 	/* (non-Javadoc) */

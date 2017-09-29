@@ -123,6 +123,7 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 			FileSystemUtils.deleteRecursively(processWorkingDirectory);
 		}
 
+		unregisterAllDataSerializers();
 		assertThat(waitForClientCacheToClose(DEFAULT_WAIT_DURATION)).isTrue();
 	}
 

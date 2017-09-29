@@ -57,6 +57,7 @@ import org.springframework.data.gemfire.IndexFactoryBean;
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
+import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.config.annotation.web.http.SpringHttpSessionConfiguration;
@@ -66,6 +67,7 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.suppo
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionAttributesIndexFactoryBean;
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 import org.springframework.session.data.gemfire.serialization.data.provider.DataSerializableSessionSerializer;
+import org.springframework.session.data.gemfire.serialization.data.support.DataSerializerSessionSerializerAdapter;
 import org.springframework.session.data.gemfire.serialization.pdx.provider.PdxSerializableSessionSerializer;
 import org.springframework.session.data.gemfire.serialization.pdx.support.ComposablePdxSerializer;
 import org.springframework.session.data.gemfire.serialization.pdx.support.PdxSerializerSessionSerializerAdapter;
@@ -496,6 +498,11 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 		return getApplicationContext().getBean(SESSION_SERIALIZER_BEAN_ALIAS, SessionSerializer.class);
 	}
 
+	private boolean isDataSerializerSessionSerializerAdapterPresent() {
+		return !ArrayUtils.isEmpty(getApplicationContext()
+			.getBeanNamesForType(DataSerializerSessionSerializerAdapter.class));
+	}
+
 	@SuppressWarnings("unchecked")
 	private void configureSerialization(CacheFactoryBean cacheFactoryBean, SessionSerializer sessionSerializer) {
 
@@ -513,6 +520,7 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 		}
 		else {
 			Optional.ofNullable(sessionSerializer)
+				.filter(it -> !isDataSerializerSessionSerializerAdapterPresent())
 				.ifPresent(serializer ->
 					cacheFactoryBean.setPdxSerializer(ComposablePdxSerializer.compose(
 						new PdxSerializerSessionSerializerAdapter<>(sessionSerializer),

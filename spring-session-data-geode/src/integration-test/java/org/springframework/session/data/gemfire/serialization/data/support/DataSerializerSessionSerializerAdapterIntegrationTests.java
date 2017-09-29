@@ -22,6 +22,7 @@ import static org.mockito.Mockito.mock;
 import java.io.DataInput;
 import java.io.DataOutput;
 
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -32,6 +33,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
 import org.springframework.session.Session;
+import org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests;
 import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSession;
 import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSessionAttributes;
 import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
@@ -53,6 +55,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.data.gemfire.support.GemfireBeanFactoryLocator
  * @see org.springframework.session.Session
+ * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
  * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
  * @see org.springframework.session.data.gemfire.serialization.data.support.DataSerializerSessionSerializerAdapter
  * @see org.springframework.test.context.ContextConfiguration
@@ -61,7 +64,8 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
-public class DataSerializerSessionSerializerAdapterIntegrationTests {
+@SuppressWarnings("unused")
+public class DataSerializerSessionSerializerAdapterIntegrationTests extends AbstractGemFireIntegrationTests {
 
 	@Autowired
 	private DataSerializerSessionSerializerAdapter<Session> dataSerializer;
@@ -69,6 +73,11 @@ public class DataSerializerSessionSerializerAdapterIntegrationTests {
 	@Autowired
 	@Qualifier(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_BEAN_ALIAS)
 	private SessionSerializer<Session, DataInput, DataOutput> sessionSerializer;
+
+	@AfterClass
+	public static void tearDown() {
+		unregisterAllDataSerializers();
+	}
 
 	@Test
 	public void constructsAndAutowiresDataSerializerSessionSerializerAdapter() {

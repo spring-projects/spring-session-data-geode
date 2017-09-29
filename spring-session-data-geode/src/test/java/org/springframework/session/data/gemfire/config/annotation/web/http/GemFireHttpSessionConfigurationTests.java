@@ -271,17 +271,17 @@ public class GemFireHttpSessionConfigurationTests {
 	}
 
 	@Test
-	public void isUsingDataSerializationIsTrue() {
+	public void isUsingPdxSerializationIsTrue() {
 
 		assertThat(this.gemfireConfiguration.getSessionSerializerBeanName())
-			.isEqualTo(GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME);
-		assertThat(this.gemfireConfiguration.isUsingDataSerialization()).isTrue();
+			.isEqualTo(GemFireHttpSessionConfiguration.SESSION_PDX_SERIALIZER_BEAN_NAME);
+		assertThat(this.gemfireConfiguration.isUsingDataSerialization()).isFalse();
 
 		this.gemfireConfiguration.setSessionSerializerBeanName(null);
 
 		assertThat(this.gemfireConfiguration.getSessionSerializerBeanName())
-			.isEqualTo(GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME);
-		assertThat(this.gemfireConfiguration.isUsingDataSerialization()).isTrue();
+			.isEqualTo(GemFireHttpSessionConfiguration.SESSION_PDX_SERIALIZER_BEAN_NAME);
+		assertThat(this.gemfireConfiguration.isUsingDataSerialization()).isFalse();
 	}
 
 	@Test

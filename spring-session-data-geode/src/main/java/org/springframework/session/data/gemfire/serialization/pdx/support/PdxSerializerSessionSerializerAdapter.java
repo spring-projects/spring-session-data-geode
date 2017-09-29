@@ -51,7 +51,7 @@ public class PdxSerializerSessionSerializerAdapter<T extends Session>
 			.orElseThrow(() -> newIllegalArgumentException("SessionSerializer is required"));
 	}
 
-	protected SessionSerializer<T, PdxReader, PdxWriter> getSessionSerializer() {
+	public SessionSerializer<T, PdxReader, PdxWriter> getSessionSerializer() {
 		return this.sessionSerializer;
 	}
 

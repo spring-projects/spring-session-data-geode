@@ -50,8 +50,8 @@ import org.springframework.stereotype.Component;
  * @see org.springframework.stereotype.Component
  * @since 2.0.0
  */
+@Component
 @SuppressWarnings("unused")
-@Component("org.springfamework.session.data.gemfire.serialization.data.support.DataSerializerSessionSerializerAdapter")
 public class DataSerializerSessionSerializerAdapter<T extends Session> extends WirableDataSerializer<T> {
 
 	static {
@@ -76,7 +76,7 @@ public class DataSerializerSessionSerializerAdapter<T extends Session> extends W
 			.orElseThrow(() -> newIllegalArgumentException("SessionSerializer is required"));
 	}
 
-	protected SessionSerializer<T, DataInput, DataOutput> getSessionSerializer() {
+	public SessionSerializer<T, DataInput, DataOutput> getSessionSerializer() {
 		return Optional.ofNullable(this.sessionSerializer)
 			.orElseThrow(() -> newIllegalStateException("SessionSerializer was not properly configured"));
 	}
