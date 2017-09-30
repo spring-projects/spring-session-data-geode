@@ -23,9 +23,12 @@ import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -50,6 +53,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.session.events.AbstractSessionEvent;
+import org.springframework.util.StringUtils;
 
 /**
  * {@link AbstractGemFireIntegrationTests} is an abstract base class encapsulating common functionality
@@ -85,7 +89,7 @@ public abstract class AbstractGemFireIntegrationTests {
 	protected static final String DEFAULT_PROCESS_CONTROL_FILENAME = "process.ctl";
 
 	protected static final String GEMFIRE_LOG_FILE_NAME =
-		System.getProperty("spring.session.data.gemfire.log-file", "server.log");
+		System.getProperty("spring.session.data.gemfire.log-file", "gemfire-server.log");
 
 	protected static final String GEMFIRE_LOG_LEVEL =
 		System.getProperty("spring.session.data.gemfire.log-level", "error");
@@ -102,12 +106,49 @@ public abstract class AbstractGemFireIntegrationTests {
 	}
 
 	/* (non-Javadoc) */
+	protected static String buildClassPathContainingJarFiles(String... jarFilenames) {
+
+		StringBuilder classpath = new StringBuilder();
+
+		stream(nullSafeArray(jarFilenames, String.class)).map(AbstractGemFireIntegrationTests::findJarInClasspath)
+			.forEach(classpathEntry -> classpathEntry.filter(StringUtils::hasText).ifPresent(it -> {
+
+				if (classpath.length() > 0) {
+					classpath.append(File.pathSeparator);
+				}
+
+				classpath.append(it);
+			}));
+
+		return classpath.toString();
+	}
+
+	/* (non-Javadoc) */
+	private static Optional<URL> findClassInFileSystem(Class<?> type) {
+
+		return Optional.ofNullable(type)
+			.map(AbstractGemFireIntegrationTests::getResourceName)
+			.map(resourceName -> type.getClassLoader().getResource(resourceName));
+	}
+
+	/* (non-Javadoc) */
+	private static Optional<String> findJarInClasspath(String jarFilename) {
+		return stream(nullSafeArray(System.getProperty("java.class.path").split(File.pathSeparator), String.class))
+			.filter(element -> element.contains(jarFilename)).findFirst();
+	}
+
+	/* (non-Javadoc) */
+	private static String getResourceName(Class<?> type) {
+		return type.getName().replaceAll("\\.", "/").concat(".class");
+	}
+
+	/* (non-Javadoc) */
 	protected static File createDirectory(String pathname) {
 
 		File directory = new File(WORKING_DIRECTORY, pathname);
 
 		assertThat(directory.isDirectory() || directory.mkdirs())
-			.as(String.format("Failed to create directory (%1$s)", directory)).isTrue();
+			.as(String.format("Failed to create directory [%s]", directory)).isTrue();
 
 		directory.deleteOnExit();
 
@@ -116,11 +157,15 @@ public abstract class AbstractGemFireIntegrationTests {
 
 	/* (non-Javadoc) */
 	protected static List<String> createJavaProcessCommandLine(Class<?> type, String... args) {
+		return createJavaProcessCommandLine(System.getProperty("java.class.path"), type, args);
+	}
+
+	/* (non-Javadoc) */
+	protected static List<String> createJavaProcessCommandLine(String classpath, Class<?> type, String... args) {
 
 		List<String> commandLine = new ArrayList<>();
 
 		String javaHome = System.getProperty("java.home");
-
 		String javaExe = new File(new File(javaHome, "bin"), "java").getAbsolutePath();
 
 		commandLine.add(javaExe);
@@ -131,28 +176,67 @@ public abstract class AbstractGemFireIntegrationTests {
 		commandLine.add(String.format("-Dgemfire.Query.VERBOSE=%1$s", GEMFIRE_QUERY_DEBUG));
 		commandLine.addAll(extractJvmArguments(args));
 		commandLine.add("-classpath");
-		commandLine.add(System.getProperty("java.class.path"));
+		commandLine.add(classpath);
 		commandLine.add(type.getName());
 		commandLine.addAll(extractProgramArguments(args));
 
-		// System.err.printf("Java process command-line is (%1$s)%n", commandLine);
+		 //System.err.printf("Java process command-line is [%s]%n", commandLine);
 
 		return commandLine;
 	}
 
 	/* (non-Javadoc) */
-	protected static List<String> extractJvmArguments(String... args) {
+	private static List<String> extractJvmArguments(String... args) {
 		return stream(args).filter(arg -> arg.startsWith("-")).collect(Collectors.toList());
 	}
 
 	/* (non-Javadoc) */
-	protected static List<String> extractProgramArguments(String... args) {
+	private static List<String> extractProgramArguments(String... args) {
 		return stream(args).filter(arg -> !arg.startsWith("-")).collect(Collectors.toList());
 	}
 
-	/* (non-Javadoc) */
+	// Run Java Class in Directory with Arguments
+	protected static String resolveClasspath(String classpath, Class<?> type) {
+
+		return Optional.ofNullable(classpath)
+			.filter(StringUtils::hasText)
+			.filter(it -> type != null)
+			.flatMap(it -> findClassInFileSystem(type))
+			.map(url -> {
+				try {
+					return new File(url.toURI());
+				}
+				catch (URISyntaxException ignore) {
+					return null;
+				}
+			})
+			.map(File::getAbsolutePath)
+			.map(pathname -> {
+
+				int indexOfTypeName = pathname.indexOf(getResourceName(type));
+
+				pathname = (indexOfTypeName > -1 ? pathname.substring(0, indexOfTypeName) : pathname);
+				pathname = (pathname.endsWith(File.separator) ? pathname.substring(0, pathname.length() - 1) : pathname);
+
+				return pathname;
+			})
+			.map(location -> classpath.concat(File.pathSeparator).concat(location))
+			.orElse(classpath);
+	}
+
+	// Run Java Class in Directory with Arguments
 	protected static Process run(Class<?> type, File directory, String... args) throws IOException {
-		return new ProcessBuilder().command(createJavaProcessCommandLine(type, args)).directory(directory).start();
+		return run(createJavaProcessCommandLine(type, args), directory);
+	}
+
+	// Run Java Class using Classpath in Directory with Arguments
+	protected static Process run(String classpath, Class<?> type, File directory, String... args) throws IOException {
+		return run(createJavaProcessCommandLine(resolveClasspath(classpath, type), type, args), directory);
+	}
+
+	/* (non-Javadoc) */
+	private static Process run(List<String> command, File directory) throws IOException {
+		return new ProcessBuilder().command(command).directory(directory).inheritIO().redirectErrorStream(true).start();
 	}
 
 	/* (non-Javadoc) */
@@ -188,9 +272,9 @@ public abstract class AbstractGemFireIntegrationTests {
 				Socket socket = null;
 
 				try {
-					if (!connected.get()) {
+					if (!this.connected.get()) {
 						socket = new Socket(host, port);
-						connected.set(true);
+						this.connected.set(true);
 					}
 				}
 				catch (IOException ignore) {
@@ -214,7 +298,9 @@ public abstract class AbstractGemFireIntegrationTests {
 
 	/* (non-Javadoc) */
 	protected static boolean waitForClientCacheToClose(long duration) {
+
 		try {
+
 			ClientCache clientCache = ClientCacheFactory.getAnyInstance();
 
 			clientCache.close();
