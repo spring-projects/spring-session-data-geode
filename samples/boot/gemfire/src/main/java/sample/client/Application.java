@@ -61,6 +61,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @see org.apache.geode.cache.client.Pool
  * @since 1.2.1
  */
+@SuppressWarnings("unused")
 // tag::class[]
 @SpringBootApplication // <1>
 @Controller // <2>
@@ -89,8 +90,8 @@ public class Application {
 		ClientCacheConfigurer clientCacheServerPortConfigurer(
 				@Value("${spring.session.data.geode.cache.server.port:40404}") int port) {  // <5>
 
-			return (beanName, cacheServerFactoryBean) ->
-				cacheServerFactoryBean.setServers(Collections.singletonList(
+			return (beanName, clientCacheFactoryBean) ->
+				clientCacheFactoryBean.setServers(Collections.singletonList(
 					newConnectionEndpoint("localhost", port)));
 		}
 	}

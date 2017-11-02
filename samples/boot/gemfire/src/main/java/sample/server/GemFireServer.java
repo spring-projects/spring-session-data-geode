@@ -38,12 +38,12 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
  * @see org.apache.geode.cache.Cache
  * @since 1.2.1
  */
+@SuppressWarnings("unused")
 // tag::class[]
 @SpringBootApplication // <1>
 @CacheServerApplication(name = "SpringSessionDataGeodeServerBootSample", logLevel = "warning") // <2>
 @EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 20) // <3>
 @EnableManager(start = true) // <4>
-@SuppressWarnings("unused")
 public class GemFireServer {
 
 	public static void main(String[] args) {
