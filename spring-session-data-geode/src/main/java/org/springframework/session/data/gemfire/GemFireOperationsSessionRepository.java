@@ -74,15 +74,14 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see java.util.Map
 	 * @see #prepareQuery(String)
 	 */
+	@Override
 	public Map<String, Session> findByIndexNameAndIndexValue(String indexName, String indexValue) {
 
 		SelectResults<Session> results = getTemplate().find(prepareQuery(indexName), indexValue);
 
 		Map<String, Session> sessions = new HashMap<>(results.size());
 
-		for (Session session : results.asList()) {
-			sessions.put(session.getId(), session);
-		}
+		results.asList().forEach(session -> sessions.put(session.getId(), session));
 
 		return sessions;
 	}
