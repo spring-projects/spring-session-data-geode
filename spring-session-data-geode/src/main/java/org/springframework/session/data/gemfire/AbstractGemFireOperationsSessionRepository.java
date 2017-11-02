@@ -98,14 +98,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 	private static final AtomicBoolean usingDataSerialization = new AtomicBoolean(false);
 
-	private ApplicationEventPublisher applicationEventPublisher = new ApplicationEventPublisher() {
-
-		public void publishEvent(ApplicationEvent event) {
-		}
-
-		public void publishEvent(Object event) {
-		}
-	};
+	private ApplicationEventPublisher applicationEventPublisher = event -> {};
 
 	private Duration maxInactiveInterval =
 		Duration.ofSeconds(GemFireHttpSessionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL_IN_SECONDS);
@@ -129,7 +122,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 */
 	public AbstractGemFireOperationsSessionRepository(GemfireOperations template) {
 
-		Assert.notNull(template, "GemfireOperations must not be null");
+		Assert.notNull(template, "GemfireOperations is required");
 
 		this.template = template;
 	}
@@ -158,7 +151,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 */
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
 
-		Assert.notNull(applicationEventPublisher, "ApplicationEventPublisher must not be null");
+		Assert.notNull(applicationEventPublisher, "ApplicationEventPublisher is required");
 
 		this.applicationEventPublisher = applicationEventPublisher;
 	}
@@ -501,6 +494,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 * @see org.springframework.context.ApplicationEvent
 	 */
 	protected void publishEvent(ApplicationEvent event) {
+
 		try {
 			getApplicationEventPublisher().publishEvent(event);
 		}
@@ -668,6 +662,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		public synchronized String changeSessionId() {
 
 			this.id = generateId();
+
 			triggerDelta();
 
 			return getId();
