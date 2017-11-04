@@ -1,0 +1,40 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-3.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<title>Request and Session Counts</title>
+	<link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" href="/webjars/bootstrap/css/bootstrap.min.css"/>
+	<style type="text/css">
+		body {
+			padding: 1em;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>Description</h1>
+		<p>
+			This application demonstrates how both Spring 'request' and 'session' scoped (proxy) beans are utilized
+			in the context of Spring Session when GemFire is used to back the HTTP Session.
+		</p>
+
+		<table class="table table-striped">
+			<thead>
+			<tr>
+				<th> * </th>
+				<th>Session ID</th>
+				<th>Session Count</th>
+				<th>Request Count</th>
+			</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><b>count</b></td>
+					<td th:text="${sessionId}">?</td>
+					<td th:text="${sessionCount}">0</td>
+					<td th:text="${requestCount}">0</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</body>
+</html>
