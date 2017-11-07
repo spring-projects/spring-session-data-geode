@@ -41,6 +41,11 @@ is with our Sample Applications.
 using a Client/Server topology.
 | link:guides/boot-gemfire.html[HttpSession with Spring Boot and Apache Geode Guide]
 
+| {gh-samples-url}boot/gemfire-with-scoped-proxies[HttpSession with Spring Boot and Apache Geode using Scoped Proxies]
+| Demonstrates how to use _Spring Session_ to manage the `HttpSession` with Apache Geode in a _Spring Boot_ application
+using a Client/Server topology.  The application also makes use of Spring Request and Session Scoped Proxy beans.
+| link:guides/boot-gemfire-with-scoped-proxies.html[HttpSession with Spring Boot and Apache Geode using Scoped Proxies Guide]
+
 |===
 
 .Sample Applications using _Spring's_ Java-based configuration
