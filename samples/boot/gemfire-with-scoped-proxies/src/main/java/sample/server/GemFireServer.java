@@ -40,10 +40,10 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
  */
 @SuppressWarnings("unused")
 // tag::class[]
-@SpringBootApplication
-@CacheServerApplication(name = "SpringSessionDataGeodeServerWithScopedProxiesBootSample", logLevel = "config")
-@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 10)
-@EnableManager(start = true)
+@SpringBootApplication // <1>
+@CacheServerApplication(name = "SpringSessionDataGeodeServerWithScopedProxiesBootSample") // <2>
+@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 10) // <3>
+@EnableManager(start = true) // <4>
 public class GemFireServer {
 
 	public static void main(String[] args) {
@@ -61,7 +61,7 @@ public class GemFireServer {
 
 	@Bean
 	CacheServerConfigurer cacheServerPortConfigurer(
-			@Value("${spring.session.data.geode.cache.server.port:40404}") int port) {
+			@Value("${spring.session.data.geode.cache.server.port:40404}") int port) { // <5>
 
 		return (beanName, cacheServerFactoryBean) ->
 			cacheServerFactoryBean.setPort(port);

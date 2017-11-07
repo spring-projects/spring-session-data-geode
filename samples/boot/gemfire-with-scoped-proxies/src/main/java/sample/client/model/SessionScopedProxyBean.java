@@ -29,9 +29,10 @@ import org.springframework.web.context.annotation.SessionScope;
  * @author John Blum
  * @since 1.0.0
  */
-@Component
-@SessionScope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @SuppressWarnings("unused")
+// tag::class[]
+@Component // <1>
+@SessionScope(proxyMode = ScopedProxyMode.TARGET_CLASS) // <2>
 public class SessionScopedProxyBean implements Serializable {
 
 	private static final AtomicInteger INSTANCE_COUNTER = new AtomicInteger(0);
@@ -39,7 +40,7 @@ public class SessionScopedProxyBean implements Serializable {
 	private final int count;
 
 	public SessionScopedProxyBean() {
-		this.count = INSTANCE_COUNTER.incrementAndGet();
+		this.count = INSTANCE_COUNTER.incrementAndGet(); // <3>
 	}
 
 	public int getCount() {
@@ -51,3 +52,4 @@ public class SessionScopedProxyBean implements Serializable {
 		return String.format("{ @type = '%s', count = %d }", getClass().getName(), getCount());
 	}
 }
+// end::class[]

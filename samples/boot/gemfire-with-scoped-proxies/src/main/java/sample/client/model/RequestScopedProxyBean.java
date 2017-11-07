@@ -28,9 +28,10 @@ import org.springframework.web.context.annotation.RequestScope;
  * @author John Blum
  * @since 1.0.0
  */
-@Component
-@RequestScope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @SuppressWarnings("unused")
+// tag::class[]
+@Component // <1>
+@RequestScope(proxyMode = ScopedProxyMode.TARGET_CLASS) // <2>
 public class RequestScopedProxyBean {
 
 	private static final AtomicInteger INSTANCE_COUNTER = new AtomicInteger(0);
@@ -38,7 +39,7 @@ public class RequestScopedProxyBean {
 	private final int count;
 
 	public RequestScopedProxyBean() {
-		this.count = INSTANCE_COUNTER.incrementAndGet();
+		this.count = INSTANCE_COUNTER.incrementAndGet(); // <3>
 	}
 
 	public int getCount() {
@@ -50,3 +51,4 @@ public class RequestScopedProxyBean {
 		return String.format("{ @type = '%s', count = %d }", getClass().getName(), getCount());
 	}
 }
+// end::class[]

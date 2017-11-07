@@ -73,7 +73,7 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 
-	@ClientCacheApplication(name = "SpringSessionDataGeodeClientWithScopedProxiesBootSample", logLevel = "config",
+	@ClientCacheApplication(name = "SpringSessionDataGeodeClientWithScopedProxiesBootSample",
 		pingInterval = 5000L, readTimeout = 15000, retryAttempts = 1, subscriptionEnabled = true)  // <3>
 	@EnableGemFireHttpSession(poolName = "DEFAULT") // <4>
 	static class ClientCacheConfiguration {
@@ -130,7 +130,7 @@ public class Application {
 	}
 
 	@RequestMapping(method = RequestMethod.GET, path = "/counts")
-	public String requestAndSessionInstanceCount(HttpServletRequest request, HttpSession session, Model model) {
+	public String requestAndSessionInstanceCount(HttpServletRequest request, HttpSession session, Model model) { // <7>
 
 		model.addAttribute("sessionId", session.getId());
 		model.addAttribute("requestCount", this.requestBean.getCount());
@@ -139,3 +139,4 @@ public class Application {
 		return INDEX_TEMPLATE_VIEW_NAME;
 	}
 }
+// end::class[]
