@@ -194,7 +194,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 			new TestGemFireOperationsSessionRepository(null);
 		}
 		catch (IllegalArgumentException expected) {
-			assertThat(expected).hasMessage("GemfireOperations must not be null");
+			assertThat(expected).hasMessage("GemfireOperations is required");
 			assertThat(expected).hasNoCause();
 
 			throw expected;
