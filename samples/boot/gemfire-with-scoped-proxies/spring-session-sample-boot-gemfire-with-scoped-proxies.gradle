@@ -68,6 +68,7 @@ task runGemFireServer() {
 }
 
 
+/*
 integrationTest {
 	dependsOn runGemFireServer
 	doFirst {
@@ -83,6 +84,7 @@ integrationTest {
 		runGemFireServer.process?.destroyForcibly()
 	}
 }
+*/
 
 
 def reservePort() {
