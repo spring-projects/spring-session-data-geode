@@ -24,7 +24,7 @@ The answer to the first question is most definitely, *yes*.  And, the second sta
 as explained in the answer.
 
 This sample uses Apache Geode's client/server topology with a pair of _Spring Boot_ applications, one to configure
-and run a Geode server, and another to configure and run a Geode client, which is also a _Spring_ MVC Web application
+and run a Apache Geode server, and another to configure and run a Apache Geode client, which is also a _Spring_ MVC Web application
 making use of an `HttpSession`.
 
 NOTE: The completed guide can be found below, in section
@@ -162,7 +162,7 @@ created by the _Spring_ container for both "_request_" and "_session_" scoped pr
 the handler method.
 
 TIP: In typical Apache Geode production deployments, where the cluster includes potentially hundreds or thousands
-of servers (a.k.a. data nodes), it is more common for clients to connect to 1 or more Geode Locators running
+of servers (a.k.a. data nodes), it is more common for clients to connect to 1 or more Apache Geode Locators running
 in the same cluster. A Locator passes meta-data to clients about the servers available in the cluster, the individual
 server load and which servers have the client's data of interest, which is particularly important for direct,
 single-hop data access and latency-sensitive operations.  See more details about the
@@ -172,7 +172,7 @@ in the Apache Geode User Guide.
 NOTE: For more information on configuring _Spring Data Geode_, refer to the
 http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[Reference Guide].
 
-==== Enabling GemFire HttpSession Management
+==== Enabling Pivotal GemFire HttpSession Management
 
 `@EnableGemFireHttpSession` enables a developer to configure certain aspects of both _Spring Session_ and Apache Geode
 out-of-the-box using the following attributes:

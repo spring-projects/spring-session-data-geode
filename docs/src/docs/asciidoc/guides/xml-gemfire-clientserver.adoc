@@ -96,8 +96,8 @@ In our configuration, we use sensible settings for timeouts, number of connectio
 has been configured to connect directly to the server.
 <4> Finally, a `GemFireHttpSessionConfiguration` bean is registered to enable _Spring Session_ functionality.
 
-TIP: In typical Geode production deployments, where the cluster includes potentially hundreds or thousands
-of Geode servers (data nodes), it is more common for clients to connect to 1 or more Geode Locators running
+TIP: In typical Apache Geode production deployments, where the cluster includes potentially hundreds or thousands
+of Apache Geode servers (data nodes), it is more common for clients to connect to 1 or more Apache Geode Locators running
 in the cluster.  A Locator passes meta-data to clients about the servers available in the cluster, the server load
 and which servers have the client's data of interest, which is particularly important for direct, single-hop data access
 and latency-sensitive operations.  See more details about the

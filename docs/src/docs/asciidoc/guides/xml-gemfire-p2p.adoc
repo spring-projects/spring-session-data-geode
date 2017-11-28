@@ -94,7 +94,7 @@ if unspecified.
 <2> We must configure an Apache Geode peer `Cache` instance initialized with the Apache Geode properties.
 <3> Finally, we enable _Spring Session_ functionality  by registering an instance of `GemFireHttpSessionConfiguration`.
 
-TIP: Additionally, we have configured this data node (server) as a Apache Geode Manager as well using Geode-specific
+TIP: Additionally, we have configured this data node (server) as a Apache Geode Manager as well using Apache Geode-specific
 JMX properties that enable JMX client (e.g. _Gfsh_) to connect to this running server.
 
 NOTE: For more information on configuring _Spring Data Geode, refer to the
@@ -139,7 +139,7 @@ the `DelegatingFilterProxy` is invoked, delegating to the `springSessionReposito
 [[spring-session-sample-xml-gemfire-p2p]]
 == HttpSession with Apache Geode (P2P) using XML Sample Application
 
-=== Running the Geode XML Sample Application
+=== Running the Apache Geode XML Sample Application
 
 You can run the sample by obtaining the {download-url}[source code] and invoking the following command:
 
@@ -149,7 +149,7 @@ $ ./gradlew :spring-session-sample-xml-gemfire-p2p:tomcatRun [-Dgemfire.log-leve
 
 You should now be able to access the application at http://localhost:8080/.
 
-=== Exploring the Geode XML Sample Application
+=== Exploring the Apache Geode XML Sample Application
 
 Try using the application. Fill out the form with the following information:
 

@@ -6,7 +6,7 @@ This guide describes how to build a _Spring Boot_ application configured with _S
 Apache Geode to manage a web application's `javax.servlet.http.HttpSession`.
 
 In this sample, Apache Geode's client/server topology is employed using a pair of _Spring Boot_ applications, one to
-configure and run a Geode Server and another to configure and run the cache client, Spring MVC-based web application
+configure and run a Apache Geode Server and another to configure and run the cache client, Spring MVC-based web application
 making use of the `HttpSession`.
 
 NOTE: The completed guide can be found in the
@@ -121,7 +121,7 @@ include::{samples-dir}boot/gemfire/src/main/java/sample/client/Application.java[
 with the `@SpringBootApplication` annotation.
 <2> `@Controller` is a _Spring_ Web MVC annotation enabling our MVC handler mapping methods (i.e. methods annotated
 with `@RequestMapping`) to process HTTP requests (e.g. <6>)
-<3> We also declare our Web application to be a Geode cache client by annotating our application class with
+<3> We also declare our Web application to be a Apache Geode cache client by annotating our application class with
 `@ClientCacheApplication`.  Additionally, we adjust a few basic, "DEFAULT" `Pool` settings.
 <4> Next, we declare that the Web application will use _Spring Session_ backed by Apache Geode by annotating the
 `ClientCacheConfiguration` class with `@EnableGemFireHttpSession`.  This will create the necessary client-side `Region`
@@ -136,8 +136,8 @@ a count for the number of HTTP requests.
 
 There are many other useful utility methods, so please refer to the actual source code for full details.
 
-TIP: In typical Geode production deployments, where the cluster includes potentially hundreds or thousands
-of Geode servers (data nodes), it is more common for clients to connect to 1 or more Geode Locators running
+TIP: In typical Apache Geode production deployments, where the cluster includes potentially hundreds or thousands
+of Apache Geode servers (data nodes), it is more common for clients to connect to 1 or more Apache Geode Locators running
 in the cluster.  A Locator passes meta-data to clients about the servers available in the cluster, the server load
 and which servers have the client's data of interest, which is particularly important for direct, single-hop data access
 and latency-sensitive operations.  See more details about the
@@ -151,7 +151,7 @@ http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[Reference
 out-of-the-box using the following attributes:
 
 * `clientRegionShortcut` - specifies Apache Geode http://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
-on the client with a Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
+on the client with a Apache Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
 (default is `PROXY`).  This attribute is only used when configuring client `Region`.
 * `indexableSessionAttributes` - Identifies the Session attributes by name that should be indexed for querying operations.
 Only Session attributes identified by name will be indexed.
@@ -161,7 +161,7 @@ is only used when the application is a cache client.  Defaults to `gemfirePool`.
 * `regionName` - specifies the name of the Apache Geode `Region` used to store and manage `HttpSession` state
 (default is "*ClusteredSpringSessions*").
 * `serverRegionShortcut` - specifies Apache Geode http://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
-on the server using a Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
+on the server using a Apache Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
 (default is `PARTITION`).  This attribute is only used when configuring server `Regions`, or when a P2P topology is employed.
 
 NOTE: It is important to remember that the Apache Geode client `Region` name must match a server `Region`

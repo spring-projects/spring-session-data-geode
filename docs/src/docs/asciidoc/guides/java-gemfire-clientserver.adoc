@@ -87,7 +87,7 @@ Add the following _Spring_ configuration:
 include::{samples-dir}javaconfig/gemfire-clientserver/src/main/java/sample/ClientConfig.java[tags=class]
 ----
 
-<1> First, we declare our Web application to be a Geode cache client by annotating our `ClientConfig` class
+<1> First, we declare our Web application to be a Apache Geode cache client by annotating our `ClientConfig` class
 with `@ClientCacheApplication`.  Additionally, we adjust a few basic, "DEFAULT" `Pool` settings.
 <2> `@EnableGemFireHttpSession` creates a _Spring_ bean named `springSessionRepositoryFilter` that implements
 `javax.servlet.Filter`. The filter is what replaces the `HttpSession` with an implementation provided by _Spring Session_
@@ -98,8 +98,8 @@ will use the "DEFAULT" `Pool`.
 <3> Then, we adjust the port used by the cache client `Pool` to connect to the `CacheServer`
 using a SDG `ClientCacheConfigurer`.
 
-TIP: In typical Geode production deployments, where the cluster includes potentially hundreds or thousands
-of Geode servers (data nodes), it is more common for clients to connect to 1 or more Geode Locators running
+TIP: In typical Apache Geode production deployments, where the cluster includes potentially hundreds or thousands
+of Apache Geode servers (data nodes), it is more common for clients to connect to 1 or more Apache Geode Locators running
 in the cluster.  A Locator passes meta-data to clients about the servers available in the cluster, the server load
 and which servers have the client's data of interest, which is particularly important for direct, single-hop data access
 and latency-sensitive operations.  See more details about the
@@ -113,7 +113,7 @@ http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[Reference
 out-of-the-box using the following attributes:
 
 * `clientRegionShortcut` - specifies Apache Geode http://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
-on the client with a Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
+on the client with a Apache Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
 (default is `PROXY`).  This attribute is only used when configuring a client `Region`.
 * `indexableSessionAttributes` - Identifies the Session attributes by name that should be indexed for querying operations.
 Only Session attributes identified by name will be indexed.
@@ -123,7 +123,7 @@ is only used when the application is a cache client.  Defaults to `gemfirePool`.
 * `regionName` - specifies the name of the Apache Geode `Region` used to store and manage `HttpSession` state
 (default is "*ClusteredSpringSessions*").
 * `serverRegionShortcut` - specifies Apache Geode http://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
-on the server using a Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
+on the server using a Apache Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
 (default is `PARTITION`).  This attribute is only used when configuring server `Regions`, or when a P2P topology is employed.
 
 NOTE: It is important to remember that the Apache Geode client `Region` name must match a server `Region`
@@ -188,7 +188,7 @@ our `ClientConfig`.
 [[spring-session-sample-java-geode-clientserver]]
 == HttpSession managed by a Java configured, Apache Geode Client/Server Sample Application
 
-=== Running the Geode Sample Application
+=== Running the Apache Geode Sample Application
 
 You can run the sample by obtaining the {download-url}[source code] and invoking the following commands.
 

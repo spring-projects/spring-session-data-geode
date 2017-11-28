@@ -99,7 +99,7 @@ http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[Reference
 out-of-the-box using the following attributes:
 
 * `clientRegionShortcut` - specifies Apache Geode http://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
-on the client with a Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
+on the client with a Apache Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
 (default is `PROXY`).  This attribute is only used when configuring a client `Region`.
 * `indexableSessionAttributes` - Identifies the Session attributes by name that should be indexed for querying operations.
 Only Session attributes identified by name will be indexed.
@@ -109,7 +109,7 @@ is only used when the application is a cache client.  Defaults to `gemfirePool`.
 * `regionName` - specifies the name of the Apache Geode `Region` used to store and manage `HttpSession` state
 (default is "*ClusteredSpringSessions*").
 * `serverRegionShortcut` - specifies Apache Geode http://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
-on the server using a Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
+on the server using a Apache Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
 (default is `PARTITION`).  This attribute is only used when configuring server `Regions`, or when a P2P topology is employed.
 
 == Java Servlet Container Initialization
@@ -144,7 +144,7 @@ our `Config` class.
 [[spring-session-sample-java-gemfire-p2p]]
 == HttpSession with Apache Geode (P2P) Sample Application
 
-=== Running the Geode P2P Java Sample Application
+=== Running the Apache Geode P2P Java Sample Application
 
 You can run the sample by obtaining the {download-url}[source code] and invoking the following command:
 
@@ -154,7 +154,7 @@ $ ./gradlew :spring-session-sample-javaconfig-gemfire-p2p:tomcatRun [-Dgemfire.l
 
 You should now be able to access the application at http://localhost:8080/.
 
-=== Exploring the Geode P2P Java Sample Application
+=== Exploring the Apache Geode P2P Java Sample Application
 
 Try using the application. Fill out the form with the following information:
 
