@@ -12,7 +12,7 @@ buildscript {
 apply plugin: 'io.spring.convention.root'
 
 group = 'org.springframework.session'
-description = 'Spring Session Data Geode'
+description = 'Spring Session for Apache Geode'
 
 ext.releaseBuild = version.endsWith('RELEASE')
 ext.snapshotBuild = version.endsWith('SNAPSHOT')

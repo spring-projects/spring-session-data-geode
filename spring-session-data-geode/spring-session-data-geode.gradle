@@ -2,7 +2,7 @@ apply plugin: 'io.spring.convention.spring-module'
 
 apply from: IDE_GRADLE
 
-description = "Spring Session Data Geode"
+description = "Spring Session for Apache Geode"
 
 dependencies {
 
