@@ -10,14 +10,20 @@ repositories {
 dependencies {
 
 	compile project(':spring-session-data-geode')
-	compile "org.springframework.boot:spring-boot-starter-thymeleaf"
-	compile "org.springframework.boot:spring-boot-starter-web"
+	compile("org.springframework.boot:spring-boot-starter-thymeleaf") {
+		exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+	}
+	compile("org.springframework.boot:spring-boot-starter-web") {
+		exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+	}
 	compile "org.webjars:bootstrap"
 	compile "org.webjars:webjars-locator"
 
 	runtime "org.springframework.shell:spring-shell"
 
-	testCompile "org.springframework.boot:spring-boot-starter-test"
+	testCompile("org.springframework.boot:spring-boot-starter-test") {
+		exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+	}
 	testCompile seleniumDependencies
 
 	integrationTestCompile seleniumDependencies
@@ -26,14 +32,16 @@ dependencies {
 
 }
 
+mainClassName = 'sample.client.Application'
+
+bootJar {
+	mainClassName = 'sample.client.Application'
+}
+
 run {
 	doFirst {
 		mainClassName = 'sample.server.GemFireServer'
 	}
-}
-
-bootJar {
-	mainClassName = 'sample.client.Application'
 }
 
 task runGemFireServer() {
@@ -45,7 +53,7 @@ task runGemFireServer() {
 		def out = new StringBuilder()
 		def err = new StringBuilder()
 
-		String classpath = sourceSets.main.runtimeClasspath.collect { it }.join(File.pathSeparator)
+		String classpath = project.sourceSets.main.runtimeClasspath.collect { it }.join(File.pathSeparator)
 
 		String[] commandLine = [
 			'java', '-server', '-ea', '-classpath', classpath,
