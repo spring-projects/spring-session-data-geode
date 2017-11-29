@@ -24,9 +24,11 @@ import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willAnswer;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -34,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
 import org.junit.Before;
@@ -52,6 +55,7 @@ import org.springframework.data.gemfire.GemfireAccessor;
 import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.Session;
+import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.session.events.AbstractSessionEvent;
 import org.springframework.session.events.SessionDeletedEvent;
 
@@ -66,6 +70,8 @@ import org.springframework.session.events.SessionDeletedEvent;
  * @see org.mockito.Mockito
  * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.apache.geode.cache.Region
+ * @see org.springframework.context.ApplicationEvent
+ * @see org.springframework.context.ApplicationEventPublisher
  * @see org.springframework.data.gemfire.GemfireAccessor
  * @see org.springframework.data.gemfire.GemfireOperations
  * @see org.springframework.session.FindByIndexNameSessionRepository
@@ -87,6 +93,7 @@ public class GemFireOperationsSessionRepositoryTests {
 	@Mock
 	private GemfireOperationsAccessor mockTemplate;
 
+	// Subject Under Test (SUT)
 	private GemFireOperationsSessionRepository sessionRepository;
 
 	@Mock
@@ -95,9 +102,9 @@ public class GemFireOperationsSessionRepositoryTests {
 	@Before
 	public void setup() throws Exception {
 
-		given(this.mockRegion.getAttributesMutator()).willReturn(this.mockAttributesMutator);
-		given(this.mockRegion.getFullPath()).willReturn("/Example");
-		given(this.mockTemplate.<Object, Session>getRegion()).willReturn(this.mockRegion);
+		when(this.mockRegion.getAttributesMutator()).thenReturn(this.mockAttributesMutator);
+		when(this.mockRegion.getFullPath()).thenReturn(GemFireUtils.toRegionPath("Example"));
+		when(this.mockTemplate.<Object, Session>getRegion()).thenReturn(this.mockRegion);
 
 		this.sessionRepository = new GemFireOperationsSessionRepository(this.mockTemplate);
 		this.sessionRepository.setApplicationEventPublisher(this.mockApplicationEventPublisher);
@@ -105,7 +112,7 @@ public class GemFireOperationsSessionRepositoryTests {
 		this.sessionRepository.afterPropertiesSet();
 
 		assertThat(this.sessionRepository.getApplicationEventPublisher()).isSameAs(this.mockApplicationEventPublisher);
-		assertThat(this.sessionRepository.getFullyQualifiedRegionName()).isEqualTo("/Example");
+		assertThat(this.sessionRepository.getFullyQualifiedRegionName()).isEqualTo(GemFireUtils.toRegionPath("Example"));
 		assertThat(this.sessionRepository.getMaxInactiveIntervalInSeconds()).isEqualTo(MAX_INACTIVE_INTERVAL_IN_SECONDS);
 	}
 
@@ -270,12 +277,13 @@ public class GemFireOperationsSessionRepositoryTests {
 
 			AbstractSessionEvent sessionEvent = (AbstractSessionEvent) applicationEvent;
 
-			assertThat(sessionEvent.getSource())
-				.isSameAs(GemFireOperationsSessionRepositoryTests.this.sessionRepository);
 			assertThat(sessionEvent.<Session>getSession()).isSameAs(mockSession);
 			assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSessionId);
+			assertThat(sessionEvent.getSource())
+				.isSameAs(GemFireOperationsSessionRepositoryTests.this.sessionRepository);
 
 			return null;
+
 		}).given(this.mockApplicationEventPublisher).publishEvent(any(ApplicationEvent.class));
 
 		assertThat(this.sessionRepository.findById(expectedSessionId)).isNull();
@@ -411,11 +419,16 @@ public class GemFireOperationsSessionRepositoryTests {
 	@Test
 	public void deleteRemovesNonExistingSessionAndHandlesDelete() {
 
+		AtomicBoolean called = new AtomicBoolean(false);
+
+		Session mockSession = mock(Session.class);
+
 		String expectedSessionId = "1";
 
-		given(this.mockTemplate.remove(anyString())).willReturn(null);
+		when(mockSession.getId()).thenReturn(expectedSessionId);
+		when(this.mockTemplate.remove(anyString())).thenReturn(mockSession);
 
-		willAnswer(invocation -> {
+		doAnswer(invocation -> {
 
 			ApplicationEvent applicationEvent = invocation.getArgument(0);
 
@@ -423,21 +436,31 @@ public class GemFireOperationsSessionRepositoryTests {
 
 			AbstractSessionEvent sessionEvent = (AbstractSessionEvent) applicationEvent;
 
-			assertThat(sessionEvent.getSource()).isSameAs(GemFireOperationsSessionRepositoryTests.this.sessionRepository);
-			assertThat(sessionEvent.<Session>getSession()).isNull();
+			Session session = sessionEvent.getSession();
+
+			assertThat(session).isNotNull();
+			assertThat(session.getId()).isEqualTo(expectedSessionId);
 			assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSessionId);
+			assertThat(sessionEvent.getSource())
+				.isSameAs(GemFireOperationsSessionRepositoryTests.this.sessionRepository);
+
+			called.set(true);
 
 			return null;
-		}).given(this.mockApplicationEventPublisher).publishEvent(isA(SessionDeletedEvent.class));
+
+		}).when(this.mockApplicationEventPublisher).publishEvent(isA(SessionDeletedEvent.class));
 
 		this.sessionRepository.deleteById(expectedSessionId);
 
+		assertThat(called.get()).isTrue();
+
+		verify(mockSession, times(2)).getId();
 		verify(this.mockTemplate, times(1)).remove(eq(expectedSessionId));
 		verify(this.mockApplicationEventPublisher, times(1))
 			.publishEvent(isA(SessionDeletedEvent.class));
 	}
 
-	protected abstract class GemfireOperationsAccessor extends GemfireAccessor
-			implements GemfireOperations {
+	protected abstract class GemfireOperationsAccessor extends GemfireAccessor implements GemfireOperations {
+
 	}
 }

@@ -114,11 +114,12 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	}
 
 	/**
-	 * Gets a copy of an existing, non-expired {@link Session} by ID. If the
-	 * Session is expired, then it is deleted.
+	 * Gets a copy of an existing, non-expired {@link Session} by ID.
+	 *
+	 * If the {@link Session} is expired, then the {@link Session }is deleted.
 	 *
 	 * @param sessionId a String indicating the ID of the Session to get.
-	 * @return an existing {@link Session} by ID or null if not Session exists.
+	 * @return an existing {@link Session} by ID or null if no {@link Session} exists.
 	 * @see AbstractGemFireOperationsSessionRepository.GemFireSession#from(Session)
 	 * @see org.springframework.session.Session
 	 * @see #deleteById(String)
@@ -156,6 +157,6 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see #handleDeleted(String, Session)
 	 */
 	public void deleteById(String sessionId) {
-		handleDeleted(sessionId, getTemplate().<Object, Session>remove(sessionId));
+		handleDeleted(sessionId, toSession(getTemplate().<Object, Session>remove(sessionId), sessionId));
 	}
 }
