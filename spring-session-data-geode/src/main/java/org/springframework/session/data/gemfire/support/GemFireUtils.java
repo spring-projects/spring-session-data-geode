@@ -18,21 +18,26 @@ package org.springframework.session.data.gemfire.support;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 
 /**
- * GemFireUtils is an abstract, extensible utility class for working with GemFire types
- * and functionality and is used by Spring Session's GemFire adapter support classes.
+ * {@link GemFireUtils} is an abstract, extensible utility class for working with GemFire objects and types.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.client.ClientCache
  * @since 1.1.0
  */
 public abstract class GemFireUtils {
@@ -62,14 +67,17 @@ public abstract class GemFireUtils {
 	/**
 	 * Determines whether the GemFire cache is a client.
 	 *
-	 * @param gemFireCache a reference to the GemFire cache.
+	 * @param gemfireCache a reference to the GemFire cache.
 	 * @return a boolean value indicating whether the GemFire cache is a client.
 	 * @see org.apache.geode.cache.client.ClientCache
 	 * @see org.apache.geode.cache.GemFireCache
 	 */
-	public static boolean isClient(GemFireCache gemFireCache) {
-		boolean client = (gemFireCache instanceof ClientCache);
-		client &= (!(gemFireCache instanceof GemFireCacheImpl) || ((GemFireCacheImpl) gemFireCache).isClient());
+	public static boolean isClient(GemFireCache gemfireCache) {
+
+		boolean client = (gemfireCache instanceof ClientCache);
+
+		client &= (!(gemfireCache instanceof GemFireCacheImpl) || ((GemFireCacheImpl) gemfireCache).isClient());
+
 		return client;
 	}
 
@@ -127,16 +135,28 @@ public abstract class GemFireUtils {
 	}
 
 	/**
-	 * Determines whether the given {@link Region} is a PROXY, which would be indicated by the {@link Region}
-	 * having a {@link DataPolicy} of {@link DataPolicy#EMPTY}.
+	 * Determines whether the given {@link Region} is a {@literal PROXY}.
 	 *
-	 * @param region {@link Region} to evaluate.
-	 * @return a boolean value indicating whether the {@link Region} is a PROXY.
+	 * @param region {@link Region} to evaluate as a {@literal PROXY}; must not be {@literal null}.
+	 * @return a boolean value indicating whether the {@link Region} is a {@literal PROXY}.
 	 * @see org.apache.geode.cache.DataPolicy
 	 * @see org.apache.geode.cache.Region
 	 */
 	public static boolean isProxy(Region<?, ?> region) {
-		return DataPolicy.EMPTY.equals(region.getAttributes().getDataPolicy());
+
+		RegionAttributes regionAttributes = region.getAttributes();
+
+		DataPolicy regionDataPolicy = regionAttributes.getDataPolicy();
+
+		boolean proxy = DataPolicy.EMPTY.equals(regionDataPolicy);
+
+		proxy |= proxy || Optional.ofNullable(regionDataPolicy)
+			.filter(DataPolicy.PARTITION::equals)
+			.map(it -> regionAttributes.getPartitionAttributes())
+			.filter(partitionAttributes -> partitionAttributes.getLocalMaxMemory() <= 0)
+			.isPresent();
+
+		return proxy;
 	}
 
 	/**

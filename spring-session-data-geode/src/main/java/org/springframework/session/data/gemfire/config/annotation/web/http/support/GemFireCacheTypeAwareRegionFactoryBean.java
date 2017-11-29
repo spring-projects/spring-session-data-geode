@@ -189,9 +189,10 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	 */
 	@SuppressWarnings("unchecked")
 	protected Interest<K>[] registerInterests(boolean register) {
-		return (!register ? new Interest[0] : new Interest[] {
-			new Interest<>("ALL_KEYS", InterestResultPolicy.KEYS)
-		});
+
+		return register
+			? new Interest[] { new Interest<>("ALL_KEYS", InterestResultPolicy.KEYS) }
+			: new Interest[0];
 	}
 
 	/**

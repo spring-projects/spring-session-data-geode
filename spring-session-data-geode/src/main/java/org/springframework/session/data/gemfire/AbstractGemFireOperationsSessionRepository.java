@@ -17,6 +17,7 @@
 package org.springframework.session.data.gemfire;
 
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -59,6 +60,7 @@ import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
+import org.springframework.session.data.gemfire.support.SessionIdHolder;
 import org.springframework.session.events.SessionCreatedEvent;
 import org.springframework.session.events.SessionDeletedEvent;
 import org.springframework.session.events.SessionDestroyedEvent;
@@ -79,9 +81,11 @@ import org.apache.commons.logging.LogFactory;
  * @see org.apache.geode.DataSerializer
  * @see org.apache.geode.Delta
  * @see org.apache.geode.Instantiator
+ * @see org.apache.geode.cache.EntryEvent
+ * @see org.apache.geode.cache.Operation
  * @see org.apache.geode.cache.Region
- * @see org.apache.geode.cache.util.CacheListenerAdapter
  * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.context.ApplicationEvent
  * @see org.springframework.context.ApplicationEventPublisher
  * @see org.springframework.context.ApplicationEventPublisherAware
  * @see org.springframework.data.gemfire.GemfireOperations
@@ -91,6 +95,10 @@ import org.apache.commons.logging.LogFactory;
  * @see org.springframework.session.SessionRepository
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
+ * @see org.springframework.session.events.SessionCreatedEvent
+ * @see org.springframework.session.events.SessionDeletedEvent
+ * @see org.springframework.session.events.SessionDestroyedEvent
+ * @see org.springframework.session.events.SessionExpiredEvent
  * @since 1.1.0
  */
 public abstract class AbstractGemFireOperationsSessionRepository extends CacheListenerAdapter<Object, Session>
@@ -130,13 +138,11 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	/**
 	 * Constructs a new instance of {@link Log} using Apache Commons {@link LogFactory}.
 	 *
-	 * Used in testing to override the {@link Log} implementation with a mock.
-	 *
-	 * @return an instance of {@link Log} constructed from Apache commons-logging {@link LogFactory}.
+	 * @return a new instance of {@link Log} constructed from Apache commons-logging {@link LogFactory}.
 	 * @see org.apache.commons.logging.LogFactory#getLog(Class)
 	 * @see org.apache.commons.logging.Log
 	 */
-	Log newLogger() {
+	private Log newLogger() {
 		return LogFactory.getLog(getClass());
 	}
 
@@ -232,8 +238,11 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 * @see #getMaxInactiveInterval()
 	 */
 	public int getMaxInactiveIntervalInSeconds() {
-		return Optional.ofNullable(getMaxInactiveInterval()).map(Duration::getSeconds)
-			.map(Long::intValue).orElse(0);
+
+		return Optional.ofNullable(getMaxInactiveInterval())
+			.map(Duration::getSeconds)
+			.map(Long::intValue)
+			.orElse(0);
 	}
 
 	/**
@@ -292,17 +301,17 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 	/* (non-Javadoc) */
 	boolean isCreate(EntryEvent<?, ?> event) {
-		return (isCreate(event.getOperation()) && isNotUpdate(event) && isSessionOrNull(event.getNewValue()));
+		return isCreate(event.getOperation()) && isNotUpdate(event) && isSession(event.getNewValue());
 	}
 
 	/* (non-Javadoc) */
 	private boolean isCreate(Operation operation) {
-		return (operation.isCreate() && !Operation.LOCAL_LOAD_CREATE.equals(operation));
+		return operation.isCreate() && !Operation.LOCAL_LOAD_CREATE.equals(operation);
 	}
 
 	/* (non-Javadoc) */
 	private boolean isNotUpdate(EntryEvent event) {
-		return (isNotProxyRegion() || !this.cachedSessionIds.contains(ObjectUtils.nullSafeHashCode(event.getKey())));
+		return isNotProxyRegion() || !this.cachedSessionIds.contains(ObjectUtils.nullSafeHashCode(event.getKey()));
 	}
 
 	/* (non-Javadoc) */
@@ -316,70 +325,120 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	}
 
 	/**
-	 * Used to determine whether the developer is storing (HTTP) Sessions with other, arbitrary application
-	 * domain objects in the same GemFire cache {@link Region}; crazier things have happened!
+	 * Used to determine whether the application developer is storing (HTTP) Sessions with other, arbitrary
+	 * application domain objects in the same GemFire cache {@link Region}; crazier things have happened!
 	 *
 	 * @param obj {@link Object} to evaluate.
-	 * @return a boolean value indicating whether the {@link Object} from the entry event is indeed
-	 * a {@link Session}.
+	 * @return a boolean value indicating whether the old/new {@link Object} from the {@link Region}
+	 * {@link EntryEvent} is indeed a {@link Session}.
 	 * @see org.springframework.session.Session
 	 */
-	private boolean isSessionOrNull(Object obj) {
-		return (obj instanceof Session || obj == null);
+	private boolean isSession(Object obj) {
+		return obj instanceof Session;
 	}
 
+	/**
+	 * Forgets the given {@link Object session ID}.
+	 *
+	 * @param sessionId {@link Object} containing the session ID to forget.
+	 * @return a boolean value indicating whether the given session ID was even being remembered.
+	 * @see #remember(Object)
+	 */
 	boolean forget(Object sessionId) {
 		return this.cachedSessionIds.remove(ObjectUtils.nullSafeHashCode(sessionId));
 	}
 
+	/**
+	 * Rememvers the given {@link Object session ID}.
+	 *
+	 * @param sessionId {@link Object} containing the session ID to remember.
+	 * @return a boolean value whether Spring Session is interested in and will remember
+	 * this given session ID.
+	 * @see #forget(Object)
+	 */
 	@SuppressWarnings("all")
 	boolean remember(Object sessionId) {
-		return (isProxyRegion() && this.cachedSessionIds.add(ObjectUtils.nullSafeHashCode(sessionId)));
-	}
-
-	/* (non-Javadoc) */
-	Session toSession(Object obj) {
-		return (obj instanceof Session ? (Session) obj : null);
+		return isProxyRegion() && this.cachedSessionIds.add(ObjectUtils.nullSafeHashCode(sessionId));
 	}
 
 	/**
+	 * Casts the given {@link Object} into a {@link Session} iff the {@link Object} is a {@link Session}.
+	 *
+	 * Otherwise, this method attempts to use the supplied {@link String session ID} to create a {@link Session}
+	 * containing only the ID.
+	 *
+	 * @param obj {@link Object} to evaluate as a {@link Session}.
+	 * @param sessionId {@link String} containing the session ID.
+	 * @return a {@link Session} from the given {@link Object}
+	 * or a {@link Session} containing only the supplied {@link String session ID}.
+	 * @throws IllegalStateException if the given {@link Object} is not a {@link Session}
+	 * and {@link String session ID} was not supplied.
+	 */
+	Session toSession(Object obj, String sessionId) {
+
+		return obj instanceof Session ? (Session) obj
+			: Optional.ofNullable(sessionId)
+				.filter(StringUtils::hasText)
+				.map(SessionIdHolder::create)
+				.orElseThrow(() -> newIllegalStateException(
+					"Minimally, the session ID [%s] must be known to trigger a Session event", sessionId));
+	}
+	/**
 	 * Callback method triggered when an entry is created in the GemFire cache {@link Region}.
 	 *
-	 * @param event {@link EntryEvent} containing the details of the cache {@link Region} operation.
+	 * @param event {@link EntryEvent} containing the details of the cache operation.
 	 * @see org.apache.geode.cache.EntryEvent
 	 * @see #handleCreated(String, Session)
 	 */
 	@Override
 	public void afterCreate(EntryEvent<Object, Session> event) {
-		if (isCreate(event)) {
-			handleCreated(event.getKey().toString(), toSession(event.getNewValue()));
-		}
+
+		Optional.ofNullable(event)
+			.filter(this::isCreate)
+			.ifPresent(it -> {
+
+				String sessionId = it.getKey().toString();
+
+				handleCreated(sessionId, toSession(it.getNewValue(), sessionId));
+			});
 	}
 
 	/**
-	 * Callback method triggered when an entry is destroyed in the GemFire cache
-	 * {@link Region}.
+	 * Callback method triggered when an entry is destroyed in the GemFire cache {@link Region}.
 	 *
-	 * @param event an EntryEvent containing the details of the cache operation.
+	 * @param event {@link EntryEvent} containing the details of the cache operation.
 	 * @see org.apache.geode.cache.EntryEvent
 	 * @see #handleDestroyed(String, Session)
 	 */
 	@Override
 	public void afterDestroy(EntryEvent<Object, Session> event) {
-		handleDestroyed(event.getKey().toString(), toSession(event.getOldValue()));
+
+		Optional.ofNullable(event)
+			.ifPresent(it -> {
+
+				String sessionId = event.getKey().toString();
+
+				handleDestroyed(sessionId, toSession(event.getOldValue(), sessionId));
+			});
 	}
 
 	/**
-	 * Callback method triggered when an entry is invalidated in the GemFire cache
-	 * {@link Region}.
+	 * Callback method triggered when an entry is invalidated in the GemFire cache {@link Region}.
 	 *
-	 * @param event an EntryEvent containing the details of the cache operation.
+	 * @param event {@link EntryEvent} containing the details of the cache operation.
 	 * @see org.apache.geode.cache.EntryEvent
 	 * @see #handleExpired(String, Session)
 	 */
 	@Override
 	public void afterInvalidate(EntryEvent<Object, Session> event) {
-		handleExpired(event.getKey().toString(), toSession(event.getOldValue()));
+
+		Optional.ofNullable(event)
+			.ifPresent(it -> {
+
+				String sessionId = event.getKey().toString();
+
+				handleExpired(sessionId, toSession(event.getOldValue(), sessionId));
+			});
 	}
 
 	/**
@@ -402,12 +461,12 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 * @param session a reference to the Session triggering the event.
 	 * @see org.springframework.session.events.SessionCreatedEvent
 	 * @see org.springframework.session.Session
-	 * @see #newSessionCreatedEvent(Session, String)
+	 * @see #newSessionCreatedEvent(Session)
 	 * @see #publishEvent(ApplicationEvent)
 	 */
 	protected void handleCreated(String sessionId, Session session) {
 		remember(sessionId);
-		publishEvent(newSessionCreatedEvent(session, sessionId));
+		publishEvent(newSessionCreatedEvent(session));
 	}
 
 	/**
@@ -417,13 +476,13 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 * @param session a reference to the Session triggering the event.
 	 * @see org.springframework.session.events.SessionDeletedEvent
 	 * @see org.springframework.session.Session
-	 * @see #newSessionDeletedEvent(Session, String)
+	 * @see #newSessionDeletedEvent(Session)
 	 * @see #publishEvent(ApplicationEvent)
 	 * @see #forget(Object)
 	 */
 	protected void handleDeleted(String sessionId, Session session) {
 		forget(sessionId);
-		publishEvent(newSessionDeletedEvent(session, sessionId));
+		publishEvent(newSessionDeletedEvent(session));
 	}
 
 	/**
@@ -433,13 +492,13 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 * @param session a reference to the Session triggering the event.
 	 * @see org.springframework.session.events.SessionDestroyedEvent
 	 * @see org.springframework.session.Session
-	 * @see #newSessionDestroyedEvent(Session, String)
+	 * @see #newSessionDestroyedEvent(Session)
 	 * @see #publishEvent(ApplicationEvent)
 	 * @see #forget(Object)
 	 */
 	protected void handleDestroyed(String sessionId, Session session) {
 		forget(sessionId);
-		publishEvent(newSessionDestroyedEvent(session, sessionId));
+		publishEvent(newSessionDestroyedEvent(session));
 	}
 
 	/**
@@ -449,41 +508,33 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 * @param session a reference to the Session triggering the event.
 	 * @see org.springframework.session.events.SessionExpiredEvent
 	 * @see org.springframework.session.Session
-	 * @see #newSessionExpiredEvent(Session, String)
+	 * @see #newSessionExpiredEvent(Session)
 	 * @see #publishEvent(ApplicationEvent)
 	 * @see #forget(Object)
 	 */
 	protected void handleExpired(String sessionId, Session session) {
 		forget(sessionId);
-		publishEvent(newSessionExpiredEvent(session, sessionId));
+		publishEvent(newSessionExpiredEvent(session));
 	}
 
 	/* (non-Javadoc) */
-	private SessionCreatedEvent newSessionCreatedEvent(Session session, String sessionId) {
-
-		return (session != null ? new SessionCreatedEvent(this, session)
-			: new SessionCreatedEvent(this, sessionId));
+	private SessionCreatedEvent newSessionCreatedEvent(Session session) {
+		return new SessionCreatedEvent(this, session);
 	}
 
 	/* (non-Javadoc) */
-	private SessionDeletedEvent newSessionDeletedEvent(Session session, String sessionId) {
-
-		return (session != null ? new SessionDeletedEvent(this, session)
-			: new SessionDeletedEvent(this, sessionId));
+	private SessionDeletedEvent newSessionDeletedEvent(Session session) {
+		return new SessionDeletedEvent(this, session);
 	}
 
 	/* (non-Javadoc) */
-	private SessionDestroyedEvent newSessionDestroyedEvent(Session session, String sessionId) {
-
-		return (session != null ? new SessionDestroyedEvent(this, session)
-			: new SessionDestroyedEvent(this, sessionId));
+	private SessionDestroyedEvent newSessionDestroyedEvent(Session session) {
+		return new SessionDestroyedEvent(this, session);
 	}
 
 	/* (non-Javadoc) */
-	private SessionExpiredEvent newSessionExpiredEvent(Session session, String sessionId) {
-
-		return (session != null ? new SessionExpiredEvent(this, session)
-			: new SessionExpiredEvent(this, sessionId));
+	private SessionExpiredEvent newSessionExpiredEvent(Session session) {
+		return new SessionExpiredEvent(this, session);
 	}
 
 	/**
@@ -498,8 +549,8 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		try {
 			getApplicationEventPublisher().publishEvent(event);
 		}
-		catch (Throwable t) {
-			getLogger().error(String.format("Error occurred publishing event [%s]", event), t);
+		catch (Throwable cause) {
+			getLogger().error(String.format("Error occurred while publishing event [%s]", event), cause);
 		}
 	}
 
