@@ -24,10 +24,13 @@ import org.springframework.lang.Nullable;
 import org.springframework.session.SessionRepository;
 
 /**
- * The FixedDurationExpirationSessionRepositoryBeanPostProcessor class...
+ * The {@link FixedDurationExpirationSessionRepositoryBeanPostProcessor} class...
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.springframework.beans.factory.config.BeanPostProcessor
+ * @see org.springframework.session.SessionRepository
+ * @see <a href="https://github.com/spring-projects/spring-session/issues/922">Absolute Session Timeouts</a>
+ * @since 2.0.0
  */
 @SuppressWarnings("unused")
 public class FixedDurationExpirationSessionRepositoryBeanPostProcessor implements BeanPostProcessor {

@@ -24,10 +24,13 @@ import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 
 /**
- * The FixedDurationExpirationSessionRepository class...
+ * The {@link FixedDurationExpirationSessionRepository} class...
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.springframework.session.Session
+ * @see org.springframework.session.SessionRepository
+ * @see <a href="https://github.com/spring-projects/spring-session/issues/922">Absolute Session Timeouts</a>
+ * @since 2.0.0
  */
 @SuppressWarnings("unused")
 public class FixedDurationExpirationSessionRepository<S extends Session> implements SessionRepository<S> {
