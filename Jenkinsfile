@@ -15,27 +15,31 @@ try {
 			node {
 				checkout scm
 				try {
-					sh "./gradlew clean check  --refresh-dependencies --no-daemon"
-				} catch(Exception e) {
+					sh "./gradlew clean check --refresh-dependencies --no-daemon"
+				}
+				catch (Exception cause) {
 					currentBuild.result = 'FAILED: check'
-					throw e
-				} finally {
+					throw cause
+				}
+				finally {
 					junit '**/build/*-results/*.xml'
 				}
 			}
 		}
 	},
-	sonar: {
-		stage('Sonar') {
+	springio: {
+		stage('Spring IO') {
 			node {
 				checkout scm
-				withCredentials([string(credentialsId: 'spring-sonar.login', variable: 'SONAR_LOGIN')]) {
-					try {
-						sh "./gradlew clean sonarqube -PexcludeProjects='**/samples/**' -Dsonar.host.url=$SPRING_SONAR_HOST_URL -Dsonar.login=$SONAR_LOGIN --refresh-dependencies --no-daemon"
-					} catch(Exception e) {
-						currentBuild.result = 'FAILED: sonar'
-						throw e
-					}
+				try {
+					sh "./gradlew clean springIoCheck -PplatformVersion=Cairo-BUILD-SNAPSHOT -PexcludeProjects='**/samples/**' --refresh-dependencies --no-daemon --stacktrace"
+				}
+				catch (Exception cause) {
+					currentBuild.result = 'FAILED: springio'
+					throw cause
+				}
+				finally {
+					junit '**/build/spring-io*-results/*.xml'
 				}
 			}
 		}
