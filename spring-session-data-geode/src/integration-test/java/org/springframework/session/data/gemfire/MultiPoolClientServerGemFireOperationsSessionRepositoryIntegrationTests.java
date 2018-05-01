@@ -302,7 +302,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 		static final String SERVER_HOSTNAME = "localhost";
 
 		@Bean
-		PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+		static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
 			return new PropertySourcesPlaceholderConfigurer();
 		}
 

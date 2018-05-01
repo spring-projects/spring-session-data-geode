@@ -75,7 +75,7 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 
-	@ClientCacheApplication(name = "SpringSessionDataGeodeClientBootSample", logLevel = "warning",
+	@ClientCacheApplication(name = "SpringSessionDataGeodeClientBootSample", logLevel = "error",
 		pingInterval = 5000L, readTimeout = 15000, retryAttempts = 1, subscriptionEnabled = true)  // <3>
 	@EnableGemFireHttpSession(poolName = "DEFAULT") // <4>
 	static class ClientCacheConfiguration extends IntegrationTestConfiguration {

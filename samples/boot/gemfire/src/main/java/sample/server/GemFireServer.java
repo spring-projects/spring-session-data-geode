@@ -21,7 +21,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
 import org.springframework.data.gemfire.config.annotation.CacheServerConfigurer;
 import org.springframework.data.gemfire.config.annotation.EnableManager;
@@ -41,7 +40,7 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
 @SuppressWarnings("unused")
 // tag::class[]
 @SpringBootApplication // <1>
-@CacheServerApplication(name = "SpringSessionDataGeodeServerBootSample", logLevel = "warning") // <2>
+@CacheServerApplication(name = "SpringSessionDataGeodeServerBootSample", logLevel = "error") // <2>
 @EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 20) // <3>
 @EnableManager(start = true) // <4>
 public class GemFireServer {
@@ -50,12 +49,6 @@ public class GemFireServer {
 		SpringApplication springApplication = new SpringApplication(GemFireServer.class);
 		springApplication.setWebApplicationType(WebApplicationType.NONE);
 		springApplication.run(args);
-	}
-
-	// Required to resolve property placeholders in Spring @Value annotations.
-	@Bean
-	static PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer() {
-		return new PropertySourcesPlaceholderConfigurer();
 	}
 
 	@Bean

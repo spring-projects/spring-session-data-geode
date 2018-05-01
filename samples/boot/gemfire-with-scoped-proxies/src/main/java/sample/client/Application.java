@@ -73,11 +73,12 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 
-	@ClientCacheApplication(name = "SpringSessionDataGeodeClientWithScopedProxiesBootSample",
+	@ClientCacheApplication(name = "SpringSessionDataGeodeClientWithScopedProxiesBootSample", logLevel = "error",
 		pingInterval = 5000L, readTimeout = 15000, retryAttempts = 1, subscriptionEnabled = true)  // <3>
 	@EnableGemFireHttpSession(poolName = "DEFAULT") // <4>
 	static class ClientCacheConfiguration {
 
+		// Required to resolve property placeholders in Spring @Value annotations.
 		@Bean
 		static PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer() {
 			return new PropertySourcesPlaceholderConfigurer();

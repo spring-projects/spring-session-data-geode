@@ -31,17 +31,16 @@ public class SerializationException extends RuntimeException {
 	 * Constructs a default instance of {@link SerializationException} with no {@link String message}
 	 * or {@link Throwable cause}.
 	 *
-	 * @see RuntimeException
+	 * @see java.lang.RuntimeException#RuntimeException()
 	 */
-	public SerializationException() {
-	}
+	public SerializationException() { }
 
 	/**
 	 * Constructs a new instance of {@link SerializationException} initialized with the given {@link String message}
 	 * describing the serialization error.
 	 *
 	 * @param message {@link String} describing the serialization error.
-	 * @see RuntimeException(String)
+	 * @see java.lang.RuntimeException#RuntimeException(String)
 	 * @see java.lang.String
 	 */
 	public SerializationException(String message) {
@@ -53,7 +52,7 @@ public class SerializationException extends RuntimeException {
 	 * of the serialization error.
 	 *
 	 * @param cause {@link Throwable underlying cause} of the serialization error.
-	 * @see RuntimeException(Throwable)
+	 * @see java.lang.RuntimeException#RuntimeException(Throwable)
 	 * @see java.lang.Throwable
 	 */
 	public SerializationException(Throwable cause) {
@@ -66,7 +65,7 @@ public class SerializationException extends RuntimeException {
 	 *
 	 * @param message {@link String} describing the serialization error.
 	 * @param cause {@link Throwable underlying cause} of the serialization error.
-	 * @see RuntimeException(String, Throwable)
+	 * @see java.lang.RuntimeException#RuntimeException(String, Throwable)
 	 * @see java.lang.Throwable
 	 * @see java.lang.String
 	 */

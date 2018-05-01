@@ -21,7 +21,7 @@
 
 	<!--1-->
 	<util:properties id="gemfireProperties">
-		<prop key="log-level">${spring.session.data.geode.log-level:warning}</prop>
+		<prop key="log-level">${spring.session.data.geode.log-level:error}</prop>
 	</util:properties>
 
 	<!--2-->

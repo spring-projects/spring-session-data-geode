@@ -27,7 +27,7 @@ import org.springframework.data.gemfire.config.annotation.CacheServerConfigurer;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 
 // tag::class[]
-@CacheServerApplication(name = "SpringSessionSampleJavaConfigGemFireClientServer", logLevel = "warning") // <1>
+@CacheServerApplication(name = "SpringSessionSampleJavaConfigGemFireClientServer", logLevel = "error") // <1>
 @EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 30) // <2>
 public class ServerConfig {
 
