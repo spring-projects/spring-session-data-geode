@@ -65,9 +65,9 @@ import org.springframework.util.FileSystemUtils;
 import org.springframework.util.SocketUtils;
 
 /**
- * Integration test to test the functionality of a GemFire cache client in a Spring Session application
- * using a specifically named GemFire {@link org.apache.geode.cache.client.Pool} configured with
- * the 'poolName' attribute in the Spring Session Data GemFire {@link EnableGemFireHttpSession} annotation.
+ * Integration test to test the functionality of a Pivotal GemFire cache client in a Spring Session application
+ * using a specifically named Pivotal GemFire {@link org.apache.geode.cache.client.Pool} configured with
+ * the 'poolName' attribute in the Spring Session Data Pivotal GemFire {@link EnableGemFireHttpSession} annotation.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -113,7 +113,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 
 		final int port = SocketUtils.findAvailableTcpPort();
 
-		System.err.printf("Starting a GemFire Server on [%1$s] listening on port [%2$d]%n",
+		System.err.printf("Starting a Pivotal GemFire Server on [%1$s] listening on port [%2$d]%n",
 			SpringSessionGemFireServerConfiguration.SERVER_HOSTNAME, port);
 
 		System.setProperty("spring.session.data.gemfire.port", String.valueOf(port));
@@ -243,7 +243,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 			poolFactory.setMinConnections(0);
 			poolFactory.setReadTimeout(500);
 
-			// deliberately set to a non-existing GemFire (Cache) Server
+			// deliberately set to a non-existing Pivotal GemFire (Cache) Server
 			poolFactory.addServers(newConnectionEndpoint("localhost", 53135));
 
 			return poolFactory;

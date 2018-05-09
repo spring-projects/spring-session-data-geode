@@ -104,7 +104,7 @@ public @interface EnableGemFireHttpSession {
 	/**
 	 * Identifies the {@link Session} attributes by name that will be indexed for query operations.
 	 *
-	 * For instance, find all {@link Session Sessions} in GemFire or Geode having attribute A defined with value X.
+	 * For instance, find all {@link Session Sessions} in Pivotal GemFire or  Apache Geode having attribute A defined with value X.
 	 *
 	 * @return an array of {@link String Strings} identifying the names of {@link Session} attributes to index.
 	 */

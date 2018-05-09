@@ -113,7 +113,7 @@ http://geode.apache.org/docs/guide/12/topologies_and_comm/multi_site_configurati
 The ability to configure and use _Apache Geode's_ WAN functionality is independent of _Spring Session_,
 and beyond the scope of this document.
 
-More details on configuring _Apache Geode_ WAN functionality using _Spring Data Geode_ can be found
+More details on configuring _Apache Geode_ WAN functionality using _Spring Data Apache Geode_ can be found
 http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#bootstrap:gateway[here].
 
 [[httpsession-gemfire-clientserver]]
@@ -209,7 +209,7 @@ with Apache Geode (P2P) using XML Guide_ when integrating with your own applicat
 include::guides/xml-gemfire-p2p.adoc[tags=config,leveloffset=+3]
 
 [[httpsession-gemfire-serialization]]
-=== Apache Geode/Pivotal Pivotal GemFire Serialization
+=== Apache Geode/Pivotal GemFire Serialization
 
 In order to transfer data between clients and servers, or when data is distributed/replicated between peer nodes
 in a cluster, the data must be serialized.  In this case, the data in question is the Session's state.
@@ -233,7 +233,7 @@ As such, Pivotal GemFire and Apache Geode provides its own serialization framewo
 2. http://geode.apache.org/docs/guide/12/developing/data_serialization/gemfire_pdx_serialization.html[PDX Serialization]
 
 [[httpsession-gemfire-serialization-background]]
-==== Apache Geode/Pivotal Pivotal GemFire Serialization Background
+==== Apache Geode/Pivotal GemFire Serialization Background
 
 As mentioned above, Apache Geode and Pivotal GemFire provide 2 additional serialization frameworks:
 _Data Serialization_ and PDX _Serialization_.
@@ -249,9 +249,9 @@ or overflowed to disk.
 
 However, _Data Serialization_ incurs a CPU penalty anytime data is transferred over-the-wire, or persisted/overflowed to
 and accessed from disk, since the receiving end performs a deserialization.  In fact, anytime _Delta Propagation_
-is used, the object must be deserialized on the receiving end in order to apply the "delta", since GemFire/Apache Geode
-applies deltas by invoking a method on the object that implements the `org.apache.geode.Delta` interface.  Clearly,
-you cannot invoke a method on a serialized object.
+is used, the object must be deserialized on the receiving end in order to apply the "delta", since Pivotal GemFire
+/ Apache Geode applies deltas by invoking a method on the object that implements the `org.apache.geode.Delta` interface.
+Clearly, you cannot invoke a method on a serialized object.
 
 [[httpsession-gemfire-serialization-pdx]]
 ===== PDX
@@ -282,7 +282,7 @@ Native Clients with Java clients, typically there will not be any associated Jav
 of the servers in the cluster.  With PDX, it is not necessary to provide the Java types on the classpath, and many
 customers who only develop and use Native Clients will not provide any Java types for the corresponding C# types.
 
-GemFire and Apache Geode also support JSON serialized to/from PDX.  In this case, it is very likely that Java types will
+Pivotal GemFire and Apache Geode also support JSON serialized to/from PDX.  In this case, it is very likely that Java types will
 not be provided on the servers classpath since many different languages (e.g. JavaScript, Python, Ruby) supporting JSON
 can be used with Pivotal GemFire and Apache Geode.
 
@@ -316,7 +316,7 @@ but rather a method containing a computation based on another field of `Person` 
 Likewise, calling any `java.lang.Object` method in a OQL query, like `Object.toString()`, is going to cause
 a deserialization to happen as well.
 
-GemFire and Apache Geode do provide the http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientCacheFactory.html#setPdxReadSerialized-boolean-[`read-serialized`]
+Pivotal GemFire and Apache Geode do provide the http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientCacheFactory.html#setPdxReadSerialized-boolean-[`read-serialized`]
 configuration setting so that any cache `Region.get(key)` operations that are potentially invoked inside a `Function`
 do not cause PDX serialized objects to be deserialized.  But, nothing will prevent an ill-conceived OQL query
 from causing a deserialization, so be careful.
@@ -324,7 +324,7 @@ from causing a deserialization, so be careful.
 [[httpsession-gemfire-serialization-java-data-pdx]]
 ===== PDX + _Data Serialization_ + _Java Serialization_
 
-It is possible for Apache Geode/Pivotal Pivotal GemFire to support all 3 serialization formats simultaneously.
+It is possible for Apache Geode/Pivotal GemFire to support all 3 serialization formats simultaneously.
 
 For instance, your application domain model might contain objects that implement the `java.io.Serialiable` interface,
 and you may be using a combination of the _Data Serialization_ framework along with PDX.
@@ -409,8 +409,8 @@ wishes to use with her _Spring Session_ application backed by either Apache Geod
 ==== Spring Session for Pivotal GemFire/Apache Geode Serialization Framework
 
 To abstract away the details of Apache Geode/Pivotal GemFire's _Data Serialization_ and _PDX Serialization_ frameworks
-_Spring Session for Pivotal GemFire/Apache Geode_ provides its own Serialization framework (facade) wrapping GemFire/Apache Geode's
-Serialization frameworks.
+_Spring Session for Pivotal GemFire/Apache Geode_ provides its own Serialization framework (facade) wrapping
+Pivotal GemFire/Apache Geode's Serialization frameworks.
 
 The Serialization API exists under the `org.springframework.session.data.gemfire.serialization` package.
 
@@ -441,26 +441,27 @@ Basically, the interface allows you to serialize and deserialize a _Spring_ `Ses
 
 The `IN` and `OUT` type parameters and corresponding method arguments of those types provide reference to the objects
 responsible for writing the `Session` to a stream of bytes or reading the `Session` from a stream of bytes.  The actual
-arguments will be type dependent/specific, based on the underlying GemFire/Apache Geode Serialization strategy configured.
+arguments will be type dependent/specific, based on the underlying Pivotal GemFire/Apache Geode Serialization
+strategy configured.
 
-For instance, when using GemFire/Apache Geode's PDX _Serialization_ framework, `IN` and `OUT` will be instances of
-`org.apache.geode.pdx.PdxReader` and `org.apache.geode.pdx.PdxWriter`, respectively.  When GemFire/Apache Geode's
+For instance, when using Pivotal GemFire/Apache Geode's PDX _Serialization_ framework, `IN` and `OUT` will be instances of
+`org.apache.geode.pdx.PdxReader` and `org.apache.geode.pdx.PdxWriter`, respectively.  When Pivotal GemFire/Apache Geode's
 _Data Serialization_ framework has been configured, then `IN` and `OUT` will be instances of `java.io.DataInput`
 and `java.io.DataOuput`, respectively.
 
 These arguments are provided to the `SessionSerializer` implementation by the framework automatically, and as mentioned
-above, is based on the underlying GemFire/Apache Geode Serialization strategy configured.
+above, is based on the underlying Pivotal GemFire/Apache Geode Serialization strategy configured.
 
-Essentially, even though _Spring Session for Pivotal GemFire/Apache Geode_ provides a facade around GemFire/Apache Geode's Serialization
-frameworks, under-the-hood, GemFire/Apache Geode still expects that one of these Serialization frameworks is being used to
-serialize data to/from GemFire/Apache Geode.
+Essentially, even though _Spring Session for Pivotal GemFire/Apache Geode_ provides a facade around Pivotal GemFire/Apache Geode's
+Serialization frameworks, under-the-hood, Pivotal GemFire/Apache Geode still expects that one of these Serialization frameworks
+is being used to serialize data to/from Pivotal GemFire/Apache Geode.
 
 _So what purpose does the `SessionSerializer` interface really serve then?_
 
 Effectively, it allows a user to customize what aspects of the Session's state actually gets serialized and stored
 in Pivotal GemFire or Apache Geode.  Application developers can provide their own custom, application-specific `SessionSerializer`
 implementation, register it as a bean in the _Spring_ context, and then configure it to be used by _Spring Session
-Data GemFire/Apache Geode_ to serialize the Session state...
+for Pivotal GemFire/Apache Geode_ to serialize the Session state...
 
 [source, java]
 ----
@@ -481,56 +482,56 @@ _Spring Session for Pivotal GemFire/Apache Geode_ (SSDG) provides assistance whe
 `SessionSerializer` that fits into one of Pivotal GemFire or Apache Geode's Serialization frameworks.
 
 If the user just implements the `org.springframework.session.data.gemfire.serialization.SessionSerializer` interface
-directly without extending from one of SSDG's provided abstract base classes, pertaining to 1 of GemFire/Apache Geode's
+directly without extending from one of SSDG's provided abstract base classes, pertaining to 1 of Pivotal GemFire/Apache Geode's
 Serialization frameworks , then SSDG will wrap the user's custom `SessionSerializer` implementation in an instance of
 `org.springframework.session.data.gemfire.serialization.pdx.support.PdxSerializerSessionSerializerAdapter` and register
-it with GemFire/Apache Geode as a `org.apache.geode.pdx.PdxSerializer`.
+it with Pivotal GemFire/Apache Geode as a `org.apache.geode.pdx.PdxSerializer`.
 
 _Spring Session for Pivotal GemFire/Apache Geode_ is careful not to stomp on any existing, `PdxSerializer` implementation that a user
-may already have registered with the GemFire/Apache Geode cache by some other means.  Indeed, several different and provided
-implementations of the GemFire/Apache Geode `org.apache.geode.pdx.PdxSerializer` interface do exists:
+may already have registered with the Pivotal GemFire/Apache Geode cache by some other means.  Indeed, several different and provided
+implementations of the Pivotal GemFire/Apache Geode `org.apache.geode.pdx.PdxSerializer` interface do exists:
 
 * Pivotal GemFire/Apache Geode itself provides the
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/pdx/ReflectionBasedAutoSerializer.html[`org.apache.geode.pdx.ReflectionBasedAutoSerializer`].
 
-* _Spring Data GemFire/Apache Geode_ (SDG) provide the
+* _Spring Data for Apache Geode or Pivotal GemFire_ (SDG) provide the
 https://docs.spring.io/spring-data/geode/docs/current/api/org/springframework/data/gemfire/mapping/MappingPdxSerializer.html[`org.springframework.data.gemfire.mapping.MappingPdxSerializer`],
 which is used in the SD _Repository_ abstraction and SDG extension to handle mapping PDX serialized types to
 the application domain object types defined in the application _Repository_ interfaces.
 
 This is accomplished by obtaining any currently registered `PdxSerializer` instance on the cache and composing it
 with the `PdxSerializerSessionSerializerAdapter` wrapping the user's custom application `SessionSerializer`
-implementation and re-registering this "_composite_" `PdxSerializer` on the GemFire/Apache Geode cache.  The "_composite_"
+implementation and re-registering this "_composite_" `PdxSerializer` on the Pivotal GemFire/Apache Geode cache.  The "_composite_"
 `PdxSerializer` implementation is provided _Spring Session for Pivotal GemFire/Apache Geode's_
 `org.springframework.session.data.gemfire.pdx.support.ComposablePdxSerializer` class when entities are stored in either
-GemFire or Apache Geode as PDX.
+Pivotal GemFire or Apache Geode as PDX.
 
-If no other `PdxSerializer` was currently registered with the GemFire/Apache Geode cache, then the adapter
+If no other `PdxSerializer` was currently registered with the Pivotal GemFire/Apache Geode cache, then the adapter
 is simply registered.
 
-Of course, the user is allowed to force the underlying GemFire/Apache Geode Serialization strategy used with his/her custom
-`SessionSerializer` implementation by doing 1 of the following...
+Of course, the user is allowed to force the underlying Pivotal GemFire/Apache Geode Serialization strategy used with
+his/her custom `SessionSerializer` implementation by doing 1 of the following...
 
-1. The custom `SessionSerializer` implementation can implement GemFire/Apache Geode's `org.apache.geode.pdx.PdxSerializer`
+1. The custom `SessionSerializer` implementation can implement Pivotal GemFire/Apache Geode's `org.apache.geode.pdx.PdxSerializer`
 interface, or for convenience, extend _Spring Session for Pivotal GemFire/Apache Geode's_
 `org.springframework.session.data.gemfire.serialization.pdx.AbstractPdxSerializableSessionSerializer` class
 and _Spring Session for Pivotal GemFire/Apache Geode_ will register the custom `SessionSerializer` as a `PdxSerializer`
-with GemFire/Apache Geode.
+with Pivotal GemFire/Apache Geode.
 
-2. The custom `SessionSerializer` implementation can extend the GemFire/Apache Geode's `org.apache.geode.DataSerializable`
+2. The custom `SessionSerializer` implementation can extend the Pivotal GemFire/Apache Geode's `org.apache.geode.DataSerializable`
 class, or for convenience, extend _Spring Session for Pivotal GemFire/Apache Geode's_
 `org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer` class
 and _Spring Session for Pivotal GemFire/Apache Geode_ will register the custom `SessionSerializer` as a `DataSerializer`
-with GemFire/Apache Geode.
+with Pivotal GemFire/Apache Geode.
 
-3. Finally, a user can create a custom `SessionSerializer` implementation as before, not specifying which GemFire/Apache Geode
-Serialization framework to use because the custom `SessionSeriaizer` implementation does not implement any GemFire/Apache Geode
+3. Finally, a user can create a custom `SessionSerializer` implementation as before, not specifying which Pivotal GemFire/Apache Geode
+Serialization framework to use because the custom `SessionSeriaizer` implementation does not implement any Pivotal GemFire/Apache Geode
 serialization interfaces or extend from any of _Spring Session for Pivotal GemFire/Apache Geode's_ provided abstract base classes,
-and still have it registered in GemFire/Apache Geode as a `DataSerializer` by declaring an additional
+and still have it registered in Pivotal GemFire/Apache Geode as a `DataSerializer` by declaring an additional
 _Spring Session for Pivotal GemFire/Apache Geode_ bean in the _Spring_ context of type
 `org.springframework.session.data.gemfire.serialization.data.support.DataSerializerSessionSerializerAdapter`, like so...
 
-.Forcing the registration of a custom SessionSerializer as a DataSerializer in GemFire/Apache Geode
+.Forcing the registration of a custom SessionSerializer as a DataSerializer in Pivotal GemFire/Apache Geode
 [source, java]
 ----
 @EnableGemFireHttpSession(sessionSerializerBeanName = "customSessionSerializer")
@@ -550,22 +551,22 @@ class Application {
 
 Just by the very presence of the `DataSerializerSessionSerializerAdapter` registered as a bean in the _Spring_ context
 any neutral, custom `SessionSerializer` implementation will be treated and registered as a `DataSerializer`
-in GemFire/Apache Geode.
+in Pivotal GemFire/Apache Geode.
 
 [[httpsession-gemfire-serialization-framework-session-representation]]
 ===== Changing the Session Representation
 
 Internally, _Spring Session for Pivotal GemFire/Apache Geode_ maintains 2 representations for the (HTTP) Session and the Session's
-attributes.  Each representation is based on whether GemFire/Apache Geode "_Deltas_" are supported or not.  GemFire/Apache Geode
+attributes.  Each representation is based on whether Pivotal GemFire/Apache Geode "_Deltas_" are supported or not.  Pivotal GemFire/Apache Geode
 _Delta Propagation_ is only enabled by _Spring Session for Pivotal GemFire/Apache Geode_ when using _Data Serialization_ for reasons
 that were discussed <<httpsession-gemfire-serialization-pdx, earlier>>.
 
 Effectively, the strategy is:
 
-1. If GemFire/Apache Geode _Data Serialization_ is configured, then _Deltas_ are supported and the
+1. If Pivotal GemFire/Apache Geode _Data Serialization_ is configured, then _Deltas_ are supported and the
 `DeltaCapableGemFireSession` and `DeltaCapableGemFireSessionAttributes` representations are used.
 
-2. If GemFire/Apache Geode _PDX Serialization_ is configured, then the _Delta Propagation_ will be disabled and the
+2. If Pivotal GemFire/Apache Geode _PDX Serialization_ is configured, then the _Delta Propagation_ will be disabled and the
 `GemFireSession` and `GemFireSessionAttributes` representations are used.
 
 It is possible to override these internal representations used by _Spring Session for Pivotal GemFire/Apache Geode_, and for users
@@ -600,11 +601,11 @@ class MySessionRepository extends GemFireOperationsSessionRepository {
 }
 ----
 
-If the user provided his/her own custom `SessionSerializer` implementation and GemFire/Apache Geode _PDX Serialization_
+If the user provided his/her own custom `SessionSerializer` implementation and Pivotal GemFire/Apache Geode _PDX Serialization_
 is configured, then the user is done.
 
-However, if the user configured GemFire/Apache Geode _Data Serialization_ then the user must provide a custom implementation
-of the `SessionSerializer` interface and either have it directly extend the GemFire/Apache Geode's
+However, if the user configured Pivotal GemFire/Apache Geode _Data Serialization_ then the user must provide a custom implementation
+of the `SessionSerializer` interface and either have it directly extend the Pivotal GemFire/Apache Geode's
 `org.apache.geode.DataSerializer` class, or extend _Spring Session for Pivotal GemFire/Apache Geode's_
 `org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer` class
 and override the `getSupportedClasses():Class<?>[]` method.
@@ -627,7 +628,7 @@ class MySessionSerializer extends AbstractDataSerializableSessionSerializer {
 
 Unfortunately, `getSupportedClasses()` cannot return the generic _Spring Session_ `org.springframework.session.Session`
 interface type.  If it could then we could avoid the explicit need to override the `getSupportedClasses()` method
-on the custom `DataSerializer` implementaton.  Bu, GemFire/Apache Geode's _Data Serialization_ framework  can only match
+on the custom `DataSerializer` implementaton.  Bu, Pivotal GemFire/Apache Geode's _Data Serialization_ framework  can only match
 on exact class types since it incorrectly and internally stores and refers to the class type by name, which basically
 requires a user to override and implement the `getSupportedClasses()` method.
 

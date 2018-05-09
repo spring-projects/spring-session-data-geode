@@ -69,7 +69,7 @@ import org.springframework.util.SocketUtils;
 
 /**
  * Integration tests testing the functionality of Apache Geode / Pivotal GemFire backed Spring Sessions
- * using the GemFire client-server topology.
+ * using the Pivotal GemFire client-server topology.
  *
  * @author John Blum
  * @since 1.1.0
@@ -124,7 +124,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 
 		int port = SocketUtils.findAvailableTcpPort();
 
-		System.err.printf("Starting a GemFire Server running on host [%1$s] listening on port [%2$d]%n",
+		System.err.printf("Starting a Pivotal GemFire Server running on host [%1$s] listening on port [%2$d]%n",
 			TestGemFireServerConfiguration.SERVER_HOSTNAME, port);
 
 		System.setProperty("spring.session.data.gemfire.port", String.valueOf(port));

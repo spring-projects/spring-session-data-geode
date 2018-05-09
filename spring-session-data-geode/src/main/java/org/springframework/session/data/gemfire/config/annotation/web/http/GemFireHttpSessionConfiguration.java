@@ -137,7 +137,7 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 
 	/**
 	 * Name of the connection {@link Pool} used by the client {@link Region} to send {@link Session} state
-	 * to the cluster of Geode servers.
+	 * to the cluster of  Apache Geode servers.
 	 */
 	public static final String DEFAULT_POOL_NAME = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
 
@@ -666,12 +666,12 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	}
 
 	/**
-	 * Defines a GemFire Index bean on the GemFire cache {@link Region} storing and managing Sessions,
+	 * Defines a Pivotal GemFire Index bean on the Pivotal GemFire cache {@link Region} storing and managing Sessions,
 	 * specifically on the 'principalName' property for quick lookup of Sessions by 'principalName'.
 	 *
-	 * @param gemfireCache a reference to the GemFire cache.
-	 * @return a {@link IndexFactoryBean} to create an GemFire Index on the 'principalName' property
-	 * for Sessions stored in the GemFire cache {@link Region}.
+	 * @param gemfireCache a reference to the Pivotal GemFire cache.
+	 * @return a {@link IndexFactoryBean} to create an Pivotal GemFire Index on the 'principalName' property
+	 * for Sessions stored in the Pivotal GemFire cache {@link Region}.
 	 * @see org.springframework.data.gemfire.IndexFactoryBean
 	 * @see org.apache.geode.cache.GemFireCache
 	 */
@@ -692,13 +692,13 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	}
 
 	/**
-	 * Defines a GemFire Index bean on the GemFire cache {@link Region} storing and managing Sessions,
+	 * Defines a Pivotal GemFire Index bean on the Pivotal GemFire cache {@link Region} storing and managing Sessions,
 	 * specifically on all Session attributes for quick lookup and queries on Session attribute names
 	 * with a given value.
 	 *
-	 * @param gemfireCache a reference to the GemFire cache.
-	 * @return a {@link IndexFactoryBean} to create an GemFire Index on attributes of Sessions
-	 * stored in the GemFire cache {@link Region}.
+	 * @param gemfireCache a reference to the Pivotal GemFire cache.
+	 * @return a {@link IndexFactoryBean} to create an Pivotal GemFire Index on attributes of Sessions
+	 * stored in the Pivotal GemFire cache {@link Region}.
 	 * @see org.springframework.data.gemfire.IndexFactoryBean
 	 * @see org.apache.geode.cache.GemFireCache
 	 */

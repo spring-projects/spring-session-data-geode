@@ -37,7 +37,7 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.GemFi
 import org.springframework.util.StringUtils;
 
 /**
- * The {@link NativeGemFireServer} class uses the GemFire API to create a GemFire (cache) instance.
+ * The {@link NativeGemFireServer} class uses the Pivotal GemFire API to create a Pivotal GemFire (cache) instance.
  *
  * @author John Blum
  * @see org.apache.geode.cache.Cache

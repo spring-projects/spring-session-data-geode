@@ -28,7 +28,7 @@ import org.springframework.session.SessionRepository;
 
 /**
  * The {@link GemFireOperationsSessionRepository} class is a Spring {@link SessionRepository} implementation
- * that interfaces with and uses GemFire to back and store Spring Sessions.
+ * that interfaces with and uses Pivotal GemFire to back and store Spring Sessions.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.GemfireOperations
@@ -39,11 +39,11 @@ import org.springframework.session.SessionRepository;
  */
 public class GemFireOperationsSessionRepository extends AbstractGemFireOperationsSessionRepository {
 
-	// GemFire OQL query used to lookup Sessions by arbitrary attributes.
+	// Pivotal GemFire OQL query used to lookup Sessions by arbitrary attributes.
 	protected static final String FIND_SESSIONS_BY_INDEX_NAME_INDEX_VALUE_QUERY =
 		"SELECT s FROM %1$s s WHERE s.attributes['%2$s'] = $1";
 
-	// GemFire OQL query used to look up Sessions by principal name.
+	// Pivotal GemFire OQL query used to look up Sessions by principal name.
 	protected static final String FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY =
 		"SELECT s FROM %1$s s WHERE s.principalName = $1";
 
@@ -87,11 +87,11 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	}
 
 	/**
-	 * Prepares the appropriate GemFire OQL query based on the indexed Session attribute
+	 * Prepares the appropriate Pivotal GemFire OQL query based on the indexed Session attribute
 	 * name.
 	 *
 	 * @param indexName a String indicating the name of the indexed Session attribute.
-	 * @return an appropriate GemFire OQL statement for querying on a particular indexed
+	 * @return an appropriate Pivotal GemFire OQL statement for querying on a particular indexed
 	 * Session attribute.
 	 */
 	protected String prepareQuery(String indexName) {

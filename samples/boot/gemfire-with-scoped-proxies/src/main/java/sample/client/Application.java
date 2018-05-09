@@ -47,7 +47,7 @@ import sample.client.model.RequestScopedProxyBean;
 import sample.client.model.SessionScopedProxyBean;
 
 /**
- * A Spring Boot, GemFire cache client, web application that reveals the current state of the HTTP Session.
+ * A Spring Boot, Pivotal GemFire cache client, web application that reveals the current state of the HTTP Session.
  *
  * @author John Blum
  * @see javax.servlet.http.HttpSession

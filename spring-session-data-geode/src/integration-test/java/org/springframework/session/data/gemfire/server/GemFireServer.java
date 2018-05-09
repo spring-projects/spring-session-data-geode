@@ -31,7 +31,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 
 /**
- * The {@link GemFireServer} class is a Java application class used to launch a GemFire Server
+ * The {@link GemFireServer} class is a Java application class used to launch a Pivotal GemFire Server
  * with a peer {@link Cache}, a {@link CacheServer} and the {@literal ClusteredSpringSessions}
  * {@link RegionShortcut#PARTITION} {@link Region}.
  *

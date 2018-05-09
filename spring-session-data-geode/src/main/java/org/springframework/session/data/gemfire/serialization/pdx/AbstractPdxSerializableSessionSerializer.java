@@ -30,7 +30,7 @@ import org.springframework.session.data.gemfire.serialization.SessionSerializer;
  * to all GemFire/Geode PDX-based {@link SessionSerializer} implementations.
  *
  * This class also implements GemFire/Geode's {@link PdxSerializer} interface, adapting it to the Spring Session,
- * Data GemFire {@link SessionSerializer} interface.
+ * Data Pivotal GemFire {@link SessionSerializer} interface.
  *
  * @author John Blum
  * @see org.apache.geode.pdx.PdxReader

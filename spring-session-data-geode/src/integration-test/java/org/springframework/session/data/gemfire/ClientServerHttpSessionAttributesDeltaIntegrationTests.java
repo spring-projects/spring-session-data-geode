@@ -53,7 +53,7 @@ import org.springframework.util.SocketUtils;
 
 /**
  * Integration tests testing the addition/removal of HTTP Session Attributes
- * and the proper persistence of the HTTP Session state in a GemFire cache
+ * and the proper persistence of the HTTP Session state in a Pivotal GemFire cache
  * across a client/server topology.
  *
  * @author John Blum
@@ -91,7 +91,7 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 
 		int port = SocketUtils.findAvailableTcpPort();
 
-		System.err.printf("Starting a GemFire Server running on host [%1$s] listening on port [%2$d]%n",
+		System.err.printf("Starting a Pivotal GemFire Server running on host [%1$s] listening on port [%2$d]%n",
 			SpringSessionDataGemFireServerConfiguration.SERVER_HOSTNAME, port);
 
 		System.setProperty("spring.session.data.gemfire.port", String.valueOf(port));

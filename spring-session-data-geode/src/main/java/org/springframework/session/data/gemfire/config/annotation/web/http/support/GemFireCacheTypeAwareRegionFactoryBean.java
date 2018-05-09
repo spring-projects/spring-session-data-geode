@@ -40,7 +40,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The {@link GemFireCacheTypeAwareRegionFactoryBean} class is a Spring {@link FactoryBean}
- * used to construct, configure and initialize the GemFire cache {@link Region} used to
+ * used to construct, configure and initialize the Pivotal GemFire cache {@link Region} used to
  * store and manage Session state.
  *
  * @author John Blum
@@ -93,11 +93,11 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 
 	/**
 	 * Post-construction initialization callback to create, configure and initialize the
-	 * GemFire cache {@link Region} used to store, replicate (distribute) and manage
+	 * Pivotal GemFire cache {@link Region} used to store, replicate (distribute) and manage
 	 * Session state. This method intelligently handles both client-server and
-	 * peer-to-peer (p2p) GemFire supported distributed system topologies.
+	 * peer-to-peer (p2p) Pivotal GemFire supported distributed system topologies.
 	 *
-	 * @throws Exception if the initialization of the GemFire cache {@link Region} fails.
+	 * @throws Exception if the initialization of the Pivotal GemFire cache {@link Region} fails.
 	 * @see org.springframework.session.data.gemfire.support.GemFireUtils#isClient(GemFireCache)
 	 * @see #getGemfireCache()
 	 * @see #newClientRegion(GemFireCache)
@@ -112,16 +112,16 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Constructs a GemFire cache {@link Region} using a peer-to-peer (p2p) GemFire
-	 * topology to store and manage Session state in a GemFire server cluster accessible
-	 * from a GemFire cache client.
+	 * Constructs a Pivotal GemFire cache {@link Region} using a peer-to-peer (p2p) GemFire
+	 * topology to store and manage Session state in a Pivotal GemFire server cluster accessible
+	 * from a Pivotal GemFire cache client.
 	 *
 	 * @param gemfireCache a reference to the GemFire
 	 * {@link org.apache.geode.cache.Cache}.
-	 * @return a peer-to-peer-based GemFire cache {@link Region} to store and manage
+	 * @return a peer-to-peer-based Pivotal GemFire cache {@link Region} to store and manage
 	 * Session state.
 	 * @throws Exception if the instantiation, configuration and initialization of the
-	 * GemFire cache {@link Region} fails.
+	 * Pivotal GemFire cache {@link Region} fails.
 	 * @see org.springframework.data.gemfire.GenericRegionFactoryBean
 	 * @see org.apache.geode.cache.GemFireCache
 	 * @see org.apache.geode.cache.Region
@@ -143,16 +143,16 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Constructs a GemFire cache {@link Region} using the client-server GemFire topology
-	 * to store and manage Session state in a GemFire server cluster accessible from a
-	 * GemFire cache client.
+	 * Constructs a Pivotal GemFire cache {@link Region} using the client-server Pivotal GemFire topology
+	 * to store and manage Session state in a Pivotal GemFire server cluster accessible from a
+	 * Pivotal GemFire cache client.
 	 *
 	 * @param gemfireCache a reference to the GemFire
 	 * {@link org.apache.geode.cache.Cache}.
-	 * @return a client-server-based GemFire cache {@link Region} to store and manage
+	 * @return a client-server-based Pivotal GemFire cache {@link Region} to store and manage
 	 * Session state.
 	 * @throws Exception if the instantiation, configuration and initialization of the
-	 * GemFire cache {@link Region} fails.
+	 * Pivotal GemFire cache {@link Region} fails.
 	 * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
 	 * @see org.apache.geode.cache.GemFireCache
 	 * @see org.apache.geode.cache.Region
@@ -196,7 +196,7 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Returns a reference to the constructed GemFire cache {@link Region} used to store
+	 * Returns a reference to the constructed Pivotal GemFire cache {@link Region} used to store
 	 * and manage Session state.
 	 *
 	 * @return the {@link Region} used to store and manage Session state.
@@ -208,10 +208,10 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Returns the specific type of GemFire cache {@link Region} this factory creates when
+	 * Returns the specific type of Pivotal GemFire cache {@link Region} this factory creates when
 	 * initialized or Region.class when uninitialized.
 	 *
-	 * @return the GemFire cache {@link Region} class type constructed by this factory.
+	 * @return the Pivotal GemFire cache {@link Region} class type constructed by this factory.
 	 * @see org.apache.geode.cache.Region
 	 * @see java.lang.Class
 	 */
@@ -221,10 +221,10 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Returns true indicating the GemFire cache {@link Region} created by this factory is
+	 * Returns true indicating the Pivotal GemFire cache {@link Region} created by this factory is
 	 * the sole instance.
 	 *
-	 * @return true to indicate the GemFire cache {@link Region} storing and managing
+	 * @return true to indicate the Pivotal GemFire cache {@link Region} storing and managing
 	 * Sessions is a Singleton.
 	 */
 	public boolean isSingleton() {
@@ -233,7 +233,7 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 
 	/**
 	 * Sets a reference to the Spring {@link BeanFactory} responsible for
-	 * creating GemFire components.
+	 * creating Pivotal GemFire components.
 	 *
 	 * @param beanFactory reference to the Spring {@link BeanFactory}
 	 * @throws IllegalArgumentException if the {@link BeanFactory} reference is null.
@@ -246,7 +246,7 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 
 	/**
 	 * Gets a reference to the Spring {@link BeanFactory} responsible for
-	 * creating GemFire components.
+	 * creating Pivotal GemFire components.
 	 *
 	 * @return a reference to the Spring {@link BeanFactory}
 	 * @throws IllegalStateException if the {@link BeanFactory} reference
@@ -259,7 +259,7 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Sets the {@link Region} data policy used by the GemFire cache client to manage
+	 * Sets the {@link Region} data policy used by the Pivotal GemFire cache client to manage
 	 * Session state.
 	 *
 	 * @param clientRegionShortcut a {@link ClientRegionShortcut} to specify the client
@@ -271,7 +271,7 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Returns the {@link Region} data policy used by the GemFire cache client to manage
+	 * Returns the {@link Region} data policy used by the Pivotal GemFire cache client to manage
 	 * Session state. Defaults to {@link ClientRegionShortcut#PROXY}.
 	 *
 	 * @return a {@link ClientRegionShortcut} specifying the client {@link Region} data
@@ -284,10 +284,10 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Sets a reference to the GemFire cache used to construct the appropriate
+	 * Sets a reference to the Pivotal GemFire cache used to construct the appropriate
 	 * {@link Region}.
 	 *
-	 * @param gemfireCache a reference to the GemFire cache.
+	 * @param gemfireCache a reference to the Pivotal GemFire cache.
 	 * @throws IllegalArgumentException if the {@link GemFireCache} reference is null.
 	 */
 	public void setGemfireCache(GemFireCache gemfireCache) {
@@ -296,10 +296,10 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Returns a reference to the GemFire cache used to construct the appropriate
+	 * Returns a reference to the Pivotal GemFire cache used to construct the appropriate
 	 * {@link Region}.
 	 *
-	 * @return a reference to the GemFire cache.
+	 * @return a reference to the Pivotal GemFire cache.
 	 * @throws IllegalStateException if the {@link GemFireCache} reference is null.
 	 */
 	protected GemFireCache getGemfireCache() {
@@ -308,10 +308,10 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Sets the name of the GemFire {@link Pool} used by the client Region for managing Sessions
+	 * Sets the name of the Pivotal GemFire {@link Pool} used by the client Region for managing Sessions
 	 * during cache operations involving the server.
 	 *
-	 * @param poolName the name of a GemFire {@link Pool}.
+	 * @param poolName the name of a Pivotal GemFire {@link Pool}.
 	 * @see Pool#getName()
 	 */
 	public void setPoolName(final String poolName) {
@@ -319,10 +319,10 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Returns the name of the GemFire {@link Pool} used by the client Region for managing Sessions
+	 * Returns the name of the Pivotal GemFire {@link Pool} used by the client Region for managing Sessions
 	 * during cache operations involving the server.
 	 *
-	 * @return the name of a GemFire {@link Pool}.
+	 * @return the name of a Pivotal GemFire {@link Pool}.
 	 * @see Pool#getName()
 	 */
 	protected String getPoolName() {
@@ -330,11 +330,11 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Sets the GemFire {@link RegionAttributes} used to configure the GemFire cache
+	 * Sets the Pivotal GemFire {@link RegionAttributes} used to configure the Pivotal GemFire cache
 	 * {@link Region} used to store and manage Session state.
 	 *
-	 * @param regionAttributes the GemFire {@link RegionAttributes} used to configure the
-	 * GemFire cache {@link Region}.
+	 * @param regionAttributes the Pivotal GemFire {@link RegionAttributes} used to configure the
+	 * Pivotal GemFire cache {@link Region}.
 	 * @see org.apache.geode.cache.RegionAttributes
 	 */
 	public void setRegionAttributes(RegionAttributes<K, V> regionAttributes) {
@@ -342,10 +342,10 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Returns the GemFire {@link RegionAttributes} used to configure the GemFire cache
+	 * Returns the Pivotal GemFire {@link RegionAttributes} used to configure the Pivotal GemFire cache
 	 * {@link Region} used to store and manage Session state.
 	 *
-	 * @return the GemFire {@link RegionAttributes} used to configure the GemFire cache
+	 * @return the Pivotal GemFire {@link RegionAttributes} used to configure the Pivotal GemFire cache
 	 * {@link Region}.
 	 * @see org.apache.geode.cache.RegionAttributes
 	 */
@@ -354,20 +354,20 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Sets the name of the GemFire cache {@link Region} use to store and manage Session
+	 * Sets the name of the Pivotal GemFire cache {@link Region} use to store and manage Session
 	 * state.
 	 *
-	 * @param regionName a String specifying the name of the GemFire cache {@link Region}.
+	 * @param regionName a String specifying the name of the Pivotal GemFire cache {@link Region}.
 	 */
 	public void setRegionName(final String regionName) {
 		this.regionName = regionName;
 	}
 
 	/**
-	 * Returns the configured name of the GemFire cache {@link Region} use to store and
+	 * Returns the configured name of the Pivotal GemFire cache {@link Region} use to store and
 	 * manage Session state. Defaults to "ClusteredSpringSessions"
 	 *
-	 * @return a String specifying the name of the GemFire cache {@link Region}.
+	 * @return a String specifying the name of the Pivotal GemFire cache {@link Region}.
 	 * @see org.apache.geode.cache.Region#getName()
 	 */
 	protected String getRegionName() {
@@ -375,7 +375,7 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Sets the {@link Region} data policy used by the GemFire peer cache to manage
+	 * Sets the {@link Region} data policy used by the Pivotal GemFire peer cache to manage
 	 * Session state.
 	 *
 	 * @param serverRegionShortcut a {@link RegionShortcut} to specify the peer
@@ -387,7 +387,7 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	}
 
 	/**
-	 * Returns the {@link Region} data policy used by the GemFire peer cache to manage
+	 * Returns the {@link Region} data policy used by the Pivotal GemFire peer cache to manage
 	 * Session state. Defaults to {@link RegionShortcut#PARTITION}.
 	 *
 	 * @return a {@link RegionShortcut} specifying the peer {@link Region} data management

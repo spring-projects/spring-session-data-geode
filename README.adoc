@@ -24,7 +24,7 @@ By participating, you  are expected to uphold this code. Please report unaccepta
 
 == Documentation
 
-The documentation for current Spring Session Data GemFire/Geode can be found
+The documentation for current Spring Session for Apache Geode and Pivotal GemFire can be found
 https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.0.2.RELEASE/reference/html5/[here].
 
 = Spring Session Project Site

@@ -121,7 +121,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 	/**
 	 * Constructs an instance of {@link AbstractGemFireOperationsSessionRepository}
-	 * with a required {@link GemfireOperations} instance used to perform GemFire data access operations
+	 * with a required {@link GemfireOperations} instance used to perform Pivotal GemFire data access operations
 	 * and interactions supporting the SessionRepository operations.
 	 *
 	 * @param template {@link GemfireOperations} instance used to interact with GemFire; must not be {@literal null}.
@@ -148,7 +148,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 	/**
 	 * Sets the ApplicationEventPublisher used to publish Session events corresponding to
-	 * GemFire cache events.
+	 * Pivotal GemFire cache events.
 	 *
 	 * @param applicationEventPublisher the Spring ApplicationEventPublisher used to
 	 * publish Session-based events; must not be {@literal null}.
@@ -326,7 +326,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 	/**
 	 * Used to determine whether the application developer is storing (HTTP) Sessions with other, arbitrary
-	 * application domain objects in the same GemFire cache {@link Region}; crazier things have happened!
+	 * application domain objects in the same Pivotal GemFire cache {@link Region}; crazier things have happened!
 	 *
 	 * @param obj {@link Object} to evaluate.
 	 * @return a boolean value indicating whether the old/new {@link Object} from the {@link Region}
@@ -384,7 +384,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 					"Minimally, the session ID [%s] must be known to trigger a Session event", sessionId));
 	}
 	/**
-	 * Callback method triggered when an entry is created in the GemFire cache {@link Region}.
+	 * Callback method triggered when an entry is created in the Pivotal GemFire cache {@link Region}.
 	 *
 	 * @param event {@link EntryEvent} containing the details of the cache operation.
 	 * @see org.apache.geode.cache.EntryEvent
@@ -404,7 +404,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	}
 
 	/**
-	 * Callback method triggered when an entry is destroyed in the GemFire cache {@link Region}.
+	 * Callback method triggered when an entry is destroyed in the Pivotal GemFire cache {@link Region}.
 	 *
 	 * @param event {@link EntryEvent} containing the details of the cache operation.
 	 * @see org.apache.geode.cache.EntryEvent
@@ -423,7 +423,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	}
 
 	/**
-	 * Callback method triggered when an entry is invalidated in the GemFire cache {@link Region}.
+	 * Callback method triggered when an entry is invalidated in the Pivotal GemFire cache {@link Region}.
 	 *
 	 * @param event {@link EntryEvent} containing the details of the cache operation.
 	 * @see org.apache.geode.cache.EntryEvent
@@ -1011,7 +1011,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 	/**
 	 * The GemFireSessionAttributes class is a container for Session attributes implementing
-	 * both the {@link DataSerializable} and {@link Delta} GemFire interfaces for efficient
+	 * both the {@link DataSerializable} and {@link Delta} Pivotal GemFire interfaces for efficient
 	 * storage and distribution (replication) in GemFire. Additionally, GemFireSessionAttributes
 	 * extends {@link AbstractMap} providing {@link Map}-like behavior since attributes of a Session
 	 * are effectively a name to value mapping.

@@ -27,7 +27,7 @@ import org.springframework.data.gemfire.config.annotation.EnableManager;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 
 /**
- * A Spring Boot application bootstrapping a GemFire Cache Server JVM process.
+ * A Spring Boot application bootstrapping a Pivotal GemFire Cache Server JVM process.
  *
  * @author John Blum
  * @see org.springframework.boot.SpringApplication

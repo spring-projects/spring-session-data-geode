@@ -131,8 +131,8 @@ public abstract class IntegrationTestConfig {
 				}
 
 				Assert.state(cacheClientSubscriptionQueueConnectionEstablished,
-					String.format("Cache client subscription queue connection not established; Geode Pool was [%s];"
-							+ " Geode Pool configuration was [locators = %s, servers = %s]",
+					String.format("Cache client subscription queue connection not established;  Apache Geode Pool was [%s];"
+							+ "  Apache Geode Pool configuration was [locators = %s, servers = %s]",
 						pool, pool.getLocators(), pool.getServers()));
 			}
 

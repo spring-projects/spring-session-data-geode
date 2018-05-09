@@ -31,7 +31,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 
 /**
- * {@link GemFireUtils} is an abstract, extensible utility class for working with GemFire objects and types.
+ * {@link GemFireUtils} is an abstract, extensible utility class for working with Pivotal GemFire objects and types.
  *
  * @author John Blum
  * @see org.apache.geode.cache.Cache
@@ -65,10 +65,10 @@ public abstract class GemFireUtils {
 	}
 
 	/**
-	 * Determines whether the GemFire cache is a client.
+	 * Determines whether the Pivotal GemFire cache is a client.
 	 *
-	 * @param gemfireCache a reference to the GemFire cache.
-	 * @return a boolean value indicating whether the GemFire cache is a client.
+	 * @param gemfireCache a reference to the Pivotal GemFire cache.
+	 * @return a boolean value indicating whether the Pivotal GemFire cache is a client.
 	 * @see org.apache.geode.cache.client.ClientCache
 	 * @see org.apache.geode.cache.GemFireCache
 	 */
@@ -82,10 +82,10 @@ public abstract class GemFireUtils {
 	}
 
 	/**
-	 * Determines whether the GemFire cache is a peer.
+	 * Determines whether the Pivotal GemFire cache is a peer.
 	 *
-	 * @param gemFireCache a reference to the GemFire cache.
-	 * @return a boolean value indicating whether the GemFire cache is a peer.
+	 * @param gemFireCache a reference to the Pivotal GemFire cache.
+	 * @return a boolean value indicating whether the Pivotal GemFire cache is a peer.
 	 * @see org.apache.geode.cache.Cache
 	 * @see org.apache.geode.cache.GemFireCache
 	 */

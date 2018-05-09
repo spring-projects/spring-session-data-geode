@@ -113,7 +113,7 @@ public class SessionSerializationWithPdxRequiresNoServerConfigurationIntegration
 
 		int port = SocketUtils.findAvailableTcpPort();
 
-		System.err.printf("Starting a GemFire Server running on host [localhost] listening on port [%d]%n", port);
+		System.err.printf("Starting a Pivotal GemFire Server running on host [localhost] listening on port [%d]%n", port);
 
 		System.setProperty("spring.session.data.gemfire.cache.server.port", String.valueOf(port));
 

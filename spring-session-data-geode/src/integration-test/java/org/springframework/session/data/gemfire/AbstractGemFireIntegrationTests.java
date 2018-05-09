@@ -57,7 +57,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * {@link AbstractGemFireIntegrationTests} is an abstract base class encapsulating common functionality
- * for writing Spring Session Data GemFire & Geode integration tests.
+ * for writing Spring Session Data Pivotal GemFire & Apache Geode integration tests.
  *
  * @author John Blum
  * @since 1.1.0

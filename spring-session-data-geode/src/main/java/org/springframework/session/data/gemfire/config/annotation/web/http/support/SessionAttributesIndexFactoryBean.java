@@ -34,7 +34,7 @@ import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.util.ObjectUtils;
 
 /**
- * The SessionAttributesIndexFactoryBean class is a Spring {@link FactoryBean} that creates a GemFire {@link Index}
+ * The SessionAttributesIndexFactoryBean class is a Spring {@link FactoryBean} that creates a Pivotal GemFire {@link Index}
  * on the session attributes of the {@link HttpSession} object.
  *
  * @author John Blum
@@ -81,10 +81,10 @@ public class SessionAttributesIndexFactoryBean
 	}
 
 	/**
-	 * Constructs a GemFire {@link Index} over the attributes of the {@link HttpSession}.
+	 * Constructs a Pivotal GemFire {@link Index} over the attributes of the {@link HttpSession}.
 	 *
-	 * @return a GemFire {@link Index} over the {@link HttpSession} attributes.
-	 * @throws Exception if an error occurs while initializing the GemFire {@link Index}.
+	 * @return a Pivotal GemFire {@link Index} over the {@link HttpSession} attributes.
+	 * @throws Exception if an error occurs while initializing the Pivotal GemFire {@link Index}.
 	 * @see org.springframework.data.gemfire.IndexFactoryBean
 	 */
 	protected Index newIndex() throws Exception {
@@ -105,7 +105,7 @@ public class SessionAttributesIndexFactoryBean
 	}
 
 	/**
-	 * Gets the names of all Session attributes that will be indexed by GemFire as single, comma-delimited
+	 * Gets the names of all Session attributes that will be indexed by Pivotal GemFire as single, comma-delimited
 	 * String value constituting the Index expression of the Index definition.
 	 *
 	 * @return a String composed of all the named Session attributes for which GemFire
