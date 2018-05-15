@@ -2,7 +2,7 @@ image:https://badges.gitter.im/spring-projects/spring-session.svg[link="https://
 
 image:https://travis-ci.org/spring-projects/spring-session.svg?branch=master["Build Status", link="https://travis-ci.org/spring-projects/spring-session-data-geode"]
 
-= Spring Session for Apache Geode
+= Spring Session for Apache Geode & Pivotal GemFire
 
 _Spring Session_ aims to provide a common infrastructure for managing Sessions.
 
