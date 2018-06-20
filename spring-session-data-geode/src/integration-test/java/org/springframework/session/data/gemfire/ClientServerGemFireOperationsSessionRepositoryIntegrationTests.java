@@ -229,7 +229,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 		assertThat(savedSession).isEqualTo(expectedSession);
 
 		sessionEvent = this.sessionEventListener
-			.waitForSessionEvent(TimeUnit.SECONDS.toMillis(MAX_INACTIVE_INTERVAL_IN_SECONDS + 5));
+			.waitForSessionEvent(TimeUnit.SECONDS.toMillis(MAX_INACTIVE_INTERVAL_IN_SECONDS + 1));
 
 		assertThat(sessionEvent)
 			.describedAs("SessionEvent was type [%s]", ObjectUtils.nullSafeClassName(sessionEvent))
