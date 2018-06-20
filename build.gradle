@@ -11,6 +11,10 @@ buildscript {
 
 apply plugin: 'io.spring.convention.root'
 
+//ext['spring.version'] = "$springVersion"
+//ext['spring-data-releasetrain.version'] = "$springDataReleaseTrainVersion"
+//ext['spring-session-bom.version'] = "$springSessionVersion"
+
 group = 'org.springframework.session'
 description = 'Spring Session for Apache Geode'
 

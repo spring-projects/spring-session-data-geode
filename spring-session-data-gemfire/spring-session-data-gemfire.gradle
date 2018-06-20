@@ -1,16 +1,7 @@
-import org.springframework.boot.gradle.plugin.SpringBootPlugin
-
 apply plugin: 'io.spring.convention.spring-module'
-apply plugin: 'io.spring.dependency-management'
 apply from: IDE_GRADLE
 
 description = "Spring Session for Pivotal GemFire"
-
-dependencyManagement {
-	imports {
-		mavenBom SpringBootPlugin.BOM_COORDINATES
-	}
-}
 
 dependencies {
 

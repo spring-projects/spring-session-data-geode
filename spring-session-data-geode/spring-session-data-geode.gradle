@@ -1,14 +1,5 @@
-import org.springframework.boot.gradle.plugin.SpringBootPlugin
-
 apply plugin: 'io.spring.convention.spring-module'
-apply plugin: 'io.spring.dependency-management'
 apply from: IDE_GRADLE
-
-dependencyManagement {
-	imports {
-		mavenBom SpringBootPlugin.BOM_COORDINATES
-	}
-}
 
 description = "Spring Session for Apache Geode"
 
@@ -16,7 +7,7 @@ dependencies {
 
 	compile "org.springframework:spring-context-support"
 	compile "org.springframework:spring-jcl"
-	compile "org.springframework.data:spring-data-geode:$springDataGeodeVersion"
+	compile "org.springframework.data:spring-data-geode"
 	compile "org.springframework.session:spring-session-core:$springSessionVersion"
 
 	optional "org.springframework.security:spring-security-core"
