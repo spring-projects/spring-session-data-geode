@@ -1,6 +1,14 @@
-apply plugin: 'io.spring.convention.spring-sample-war'
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
+apply plugin: 'io.spring.convention.spring-sample-war'
+apply plugin: 'io.spring.dependency-management'
 apply from: IDE_GRADLE
+
+dependencyManagement {
+	imports {
+		mavenBom SpringBootPlugin.BOM_COORDINATES
+	}
+}
 
 dependencies {
 

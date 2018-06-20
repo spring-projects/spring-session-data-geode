@@ -1,10 +1,18 @@
-apply plugin: 'io.spring.convention.spring-sample-boot'
-apply plugin: "application"
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
+apply plugin: 'io.spring.convention.spring-sample-boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: "application"
 apply from: IDE_GRADLE
 
 repositories {
 	mavenCentral()
+}
+
+dependencyManagement {
+	imports {
+		mavenBom SpringBootPlugin.BOM_COORDINATES
+	}
 }
 
 dependencies {
