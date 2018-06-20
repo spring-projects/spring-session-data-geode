@@ -15,7 +15,7 @@ try {
 			node {
 				checkout scm
 				try {
-					sh "./gradlew --refresh-dependencies --no-daemon clean check"
+					sh "./gradlew clean check --refresh-dependencies --no-daemon"
 				}
 				catch (Exception cause) {
 					currentBuild.result = 'FAILED: check'
@@ -23,6 +23,21 @@ try {
 				}
 				finally {
 					junit '**/build/*-results/*.xml'
+				}
+			}
+		}
+	},
+	springio: {
+		stage('Spring IO') {
+			node {
+				checkout scm
+				try {
+					sh "./gradlew clean springIoCheck -PplatformVersion=Cairo-RELEASE -PexcludeProjects='**/samples/**' --refresh-dependencies --no-daemon --stacktrace"
+				} catch(Exception e) {
+					currentBuild.result = 'FAILED: springio'
+					throw e
+				} finally {
+					junit '**/build/spring-io*-results/*.xml'
 				}
 			}
 		}
