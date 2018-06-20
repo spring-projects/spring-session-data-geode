@@ -27,21 +27,22 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.data.gemfire.GenericRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.client.Interest;
+import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * The {@link GemFireCacheTypeAwareRegionFactoryBean} class is a Spring {@link FactoryBean}
- * used to construct, configure and initialize the Pivotal GemFire cache {@link Region} used to
- * store and manage Session state.
+ * The {@link GemFireCacheTypeAwareRegionFactoryBean} class is a Spring {@link FactoryBean} used to construct,
+ * configure and initialize the Apache Geode/Pivotal GemFire cache {@link Region} used to store and manage
+ * Session state.
  *
  * @author John Blum
  * @param <K> the type of keys
@@ -52,17 +53,17 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.RegionShortcut
  * @see org.apache.geode.cache.client.ClientRegionShortcut
  * @see org.apache.geode.cache.client.Pool
- * @see org.springframework.beans.factory.BeanFactory
- * @see org.springframework.beans.factory.BeanFactoryAware
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.context.SmartLifecycle
  * @see org.springframework.data.gemfire.GenericRegionFactoryBean
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
+ * @see org.springframework.data.gemfire.support.AbstractFactoryBeanSupport
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @since 1.1.0
  */
-public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
-		implements BeanFactoryAware, FactoryBean<Region<K, V>>, InitializingBean {
+public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends AbstractFactoryBeanSupport<Region<K, V>>
+		implements InitializingBean, SmartLifecycle {
 
 	protected static final ClientRegionShortcut DEFAULT_CLIENT_REGION_SHORTCUT =
 		GemFireHttpSessionConfiguration.DEFAULT_CLIENT_REGION_SHORTCUT;
@@ -76,8 +77,6 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	protected static final String DEFAULT_SESSION_REGION_NAME =
 		GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME;
 
-	private BeanFactory beanFactory;
-
 	private ClientRegionShortcut clientRegionShortcut;
 
 	private GemFireCache gemfireCache;
@@ -87,6 +86,8 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	private RegionAttributes<K, V> regionAttributes;
 
 	private RegionShortcut serverRegionShortcut;
+
+	private volatile SmartLifecycle smartLifecycleComponent;
 
 	private String poolName;
 	private String regionName;
@@ -107,8 +108,9 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 
 		GemFireCache gemfireCache = getGemfireCache();
 
-		this.region = (GemFireUtils.isClient(gemfireCache) ? newClientRegion(gemfireCache)
-				: newServerRegion(gemfireCache));
+		this.region = GemFireUtils.isClient(gemfireCache)
+			? newClientRegion(gemfireCache)
+			: newServerRegion(gemfireCache);
 	}
 
 	/**
@@ -138,6 +140,8 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 		serverRegion.setRegionName(getRegionName());
 		serverRegion.setShortcut(getServerRegionShortcut());
 		serverRegion.afterPropertiesSet();
+
+		this.smartLifecycleComponent = serverRegion;
 
 		return serverRegion.getObject();
 	}
@@ -175,6 +179,8 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 		clientRegion.setRegionName(getRegionName());
 		clientRegion.setShortcut(shortcut);
 		clientRegion.afterPropertiesSet();
+
+		this.smartLifecycleComponent = clientRegion;
 
 		return clientRegion.getObject();
 	}
@@ -215,46 +221,40 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	 * @see org.apache.geode.cache.Region
 	 * @see java.lang.Class
 	 */
-	@SuppressWarnings("unuchecked")
+	@SuppressWarnings("unchecked")
 	public Class<?> getObjectType() {
-		return Optional.ofNullable(this.region).map(Object::getClass).orElse((Class) Region.class);
-	}
 
-	/**
-	 * Returns true indicating the Pivotal GemFire cache {@link Region} created by this factory is
-	 * the sole instance.
-	 *
-	 * @return true to indicate the Pivotal GemFire cache {@link Region} storing and managing
-	 * Sessions is a Singleton.
-	 */
-	public boolean isSingleton() {
-		return true;
+		return Optional.ofNullable(this.region)
+			.map(Object::getClass)
+			.orElse((Class) Region.class);
 	}
 
 	/**
 	 * Sets a reference to the Spring {@link BeanFactory} responsible for
-	 * creating Pivotal GemFire components.
+	 * creating Apache Geode/Pivotal GemFire components.
 	 *
 	 * @param beanFactory reference to the Spring {@link BeanFactory}
 	 * @throws IllegalArgumentException if the {@link BeanFactory} reference is null.
 	 * @see org.springframework.beans.factory.BeanFactory
 	 */
+	@Override
 	public void setBeanFactory(BeanFactory beanFactory) {
 		Assert.notNull(beanFactory, "BeanFactory is required");
-		this.beanFactory = beanFactory;
+		super.setBeanFactory(beanFactory);
 	}
 
 	/**
 	 * Gets a reference to the Spring {@link BeanFactory} responsible for
-	 * creating Pivotal GemFire components.
+	 * creating Apache Geode/Pivotal GemFire components.
 	 *
 	 * @return a reference to the Spring {@link BeanFactory}
 	 * @throws IllegalStateException if the {@link BeanFactory} reference
 	 * is null.
 	 * @see org.springframework.beans.factory.BeanFactory
 	 */
-	protected BeanFactory getBeanFactory() {
-		return Optional.ofNullable(this.beanFactory).orElseThrow(() ->
+	@Override
+	public BeanFactory getBeanFactory() {
+		return Optional.ofNullable(super.getBeanFactory()).orElseThrow(() ->
 			new IllegalStateException("A reference to the BeanFactory was not properly configured"));
 	}
 
@@ -396,5 +396,48 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V>
 	 */
 	protected RegionShortcut getServerRegionShortcut() {
 		return Optional.ofNullable(this.serverRegionShortcut).orElse(DEFAULT_SERVER_REGION_SHORTCUT);
+	}
+
+	protected Optional<SmartLifecycle> getSmartLifecycleComponent() {
+		return Optional.ofNullable(this.smartLifecycleComponent);
+	}
+
+	@Override
+	public boolean isAutoStartup() {
+
+		return getSmartLifecycleComponent()
+			.map(SmartLifecycle::isAutoStartup)
+			.orElse(false);
+	}
+
+	@Override
+	public boolean isRunning() {
+
+		return getSmartLifecycleComponent()
+			.map(SmartLifecycle::isRunning)
+			.orElse(false);
+	}
+
+	@Override
+	public void start() {
+		getSmartLifecycleComponent().ifPresent(SmartLifecycle::start);
+	}
+
+	@Override
+	public void stop() {
+		getSmartLifecycleComponent().ifPresent(SmartLifecycle::stop);
+	}
+
+	@Override
+	public void stop(Runnable callback) {
+		getSmartLifecycleComponent().ifPresent(it -> it.stop(callback));
+	}
+
+	@Override
+	public int getPhase() {
+
+		return getSmartLifecycleComponent()
+			.map(SmartLifecycle::getPhase)
+			.orElse(0);
 	}
 }
