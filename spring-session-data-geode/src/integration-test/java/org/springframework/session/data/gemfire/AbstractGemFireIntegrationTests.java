@@ -105,7 +105,6 @@ public abstract class AbstractGemFireIntegrationTests {
 		System.setProperty("gemfire.Query.VERBOSE", String.valueOf(isQueryDebuggingEnabled()));
 	}
 
-	/* (non-Javadoc) */
 	protected static String buildClassPathContainingJarFiles(String... jarFilenames) {
 
 		StringBuilder classpath = new StringBuilder();
@@ -123,7 +122,6 @@ public abstract class AbstractGemFireIntegrationTests {
 		return classpath.toString();
 	}
 
-	/* (non-Javadoc) */
 	private static Optional<URL> findClassInFileSystem(Class<?> type) {
 
 		return Optional.ofNullable(type)
@@ -131,18 +129,15 @@ public abstract class AbstractGemFireIntegrationTests {
 			.map(resourceName -> type.getClassLoader().getResource(resourceName));
 	}
 
-	/* (non-Javadoc) */
 	private static Optional<String> findJarInClasspath(String jarFilename) {
 		return stream(nullSafeArray(System.getProperty("java.class.path").split(File.pathSeparator), String.class))
 			.filter(element -> element.contains(jarFilename)).findFirst();
 	}
 
-	/* (non-Javadoc) */
 	private static String getResourceName(Class<?> type) {
 		return type.getName().replaceAll("\\.", "/").concat(".class");
 	}
 
-	/* (non-Javadoc) */
 	protected static File createDirectory(String pathname) {
 
 		File directory = new File(WORKING_DIRECTORY, pathname);
@@ -155,12 +150,10 @@ public abstract class AbstractGemFireIntegrationTests {
 		return directory;
 	}
 
-	/* (non-Javadoc) */
 	protected static List<String> createJavaProcessCommandLine(Class<?> type, String... args) {
 		return createJavaProcessCommandLine(System.getProperty("java.class.path"), type, args);
 	}
 
-	/* (non-Javadoc) */
 	protected static List<String> createJavaProcessCommandLine(String classpath, Class<?> type, String... args) {
 
 		List<String> commandLine = new ArrayList<>();
@@ -185,12 +178,10 @@ public abstract class AbstractGemFireIntegrationTests {
 		return commandLine;
 	}
 
-	/* (non-Javadoc) */
 	private static List<String> extractJvmArguments(String... args) {
 		return stream(args).filter(arg -> arg.startsWith("-")).collect(Collectors.toList());
 	}
 
-	/* (non-Javadoc) */
 	private static List<String> extractProgramArguments(String... args) {
 		return stream(args).filter(arg -> !arg.startsWith("-")).collect(Collectors.toList());
 	}
@@ -234,33 +225,27 @@ public abstract class AbstractGemFireIntegrationTests {
 		return run(createJavaProcessCommandLine(resolveClasspath(classpath, type), type, args), directory);
 	}
 
-	/* (non-Javadoc) */
 	private static Process run(List<String> command, File directory) throws IOException {
 		return new ProcessBuilder().command(command).directory(directory).inheritIO().redirectErrorStream(true).start();
 	}
 
-	/* (non-Javadoc) */
 	protected static void unregisterAllDataSerializers() {
 		stream(nullSafeArray(InternalDataSerializer.getSerializers(), DataSerializer.class))
 			.map(DataSerializer::getId).forEach(InternalDataSerializer::unregister);
 	}
 
-	/* (non-Javadoc) */
 	protected static boolean waitForCacheServerToStart(CacheServer cacheServer) {
 		return waitForCacheServerToStart(cacheServer, DEFAULT_WAIT_DURATION);
 	}
 
-	/* (non-Javadoc) */
 	protected static boolean waitForCacheServerToStart(CacheServer cacheServer, long duration) {
 		return waitForCacheServerToStart(cacheServer.getBindAddress(), cacheServer.getPort(), duration);
 	}
 
-	/* (non-Javadoc) */
 	protected static boolean waitForCacheServerToStart(String host, int port) {
 		return waitForCacheServerToStart(host, port, DEFAULT_WAIT_DURATION);
 	}
 
-	/* (non-Javadoc) */
 	protected static boolean waitForCacheServerToStart(final String host, final int port, long duration) {
 
 		return waitOnCondition(new Condition() {
@@ -291,12 +276,10 @@ public abstract class AbstractGemFireIntegrationTests {
 	// NOTE this method would not be necessary except Spring Sessions' build does not fork
 	// the test JVM
 	// for every test class.
-	/* (non-Javadoc) */
 	protected static boolean waitForClientCacheToClose() {
 		return waitForClientCacheToClose(DEFAULT_WAIT_DURATION);
 	}
 
-	/* (non-Javadoc) */
 	protected static boolean waitForClientCacheToClose(long duration) {
 
 		try {
@@ -314,12 +297,10 @@ public abstract class AbstractGemFireIntegrationTests {
 
 	}
 
-	/* (non-Javadoc) */
 	protected static boolean waitForProcessToStart(Process process, File directory) {
 		return waitForProcessToStart(process, directory, DEFAULT_WAIT_DURATION);
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	protected static boolean waitForProcessToStart(Process process, File directory, long duration) {
 
@@ -334,12 +315,10 @@ public abstract class AbstractGemFireIntegrationTests {
 		return process.isAlive();
 	}
 
-	/* (non-Javadoc) */
 	protected static int waitForProcessToStop(Process process, File directory) {
 		return waitForProcessToStop(process, directory, DEFAULT_WAIT_DURATION);
 	}
 
-	/* (non-Javadoc) */
 	protected static int waitForProcessToStop(Process process, File directory, long duration) {
 
 		long timeout = (System.currentTimeMillis() + duration);
@@ -358,12 +337,10 @@ public abstract class AbstractGemFireIntegrationTests {
 		return (process.isAlive() ? -1 : process.exitValue());
 	}
 
-	/* (non-Javadoc) */
 	protected static boolean waitOnCondition(Condition condition) {
 		return waitOnCondition(condition, DEFAULT_WAIT_DURATION);
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	protected static boolean waitOnCondition(Condition condition, long duration) {
 
@@ -383,7 +360,6 @@ public abstract class AbstractGemFireIntegrationTests {
 		return condition.evaluate();
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	protected static File writeProcessControlFile(File path) throws IOException {
 
@@ -398,14 +374,12 @@ public abstract class AbstractGemFireIntegrationTests {
 		return processControl;
 	}
 
-	/* (non-Javadoc) */
 	protected void assertValidSession(Session session) {
 		assertThat(session).isNotNull();
 		assertThat(session.getId()).isNotEmpty();
 		assertThat(session.isExpired()).isFalse();
 	}
 
-	/* (non-Javadoc) */
 	protected void assertRegion(Region<?, ?> actualRegion, String expectedName, DataPolicy expectedDataPolicy) {
 		assertThat(actualRegion).isNotNull();
 		assertThat(actualRegion.getName()).isEqualTo(expectedName);
@@ -414,19 +388,16 @@ public abstract class AbstractGemFireIntegrationTests {
 		assertThat(actualRegion.getAttributes().getDataPolicy()).isEqualTo(expectedDataPolicy);
 	}
 
-	/* (non-Javadoc) */
 	protected void assertIndex(Index index, String expectedExpression, String expectedFromClause) {
 		assertThat(index).isNotNull();
 		assertThat(index.getIndexedExpression()).isEqualTo(expectedExpression);
 		assertThat(index.getFromClause()).isEqualTo(expectedFromClause);
 	}
 
-	/* (non-Javadoc) */
 	protected void assertEntryIdleTimeout(Region<?, ?> region, ExpirationAction expectedAction, int expectedTimeout) {
 		assertEntryIdleTimeout(region.getAttributes().getEntryIdleTimeout(), expectedAction, expectedTimeout);
 	}
 
-	/* (non-Javadoc) */
 	protected void assertEntryIdleTimeout(ExpirationAttributes actualExpirationAttributes,
 			ExpirationAction expectedAction, int expectedTimeout) {
 
@@ -435,22 +406,18 @@ public abstract class AbstractGemFireIntegrationTests {
 		assertThat(actualExpirationAttributes.getTimeout()).isEqualTo(expectedTimeout);
 	}
 
-	/* (non-Javadoc) */
 	protected boolean enableQueryDebugging() {
 		return DEFAULT_ENABLE_QUERY_DEBUGGING;
 	}
 
-	/* (non-Javadoc) */
 	protected boolean isQueryDebuggingEnabled() {
 		return (GEMFIRE_QUERY_DEBUG || enableQueryDebugging());
 	}
 
-	/* (non-Javadoc) */
 	protected List<String> listRegions(GemFireCache gemfireCache) {
 		return gemfireCache.rootRegions().stream().map(Region::getFullPath).collect(Collectors.toList());
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	protected <T extends Session> T createSession() {
 
@@ -461,7 +428,6 @@ public abstract class AbstractGemFireIntegrationTests {
 		return session;
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	protected <T extends Session> T createSession(String principalName) {
 
@@ -472,32 +438,27 @@ public abstract class AbstractGemFireIntegrationTests {
 		return (T) session;
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	protected <T extends Session> T delete(T session) {
 		this.gemfireSessionRepository.delete(session);
 		return session;
 	}
 
-	/* (non-Javadoc) */
 	protected <T extends Session> T expire(T session) {
 		session.setLastAccessedTime(Instant.ofEpochMilli(0L));
 		return session;
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	protected <T extends Session> T get(String sessionId) {
 		return (T) this.gemfireSessionRepository.findById(sessionId);
 	}
 
-	/* (non-Javadoc) */
 	protected <T extends Session> T save(T session) {
 		this.gemfireSessionRepository.save(session);
 		return session;
 	}
 
-	/* (non-Javadoc) */
 	protected <T extends Session> T touch(T session) {
 		session.setLastAccessedTime(Instant.now());
 		return session;
@@ -514,7 +475,6 @@ public abstract class AbstractGemFireIntegrationTests {
 
 		private volatile AbstractSessionEvent sessionEvent;
 
-		/* (non-Javadoc) */
 		@SuppressWarnings("unchecked")
 		public <T extends AbstractSessionEvent> T getSessionEvent() {
 
@@ -525,12 +485,10 @@ public abstract class AbstractGemFireIntegrationTests {
 			return sessionEvent;
 		}
 
-		/* (non-Javadoc) */
 		public void onApplicationEvent(AbstractSessionEvent event) {
 			this.sessionEvent = event;
 		}
 
-		/* (non-Javadoc) */
 		public <T extends AbstractSessionEvent> T waitForSessionEvent(long duration) {
 
 			waitOnCondition(() -> (SessionEventListener.this.sessionEvent != null), duration);

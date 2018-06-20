@@ -65,6 +65,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.FileSystemUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.SocketUtils;
 
 /**
@@ -227,10 +228,13 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 
 		assertThat(savedSession).isEqualTo(expectedSession);
 
-		sessionEvent = this.sessionEventListener.waitForSessionEvent(
-			TimeUnit.SECONDS.toMillis(MAX_INACTIVE_INTERVAL_IN_SECONDS + 1));
+		sessionEvent = this.sessionEventListener
+			.waitForSessionEvent(TimeUnit.SECONDS.toMillis(MAX_INACTIVE_INTERVAL_IN_SECONDS + 5));
 
-		assertThat(sessionEvent).isInstanceOf(SessionExpiredEvent.class);
+		assertThat(sessionEvent)
+			.describedAs("SessionEvent was type [%s]", ObjectUtils.nullSafeClassName(sessionEvent))
+			.isInstanceOf(SessionExpiredEvent.class);
+
 		assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSession.getId());
 
 		Session expiredSession = this.gemfireSessionRepository.findById(expectedSession.getId());
@@ -304,8 +308,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests
 		}
 	}
 
-	@CacheServerApplication(name = "ClientServerGemFireOperationsSessionRepositoryIntegrationTests",
-		logLevel = "warning")
+	@CacheServerApplication(name = "ClientServerGemFireOperationsSessionRepositoryIntegrationTests", logLevel = "warning")
 	@EnableGemFireHttpSession(regionName = TEST_SESSION_REGION_NAME,
 		maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS)
 	@SuppressWarnings("unused")

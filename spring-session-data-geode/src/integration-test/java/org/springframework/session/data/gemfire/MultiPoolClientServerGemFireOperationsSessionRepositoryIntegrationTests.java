@@ -186,7 +186,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 		this.sessionEventListener.getSessionEvent();
 
 		sessionEvent = this.sessionEventListener.waitForSessionEvent(
-			TimeUnit.SECONDS.toMillis(MAX_INACTIVE_INTERVAL_IN_SECONDS + 1));
+			TimeUnit.SECONDS.toMillis(MAX_INACTIVE_INTERVAL_IN_SECONDS + 5));
 
 		assertThat(sessionEvent).isInstanceOf(SessionExpiredEvent.class);
 		assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSession.getId());

@@ -299,27 +299,22 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		region.getAttributesMutator().addCacheListener(this);
 	}
 
-	/* (non-Javadoc) */
 	boolean isCreate(EntryEvent<?, ?> event) {
 		return isCreate(event.getOperation()) && isNotUpdate(event) && isSession(event.getNewValue());
 	}
 
-	/* (non-Javadoc) */
 	private boolean isCreate(Operation operation) {
 		return operation.isCreate() && !Operation.LOCAL_LOAD_CREATE.equals(operation);
 	}
 
-	/* (non-Javadoc) */
 	private boolean isNotUpdate(EntryEvent event) {
 		return isNotProxyRegion() || !this.cachedSessionIds.contains(ObjectUtils.nullSafeHashCode(event.getKey()));
 	}
 
-	/* (non-Javadoc) */
 	private boolean isNotProxyRegion() {
 		return !isProxyRegion();
 	}
 
-	/* (non-Javadoc) */
 	private boolean isProxyRegion() {
 		return GemFireUtils.isProxy(((GemfireAccessor) getTemplate()).getRegion());
 	}
@@ -517,22 +512,18 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		publishEvent(newSessionExpiredEvent(session));
 	}
 
-	/* (non-Javadoc) */
 	private SessionCreatedEvent newSessionCreatedEvent(Session session) {
 		return new SessionCreatedEvent(this, session);
 	}
 
-	/* (non-Javadoc) */
 	private SessionDeletedEvent newSessionDeletedEvent(Session session) {
 		return new SessionDeletedEvent(this, session);
 	}
 
-	/* (non-Javadoc) */
 	private SessionDestroyedEvent newSessionDestroyedEvent(Session session) {
 		return new SessionDestroyedEvent(this, session);
 	}
 
-	/* (non-Javadoc) */
 	private SessionExpiredEvent newSessionExpiredEvent(Session session) {
 		return new SessionExpiredEvent(this, session);
 	}
@@ -588,7 +579,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			return new DeltaCapableGemFireSessionAttributes();
 		}
 
-		/* (non-Javadoc) */
 		public synchronized void toDelta(DataOutput out) throws IOException {
 
 			out.writeUTF(getId());
@@ -598,7 +588,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			clearDelta();
 		}
 
-		/* (non-Javadoc) */
 		public synchronized void fromDelta(DataInput in) throws IOException {
 
 			setId(in.readUTF());
@@ -636,19 +625,16 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		private transient final T sessionAttributes = newSessionAttributes(this);
 
-		/* (non-Javadoc) */
 		protected GemFireSession() {
 			this(generateId());
 		}
 
-		/* (non-Javadoc) */
 		protected GemFireSession(String id) {
 			this.id = validateId(id);
 			this.creationTime = Instant.now();
 			this.lastAccessedTime = this.creationTime;
 		}
 
-		/* (non-Javadoc) */
 		protected GemFireSession(Session session) {
 
 			Assert.notNull(session, "The Session to copy cannot be null");
@@ -660,17 +646,14 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			this.sessionAttributes.from(session);
 		}
 
-		/* (non-Javadoc) */
 		public static GemFireSession copy(Session session) {
 			return (isUsingDataSerialization() ? new DeltaCapableGemFireSession(session) : new GemFireSession(session));
 		}
 
-		/* (non-Javadoc) */
 		public static GemFireSession create() {
 			return create(DEFAULT_MAX_INACTIVE_INTERVAL);
 		}
 
-		/* (non-Javadoc) */
 		public static GemFireSession create(Duration maxInactiveInterval) {
 
 			GemFireSession session =
@@ -681,7 +664,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			return session;
 		}
 
-		/* (non-Javadoc) */
 		@SuppressWarnings("unchecked")
 		public static <T extends GemFireSession> T from(Session session) {
 			return (T) (session instanceof GemFireSession ? (GemFireSession) session : copy(session));
@@ -697,7 +679,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			return UUID.randomUUID().toString();
 		}
 
-		/* (non-Javadoc) */
 		private static String validateId(String id) {
 			return Optional.ofNullable(id).filter(StringUtils::hasText)
 				.orElseThrow(() -> newIllegalArgumentException("ID is required"));
@@ -708,7 +689,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			return (T) new GemFireSessionAttributes(lock);
 		}
 
-		/* (non-Javadoc) */
 		@Override
 		public synchronized String changeSessionId() {
 
@@ -719,23 +699,19 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			return getId();
 		}
 
-		/* (non-Javadoc) */
 		public synchronized void clearDelta() {
 			this.delta = false;
 		}
 
-		/* (non-Javadoc) */
 		public synchronized boolean hasDelta() {
 			return (this.delta || this.sessionAttributes.hasDelta());
 		}
 
-		/* (non-Javadoc) */
 		@SuppressWarnings("unused")
 		protected void triggerDelta() {
 			triggerDelta(true);
 		}
 
-		/* (non-Javadoc) */
 		protected synchronized void triggerDelta(boolean condition) {
 			this.delta |= condition;
 		}
@@ -744,42 +720,34 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			this.id = validateId(id);
 		}
 
-		/* (non-Javadoc) */
 		public synchronized String getId() {
 			return this.id;
 		}
 
-		/* (non-Javadoc) */
 		public void setAttribute(String attributeName, Object attributeValue) {
 			this.sessionAttributes.setAttribute(attributeName, attributeValue);
 		}
 
-		/* (non-Javadoc) */
 		public void removeAttribute(String attributeName) {
 			this.sessionAttributes.removeAttribute(attributeName);
 		}
 
-		/* (non-Javadoc) */
 		public <T> T getAttribute(String attributeName) {
 			return this.sessionAttributes.getAttribute(attributeName);
 		}
 
-		/* (non-Javadoc) */
 		public Set<String> getAttributeNames() {
 			return this.sessionAttributes.getAttributeNames();
 		}
 
-		/* (non-Javadoc) */
 		public T getAttributes() {
 			return this.sessionAttributes;
 		}
 
-		/* (non-Javadoc) */
 		public synchronized Instant getCreationTime() {
 			return this.creationTime;
 		}
 
-		/* (non-Javadoc) */
 		public synchronized boolean isExpired() {
 
 			Instant lastAccessedTime = getLastAccessedTime();
@@ -790,44 +758,36 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 				&& Instant.now().minus(maxInactiveInterval).isAfter(lastAccessedTime));
 		}
 
-		/* (non-Javadoc) */
 		private boolean isExpirationDisabled(Duration duration) {
 			return (duration == null || duration.isNegative() || duration.isZero());
 		}
 
-		/* (non-Javadoc) */
 		private boolean isExpirationEnabled(Duration duration) {
 			return !isExpirationDisabled(duration);
 		}
 
-		/* (non-Javadoc) */
 		public synchronized void setLastAccessedTime(Instant lastAccessedTime) {
 			triggerDelta(!ObjectUtils.nullSafeEquals(this.lastAccessedTime, lastAccessedTime));
 			this.lastAccessedTime = lastAccessedTime;
 		}
 
-		/* (non-Javadoc) */
 		public synchronized Instant getLastAccessedTime() {
 			return this.lastAccessedTime;
 		}
 
-		/* (non-Javadoc) */
 		public synchronized void setMaxInactiveInterval(Duration maxInactiveIntervalInSeconds) {
 			triggerDelta(!ObjectUtils.nullSafeEquals(this.maxInactiveInterval, maxInactiveIntervalInSeconds));
 			this.maxInactiveInterval = maxInactiveIntervalInSeconds;
 		}
 
-		/* (non-Javadoc) */
 		public synchronized Duration getMaxInactiveInterval() {
 			return Optional.ofNullable(this.maxInactiveInterval).orElse(DEFAULT_MAX_INACTIVE_INTERVAL);
 		}
 
-		/* (non-Javadoc) */
 		public synchronized void setPrincipalName(String principalName) {
 			setAttribute(PRINCIPAL_NAME_INDEX_NAME, principalName);
 		}
 
-		/* (non-Javadoc) */
 		public synchronized String getPrincipalName() {
 
 			String principalName = getAttribute(PRINCIPAL_NAME_INDEX_NAME);
@@ -847,13 +807,11 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			return principalName;
 		}
 
-		/* (non-Javadoc) */
 		@SuppressWarnings("all")
 		public int compareTo(Session session) {
 			return getCreationTime().compareTo(session.getCreationTime());
 		}
 
-		/* (non-Javadoc) */
 		@Override
 		public boolean equals(final Object obj) {
 
@@ -870,7 +828,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			return this.getId().equals(that.getId());
 		}
 
-		/* (non-Javadoc) */
 		@Override
 		public int hashCode() {
 
@@ -881,7 +838,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			return hashValue;
 		}
 
-		/* (non-Javadoc) */
 		@Override
 		public synchronized String toString() {
 
@@ -897,14 +853,12 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		private transient final Map<String, Object> sessionAttributeDeltas = new HashMap<>();
 
-		public DeltaCapableGemFireSessionAttributes() {
-		}
+		public DeltaCapableGemFireSessionAttributes() { }
 
 		public DeltaCapableGemFireSessionAttributes(Object lock) {
 			super(lock);
 		}
 
-		/* (non-Javadoc) */
 		public Object setAttribute(String attributeName, Object attributeValue) {
 
 			synchronized (getLock()) {
@@ -925,7 +879,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			}
 		}
 
-		/* (non-Javadoc) */
 		@Override
 		public Object removeAttribute(String attributeName) {
 
@@ -940,7 +893,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			}
 		}
 
-		/* (non-Javadoc) */
 		public void toDelta(DataOutput out) throws IOException {
 
 			synchronized (getLock()) {
@@ -956,12 +908,10 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			}
 		}
 
-		/* (non-Javadoc) */
 		protected void writeObject(Object value, DataOutput out) throws IOException {
 			DataSerializer.writeObject(value, out);
 		}
 
-		/* (non-Javadoc) */
 		@Override
 		public boolean hasDelta() {
 
@@ -970,7 +920,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			}
 		}
 
-		/* (non-Javadoc) */
 		public void fromDelta(DataInput in) throws InvalidDeltaException, IOException {
 
 			synchronized (getLock()) {
@@ -994,12 +943,10 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			}
 		}
 
-		/* (non-Javadoc) */
 		protected <T> T readObject(DataInput in) throws ClassNotFoundException, IOException {
 			return DataSerializer.readObject(in);
 		}
 
-		/* (non-Javadoc) */
 		@Override
 		public void clearDelta() {
 
@@ -1028,32 +975,26 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		private transient final Object lock;
 
-		/* (non-Javadoc) */
 		protected GemFireSessionAttributes() {
 			this.lock = this;
 		}
 
-		/* (non-Javadoc) */
 		protected GemFireSessionAttributes(Object lock) {
 			this.lock = (lock != null ? lock : this);
 		}
 
-		/* (non-Javadoc) */
 		public static GemFireSessionAttributes create() {
 			return new GemFireSessionAttributes();
 		}
 
-		/* (non-Javadoc) */
 		public static GemFireSessionAttributes create(Object lock) {
 			return new GemFireSessionAttributes(lock);
 		}
 
-		/* (non-Javadoc) */
 		protected Object getLock() {
 			return this.lock;
 		}
 
-		/* (non-Javadoc) */
 		public Object setAttribute(String attributeName, Object attributeValue) {
 			synchronized (getLock()) {
 				return (attributeValue != null ? this.sessionAttributes.put(attributeName, attributeValue)
@@ -1061,14 +1002,12 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			}
 		}
 
-		/* (non-Javadoc) */
 		public Object removeAttribute(String attributeName) {
 			synchronized (getLock()) {
 				return this.sessionAttributes.remove(attributeName);
 			}
 		}
 
-		/* (non-Javadoc) */
 		@SuppressWarnings("unchecked")
 		public <T> T getAttribute(String attributeName) {
 			synchronized (getLock()) {
@@ -1076,14 +1015,12 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			}
 		}
 
-		/* (non-Javadoc) */
 		public Set<String> getAttributeNames() {
 			synchronized (getLock()) {
 				return Collections.unmodifiableSet(new HashSet<>(this.sessionAttributes.keySet()));
 			}
 		}
 
-		/* (non-Javadoc); NOTE: entrySet implementation is not Thread-safe. */
 		@Override
 		@SuppressWarnings("all")
 		public Set<Entry<String, Object>> entrySet() {
@@ -1103,11 +1040,9 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			};
 		}
 
-		/* (non-Javadoc) */
 		public void clearDelta() {
 		}
 
-		/* (non-Javadoc) */
 		public void from(Session session) {
 
 			synchronized (getLock()) {
@@ -1116,7 +1051,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			}
 		}
 
-		/* (non-Javadoc) */
 		public void from(Map<String, Object> map) {
 
 			synchronized (getLock()) {
@@ -1124,7 +1058,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			}
 		}
 
-		/* (non-Javadoc) */
 		public void from(GemFireSessionAttributes sessionAttributes) {
 
 			synchronized (getLock()) {
@@ -1133,7 +1066,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			}
 		}
 
-		/* (non-Javadoc) */
 		public boolean hasDelta() {
 			return false;
 		}
