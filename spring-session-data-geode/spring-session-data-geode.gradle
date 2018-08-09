@@ -3,6 +3,10 @@ apply from: IDE_GRADLE
 
 description = "Spring Session for Apache Geode"
 
+repositories {
+	maven { url "https://repo.spring.io/libs-snapshot" }
+}
+
 dependencies {
 
 	compile "org.springframework:spring-context-support"
@@ -21,6 +25,7 @@ dependencies {
 	testCompile "edu.umd.cs.mtc:multithreadedtc"
 	testCompile "org.springframework:spring-test"
 	testCompile "org.springframework:spring-web"
+	testCompile "org.springframework.data:spring-data-geode-test"
 	testCompile slf4jDependencies
 
 	integrationTestRuntime "org.springframework.shell:spring-shell"
