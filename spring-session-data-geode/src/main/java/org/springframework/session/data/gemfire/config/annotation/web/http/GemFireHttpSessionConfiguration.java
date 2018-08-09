@@ -35,6 +35,7 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.pdx.PdxSerializer;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
@@ -58,6 +59,7 @@ import org.springframework.session.data.gemfire.AbstractGemFireOperationsSession
 import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.GemFireCacheTypeAwareRegionFactoryBean;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionAttributesIndexFactoryBean;
+import org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer;
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 import org.springframework.session.data.gemfire.serialization.data.provider.DataSerializableSessionSerializer;
 import org.springframework.session.data.gemfire.serialization.data.support.DataSerializerSessionSerializerAdapter;
@@ -410,6 +412,36 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 
 		setSessionSerializerBeanName(resolveProperty(sessionSerializerBeanNamePropertyName(),
 			defaultSessionSerializerBeanName));
+
+		applySpringSessionGemFireConfigurer();
+	}
+
+	private Optional<SpringSessionGemFireConfigurer> resolveSpringSessionGemFireConfigurer() {
+
+		try {
+			return Optional.of(getApplicationContext().getBean(SpringSessionGemFireConfigurer.class));
+		}
+		catch (BeansException cause) {
+
+			if (cause instanceof NoSuchBeanDefinitionException) {
+				return Optional.empty();
+			}
+
+			throw cause;
+		}
+	}
+
+	private void applySpringSessionGemFireConfigurer() {
+
+		resolveSpringSessionGemFireConfigurer().ifPresent(configurer -> {
+			setClientRegionShortcut(configurer.getClientRegionShortcut());
+			setIndexableSessionAttributes(configurer.getIndexableSessionAttributes());
+			setMaxInactiveIntervalInSeconds(configurer.getMaxInactiveIntervalInSeconds());
+			setPoolName(configurer.getPoolName());
+			setServerRegionShortcut(configurer.getServerRegionShortcut());
+			setSessionRegionName(configurer.getRegionName());
+			setSessionSerializerBeanName(configurer.getSessionSerializerBeanName());
+		});
 	}
 
 	@PostConstruct
