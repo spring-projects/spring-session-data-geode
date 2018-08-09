@@ -23,6 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -41,7 +42,9 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.GemfireOperations;
@@ -50,6 +53,7 @@ import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.GemFireCacheTypeAwareRegionFactoryBean;
+import org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer;
 
 /**
  * Unit tests for {@link GemFireHttpSessionConfiguration} class.
@@ -101,7 +105,15 @@ public class GemFireHttpSessionConfigurationTests {
 
 	@Before
 	public void setup() {
+
 		this.gemfireConfiguration = new GemFireHttpSessionConfiguration();
+
+		ApplicationContext mockApplicationContext = mock(ApplicationContext.class);
+
+		when(mockApplicationContext.getBean(eq(SpringSessionGemFireConfigurer.class)))
+			.thenThrow(new NoSuchBeanDefinitionException("No SpringSessionGemFireConfigurer bean available"));
+
+		this.gemfireConfiguration.setApplicationContext(mockApplicationContext);
 	}
 
 	@Test
