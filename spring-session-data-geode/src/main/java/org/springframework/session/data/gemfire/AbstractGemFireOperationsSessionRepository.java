@@ -42,6 +42,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
 import org.apache.geode.Instantiator;
 import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
@@ -296,7 +297,9 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		this.fullyQualifiedRegionName = region.getFullPath();
 
-		region.getAttributesMutator().addCacheListener(this);
+		AttributesMutator<Object, Session> attributesMutator = region.getAttributesMutator();
+
+		attributesMutator.addCacheListener(this);
 	}
 
 	boolean isCreate(EntryEvent<?, ?> event) {

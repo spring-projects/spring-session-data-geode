@@ -16,8 +16,6 @@
 
 package org.springframework.session.data.gemfire.config.annotation.web.http;
 
-import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
-
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -37,12 +35,8 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.pdx.PdxSerializer;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -60,7 +54,6 @@ import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
-import org.springframework.session.config.annotation.web.http.SpringHttpSessionConfiguration;
 import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
 import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.GemFireCacheTypeAwareRegionFactoryBean;
@@ -72,7 +65,6 @@ import org.springframework.session.data.gemfire.serialization.pdx.provider.PdxSe
 import org.springframework.session.data.gemfire.serialization.pdx.support.ComposablePdxSerializer;
 import org.springframework.session.data.gemfire.serialization.pdx.support.PdxSerializerSessionSerializerAdapter;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -102,6 +94,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.session.Session
  * @see org.springframework.session.config.annotation.web.http.SpringHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.AbstractGemFireHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.GemFireCacheTypeAwareRegionFactoryBean
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionAttributesIndexFactoryBean
@@ -109,8 +102,7 @@ import org.springframework.util.StringUtils;
  */
 @Configuration
 @SuppressWarnings("unused")
-public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfiguration
-		implements BeanClassLoaderAware, ImportAware {
+public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionConfiguration implements ImportAware {
 
 	/**
 	 * Default maximum interval in seconds in which a {@link Session} can remain inactive before it expires.
@@ -162,10 +154,6 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 
 	private int maxInactiveIntervalInSeconds = DEFAULT_MAX_INACTIVE_INTERVAL_IN_SECONDS;
 
-	private ApplicationContext applicationContext;
-
-	private ClassLoader beanClassLoader;
-
 	private ClientRegionShortcut clientRegionShortcut = DEFAULT_CLIENT_REGION_SHORTCUT;
 
 	private RegionShortcut serverRegionShortcut = DEFAULT_SERVER_REGION_SHORTCUT;
@@ -177,70 +165,6 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	private String sessionSerializerBeanName = DEFAULT_SESSION_SERIALIZER_BEAN_NAME;
 
 	private String[] indexableSessionAttributes = DEFAULT_INDEXABLE_SESSION_ATTRIBUTES;
-
-	/**
-	 * Sets a reference the Spring {@link ApplicationContext}.
-	 *
-	 * @param applicationContext reference to the Spring {@link ApplicationContext}.
-	 * @throws BeansException if the reference cannot be stored.
-	 * @see org.springframework.context.ApplicationContext
-	 */
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		super.setApplicationContext(applicationContext);
-		this.applicationContext = applicationContext;
-	}
-
-	/**
-	 * Returns a reference to the Spring {@link ApplicationContext}.
-	 *
-	 * @return a reference to the Spring {@link ApplicationContext}.
-	 * @see org.springframework.context.ApplicationContext
-	 */
-	protected ApplicationContext getApplicationContext() {
-		return Optional.ofNullable(this.applicationContext)
-			.orElseThrow(() -> newIllegalStateException("The ApplicationContext was not properly configured"));
-	}
-
-	/**
-	 * Sets a reference to the {@link ClassLoader} used by the Spring container to load bean {@link Class class types}.
-	 *
-	 * @param beanClassLoader {@link ClassLoader} used by the Spring container to load bean {@link Class class types}.
-	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(ClassLoader)
-	 * @see java.lang.ClassLoader
-	 */
-	public void setBeanClassLoader(ClassLoader beanClassLoader) {
-		this.beanClassLoader = beanClassLoader;
-	}
-
-	/**
-	 * Returns a reference to the {@link ClassLoader} used by the Spring container to load bean
-	 * {@link Class class types}.
-	 *
-	 * @return the {@link ClassLoader} used by the Spring container to load bean {@link Class class types}.
-	 * @see java.lang.ClassLoader
-	 */
-	protected ClassLoader getBeanClassLoader() {
-		return this.beanClassLoader;
-	}
-
-	/**
-	 * Returns a reference to the Spring container {@link ConfigurableBeanFactory}.
-	 *
-	 * @return a reference to the Spring container {@link ConfigurableBeanFactory}.
-	 * @see org.springframework.beans.factory.config.ConfigurableBeanFactory
-	 * @see #getApplicationContext()
-	 */
-	protected ConfigurableBeanFactory getBeanFactory() {
-
-		ApplicationContext applicationContext = getApplicationContext();
-
-		return Optional.of(applicationContext)
-			.filter(it -> it instanceof ConfigurableApplicationContext)
-			.map(it -> ((ConfigurableApplicationContext) it).getBeanFactory())
-			.orElseThrow(() -> newIllegalStateException("Unable to resolve a reference to a [%1$s] from a [%2$s]",
-				ConfigurableBeanFactory.class.getName(), ObjectUtils.nullSafeClassName(applicationContext)));
-	}
 
 	/**
 	 * Gets the {@link ClientRegionShortcut} used to configure the data management policy of the {@link ClientCache}
@@ -449,24 +373,43 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 			AnnotationAttributes.fromMap(importMetadata.getAnnotationAttributes(
 				EnableGemFireHttpSession.class.getName()));
 
-		setClientRegionShortcut(ClientRegionShortcut.class.cast(
-			enableGemFireHttpSessionAttributes.getEnum("clientRegionShortcut")));
+		ClientRegionShortcut defaultClientRegionShortcut = ClientRegionShortcut.class
+			.cast(enableGemFireHttpSessionAttributes.getEnum("clientRegionShortcut"));
 
-		setIndexableSessionAttributes(
-			enableGemFireHttpSessionAttributes.getStringArray("indexableSessionAttributes"));
+		setClientRegionShortcut(resolveProperty(clientRegionShortcutPropertyName(),
+			ClientRegionShortcut.class, defaultClientRegionShortcut));
 
-		setMaxInactiveIntervalInSeconds(
-			enableGemFireHttpSessionAttributes.getNumber("maxInactiveIntervalInSeconds").intValue());
+		String[] defaultIndexableSessionAttributes =
+			enableGemFireHttpSessionAttributes.getStringArray("indexableSessionAttributes");
 
-		setPoolName(enableGemFireHttpSessionAttributes.getString("poolName"));
+		setIndexableSessionAttributes(resolveProperty(indexableSessionAttributesPropertyName(),
+			defaultIndexableSessionAttributes));
 
-		setServerRegionShortcut(RegionShortcut.class.cast(
-			enableGemFireHttpSessionAttributes.getEnum("serverRegionShortcut")));
+		Integer defaultMaxInactiveIntervalInSeconds =
+			enableGemFireHttpSessionAttributes.getNumber("maxInactiveIntervalInSeconds").intValue();
 
-		setSessionRegionName(enableGemFireHttpSessionAttributes.getString("regionName"));
+		setMaxInactiveIntervalInSeconds(resolveProperty(maxInactiveIntervalInSecondsPropertyName(),
+			defaultMaxInactiveIntervalInSeconds));
 
-		setSessionSerializerBeanName(
-			enableGemFireHttpSessionAttributes.getString("sessionSerializerBeanName"));
+		String defaultPoolName = enableGemFireHttpSessionAttributes.getString("poolName");
+
+		setPoolName(resolveProperty(poolNamePropertyName(), defaultPoolName));
+
+		String defaultSessionRegionName = enableGemFireHttpSessionAttributes.getString("regionName");
+
+		setSessionRegionName(resolveProperty(sessionRegionNamePropertyName(), defaultSessionRegionName));
+
+		RegionShortcut defaultServerRegionShortcut = RegionShortcut.class
+			.cast(enableGemFireHttpSessionAttributes.getEnum("serverRegionShortcut"));
+
+		setServerRegionShortcut(resolveProperty(serverRegionShortcutPropertyName(),
+			RegionShortcut.class, defaultServerRegionShortcut));
+
+		String defaultSessionSerializerBeanName =
+			enableGemFireHttpSessionAttributes.getString("sessionSerializerBeanName");
+
+		setSessionSerializerBeanName(resolveProperty(sessionSerializerBeanNamePropertyName(),
+			defaultSessionSerializerBeanName));
 	}
 
 	@PostConstruct
@@ -617,9 +560,9 @@ public class GemFireHttpSessionConfiguration extends SpringHttpSessionConfigurat
 	 */
 	boolean isExpirationAllowed(GemFireCache gemfireCache) {
 
-		return !(GemFireUtils.isClient(gemfireCache)
+		return !GemFireUtils.isClient(gemfireCache)
 			? GemFireUtils.isProxy(getClientRegionShortcut())
-			: GemFireUtils.isProxy(getServerRegionShortcut()));
+			: GemFireUtils.isProxy(getServerRegionShortcut());
 	}
 
 	/**
