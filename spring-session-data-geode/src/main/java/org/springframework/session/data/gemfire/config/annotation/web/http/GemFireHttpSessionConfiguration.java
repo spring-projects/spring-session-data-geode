@@ -536,10 +536,10 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 		GemFireCacheTypeAwareRegionFactoryBean<Object, Session> sessionRegion =
 			new GemFireCacheTypeAwareRegionFactoryBean<>();
 
+		sessionRegion.setAttributes(sessionRegionAttributes);
+		sessionRegion.setCache(gemfireCache);
 		sessionRegion.setClientRegionShortcut(getClientRegionShortcut());
-		sessionRegion.setGemfireCache(gemfireCache);
 		sessionRegion.setPoolName(getPoolName());
-		sessionRegion.setRegionAttributes(sessionRegionAttributes);
 		sessionRegion.setRegionName(getSessionRegionName());
 		sessionRegion.setServerRegionShortcut(getServerRegionShortcut());
 

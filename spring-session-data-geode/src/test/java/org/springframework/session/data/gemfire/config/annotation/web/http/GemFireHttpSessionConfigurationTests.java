@@ -54,6 +54,7 @@ import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.GemFireCacheTypeAwareRegionFactoryBean;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Unit tests for {@link GemFireHttpSessionConfiguration} class.
@@ -83,19 +84,35 @@ public class GemFireHttpSessionConfigurationTests {
 
 	@SuppressWarnings("unchecked")
 	protected <T> T getField(Object obj, String fieldName) {
+
 		try {
-			Field field = obj.getClass().getDeclaredField(fieldName);
+			Field field = resolveField(obj, fieldName);
 			field.setAccessible(true);
 			return (T) field.get(obj);
 		}
-		catch (NoSuchFieldException e) {
-			throw new IllegalArgumentException(String.format(
-				"field with name [%1$s] was not found in class [%2$s]", fieldName, obj), e);
+		catch (NoSuchFieldException cause) {
+			throw new IllegalArgumentException(cause);
 		}
-		catch (IllegalAccessException e) {
-			throw new Error(String.format("unable to access field [%1$s] on object of type [%2$s]",
-				fieldName, obj.getClass().getName()), e);
+		catch (IllegalAccessException cause) {
+			throw new Error(String.format("Unable to access field [%1$s] on object of type [%2$s]",
+				fieldName, obj.getClass().getName()), cause);
 		}
+	}
+
+	private static Field resolveField(Object obj, String fieldName) throws NoSuchFieldException {
+		return resolveField(obj.getClass(), fieldName);
+	}
+
+	private static Field resolveField(Class type, String fieldName) throws NoSuchFieldException {
+
+		Field field = ReflectionUtils.findField(type, fieldName);
+
+		if (field == null) {
+			throw new NoSuchFieldException(String.format("Field with name [%1$s] was not found in class [%2$s]",
+				fieldName, type));
+		}
+
+		return field;
 	}
 
 	@SafeVarargs
@@ -405,16 +422,13 @@ public class GemFireHttpSessionConfigurationTests {
 			this.gemfireConfiguration.sessionRegion(mockGemFireCache, mockRegionAttributes);
 
 		assertThat(sessionRegionFactoryBean).isNotNull();
-		assertThat(this.<ClientRegionShortcut>getField(sessionRegionFactoryBean, "clientRegionShortcut"))
-			.isEqualTo(ClientRegionShortcut.CACHING_PROXY);
-		assertThat(this.<GemFireCache>getField(sessionRegionFactoryBean, "gemfireCache"))
-			.isEqualTo(mockGemFireCache);
+		assertThat(sessionRegionFactoryBean.getClientRegionShortcut()).isEqualTo(ClientRegionShortcut.CACHING_PROXY);
+		assertThat(sessionRegionFactoryBean.getCache()).isEqualTo(mockGemFireCache);
 		assertThat(this.<String>getField(sessionRegionFactoryBean, "poolName")).isEqualTo("TestPool");
 		assertThat(this.<RegionAttributes<Object, Session>>getField(sessionRegionFactoryBean,
 			"regionAttributes")).isEqualTo(mockRegionAttributes);
 		assertThat(this.<String>getField(sessionRegionFactoryBean, "regionName")).isEqualTo("TestRegion");
-		assertThat(this.<RegionShortcut>getField(sessionRegionFactoryBean, "serverRegionShortcut"))
-			.isEqualTo(RegionShortcut.REPLICATE_PERSISTENT);
+		assertThat(sessionRegionFactoryBean.getServerRegionShortcut()).isEqualTo(RegionShortcut.REPLICATE_PERSISTENT);
 
 		verifyZeroInteractions(mockGemFireCache);
 		verifyZeroInteractions(mockRegionAttributes);
