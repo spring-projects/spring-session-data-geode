@@ -218,10 +218,191 @@ include::guides/xml-gemfire-p2p.adoc[tags=config,leveloffset=+3]
 [[httpsession-gemfire-configuration-properties]]
 === Configuring `HttpSession` Management using {data-store-name} with Properties
 
+While the `@EnableGemFireHttpSession` annotation is convenient and easy to use to get started quickly with
+Spring Session and {data-store-name} in your Spring Boot applications, you quickly run into limitations when
+migrating from 1 environment to another, for example, like when moving from DEV to QA to PROD.
+
+With the `@EnableGemFireHttpSession` attributes, it is not possible to vary the configuration from 1 environment
+to another.  Therefore, Spring Session for {data-store-name} introduces well-known properties for all
+the `@EnableGemFireHttpSession` attributes.
+
+[cols="2,2,2,1", options="header"]
+.Well-known properties for the `@EnableGemFireHttpSession` attributes.
+|===
+| Property
+| Annotation attribute
+| Description
+| Default
+
+| spring.session.data.gemfire.cache.client.region.shortcut
+| `EnableGemFireHttpSession.clientRegionShortcut`
+| Sets the client Region data management policy in the client-server topology.
+| ClientRegionShortcut.PROXY
+
+| spring.session.data.gemfire.session.attributes.indexable
+| `EnableGemFireHttpSession.indexableSessionAttributes`
+| Comma-delimited list of Session attributes to indexed in the Session Region.
+|
+
+| spring.session.data.gemfire.session.expiration.max-inactive-interval-seconds
+| `EnableGemFireHttpSession.maxInactiveIntervalInSeconds`
+| Session expiration timeout in seconds
+| 1800
+
+| spring.session.data.gemfire.cache.client.pool.name
+| `EnableGemFireHttpSession.poolName`
+| Name of the dedicated Pool used by the client Region storing/accessing Session state.
+| gemfirePool
+
+| spring.session.data.gemfire.session.region.name
+| `EnableGemFireHttpSession.regionName`
+| Name of the client or peer Region used to store and access Session state.
+| ClusteredSpringSessions
+
+| spring.session.data.gemfire.session.region.name
+| `EnableGemFireHttpSession.serverRegionShortcut`
+| Sets the peer Region data management policy in the peer-to-peer (P2P) topology.
+| RegionShortcut.PARTITION
+
+| spring.session.data.gemfire.session.serializer.bean-name
+| `EnableGemFireHttpSession.sessionSerializerBeanName`
+| Name of the bean in the Spring container implementing the serialization strategy
+| SessionPdxSerializer
+|===
+
+TIP: All the properties are documented in the `@EnableGemFireHttpSession` attribute Javadoc as well.
+
+Therefore, it is very simple to adjust the configuration of Spring Session when using {data-store-name}
+as your provider by using properties, as follows:
+
+[source,java]
+----
+@SpringBootApplication
+@ClientCacheApplication
+@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 900)
+class MySpringSessionApplication {
+  ...
+}
+----
+
+And then, in `application.properties`:
+
+[source,properties]
+----
+#application.properties
+spring.session.data.gemfire.cache.client.region.shortcut=CACHING_PROXY
+spring.session.data.gemfire.session.expiration.max-inactive-internval-seconds=3600
+----
+
+Any properties explicitly defined override the corresponding `@EnableGemFireHttpSession` attribute.  In the example
+above, even though the `EnableGemFireHttpSession` annotation, `maxInactiveIntervalInSeconds` attribute was set to
+`900` seconds, or 15 minutes, the corresponding attribute property
+(`spring.session.data.gemfire.session.expiration.max-inactive-interval-seconds`)
+overrides the value and set the expiration to `3600` seconds, or 60 minutes.
+
+NOTE: Keep in mind, properties override the annotation attribute values at runtime.
+
+You can even get more sophisticated and configure your properties with other properties, as follows:
+
+[source,properties]
+----
+#application.properties
+spring.session.data.gemfire.session.expiration.max-inactive-internval-seconds=${app.geode.region.expiration.timeout:3600}
+----
+
+Additionally, you could use Spring profiles to vary the expiration timeout (or other properties) based on environment
+or application, or whatever criteria your application requirements dictate.
+
+NOTE: Property placeholders and nesting is a feature of the core Spring Framework and not specific to
+Spring Session for {data-store-name}.
 
 [[httpsession-gemfire-configuration-configurer]]
 === Configuring `HttpSession` Management using {data-store-name} with a Configurer
 
+In addition to properties, Spring Session for {data-store-name} also allows you to adjust the configuration of
+Spring Session with {data-store-name} using the `SpringSessionGemFireConfigurer` interface.  The interface defines a
+default method for each `@EnableGemFireHttpSession` annotation attribute that can be overridden to adjust the
+configuration.
+
+The `SpringSessionGemFireConfigurer` is similar in concept to Spring Web MVC's Configurer implementations
+(e.g. `o.s.web.servlet.config.annotation.WebMvcConfigurer`), which adjusts various aspects of your Web application's
+configuration at runtime, such as configuring async support.  The advantage of delcaring and implementing a `Configurer`
+is that it gives your programmatical control over your configuration.
+
+For example, to adjust the client Region data management policy and Session expiration timeout as we did previously,
+use the following:
+
+[source,java]
+----
+@Configuration
+class MySpringSessionConfiguration {
+
+  @Bean
+  SpringSessionGemFireConfigurer exampleSpringSessionGemFireConfigurer() {
+
+    return new SpringSessionGemFireConfigurer() {
+
+      @Override
+      public ClientRegionShortcut getClientRegionShortcut() {
+        return ClientRegionShortcut.CACHING_PROXY;
+      }
+
+      @Override
+      public int getMaxInactiveIntervalInSeconds() {
+        return 3600;
+      }
+    }
+  }
+}
+----
+
+Of course, the example above is not very creative.  You could most certainly use more sophisticated logic to determine
+the configuration of each configuration attribute.
+
+WARNING: Using the `SpringSessionGemFireConfigurer` is all or nothing.  Meaning, if you declare and use the `Configurer`,
+then all configuration is derived from the configurer whether you overrode the appropriate method or not.  If you do not
+override every method, then the default value for that configuration attribute will be used.
+
+The `SpringSessionGemFireConfigurer` takes precedence over either the `@EnableGemFireHttpSession` annotation
+attributes as well as any corresponding properties (e.g. `spring.session.data.gemfire.session.region.name`) defined
+in `application.properties.`
+
+Additionally, you can only declare 1 `SpringSessionGemFireConfigurer` bean in the Spring container at a time, unless
+you are also using Spring profiles or have marked 1 of the multiple `SpringSessionGemFireConfigurer` beans as primary
+using Spring's `@Primary` context annotation.
+
+Of course, your `Configurer` could even be implemented in terms of other properties using Spring's `@Value` annotation,
+as follows:
+
+[source,java]
+----
+@Configuration
+class MySpringSessionConfiguration {
+
+  @Bean
+  @Primary
+  @Profile("production")
+  SpringSessionGemFireConfigurer exampleSpringSessionGemFireConfigurer(
+      @Value("${app.geode.region.data-management-policy:CACHING_PROXY}") ClientRegionShortcut shortcut,
+      @Value("${app.geode.region.expiration.timeout:3600}") int timeout) {
+
+    return new SpringSessionGemFireConfigurer() {
+
+      @Override
+      public ClientRegionShortcut getClientRegionShortcut() {
+        return shortcut;
+      }
+
+      @Override
+      public int getMaxInactiveIntervalInSeconds() {
+        return timeout;
+      }
+    }
+  }
+}
+----
+
+The choice is yours.
 
 [[httpsession-gemfire-serialization]]
 === {data-store-name} Serialization
