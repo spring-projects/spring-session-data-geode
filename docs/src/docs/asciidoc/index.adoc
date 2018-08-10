@@ -1,50 +1,54 @@
 = Spring Session
 John Blum
+:data-store-version: 16
+:data-store-name: Apache Geode
+:data-store-docs: http://geode.apache.org/docs/guide/{data-store-version}
+:data-store-javadoc: http://geode.apache.org/releases/latest/javadoc
+:data-store-website: http://geode.apache.org
+:sdg-name: Spring Data for {data-store-name}
+:sdg-docs: https://docs.spring.io/spring-data/geode/docs/current/reference/html
+:sdg-javadoc: https://docs.spring.io/spring-data/geode/docs/current/api
 :doctype: book
 :toc: left
 
 [[abstract]]
 
-_Spring Session_ provides an API and implementations for managing a user's session information.
+Spring Session provides an API and implementations for managing a user's session information.
 
 [[introduction]]
 == Introduction
 
-_Spring Session_ provides an API and implementations for managing a user's session information.
+Spring Session provides an API and implementations for managing a user's session information.
 It also provides transparent integration with:
 
-* <<httpsession,HttpSession>> - _Spring Session_ enables the replacement of the `javax.servlet.http.HttpSession`
-in an application container (e.g. Tomcat) neutral way.
+** **HttpSession** - enables the `HttpSession` to be <<httpsession-gemfire,clustered>> (i.e. replicated
+for highly availability) without being tied to an application container specific solution.
+** **REST API** - allows the session ID to be provided in the protocol header to work with RESTful APIs.
+** **WebSocket** - provides the ability to keep the `HttpSession` alive when receiving WebSocket messages.
+** **WebSession** - allows replacing the Spring WebFlux's `WebSession` in an application container neutral way.
 
-Additional features include:
-
-** **Clustered Sessions** - _Spring Session_ makes it trivial to support <<httpsession-gemfire,clustered sessions>>
-without being tied to an application container specific solution.
-** **Multiple Browser Sessions** - _Spring Session_ supports managing _multiple user sessions_ within a single browser
-(i.e. multiple authenticated accounts similar to Google).
-** **REST API** - _Spring Session_ allows the session ID to be provided in the protocol header to work with REST APIs.
-** **WebSocket** - _Spring Session_ provides the ability to keep the `HttpSession` alive when receiving messages
-via a `WebSocket`.
+In a nutshell, Spring Session replaces the `javax.servlet.http.HttpSession` in an application container neutral way
+by supplying a more common and robust session implementation backing the `HttpSession`.
 
 [[samples]]
 == Samples and Guides (Start Here)
 
-If you are looking to get started with _Spring Session_ right of way, the best place to start
+If you are looking to get started with Spring Session right of way, the best place to start
 is with our Sample Applications.
 
-.Sample Application using _Spring Boot_
+.Sample Application using Spring Boot
 |===
 | Source | Description | Guide
 
-| {gh-samples-url}boot/gemfire[HttpSession with Spring Boot and Apache Geode]
-| Demonstrates how to use _Spring Session_ to manage the `HttpSession` with Apache Geode in a _Spring Boot_ application
+| {gh-samples-url}boot/gemfire[HttpSession with Spring Boot and {data-store-name}]
+| Demonstrates how to use Spring Session to manage the `HttpSession` with {data-store-name} in a Spring Boot application
 using a Client/Server topology.
-| link:guides/boot-gemfire.html[HttpSession with Spring Boot and Apache Geode Guide]
+| link:guides/boot-gemfire.html[HttpSession with Spring Boot and {data-store-name} Guide]
 
-| {gh-samples-url}boot/gemfire-with-scoped-proxies[HttpSession with Spring Boot and Apache Geode using Scoped Proxies]
-| Demonstrates how to use _Spring Session_ to manage the `HttpSession` with Apache Geode in a _Spring Boot_ application
+| {gh-samples-url}boot/gemfire-with-scoped-proxies[HttpSession with Spring Boot and {data-store-name} using Scoped Proxies]
+| Demonstrates how to use Spring Session to manage the `HttpSession` with {data-store-name} in a Spring Boot application
 using a Client/Server topology.  The application also makes use of Spring Request and Session Scoped Proxy beans.
-| link:guides/boot-gemfire-with-scoped-proxies.html[HttpSession with Spring Boot and Apache Geode using Scoped Proxies Guide]
+| link:guides/boot-gemfire-with-scoped-proxies.html[HttpSession with Spring Boot and {data-store-name} using Scoped Proxies Guide]
 
 |===
 
@@ -52,13 +56,13 @@ using a Client/Server topology.  The application also makes use of Spring Reques
 |===
 | Source | Description | Guide
 
-| {gh-samples-url}javaconfig/gemfire-clientserver[HttpSession with Apache Geode (Client/Server)]
-| Demonstrates how to use _Spring Session_ to manage the `HttpSession` with Apache Geode using a Client/Server topology.
-| link:guides/java-gemfire-clientserver.html[HttpSession with Apache Geode (Client/Server) Guide]
+| {gh-samples-url}javaconfig/gemfire-clientserver[HttpSession with {data-store-name} (Client/Server)]
+| Demonstrates how to use Spring Session to manage the `HttpSession` with {data-store-name} using a Client/Server topology.
+| link:guides/java-gemfire-clientserver.html[HttpSession with {data-store-name} (Client/Server) Guide]
 
-| {gh-samples-url}javaconfig/gemfire-p2p[HttpSession with Apache Geode (P2P)]
-| Demonstrates how to use _Spring Session_ to manage the `HttpSession` with Apache Geode using a P2P topology.
-| link:guides/java-gemfire-p2p.html[HttpSession with Apache Geode (P2P) Guide]
+| {gh-samples-url}javaconfig/gemfire-p2p[HttpSession with {data-store-name} (P2P)]
+| Demonstrates how to use Spring Session to manage the `HttpSession` with {data-store-name} using a P2P topology.
+| link:guides/java-gemfire-p2p.html[HttpSession with {data-store-name} (P2P) Guide]
 
 |===
 
@@ -66,67 +70,68 @@ using a Client/Server topology.  The application also makes use of Spring Reques
 |===
 | Source | Description | Guide
 
-| {gh-samples-url}xml/gemfire-clientserver[HttpSession with Apache Geode (Client/Server)]
-| Demonstrates how to use _Spring Session_ to manage the `HttpSession` with Apache Geode using a Client/Server topology.
-| link:guides/xml-gemfire-clientserver.html[HttpSession with Apache Geode (Client/Server) Guide]
+| {gh-samples-url}xml/gemfire-clientserver[HttpSession with {data-store-name} (Client/Server)]
+| Demonstrates how to use Spring Session to manage the `HttpSession` with {data-store-name} using a Client/Server topology.
+| link:guides/xml-gemfire-clientserver.html[HttpSession with {data-store-name} (Client/Server) Guide]
 
-| {gh-samples-url}xml/gemfire-p2p[HttpSession with Apache Geode (P2P)]
-| Demonstrates how to use _Spring Session_ to manage the `HttpSession` with Apache Geode using a P2P topology.
-| link:guides/xml-gemfire-p2p.html[HttpSession with Apache Geode (P2P) Guide]
+| {gh-samples-url}xml/gemfire-p2p[HttpSession with {data-store-name} (P2P)]
+| Demonstrates how to use Spring Session to manage the `HttpSession` with {data-store-name} using a P2P topology.
+| link:guides/xml-gemfire-p2p.html[HttpSession with {data-store-name} (P2P) Guide]
 
 |===
 
 [[httpsession]]
 == HttpSession Integration
 
-_Spring Session_ provides transparent integration with `javax.servlet.http.HttpSession`. This means that developers
-can replace the `HttpSession` implementation with an implementation that is backed by _Spring Session_.
+Spring Session provides transparent integration with `javax.servlet.http.HttpSession`. This means that developers
+can replace the `HttpSession` implementation with an implementation that is backed by Spring Session.
+
+Spring Session enables multiple different data store providers (e.g. like {data-store-name}) to be plugged in
+in order to manage the `HttpSession` state.
 
 [[httpsession-why]]
 === Why Spring Session & HttpSession?
 
-We already mentioned that _Spring Session_ provides transparent integration with `HttpSession`, but what benefits
+We already mentioned that Spring Session provides transparent integration with `HttpSession`, but what benefits
 do we get out of this?
 
-** **Clustered Sessions** - _Spring Session_ makes it trivial to support <<httpsession-gemfire,clustered sessions>>
-without being tied to an application container specific solution.
-** **Multiple Browser Sessions** - _Spring Session_ supports managing _multiple user sessions_ within a single browser
-(i.e. multiple authenticated accounts similar to Google).
-** **REST API** - _Spring Session_ allows the session ID to be provided in the protocol header to work with REST APIs.
-** **WebSocket** - _Spring Session_ provides the ability to keep the `HttpSession` alive when receiving messages
-via a `WebSocket`.
+** **HttpSession** - enables the `HttpSession` to be <<httpsession-gemfire,clustered>> (i.e. replicated
+for highly availability) without being tied to an application container specific solution.
+** **REST API** - allows the session ID to be provided in the protocol header to work with RESTful APIs.
+** **WebSocket** - provides the ability to keep the `HttpSession` alive when receiving WebSocket messages.
+** **WebSession** - allows replacing the Spring WebFlux's `WebSession` in an application container neutral way.
 
 [[httpsession-gemfire]]
-=== HttpSession with Apache Geode
+=== HttpSession with {data-store-name}
 
-When http://geode.apache.org/[Apache Geode] is used with _Spring Session_, a web application's
-`javax.servlet.http.HttpSession` can be replaced with a **clustered** implementation managed by _Apache Geode_
-and conveniently accessed using _Spring Session's_ API.
+When {data-store-website}[{data-store-name}] is used with Spring Session, a web application's
+`javax.servlet.http.HttpSession` can be replaced with a **clustered** implementation managed by {data-store-name}
+and conveniently accessed using Spring Session's API.
 
-The two most common topologies for managing _Spring Sessions_ using _Apache Geode_ include:
+The two most common topologies for managing session state using {data-store-name} include:
 
 * <<httpsession-gemfire-clientserver,Client-Server>>
 * <<httpsession-gemfire-p2p,Peer-To-Peer (P2P)>>
 
-Additionally, _Apache Geode_ supports site-to-site replication using
-http://geode.apache.org/docs/guide/12/topologies_and_comm/multi_site_configuration/chapter_overview.html[WAN technology].
-The ability to configure and use _Apache Geode's_ WAN functionality is independent of _Spring Session_,
+Additionally, {data-store-name} supports site-to-site replication using the
+{data-store-docs}/topologies_and_comm/multi_site_configuration/chapter_overview.html[WAN topology].
+The ability to configure and use {data-store-name}'s WAN functionality is independent of Spring Session,
 and beyond the scope of this document.
 
-More details on configuring _Apache Geode_ WAN functionality using _Spring Data Apache Geode_ can be found
-http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#bootstrap:gateway[here].
+More details on configuring {data-store-name} WAN functionality using Spring Data for {data-store-name}
+can be found {sdg-docs}/#bootstrap:gateway[here].
 
 [[httpsession-gemfire-clientserver]]
-==== Apache Geode Client-Server
+==== {data-store-name} Client-Server
 
-The http://geode.apache.org/docs/guide/12/topologies_and_comm/cs_configuration/chapter_overview.html[Client-Server]
-topology will probably be the more common configuration choice among users when using Apache Geode as a provider in
-_Spring Session_ since a Apache Geode server has significantly different and unique JVM heap requirements than compared
-to the application. Using a Client-Server topology enables an application to manage (e.g. replicate) application state
-independently from other application processes.
+The {data-store-docs}/topologies_and_comm/cs_configuration/chapter_overview.html[Client-Server] topology will likely be
+the most common configuration choice among users when using {data-store-name} as a provider in Spring Session since a
+{data-store-name} server has significantly different and unique JVM heap requirements than compared to the application.
+Using a Client-Server topology enables an application to manage (e.g. replicate) application state independently
+from other application processes.
 
-In a Client-Server topology, an application using _Spring Session_ will open 1 or more connections to a remote cluster
-of Apache Geode servers that will manage access to all `HttpSession` state.
+In a Client-Server topology, an application using Spring Session will open 1 or more connections to a remote cluster
+of {data-store-name} servers that will manage access to all `HttpSession` state.
 
 You can configure a Client-Server topology with either:
 
@@ -134,48 +139,50 @@ You can configure a Client-Server topology with either:
 * <<httpsession-gemfire-clientserver-xml,XML-based Configuration>>
 
 [[httpsession-gemfire-clientserver-java]]
-===== Apache Geode Client-Server Java-based Configuration
+===== {data-store-name} Client-Server Java-based Configuration
 
-This section describes how to configure Apache Geode's Client-Server topology to manage an `HttpSession`
+This section describes how to configure {data-store-name}'s Client-Server topology to manage `HttpSession` state
 with Java-based configuration.
 
-NOTE: The <<samples,HttpSession with Apache Geode (Client-Server)>> provides a working sample demonstrating how to
-integrate _Spring Session_ with Apache Geode to manage the `HttpSession` using Java configuration. You can read
+NOTE: The <<samples,HttpSession with {data-store-name} (Client-Server)>> provides a working sample demonstrating how to
+integrate Spring Session with {data-store-name} to manage `HttpSession` state using Java configuration. You can read
 through the basic steps of integration below, but you are encouraged to follow along in the detailed _`HttpSession`
-with Apache Geode (Client-Server) Guide_ when integrating with your own application.
+with {data-store-name} (Client-Server) Guide_ when integrating with your own application.
 
 include::guides/java-gemfire-clientserver.adoc[tags=config,leveloffset=+3]
 
 [[http-session-gemfire-clientserver-xml]]
-===== Apache Geode Client-Server XML-based Configuration
+===== {data-store-name} Client-Server XML-based Configuration
 
-This section describes how to configure Apache Geode's Client-Server topology to manage an `HttpSession`
+This section describes how to configure {data-store-name}'s Client-Server topology to manage `HttpSession` state
 with XML-based configuration.
 
-NOTE: The <<samples,HttpSession with Apache Geode (Client-Server) using XML>> provides a working sample demonstrating
-how to integrate _Spring Session_ with Apache Geode to manage the `HttpSession` using XML configuration. You can read
-through the basic steps of integration below, but you are encouraged to follow along in the detailed _`HttpSession`
-with Apache Geode (Client-Server) using XML Guide_ when integrating with your own application.
+NOTE: The <<samples,HttpSession with {data-store-name} (Client-Server) using XML>> provides a working sample
+demonstrating how to integrate Spring Session with {data-store-name} to manage `HttpSession` state using XML
+configuration. You can read through the basic steps of integration below, but you are encouraged to follow along
+in the detailed _`HttpSession` with {data-store-name} (Client-Server) using XML Guide_ when integrating with
+your own application.
 
 include::guides/xml-gemfire-clientserver.adoc[tags=config,leveloffset=+3]
 
 [[httpsession-gemfire-p2p]]
-==== Apache Geode Peer-To-Peer (P2P)
+==== {data-store-name} Peer-To-Peer (P2P)
 
-Perhaps a less common approach is to configure the _Spring Session_ application as a peer member in the Apache Geode cluster
-using the http://geode.apache.org/docs/guide/12/topologies_and_comm/p2p_configuration/chapter_overview.html[Peer-To-Peer (P2P)] topology.
-In this configuration, the _Spring Session_ application would be an actual server (or data node) in the Apache Geode cluster,
-and **not** a cache client as before.
+A less common approach is to configure your Spring Session application as a peer member in the {data-store-name} cluster
+using the {data-store-docs}/topologies_and_comm/p2p_configuration/chapter_overview.html[Peer-To-Peer (P2P)] topology.
+In this configuration, the Spring Session application would be an actual server (or data node) in the {data-store-name}
+cluster, and **not** just a cache client as before.
 
-One advantage to this approach is the proximity of the application to the application's state (i.e. its data).
-However, there are other effective means of accomplishing similar data dependent computations, such as using Apache Geode's
-http://geode.apache.org/docs/guide/12/developing/function_exec/chapter_overview.html[Function Execution].
-Any of Apache Geode's other http://geode.apache.org/docs/guide/12/getting_started/product_intro.html[features] can be used
-when Apache Geode is serving as a provider in _Spring Session_.
+One advantage to this approach is the proximity of the application to the application's state (i.e. its data),
+and in particular the `HttpSession` state. However, there are other effective means of accomplishing similar
+data dependent computations, such as using {data-store-name}'s
+{data-store-docs}/developing/function_exec/chapter_overview.html[Function Execution].
+Any of {data-store-name}'s other {data-store-docs}/getting_started/product_intro.html[features] can be used when
+{data-store-name} is serving as a provider in Spring Session.
 
-P2P is very useful for testing purposes as well as for smaller, more focused and self-contained applications,
+The P2P topology is very useful for testing purposes and for smaller, more focused and self-contained applications,
 such as those found in a microservices architecture, and will most certainly improve on your application's perceived
-latency, throughput and consistency needs.
+latency and throughput needs.
 
 You can configure a Peer-To-Peer (P2P) topology with either:
 
@@ -183,75 +190,85 @@ You can configure a Peer-To-Peer (P2P) topology with either:
 * <<httpsession-gemfire-p2p-xml,XML-based Configuration>>
 
 [[httpsession-gemfire-p2p-java]]
-===== Apache Geode Peer-To-Peer (P2P) Java-based Configuration
+===== {data-store-name} Peer-To-Peer (P2P) Java-based Configuration
 
-This section describes how to configure Apache Geode's Peer-To-Peer (P2P) topology to manage an `HttpSession`
+This section describes how to configure {data-store-name}'s Peer-To-Peer (P2P) topology to manage `HttpSession` state
 using Java-based configuration.
 
-NOTE: The <<samples, HttpSession with Apache Geode (P2P)>> provides a working sample demonstrating how to
-integrate _Spring Session_ with Apache Geode to manage the `HttpSession` using Java configuration. You can read
+NOTE: The <<samples, HttpSession with {data-store-name} (P2P)>> provides a working sample demonstrating how to
+integrate Spring Session with {data-store-name} to manage `HttpSession` state using Java configuration. You can read
 through the basic steps of integration below, but you are encouraged to follow along in the detailed _`HttpSession`
-with Apache Geode (P2P) Guide_ when integrating with your own application.
+with {data-store-name} (P2P) Guide_ when integrating with your own application.
 
 include::guides/java-gemfire-p2p.adoc[tags=config,leveloffset=+3]
 
 [[httpsession-gemfire-p2p-xml]]
-===== Apache Geode Peer-To-Peer (P2P) XML-based Configuration
+===== {data-store-name} Peer-To-Peer (P2P) XML-based Configuration
 
-This section describes how to configure Apache Geode's Peer-To-Peer (P2P) topology to manage an `HttpSession`
+This section describes how to configure {data-store-name}'s Peer-To-Peer (P2P) topology to manage `HttpSession` state
 using XML-based configuration.
 
-NOTE: The <<samples, HttpSession with Apache Geode (P2P) using XML>> provides a working sample demonstrating how to
-integrate _Spring Session_ with Apache Geode to manage the `HttpSession` using XML configuration. You can read
+NOTE: The <<samples, HttpSession with {data-store-name} (P2P) using XML>> provides a working sample demonstrating how to
+integrate Spring Session with {data-store-name} to manage `HttpSession` state using XML configuration. You can read
 through the basic steps of integration below, but you are encouraged to follow along in the detailed _`HttpSession`
-with Apache Geode (P2P) using XML Guide_ when integrating with your own application.
+with {data-store-name} (P2P) using XML Guide_ when integrating with your own application.
 
 include::guides/xml-gemfire-p2p.adoc[tags=config,leveloffset=+3]
 
-[[httpsession-gemfire-serialization]]
-=== Apache Geode/Pivotal GemFire Serialization
+[[httpsession-gemfire-configuration-properties]]
+=== Configuring `HttpSession` Management using {data-store-name} with Properties
 
-In order to transfer data between clients and servers, or when data is distributed/replicated between peer nodes
+
+[[httpsession-gemfire-configuration-configurer]]
+=== Configuring `HttpSession` Management using {data-store-name} with a Configurer
+
+
+[[httpsession-gemfire-serialization]]
+=== {data-store-name} Serialization
+
+In order to transfer data between clients and servers, or when data is distributed and replicated between peer nodes
 in a cluster, the data must be serialized.  In this case, the data in question is the Session's state.
 
 Anytime a Session is persisted or accessed in a client/server topology, the Session's state is sent over-the-wire.
-Typically, a _Spring Boot_ application with _Spring Session_ enabled will be a client to the server(s) that form
-a cluster of nodes in Apache Geode or Pivotal GemFire.
+Typically, a Spring Boot application with Spring Session enabled will be a client to the server(s) in a cluster
+of {data-store-name} nodes.
 
 On the server-side, Session state maybe distributed across several servers (data nodes) in the cluster to replicate
-the data in order to support high availability of the Session state.  Using Pivotal GemFire or Apache Geode, data can be partitioned,
+the data and guarantee a high availability of the Session state.  When using {data-store-name}, data can be partitioned,
 or sharded, and a redundancy-level can be specified.  When the data is distributed for replication, it must also be
 serialized to transfer the Session state among the peer nodes in the cluster.
 
-Out-of-the-box, both Pivotal GemFire and Apache Geode support _Java Serialization_.  There are many advantages to _Java Serialization_
+Out-of-the-box, {data-store-name} supports _Java Serialization_.  There are many advantages to _Java Serialization_,
 such as handling cycles in the object graph, or being universally supported by any application written in Java.
-However, _Java Serialization_ is very verbose and not the most efficient over-the-wire format.
+However, _Java Serialization_ is very verbose and is not the most efficient over-the-wire format.
 
-As such, Pivotal GemFire and Apache Geode provides its own serialization frameworks to serialize Java types:
+As such, {data-store-name} provides its own serialization frameworks to serialize Java types:
 
-1. http://geode.apache.org/docs/guide/12/developing/data_serialization/gemfire_data_serialization.html[Data Serialization]
-2. http://geode.apache.org/docs/guide/12/developing/data_serialization/gemfire_pdx_serialization.html[PDX Serialization]
+1. {data-store-docs}/developing/data_serialization/gemfire_data_serialization.html[Data Serialization]
+2. {data-store-docs}/developing/data_serialization/gemfire_pdx_serialization.html[PDX Serialization]
 
 [[httpsession-gemfire-serialization-background]]
-==== Apache Geode/Pivotal GemFire Serialization Background
+==== {data-store-name} Serialization Background
 
-As mentioned above, Apache Geode and Pivotal GemFire provide 2 additional serialization frameworks:
+As mentioned above, {data-store-name} provide 2 additional serialization frameworks:
 _Data Serialization_ and PDX _Serialization_.
 
 [[httpsession-gemfire-serialization-data]]
 ===== _Data Serialization_
 
 _Data Serialization_ is a very efficient format (i.e. _fast_ and _compact_), with little overhead when compared to
-_Java Serialization_.  It supports http://geode.apache.org/docs/guide/12/developing/delta_propagation/chapter_overview.html[Delta Propagation]
-by sending only the bits of data that actually changed as opposed to sending the entire object, which certainly cuts
-down on the amount of data sent over the network in addition to reducing the amount of IO when data is persisted
+_Java Serialization_.
+
+It supports {data-store-docs}/developing/delta_propagation/chapter_overview.html[Delta Propagation] by sending
+only the bits of data that actually changed as opposed to sending the entire object, which certainly cuts down
+on the amount of data sent over the network in addition to reducing the amount of IO when data is persisted
 or overflowed to disk.
 
 However, _Data Serialization_ incurs a CPU penalty anytime data is transferred over-the-wire, or persisted/overflowed to
 and accessed from disk, since the receiving end performs a deserialization.  In fact, anytime _Delta Propagation_
-is used, the object must be deserialized on the receiving end in order to apply the "delta", since Pivotal GemFire
-/ Apache Geode applies deltas by invoking a method on the object that implements the `org.apache.geode.Delta` interface.
-Clearly, you cannot invoke a method on a serialized object.
+is used, the object must be deserialized on the receiving end in order to apply the "delta". {data-store-name} applies
+deltas by invoking a method on the object that implements the `org.apache.geode.Delta` interface. Clearly, you cannot
+invoke a method on a serialized object.
 
 [[httpsession-gemfire-serialization-pdx]]
 ===== PDX
@@ -264,32 +281,33 @@ Additionally, PDX, as the name implies, is "_portable_", meaning it enables both
 such as C, C++ and C# clients, to inter-operate on the same data set.
 
 PDX even allows OQL queries to be performed on the serialized bytes without causing the objects to be deserialized
-in order to evaluate the query predicate and execute the query.  This can be accomplished since Pivotal GemFire and Apache Geode
-maintains a "_Type Registry_" containing type meta-data for the objects that get serialized and stored in Apache Geode.
+first in order to evaluate the query predicate and execute the query.  This can be accomplished since {data-store-name}
+maintains a "_Type Registry_" containing type meta-data for the objects that get serialized and stored in
+{data-store-name} using PDX.
 
 However, portability does come with a cost, having slightly more overhead than _Data Serialization_. Still, PDX is far
-more efficient and flexible than _Java Serialization_ where type meta-data is actually stored in the serialized bytes
-of the object rather than in a separate _Type Registry_ as in Pivotal GemFire and Apache Geode's case.
+more efficient and flexible than _Java Serialization_, which stores type meta-data in the serialized bytes of the object
+rather than in a separate Type Registry as in {data-store-name}'s case when using PDX.
 
-PDX does not support Deltas.  Technically, a PDX serializable object can be used in _Delta Propagation_ by
-implementing the http://geode.apache.org/releases/latest/javadoc/org/apache/geode/Delta.html[`org.apache.geode.Delta`]
-interface, and only the "delta" will be sent, even in the context of PDX.  But then, the PDX serialized object must be
-deserialized to apply the delta. Remember, a method is invoked to apply the delta, which defeats the purpose of using
-PDX in the first place.
+PDX does not support Deltas.  Technically, a PDX serializable object can be used in _Delta Propagation_ by implementing
+the {data-store-javadoc}/org/apache/geode/Delta.html[`org.apache.geode.Delta`] interface, and only the "delta" will be
+sent, even in the context of PDX.  But then, the PDX serialized object must be deserialized to apply the delta.
+Remember, a method is invoked to apply the delta, which defeats the purpose of using PDX in the first place.
 
-When developing Native Clients (e.g. C++) that manage data in a Pivotal GemFire or Apache Geode cluster, or even when mixing
+When developing Native Clients (e.g. C++) that manage data in a {data-store-name} cluster, or even when mixing
 Native Clients with Java clients, typically there will not be any associated Java types provided on the classpath
 of the servers in the cluster.  With PDX, it is not necessary to provide the Java types on the classpath, and many
-customers who only develop and use Native Clients will not provide any Java types for the corresponding C# types.
+users who only develop and use Native Clients to access data stored in {data-store-name} will not provide any
+Java types for their corresponding C/C++/C# types.
 
-Pivotal GemFire and Apache Geode also support JSON serialized to/from PDX.  In this case, it is very likely that Java types will
-not be provided on the servers classpath since many different languages (e.g. JavaScript, Python, Ruby) supporting JSON
-can be used with Pivotal GemFire and Apache Geode.
+{data-store-name} also support JSON serialized to/from PDX.  In this case, it is very likely that Java types will not be
+provided on the servers classpath since many different languages (e.g. JavaScript, Python, Ruby) supporting JSON can be
+used with {data-store-name}.
 
-Still, even with PDX in play, users must take care not to cause the PDX serialized object on the servers in the cluster
+Still, even with PDX in play, users must take care not to cause a PDX serialized object on the servers in the cluster
 to be deserialized.
 
-For example, consider a query on an object of the following Java type serialized as PDX...
+For example, consider an OQL query on an object of the following Java type serialized as PDX...
 
 [source, java]
 ----
@@ -306,70 +324,69 @@ class Person {
 }
 ----
 
-And, the OQL query invokes a method on a `Person` object...
+Subsequently, if the OQL query invokes a method on a `Person` object, such as:
 
 `SELECT * FROM /People p WHERE p.age >= 21`
 
 Then, this is going to cause a PDX serialized `Person` object to be deserialized since `age` is not a field of `Person`,
-but rather a method containing a computation based on another field of `Person` (i.e. `birthDate`).
+but rather a method containing a computation based on another field of `Person` (i.e. `birthDate`).  Likewise, calling
+any `java.lang.Object` method in a OQL query, like `Object.toString()`, is going to cause a deserialization to happen
+as well.
 
-Likewise, calling any `java.lang.Object` method in a OQL query, like `Object.toString()`, is going to cause
-a deserialization to happen as well.
-
-Pivotal GemFire and Apache Geode do provide the http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientCacheFactory.html#setPdxReadSerialized-boolean-[`read-serialized`]
+{data-store-name} does provide the
+{data-store-javadoc}/org/apache/geode/cache/client/ClientCacheFactory.html#setPdxReadSerialized-boolean-[`read-serialized`]
 configuration setting so that any cache `Region.get(key)` operations that are potentially invoked inside a `Function`
-do not cause PDX serialized objects to be deserialized.  But, nothing will prevent an ill-conceived OQL query
-from causing a deserialization, so be careful.
+does not cause PDX serialized objects to be deserialized.  But, nothing will prevent an ill-conceived OQL query from
+causing a deserialization, so be careful.
 
 [[httpsession-gemfire-serialization-java-data-pdx]]
 ===== PDX + _Data Serialization_ + _Java Serialization_
 
-It is possible for Apache Geode/Pivotal GemFire to support all 3 serialization formats simultaneously.
+It is possible for {data-store-name} to support all 3 serialization formats simultaneously.
 
 For instance, your application domain model might contain objects that implement the `java.io.Serialiable` interface,
 and you may be using a combination of the _Data Serialization_ framework along with PDX.
 
 TIP: While using _Java Serialization_ with _Data Serialization_ and PDX is possible, it is generally preferable
-and recommended that you use 1 serialization strategy.
+and recommended to use 1 serialization strategy.
 
 NOTE: Unlike _Java Serialization_, _Data Serialization_ and PDX _Serialization_ do not handle object graph cycles.
 
-More background on Apache Geode Serialization can be found
-http://geode.apache.org/docs/guide/12/developing/data_serialization/data_serialization_options.html[here].
+More background on {data-store-name}'s serialization mechanics can be found
+{data-store-docs}/developing/data_serialization/data_serialization_options.html[here].
 
 [[httpsession-gemfire-serialization-spring-session]]
 ==== Serialization with Spring Session
 
-Previously, _Spring Session for Pivotal GemFire/Apache Geode_ only supported Apache Geode/Pivotal GemFire's _Data Serialization_
-format.  The main motivation behind this was to take advantage of _Delta Propagation_ since a Session's state
-can be arbitrarily large.
+Previously, Spring Session for {data-store-name} only supported {data-store-name} _Data Serialization_ format. The main
+motivation behind this was to take advantage of {data-store-name}'s _Delta Propagation_ functionality since a Session's
+state can be arbitrarily large.
 
-However, as of _Spring Session for Pivotal GemFire/Apache Geode_ 2.0, PDX is also supported and is now the new, default serialization
-option.  The default was changed to PDX in _Spring Session for Pivotal GemFire/Apache Geode_ 2.0 primarily because PDX is the most
+However, as of Spring Session for {data-store-name} 2.0, PDX is also supported and is now the new, default serialization
+option.  The default was changed to PDX in Spring Session for {data-store-name} 2.0 primarily because PDX is the most
 widely used and requested format by users.
 
-PDX is certainly the most flexible format, so much so that you do not even need _Spring Session for Pivotal GemFire/Apache Geode_
-or any of its transitive dependencies on the classpath of the servers in the cluster to use _Spring Session_ with
-either Apache Geode or Pivotal GemFire.  In fact, with PDX, you do not even need to put your application domain object
-types that will be stored in the (HTTP) Session on the servers' classpath either.
+PDX is certainly the most flexible format, so much so that you do not even need Spring Session for {data-store-name}
+or any of its transitive dependencies on the classpath of the servers in the cluster to use Spring Session with
+{data-store-name}.  In fact, with PDX, you do not even need to put your application domain object types stored in
+the (HTTP) Session on the servers' classpath either.
 
-Essentially, when using PDX serialization, Pivotal GemFire and Apache Geode do not require the associated Java types be present
+Essentially, when using PDX serialization, {data-store-name} does not require the associated Java types to be present
 on the servers' classpath.  So long as no deserialization happens on the servers in the cluster, you are safe.
 
 The `@EnableGemFireHttpSession` annotation introduces the **new** `sessionSerializerBeanName` attribute that a user
-can configure to refer to the name of a bean declared and registered in the _Spring_ context that implements the desired
-serialization strategy.  The serialization strategy is used by _Spring Session for Pivotal GemFire/Apache Geode_ to serialize
+can use to configure the name of a bean declared and registered in the Spring container implementing the desired
+serialization strategy.  The serialization strategy is used by Spring Session for {data-store-name} to serialize
 the Session state.
 
-Out-of-the-box, _Spring Session for Pivotal GemFire/Apache Geode_ provides 2 serialization strategies: 1 for PDX and 1 for
-_Data Serialization_.  It automatically registers both serialization strategy beans in the _Spring_ context.
-However, only 1 of those strategies is actually used at runtime... PDX!
+Out-of-the-box, Spring Session for {data-store-name} provides 2 serialization strategies: 1 for PDX and 1 for
+_Data Serialization_.  It automatically registers both serialization strategy beans in the Spring container.
+However, only 1 of those strategies is actually used at runtime, PDX!
 
-The 2 beans registered in the _Spring_ context implementing _Data Serialization_ and PDX are named
-`SessionDataSerializer` and `SessionPdxSerializer`, respectively.
-
-By default, the `sessionSerializerBeanName` attribute is set to `SessionPdxSerializer`, as if the user annotated
-his/her _Spring Boot_, _Spring Session_ enabled application configuration class with...
+The 2 beans registered in the Spring container implementing _Data Serialization_ and PDX are named
+`SessionDataSerializer` and `SessionPdxSerializer`, respectively. By default, the `sessionSerializerBeanName` attribute
+is set to `SessionPdxSerializer`, as if the user annotated his/her Spring Boot, Spring Session enabled application
+configuration class with:
 
 [source, java]
 ----
@@ -379,7 +396,7 @@ class MySpringSessionApplication { .. }
 ----
 
 It is a simple matter to change the serialization strategy to _Data Serialization_ instead by setting the
-`sessionSerializerBeanName` attribute to `SessionDataSerializer`, like so...
+`sessionSerializerBeanName` attribute to `SessionDataSerializer`, as follows:
 
 [source, java]
 ----
@@ -388,10 +405,10 @@ It is a simple matter to change the serialization strategy to _Data Serializatio
 class MySpringSessionApplication { .. }
 ----
 
-Since these 2 values are so common, _Spring Session for Pivotal GemFire/Apache Geode_ provides constants for each value in the
+Since these 2 values are so common, Spring Session for {data-store-name} provides constants for each value in the
 `GemFireHttpSessionConfiguration` class: `GemFireHttpSessionConfiguration.SESSION_PDX_SERIALIZER_BEAN_NAME`
-and `GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME`.  So, you could explicitly configure PDX
-using...
+and `GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME`.  So, you could explicitly configure PDX,
+as follows:
 
 [source, java]
 ----
@@ -402,23 +419,20 @@ import org.springframework.session.data.geode.config.annotation.web.http.GemFire
 class MySpringSessionApplication { .. }
 ----
 
-With 1 attribute and 2 provided bean definitions out-of-the-box, a user can specify which Serialization framework she
-wishes to use with her _Spring Session_ application backed by either Apache Geode or Pivotal GemFire.
+With 1 attribute and 2 provided bean definitions out-of-the-box, you can specify which Serialization framework you wish
+to use with your Spring Boot, Spring Session enabled application backed by {data-store-name}.
 
 [[httpsession-gemfire-serialization-framework]]
-==== Spring Session for Pivotal GemFire/Apache Geode Serialization Framework
+==== Spring Session for {data-store-name} Serialization Framework
 
-To abstract away the details of Apache Geode/Pivotal GemFire's _Data Serialization_ and _PDX Serialization_ frameworks
-_Spring Session for Pivotal GemFire/Apache Geode_ provides its own Serialization framework (facade) wrapping
-Pivotal GemFire/Apache Geode's Serialization frameworks.
+To abstract away the details of {data-store-name}'s _Data Serialization_ and PDX _Serialization_ frameworks,
+Spring Session for {data-store-name} provides its own Serialization framework (facade) wrapping {data-store-name}'s
+Serialization frameworks.
 
-The Serialization API exists under the `org.springframework.session.data.gemfire.serialization` package.
+The Serialization API exists under the `org.springframework.session.data.gemfire.serialization` package. The primary
+interface in this API is the `org.springframework.session.data.gemfire.serialization.SessionSerializer`.
 
-The primary interface in this API is the...
-
-`org.springframework.session.data.gemfire.serialization.SessionSerializer`
-
-The interface is defined as...
+The interface is defined as:
 
 .Spring Session `SessionSerializer` interface
 [source, java]
@@ -429,39 +443,38 @@ interface SessionSerializer<T, IN, OUT> {
 
   T deserialize(IN in);
 
-  boolean canSerializer(Class<?> type);
+  boolean canSerialize(Class<?> type);
 
-  boolean canSerializer(Object obj) {
-    // call Object.getClass() in a null-safe way and then call and return canSerialize(:Class)
+  boolean canSerialize(Object obj) {
+    // calls Object.getClass() in a null-safe way and then calls and returns canSerialize(:Class)
   }
 }
 ----
 
-Basically, the interface allows you to serialize and deserialize a _Spring_ `Session` object.
+Basically, the interface allows you to serialize and deserialize a Spring `Session` object.
 
 The `IN` and `OUT` type parameters and corresponding method arguments of those types provide reference to the objects
 responsible for writing the `Session` to a stream of bytes or reading the `Session` from a stream of bytes.  The actual
-arguments will be type dependent/specific, based on the underlying Pivotal GemFire/Apache Geode Serialization
-strategy configured.
+arguments will be type specific, based on the underlying {data-store-name} Serialization strategy configured.
 
-For instance, when using Pivotal GemFire/Apache Geode's PDX _Serialization_ framework, `IN` and `OUT` will be instances of
-`org.apache.geode.pdx.PdxReader` and `org.apache.geode.pdx.PdxWriter`, respectively.  When Pivotal GemFire/Apache Geode's
+For instance, when using {data-store-name}'s PDX _Serialization_ framework, `IN` and `OUT` will be instances of
+`org.apache.geode.pdx.PdxReader` and `org.apache.geode.pdx.PdxWriter`, respectively.  When {data-store-name}'s
 _Data Serialization_ framework has been configured, then `IN` and `OUT` will be instances of `java.io.DataInput`
-and `java.io.DataOuput`, respectively.
+and `java.io.DataOutput`, respectively.
 
-These arguments are provided to the `SessionSerializer` implementation by the framework automatically, and as mentioned
-above, is based on the underlying Pivotal GemFire/Apache Geode Serialization strategy configured.
+These arguments are provided to the `SessionSerializer` implementation by the framework automatically, and as
+previously mentioned, is based on the underlying {data-store-name} Serialization strategy configured.
 
-Essentially, even though _Spring Session for Pivotal GemFire/Apache Geode_ provides a facade around Pivotal GemFire/Apache Geode's
-Serialization frameworks, under-the-hood, Pivotal GemFire/Apache Geode still expects that one of these Serialization frameworks
-is being used to serialize data to/from Pivotal GemFire/Apache Geode.
+Essentially, even though Spring Session for {data-store-name} provides a facade around {data-store-name}'s
+Serialization frameworks, under-the-hood {data-store-name} still expects one of these Serialization frameworks
+is being used to serialize data to/from {data-store-name}.
 
 _So what purpose does the `SessionSerializer` interface really serve then?_
 
 Effectively, it allows a user to customize what aspects of the Session's state actually gets serialized and stored
-in Pivotal GemFire or Apache Geode.  Application developers can provide their own custom, application-specific `SessionSerializer`
-implementation, register it as a bean in the _Spring_ context, and then configure it to be used by _Spring Session
-for Pivotal GemFire/Apache Geode_ to serialize the Session state...
+in {data-store-name}.  Application developers can provide their own custom, application-specific `SessionSerializer`
+implementation, register it as a bean in the Spring container, and then configure it to be used by Spring Session
+for {data-store-name} to serialize the Session state, as follows:
 
 [source, java]
 ----
@@ -478,60 +491,61 @@ class MySpringSessionDataGemFireApplication {
 [[httpsession-gemfire-serialization-framework-serializer-implementation]]
 ===== Implementing a SessionSerializer
 
-_Spring Session for Pivotal GemFire/Apache Geode_ (SSDG) provides assistance when a user wants to implement a custom
-`SessionSerializer` that fits into one of Pivotal GemFire or Apache Geode's Serialization frameworks.
+Spring Session for {data-store-name} provides assistance when a user wants to implement a custom `SessionSerializer`
+that fits into one of {data-store-name}'s Serialization frameworks.
 
 If the user just implements the `org.springframework.session.data.gemfire.serialization.SessionSerializer` interface
-directly without extending from one of SSDG's provided abstract base classes, pertaining to 1 of Pivotal GemFire/Apache Geode's
-Serialization frameworks , then SSDG will wrap the user's custom `SessionSerializer` implementation in an instance of
-`org.springframework.session.data.gemfire.serialization.pdx.support.PdxSerializerSessionSerializerAdapter` and register
-it with Pivotal GemFire/Apache Geode as a `org.apache.geode.pdx.PdxSerializer`.
+directly without extending from one of Spring Session for {data-store-name}'s provided abstract base classes, related
+to 1 of {data-store-name}'s Serialization frameworks , then Spring Session for {data-store-name} will wrap the user's
+custom `SessionSerializer` implementation in an instance of
+`org.springframework.session.data.gemfire.serialization.pdx.support.PdxSerializerSessionSerializerAdapter`
+and register it with {data-store-name} as a `org.apache.geode.pdx.PdxSerializer`.
 
-_Spring Session for Pivotal GemFire/Apache Geode_ is careful not to stomp on any existing, `PdxSerializer` implementation that a user
-may already have registered with the Pivotal GemFire/Apache Geode cache by some other means.  Indeed, several different and provided
-implementations of the Pivotal GemFire/Apache Geode `org.apache.geode.pdx.PdxSerializer` interface do exists:
+Spring Session for {data-store-name} is careful not to stomp on any existing `PdxSerializer` implementation that a user
+may have already registered with {data-store-name} by some other means.  Indeed, several different, provided
+implementations of {data-store-name}'s `org.apache.geode.pdx.PdxSerializer` interface exists:
 
-* Pivotal GemFire/Apache Geode itself provides the
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/pdx/ReflectionBasedAutoSerializer.html[`org.apache.geode.pdx.ReflectionBasedAutoSerializer`].
+* {data-store-name} itself provides the
+{data-store-javadoc}/org/apache/geode/pdx/ReflectionBasedAutoSerializer.html[`org.apache.geode.pdx.ReflectionBasedAutoSerializer`].
 
-* _Spring Data for Apache Geode or Pivotal GemFire_ (SDG) provide the
-https://docs.spring.io/spring-data/geode/docs/current/api/org/springframework/data/gemfire/mapping/MappingPdxSerializer.html[`org.springframework.data.gemfire.mapping.MappingPdxSerializer`],
-which is used in the SD _Repository_ abstraction and SDG extension to handle mapping PDX serialized types to
+* Spring Data for {data-store-name} (SDG) provides the
+{sdg-javadoc}/org/springframework/data/gemfire/mapping/MappingPdxSerializer.html[`org.springframework.data.gemfire.mapping.MappingPdxSerializer`],
+which is used in the SD _Repository_ abstraction and SDG's extension to handle mapping PDX serialized types to
 the application domain object types defined in the application _Repository_ interfaces.
 
 This is accomplished by obtaining any currently registered `PdxSerializer` instance on the cache and composing it
 with the `PdxSerializerSessionSerializerAdapter` wrapping the user's custom application `SessionSerializer`
-implementation and re-registering this "_composite_" `PdxSerializer` on the Pivotal GemFire/Apache Geode cache.  The "_composite_"
-`PdxSerializer` implementation is provided _Spring Session for Pivotal GemFire/Apache Geode's_
-`org.springframework.session.data.gemfire.pdx.support.ComposablePdxSerializer` class when entities are stored in either
-Pivotal GemFire or Apache Geode as PDX.
+implementation and re-registering this "_composite_" `PdxSerializer` on the {data-store-name} cache.  The "_composite_"
+`PdxSerializer` implementation is provided Spring Session for {data-store-name}'s
+`org.springframework.session.data.gemfire.pdx.support.ComposablePdxSerializer` class
+when entities are stored in {data-store-name} as PDX.
 
-If no other `PdxSerializer` was currently registered with the Pivotal GemFire/Apache Geode cache, then the adapter
+If no other `PdxSerializer` was currently registered with the {data-store-name} cache, then the adapter
 is simply registered.
 
-Of course, the user is allowed to force the underlying Pivotal GemFire/Apache Geode Serialization strategy used with
-his/her custom `SessionSerializer` implementation by doing 1 of the following...
+Of course, you are allowed to force the underlying {data-store-name} Serialization strategy used with a custom
+`SessionSerializer` implementation by doing 1 of the following:
 
-1. The custom `SessionSerializer` implementation can implement Pivotal GemFire/Apache Geode's `org.apache.geode.pdx.PdxSerializer`
-interface, or for convenience, extend _Spring Session for Pivotal GemFire/Apache Geode's_
+1. The custom `SessionSerializer` implementation can implement {data-store-name}'s `org.apache.geode.pdx.PdxSerializer`
+interface, or for convenience, extend Spring Session for {data-store-name}'s
 `org.springframework.session.data.gemfire.serialization.pdx.AbstractPdxSerializableSessionSerializer` class
-and _Spring Session for Pivotal GemFire/Apache Geode_ will register the custom `SessionSerializer` as a `PdxSerializer`
-with Pivotal GemFire/Apache Geode.
+and Spring Session for {data-store-name} will register the custom `SessionSerializer` as a `PdxSerializer`
+with {data-store-name}.
 
-2. The custom `SessionSerializer` implementation can extend the Pivotal GemFire/Apache Geode's `org.apache.geode.DataSerializable`
-class, or for convenience, extend _Spring Session for Pivotal GemFire/Apache Geode's_
+2. The custom `SessionSerializer` implementation can extend the {data-store-name}'s `org.apache.geode.DataSerializable`
+class, or for convenience, extend Spring Session for {data-store-name}'s
 `org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer` class
-and _Spring Session for Pivotal GemFire/Apache Geode_ will register the custom `SessionSerializer` as a `DataSerializer`
-with Pivotal GemFire/Apache Geode.
+and Spring Session for {data-store-name} will register the custom `SessionSerializer` as a `DataSerializer`
+with {data-store-name}.
 
-3. Finally, a user can create a custom `SessionSerializer` implementation as before, not specifying which Pivotal GemFire/Apache Geode
-Serialization framework to use because the custom `SessionSeriaizer` implementation does not implement any Pivotal GemFire/Apache Geode
-serialization interfaces or extend from any of _Spring Session for Pivotal GemFire/Apache Geode's_ provided abstract base classes,
-and still have it registered in Pivotal GemFire/Apache Geode as a `DataSerializer` by declaring an additional
-_Spring Session for Pivotal GemFire/Apache Geode_ bean in the _Spring_ context of type
+3. Finally, a user can create a custom `SessionSerializer` implementation as before, not specifying which
+{data-store-name} Serialization framework to use because the custom `SessionSeriaizer` implementation does not implement
+any {data-store-name} serialization interfaces or extend from any of Spring Session for {data-store-name}'s provided
+abstract base classes, and still have it registered in {data-store-name} as a `DataSerializer` by declaring an
+additional Spring Session for {data-store-name} bean in the Spring container of type
 `org.springframework.session.data.gemfire.serialization.data.support.DataSerializerSessionSerializerAdapter`, like so...
 
-.Forcing the registration of a custom SessionSerializer as a DataSerializer in Pivotal GemFire/Apache Geode
+.Forcing the registration of a custom SessionSerializer as a DataSerializer in {data-store-name}
 [source, java]
 ----
 @EnableGemFireHttpSession(sessionSerializerBeanName = "customSessionSerializer")
@@ -549,34 +563,35 @@ class Application {
 }
 ----
 
-Just by the very presence of the `DataSerializerSessionSerializerAdapter` registered as a bean in the _Spring_ context
-any neutral, custom `SessionSerializer` implementation will be treated and registered as a `DataSerializer`
-in Pivotal GemFire/Apache Geode.
+Just by the very presence of the `DataSerializerSessionSerializerAdapter` registered as a bean in the Spring container,
+any neutral custom `SessionSerializer` implementation will be treated and registered as a `DataSerializer`
+in {data-store-name}.
 
 [[httpsession-gemfire-serialization-framework-session-representation]]
 ===== Changing the Session Representation
 
-Internally, _Spring Session for Pivotal GemFire/Apache Geode_ maintains 2 representations for the (HTTP) Session and the Session's
-attributes.  Each representation is based on whether Pivotal GemFire/Apache Geode "_Deltas_" are supported or not.  Pivotal GemFire/Apache Geode
-_Delta Propagation_ is only enabled by _Spring Session for Pivotal GemFire/Apache Geode_ when using _Data Serialization_ for reasons
-that were discussed <<httpsession-gemfire-serialization-pdx, earlier>>.
+Internally, Spring Session for {data-store-name} maintains 2 representations of the (HTTP) Session and the Session's
+attributes.  Each representation is based on whether {data-store-name} "_Deltas_" are supported or not.
+
+{data-store-name} _Delta Propagation_ is only enabled by Spring Session for {data-store-name} when using
+_Data Serialization_ for reasons that were discussed <<httpsession-gemfire-serialization-pdx, earlier>>.
 
 Effectively, the strategy is:
 
-1. If Pivotal GemFire/Apache Geode _Data Serialization_ is configured, then _Deltas_ are supported and the
+1. If {data-store-name} _Data Serialization_ is configured, then _Deltas_ are supported and the
 `DeltaCapableGemFireSession` and `DeltaCapableGemFireSessionAttributes` representations are used.
 
-2. If Pivotal GemFire/Apache Geode _PDX Serialization_ is configured, then the _Delta Propagation_ will be disabled and the
-`GemFireSession` and `GemFireSessionAttributes` representations are used.
+2. If {data-store-name} PDX _Serialization_ is configured, then _Delta Propagation_ will be disabled
+and the `GemFireSession` and `GemFireSessionAttributes` representations are used.
 
-It is possible to override these internal representations used by _Spring Session for Pivotal GemFire/Apache Geode_, and for users
+It is possible to override these internal representations used by Spring Session for {data-store-name}, and for users
 to provide their own Session related types.  The only strict requirement is that the Session implementation
-must implement the `org.springframework.session.Session` interface.
+must implement the core Spring Session `org.springframework.session.Session` interface.
 
-By way of example, let's say the user wants to define their own Session implementation.
+By way of example, let's say you want to define your own Session implementation.
 
-First, the user defines their `Session` type.  Perhaps the user's custom `Session` type even encapsulates and handles
-the Session attributes without having to define a separate type.
+First, you define the `Session` type.  Perhaps your custom `Session` type even encapsulates and handles the Session
+attributes without having to define a separate type.
 
 .User-defined Session interface implementation
 [source, java]
@@ -586,8 +601,8 @@ class MySession implements org.springframework.session.Session {
 }
 ----
 
-Then, the user would need to extend the `org.springframework.session.data.gemfire.GemFireOperationsSessionRepository`
-class and override the `createSession()` method to create instances of the user-defined `Session` implementation class.
+Then, you would need to extend the `org.springframework.session.data.gemfire.GemFireOperationsSessionRepository` class
+and override the `createSession()` method to create instances of your custom `Session` implementation class.
 
 .Custom SessionRepository implementation creating and returning instances of the custom Session type
 [source, java]
@@ -601,16 +616,16 @@ class MySessionRepository extends GemFireOperationsSessionRepository {
 }
 ----
 
-If the user provided his/her own custom `SessionSerializer` implementation and Pivotal GemFire/Apache Geode _PDX Serialization_
-is configured, then the user is done.
+If you provide your own custom `SessionSerializer` implementation and {data-store-name} PDX _Serialization_ is
+configured, then you done.
 
-However, if the user configured Pivotal GemFire/Apache Geode _Data Serialization_ then the user must provide a custom implementation
-of the `SessionSerializer` interface and either have it directly extend the Pivotal GemFire/Apache Geode's
-`org.apache.geode.DataSerializer` class, or extend _Spring Session for Pivotal GemFire/Apache Geode's_
+However, if you configured {data-store-name} _Data Serialization_ then you must additionally provide a custom
+implementation of the `SessionSerializer` interface and either have it directly extend {data-store-name}'s
+`org.apache.geode.DataSerializer` class, or extend Spring Session for {data-store-name}'s
 `org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer` class
 and override the `getSupportedClasses():Class<?>[]` method.
 
-For instance...
+For example:
 
 .Custom SessionSerializer for custom Session type
 [source, java]
@@ -626,11 +641,11 @@ class MySessionSerializer extends AbstractDataSerializableSessionSerializer {
 }
 ----
 
-Unfortunately, `getSupportedClasses()` cannot return the generic _Spring Session_ `org.springframework.session.Session`
-interface type.  If it could then we could avoid the explicit need to override the `getSupportedClasses()` method
-on the custom `DataSerializer` implementaton.  Bu, Pivotal GemFire/Apache Geode's _Data Serialization_ framework  can only match
-on exact class types since it incorrectly and internally stores and refers to the class type by name, which basically
-requires a user to override and implement the `getSupportedClasses()` method.
+Unfortunately, `getSupportedClasses()` cannot return the generic Spring Session `org.springframework.session.Session`
+interface type.  If it could then we could avoid the explicit need to override the `getSupportedClasses()` method on
+the custom `DataSerializer` implementation.  But, {data-store-name}'s _Data Serialization_ framework  can only match
+on exact class types since it incorrectly and internally stores and refers to the class type by name, which then
+requires the user to override and implement the `getSupportedClasses()` method.
 
 [[httpsession-how]]
 === How HttpSession Integration Works
@@ -638,7 +653,7 @@ requires a user to override and implement the `getSupportedClasses()` method.
 Fortunately, both `javax.servlet.http.HttpSession` and `javax.servlet.http.HttpServletRequest` (the API for
 obtaining an `HttpSession`) are interfaces. This means we can provide our own implementations for each of these APIs.
 
-NOTE: This section describes how _Spring Session_ provides transparent integration with `javax.servlet.http.HttpSession`.
+NOTE: This section describes how Spring Session provides transparent integration with `javax.servlet.http.HttpSession`.
 The intent is so users understand what is happening under-the-hood. This functionality is already implemented
 and integrated so you do not need to implement this logic yourself.
 
@@ -666,11 +681,11 @@ public class SessionRepositoryRequestWrapper extends HttpServletRequestWrapper {
 ----
 
 Any method that returns an `javax.servlet.http.HttpSession` is overridden.  All other methods are implemented by
-`javax.servlet.http.HttpServletRequestWrapper` and simply delegate to the original `javax.servlet.http.HttpServletRequest`
-implementation.
+`javax.servlet.http.HttpServletRequestWrapper` and simply delegate to the original
+`javax.servlet.http.HttpServletRequest` implementation.
 
-We replace the `javax.servlet.http.HttpServletRequest` implementation using a Servlet `Filter` called `SessionRepositoryFilter`.
-The pseudocode can be found below:
+We replace the `javax.servlet.http.HttpServletRequest` implementation using a Servlet `Filter` called
+`SessionRepositoryFilter`. The pseudocode can be found below:
 
 [source, java]
 ----
@@ -692,26 +707,27 @@ public class SessionRepositoryFilter implements Filter {
 By passing in a custom `javax.servlet.http.HttpServletRequest` implementation into the `FilterChain` we ensure that
 anything invoked after our `Filter` uses the custom `javax.servlet.http.HttpSession` implementation.
 
-This highlights why it is important that _Spring Session's_ `SessionRepositoryFilter` must be placed before anything
+This highlights why it is important that Spring Session's `SessionRepositoryFilter` must be placed before anything
 that interacts with the `javax.servlet.http.HttpSession`.
 
 [[httpsession-httpsessionlistener]]
 === HttpSessionListener
 
-_Spring Session_ supports `HttpSessionListener` by translating `SessionDestroyedEvent` and `SessionCreatedEvent` into
+Spring Session supports `HttpSessionListener` by translating `SessionCreatedEvent` and `SessionDestroyedEvent` into
 `HttpSessionEvent` by declaring `SessionEventHttpSessionListenerAdapter`.
 
 To use this support, you need to:
 
-* Ensure your `SessionRepository` implementation supports and is configured to fire `SessionDestroyedEvent` and `SessionCreatedEvent`.
-* Configure `SessionEventHttpSessionListenerAdapter` as a _Spring_ bean.
+* Ensure your `SessionRepository` implementation supports and is configured to fire `SessionCreatedEvent`
+and`SessionDestroyedEvent`.
+* Configure `SessionEventHttpSessionListenerAdapter` as a Spring bean.
 * Inject every `HttpSessionListener` into the `SessionEventHttpSessionListenerAdapter`
 
-If you are using the configuration support documented in <<httpsession-gemfire,HttpSession with Apache Geode>>,
+If you are using the configuration support documented in <<httpsession-gemfire,HttpSession with {data-store-name}>>,
 then all you need to do is register every `HttpSessionListener` as a bean.
 
-For example, assume you want to support _Spring Security's_ concurrency control and need to use `HttpSessionEventPublisher`
-you can simply add `HttpSessionEventPublisher` as a bean.
+For example, assume you want to support Spring Security's concurrency control and need to use `HttpSessionEventPublisher`,
+then you can simply add `HttpSessionEventPublisher` as a bean.
 
 [[api-session]]
 === Session
@@ -721,57 +737,58 @@ A `Session` is a simplified `Map` of key/value pairs with support for expiration
 [[api-sessionrepository]]
 === SessionRepository
 
-A `SessionRepository` is in charge of creating, persisting and retrieving `Session` instances and state.
+A `SessionRepository` is in charge of creating, persisting and accessing `Session` instances and state.
 
 If possible, developers should not interact directly with a `SessionRepository` or a `Session`.  Instead, developers
-should prefer to interact with `SessionRepository` and `Session` indirectly through the `javax.servlet.http.HttpSession`
-and `WebSocket` integration.
+should prefer to interact with `SessionRepository` and `Session` indirectly through the `javax.servlet.http.HttpSession`,
+`WebSocket` and `WebSession` integration.
 
 [[api-findbyindexnamesessionrepository]]
 === FindByIndexNameSessionRepository
 
-_Spring Session's_ most basic API for using a `Session` is the `SessionRepository`.  The API is intentionally
-very simple so that it is easy to provide additional implementations with basic functionality.
+Spring Session's most basic API for using a `Session` is the `SessionRepository`.  The API is intentionally very simple
+so that it is easy to provide additional implementations with basic functionality.
 
 Some `SessionRepository` implementations may choose to implement `FindByIndexNameSessionRepository` also.
-For example, _Spring Session's Apache Geode_ support implements `FindByIndexNameSessionRepository`.
+For example, Spring Session's for {data-store-name} support implements `FindByIndexNameSessionRepository`.
 
-The `FindByIndexNameSessionRepository` provides a single method to look up all the `Sessions` for a particular user.
+The `FindByIndexNameSessionRepository` adds a single method to look up all the sessions for a particular user.
 This is done by ensuring that the session attribute with the name `FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME`
-is populated with the username.  It is the responsibility of the developer to ensure the attribute is populated
-since _Spring Session_ is not aware of the authentication mechanism being used.
+is populated with the username. It is the responsibility of the developer to ensure the attribute is populated since
+Spring Session is not aware of the authentication mechanism being used.
 
 [NOTE]
 ====
 Some implementations of `FindByIndexNameSessionRepository` will provide hooks to automatically index other session attributes.
-For example, many implementations will automatically ensure the current _Spring Security_ user name is indexed with
+For example, many implementations will automatically ensure the current Spring Security user name is indexed with
 the index name `FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME`.
 ====
 
 [[api-enablespringhttpsession]]
 === EnableSpringHttpSession
 
-The `@EnableSpringHttpSession` annotation can be added to any `@Configuration` class to expose the `SessionRepositoryFilter`
-as a bean in the _Spring_ application context named "springSessionRepositoryFilter".
+The `@EnableSpringHttpSession` annotation can be added to any `@Configuration` class to expose the
+`SessionRepositoryFilter` as a bean in the Spring container named, "springSessionRepositoryFilter".
 
 In order to leverage the annotation, a single `SessionRepository` bean must be provided.
 
 [[api-enablegemfirehttpsession]]
 === EnableGemFireHttpSession
 
-The `@EnableGemFireHttpSession` annotation can be added to any `@Configuration` class in place of
-the `@EnableSpringHttpSession` annotation to expose the `SessionRepositoryFilter` as a bean
-in the _Spring_ application context named "springSessionRepositoryFilter" and to position Apache Geode as a provider
-to manage the `javax.servlet.http.HttpSession`.
+The `@EnableGemFireHttpSession` annotation can be added to any `@Configuration` class in place of the
+`@EnableSpringHttpSession` annotation to expose the `SessionRepositoryFilter` as a bean in the Spring container named,
+"springSessionRepositoryFilter" and to position {data-store-name} as a provider managing `javax.servlet.http.HttpSession`
+state.
 
-When using the `@EnableGemFireHttpSession` annotation, additional configuration is imported out-of-the-box
-that also provides a Apache Geode specific implementation of the `SessionRepository` interface, the `GemFireOperationsSessionRepository`.
+When using the `@EnableGemFireHttpSession` annotation, additional configuration is imported out-of-the-box that also
+provides a {data-store-name} specific implementation of the `SessionRepository` interface named,
+`GemFireOperationsSessionRepository`.
 
 [[api-gemfireoperationssessionrepository]]
 === GemFireOperationsSessionRepository
 
-`GemFireOperationsSessionRepository` is a `SessionRepository` implementation that is implemented using _Spring Session for Apache Geode's_
-`GemFireOperationsSessionRepository`.
+`GemFireOperationsSessionRepository` is a `SessionRepository` implementation that is implemented using Spring Session
+for {data-store-name}'s_ `GemFireOperationsSessionRepository`.
 
 In a web environment, this repository is used in conjunction with the `SessionRepositoryFilter`.
 
@@ -779,15 +796,16 @@ This implementation supports `SessionCreatedEvents`, `SessionDeletedEvents` and 
 through `SessionEventHttpSessionListenerAdapter`.
 
 [[api-gemfireoperationssessionrepository-indexing]]
-==== Using Indexes with Apache Geode
+==== Using Indexes with {data-store-name}
 
-While best practices concerning the proper definition of Indexes that positively impact Apache Geode's performance is beyond
-the scope of this document, it is important to realize that _Spring Session for Apache Geode_ creates and uses Indexes to
-query and find Sessions efficiently.
+While best practices concerning the proper definition of Indexes that positively impact {data-store-name}'s performance
+is beyond the scope of this document, it is important to realize that Spring Session for {data-store-name} creates
+and uses Indexes to query and find Sessions efficiently.
 
-Out-of-the-box, _Spring Session for Apache Geode_ creates 1 Hash-typed Index on the principal name. There are two different
-built-in strategies for finding the principal name. The first strategy is that the value of the Session attribute
-with the name `FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME` will be Indexed to the same index name.
+Out-of-the-box, Spring Session for {data-store-name} creates 1 Hash-typed Index on the principal name. There are two
+different built-in strategies for finding the principal name. The first strategy is that the value of the Session
+attribute with the name `FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME` will be Indexed to the same
+index name.
 
 For example:
 
@@ -798,12 +816,12 @@ include::{docs-itest-dir}docs/gemfire/indexing/HttpSessionGemFireIndexingIntegra
 ----
 
 [[api-gemfireoperationssessionrepository-indexing-security]]
-==== Using Indexes with Apache Geode & Spring Security
+==== Using Indexes with {data-store-name} & Spring Security
 
-Alternatively, _Spring Session for Apache Geode_ will map _Spring Security's_ current `Authentication#getName()` to the Index
-`FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME`.
+Alternatively, Spring Session for {data-store-name} will map Spring Security's current `Authentication#getName()` to
+the Index `FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME`.
 
-For example, if you are using _Spring Security_ you can find the current user's sessions using:
+For example, if you are using Spring Security you can find the current user's sessions using:
 
 [source,java,indent=0]
 ----
@@ -812,18 +830,19 @@ include::{docs-itest-dir}docs/gemfire/indexing/HttpSessionGemFireIndexingIntegra
 ----
 
 [[api-gemfireoperationssessionrepository-indexing-custom]]
-==== Using Custom Indexes with GemFire
+==== Using Custom Indexes with {data-store-name}
 
 This enables developers using the `GemFireOperationsSessionRepository` programmatically to query and find all Sessions
 with a given principal name efficiently.
 
-Additionally, _Spring Session for Apache Geode_ will create a Range-based Index on the implementing Session's Map-type
-`attributes` property (i.e. on any arbitrary Session attribute) when a developer identifies 1 or more named Session
-attributes that should be indexed by Apache Geode.
+Additionally, Spring Session for {data-store-name} will create a Range-based Index on the implementing Session's
+Map-type `attributes` property (i.e. on any arbitrary Session attribute) when a developer identifies 1 or more
+named Session attributes that should be indexed by {data-store-name}.
 
-Sessions attributes to index can be specified with the `indexableSessionAttributes` attribute on the `@EnableGemFireHttpSession`
-annotation.  A developer adds this annotation to their _Spring_ application `@Configuration` class when s/he wishes to
-enable _Spring Session's_ support for `HttpSession` backed by Apache Geode.
+Sessions attributes to index can be specified with the `indexableSessionAttributes` attribute on the
+`@EnableGemFireHttpSession` annotation.  A developer adds this annotation to their Spring application
+`@Configuration` class when s/he wishes to enable Spring Session's support for `HttpSession` backed by
+{data-store-name}.
 
 [source,java,indent=0]
 ----
@@ -831,19 +850,22 @@ include::{docs-itest-dir}docs/gemfire/indexing/HttpSessionGemFireCustomIndexingI
 include::{docs-itest-dir}docs/gemfire/indexing/HttpSessionGemFireCustomIndexingIntegrationTests.java[tags=findbyindexname-get]
 ----
 
-NOTE: Only Session attribute names identified in the `@EnableGemFireHttpSession` annotation's `indexableSessionAttributes`
-attribute will have an Index defined.  All other Session attributes will not be indexed.
+NOTE: Only Session attribute names identified in the `@EnableGemFireHttpSession` annotation's
+`indexableSessionAttributes` attribute will have an Index defined.  All other Session attributes will not be indexed.
 
-However, there is one caveat. Any values stored in indexable Session attributes must implement the `java.lang.Comparable<T>`
-interface. If those object values do not implement `Comparable`, then Pivotal GemFire will throw an error on startup when the
-Index is defined for Regions with persistent Session data, or when an attempt is made at runtime to assign the indexable
-Session attribute a value that is not `Comparable` and the Session is saved to GemFire.
+However, there is one catch. Any values stored in an indexable Session attributes must implement the
+`java.lang.Comparable<T>` interface. If those object values do not implement `Comparable`, then {data-store-name}
+will throw an error on startup when the Index is defined for Regions with persistent Session data, or when an attempt
+is made at runtime to assign the indexable Session attribute a value that is not `Comparable` and the Session is saved
+to {data-store-name}.
 
 NOTE: Any Session attribute that is not indexed may store non-`Comparable` values.
 
-To learn more about GemFire's Range-based Indexes, see http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_index/creating_map_indexes.html[Creating Indexes on Map Fields].
+To learn more about {data-store-name}'s Range-based Indexes, see
+{data-store-docs}/developing/query_index/creating_map_indexes.html[Creating Indexes on Map Fields].
 
-To learn more about Pivotal GemFire Indexing in general, see http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_index/query_index.html[Working with Indexes].
+To learn more about {data-store-name} Indexing in general, see
+{data-store-docs}/developing/query_index/query_index.html[Working with Indexes].
 
 [[community]]
 == Spring Session Community
@@ -854,7 +876,7 @@ Please find additional information below.
 [[community-support]]
 === Support
 
-You can get help by asking questions on http://stackoverflow.com/questions/tagged/spring-session[StackOverflow with the tag spring-session].
+You can get help by asking questions on http://stackoverflow.com/questions/tagged/spring-session[StackOverflow with the tag `spring-session`].
 Similarly we encourage helping others by answering questions on _StackOverflow_.
 
 [[community-source]]
@@ -875,21 +897,21 @@ We appreciate https://help.github.com/articles/using-pull-requests/[Pull Request
 [[community-license]]
 === License
 
-_Spring Session for Apache Geode_ and _Spring Session for Pivotal GemFire_ are Open Source Software released under the
-http://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].
+Spring Session for {data-store-name} and Spring Session for Pivotal GemFire are Open Source Software
+released under the http://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].
 
 [[minimum-requirements]]
 == Minimum Requirements
 
-The minimum requirements for _Spring Session_ are:
+The minimum requirements for Spring Session are:
 
 * Java 8+
 * If you are running in a Servlet container (not required), Servlet 2.5+
-* If you are using other _Spring_ libraries (not required), the minimum required version is _Spring Framework_ 5.0.0.RC2.
-* `@EnableGemFireHttpSession` requires _Spring Data Apache Geode_ 2.0.0.RC2 and _Spring Data GemFire_ 2.0.0.RC2.
-* `@EnableGemFireHttpSession` requires Apache Geode 1.2.0 or Pivotal GemFire 9.1.0.
+* If you are using other Spring libraries (not required), the minimum required version is Spring Framework 5.0.x.
+* `@EnableGemFireHttpSession` requires Spring Data for {data-store-name} 2.0.x and Spring Data for Pivotal GemFire 2.0.x.
+* `@EnableGemFireHttpSession` requires {data-store-name} 1.2.x or Pivotal GemFire 9.1.x.
 
 [NOTE]
 ====
-At its core _Spring Session_ only has a required dependency on `spring-jcl`.
+At its core Spring Session only has a required dependency on `spring-jcl`.
 ====
