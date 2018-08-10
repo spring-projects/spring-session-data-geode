@@ -97,6 +97,9 @@ public @interface EnableGemFireHttpSession {
 	 *
 	 * Defaults to {@link ClientRegionShortcut#PROXY}.
 	 *
+	 * Use the {@literal spring.session.data.gemfire.cache.client.region.shortcut} in Spring Boot
+	 * {@literal application.properties}.
+	 *
 	 * @return a {@link ClientRegionShortcut} used to configure the {@link ClientCache} {@link Region}
 	 * data management policy.
 	 * @see org.apache.geode.cache.client.ClientRegionShortcut
@@ -111,6 +114,9 @@ public @interface EnableGemFireHttpSession {
 	 *
 	 * Defaults to empty {@link String} array.
 	 *
+	 * Use the {@literal spring.session.data.gemfire.session.attributes.indexable} in Spring Boot
+	 * {@literal application.properties}.
+	 *
 	 * @return an array of {@link String Strings} identifying the names of {@link Session} attributes to index.
 	 */
 	String[] indexableSessionAttributes() default {};
@@ -119,6 +125,9 @@ public @interface EnableGemFireHttpSession {
 	 * Defines the maximum interval in seconds that a {@link Session} can remain inactive before it expires.
 	 *
 	 * Defaults to {@literal 1800} seconds, or {@literal 30} minutes.
+	 *
+	 * Use the {@literal spring.session.data.gemfire.session.expiration.max-inactive-interval-seconds} in Spring Boot
+	 * {@literal application.properties}.
 	 *
 	 * @return an integer value defining the maximum inactive interval in seconds before the {@link Session} expires.
 	 */
@@ -132,6 +141,9 @@ public @interface EnableGemFireHttpSession {
 	 *
 	 * Defaults to {@literal gemfirePool}.
 	 *
+	 * Use the {@literal spring.session.data.gemfire.cache.client.pool.name} in Spring Boot
+	 * {@literal application.properties}.
+	 *
 	 * @return the name of the {@link Pool} used by the {@link ClientCache} {@link Region}
 	 * to send {@link Session} state to the cluster of servers.
 	 * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration#DEFAULT_POOL_NAME
@@ -143,6 +155,9 @@ public @interface EnableGemFireHttpSession {
 	 *
 	 * Defaults to {@literal ClusteredSpringSessions}.
 	 *
+	 * Use the {@literal spring.session.data.gemfire.session.region.name} in Spring Boot
+	 * {@literal application.properties}.
+	 *
 	 * @return a {@link String} specifying the name of the (client)cache {@link Region}
 	 * used to store {@link Session} state.
 	 * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration#DEFAULT_SESSION_REGION_NAME
@@ -153,6 +168,9 @@ public @interface EnableGemFireHttpSession {
 	 * Defines the {@link Cache} {@link Region} data management policy.
 	 *
 	 * Defaults to {@link RegionShortcut#PARTITION}.
+	 *
+	 * Use the {@literal spring.session.data.gemfire.cache.server.region.shortcut} in Spring Boot
+	 * {@literal application.properties}.
 	 *
 	 * @return a {@link RegionShortcut} used to specify and configure the {@link Cache} {@link Region}
 	 * data management policy.
@@ -167,6 +185,9 @@ public @interface EnableGemFireHttpSession {
 	 * The bean referred to by its name must be of type {@link SessionSerializer}.
 	 *
 	 * Defaults to {@literal SessionPdxSerializer}.
+	 *
+	 * Use the {@literal spring.session.data.gemfire.session.serializer.bean-name} in Spring Boot
+	 * {@literal application.properties}.
 	 *
 	 * @return a {@link String} containing the bean name of the configured {@link SessionSerializer}.
 	 * @see org.springframework.session.data.gemfire.serialization.pdx.provider.PdxSerializableSessionSerializer
