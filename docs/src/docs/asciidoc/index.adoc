@@ -402,6 +402,10 @@ class MySpringSessionConfiguration {
 }
 ----
 
+TIP: Spring Boot will resolve `@Value` annotation property placeholder values or SpEL Expressions automatically.
+However, if you are not using Spring Boot, then you must explicitly register a static
+`PropertySourcesPlaceholderConfigurer` bean definition.
+
 The choice is yours.
 
 [[httpsession-gemfire-serialization]]
