@@ -36,6 +36,7 @@ import org.apache.geode.pdx.PdxSerializer;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
@@ -423,12 +424,16 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 		}
 		catch (BeansException cause) {
 
-			if (cause instanceof NoSuchBeanDefinitionException) {
+			if (isCauseBecauseNoSpringSessionGemFireConfigurerPresent(cause)) {
 				return Optional.empty();
 			}
 
 			throw cause;
 		}
+	}
+
+	private boolean isCauseBecauseNoSpringSessionGemFireConfigurerPresent(Exception cause) {
+		return (!(cause instanceof NoUniqueBeanDefinitionException) && cause instanceof NoSuchBeanDefinitionException);
 	}
 
 	private void applySpringSessionGemFireConfigurer() {
