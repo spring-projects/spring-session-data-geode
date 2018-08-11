@@ -13,7 +13,7 @@ apply plugin: 'io.spring.convention.root'
 
 //ext['spring.version'] = "$springVersion"
 //ext['spring-data-releasetrain.version'] = "$springDataReleaseTrainVersion"
-//ext['spring-session-bom.version'] = "$springSessionVersion"
+//ext['spring-session-bom.version'] = "$springSessionBomVersion"
 
 group = 'org.springframework.session'
 description = 'Spring Session for Apache Geode'
