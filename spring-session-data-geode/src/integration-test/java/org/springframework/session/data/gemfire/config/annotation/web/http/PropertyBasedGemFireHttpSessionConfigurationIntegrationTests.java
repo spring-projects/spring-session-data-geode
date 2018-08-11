@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.Pool;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -158,6 +159,16 @@ public class PropertyBasedGemFireHttpSessionConfigurationIntegrationTests {
 		sessionSerializerBeanName = "TestSessionSerializer"
 	)
 	static class TestConfiguration {
+
+		@Bean("Dead")
+		Pool mockDeadPool() {
+			return mock(Pool.class);
+		}
+
+		@Bean("Swimming")
+		Pool mockSwimmingPool() {
+			return mock(Pool.class);
+		}
 
 		@Bean("MockSessionSerializer")
 		Object mockSessionSerializer() {
