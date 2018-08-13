@@ -16,14 +16,11 @@
 
 package sample.server;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
-import org.springframework.data.gemfire.config.annotation.CacheServerConfigurer;
-import org.springframework.data.gemfire.config.annotation.EnableManager;
+import org.springframework.data.gemfire.tests.integration.config.ClientServerIntegrationTestsConfiguration;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 
 /**
@@ -42,21 +39,14 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
 @SpringBootApplication // <1>
 @CacheServerApplication(name = "SpringSessionDataGeodeServerBootSample", logLevel = "error") // <2>
 @EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 20) // <3>
-@EnableManager(start = true) // <4>
-public class GemFireServer {
+public class GemFireServer extends ClientServerIntegrationTestsConfiguration {
 
 	public static void main(String[] args) {
-		SpringApplication springApplication = new SpringApplication(GemFireServer.class);
-		springApplication.setWebApplicationType(WebApplicationType.NONE);
-		springApplication.run(args);
-	}
 
-	@Bean
-	CacheServerConfigurer cacheServerPortConfigurer(
-			@Value("${spring.session.data.geode.cache.server.port:40404}") int port) { // <5>
-
-		return (beanName, cacheServerFactoryBean) ->
-			cacheServerFactoryBean.setPort(port);
+		new SpringApplicationBuilder(GemFireServer.class)
+			.web(WebApplicationType.NONE)
+			.build()
+			.run(args);
 	}
 }
 // end::class[]
