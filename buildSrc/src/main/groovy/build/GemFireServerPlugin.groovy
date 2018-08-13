@@ -22,7 +22,10 @@ class GemFireServerPlugin implements Plugin<Project> {
 			dependsOn project.tasks.gemfireServer
 			doFirst {
 				project.gretty {
-					jvmArgs = [ "-Dspring.session.data.geode.cache.server.port=${project.tasks.gemfireServer.port}" ]
+					jvmArgs = [
+						"-Dspring.data.gemfire.cache.server.port=${project.tasks.gemfireServer.port}",
+						"-Dspring.session.data.geode.cache.server.port=${project.tasks.gemfireServer.port}"
+					]
 				}
 			}
 		}
