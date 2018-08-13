@@ -18,21 +18,18 @@ package sample.client;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Collections;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
-import org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer;
-import org.springframework.data.gemfire.support.ConnectionEndpoint;
+import org.springframework.data.gemfire.tests.integration.config.ClientServerIntegrationTestsConfiguration;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -76,26 +73,11 @@ public class Application {
 	@ClientCacheApplication(name = "SpringSessionDataGeodeClientWithScopedProxiesBootSample", logLevel = "error",
 		pingInterval = 5000L, readTimeout = 15000, retryAttempts = 1, subscriptionEnabled = true)  // <3>
 	@EnableGemFireHttpSession(poolName = "DEFAULT") // <4>
-	static class ClientCacheConfiguration {
-
-		// Required to resolve property placeholders in Spring @Value annotations.
-		@Bean
-		static PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer() {
-			return new PropertySourcesPlaceholderConfigurer();
-		}
-
-		@Bean
-		ClientCacheConfigurer clientCacheServerPortConfigurer(
-				@Value("${spring.session.data.geode.cache.server.port:40404}") int port) {  // <5>
-
-			return (beanName, clientCacheFactoryBean) ->
-				clientCacheFactoryBean.setServers(Collections.singletonList(
-					new ConnectionEndpoint("localhost", port)));
-		}
-	}
+	@Import(ClientServerIntegrationTestsConfiguration.class)
+	static class ClientCacheConfiguration { }
 
 	@Configuration
-	static class SpringWebMvcConfiguration {  // <6>
+	static class SpringWebMvcConfiguration {  // <5>
 
 		@Bean
 		public WebMvcConfigurer webMvcConfig() {
@@ -131,7 +113,7 @@ public class Application {
 	}
 
 	@RequestMapping(method = RequestMethod.GET, path = "/counts")
-	public String requestAndSessionInstanceCount(HttpServletRequest request, HttpSession session, Model model) { // <7>
+	public String requestAndSessionInstanceCount(HttpServletRequest request, HttpSession session, Model model) { // <6>
 
 		model.addAttribute("sessionId", session.getId());
 		model.addAttribute("requestCount", this.requestBean.getCount());

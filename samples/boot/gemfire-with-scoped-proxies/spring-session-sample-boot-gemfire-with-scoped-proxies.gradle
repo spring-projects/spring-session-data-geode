@@ -9,12 +9,16 @@ repositories {
 dependencies {
 
 	compile project(':spring-session-data-geode')
+
 	compile("org.springframework.boot:spring-boot-starter-thymeleaf") {
 		exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
 	}
+
 	compile("org.springframework.boot:spring-boot-starter-web") {
 		exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
 	}
+
+	compile "org.springframework.data:spring-data-geode-test"
 	compile "org.webjars:bootstrap"
 	compile "org.webjars:webjars-locator"
 
@@ -58,7 +62,7 @@ task runGemFireServer() {
 			'java', '-server', '-ea', '-classpath', classpath,
 			//"-Dgemfire.log-file=gemfire-server.log",
 			//"-Dgemfire.log-level=config",
-			"-Dspring.session.data.geode.cache.server.port=$port",
+			"-Dspring.data.gemifre.cache.server.port=$port",
 			'sample.server.GemFireServer'
 		]
 
@@ -75,8 +79,7 @@ task runGemFireServer() {
 }
 
 
-/*
-integrationTest {
+/*integrationTest {
 	dependsOn runGemFireServer
 	doFirst {
 		def port = reservePort()
@@ -84,11 +87,11 @@ integrationTest {
 		systemProperties['server.port'] = port
 		//systemProperties['gemfire.log-file'] = "gemfire-client.log"
 		//systemProperties['gemfire.log-level'] = "config"
-		systemProperties['spring.session.data.geode.cache.server.port'] = runGemFireServer.port
+		systemProperties['spring.data.gemfire.cache.server.port'] = runGemFireServer.port
 	}
 	doLast {
 		println 'Stopping Apache Geode Server...'
-		runGemFireServer.process?.destroyForcibly()
+		runGemFireServer.process?.destroy()
 	}
 }
 */

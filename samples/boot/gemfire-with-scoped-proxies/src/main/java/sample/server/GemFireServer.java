@@ -16,15 +16,11 @@
 
 package sample.server;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
-import org.springframework.data.gemfire.config.annotation.CacheServerConfigurer;
-import org.springframework.data.gemfire.config.annotation.EnableManager;
+import org.springframework.data.gemfire.tests.integration.config.ClientServerIntegrationTestsConfiguration;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 
 /**
@@ -43,8 +39,7 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
 @SpringBootApplication // <1>
 @CacheServerApplication(name = "SpringSessionDataGeodeServerWithScopedProxiesBootSample", logLevel = "error") // <2>
 @EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 10) // <3>
-@EnableManager(start = true) // <4>
-public class GemFireServer {
+public class GemFireServer extends ClientServerIntegrationTestsConfiguration {
 
 	public static void main(String[] args) {
 
@@ -52,20 +47,6 @@ public class GemFireServer {
 			.web(WebApplicationType.NONE)
 			.build()
 			.run(args);
-	}
-
-	// Required to resolve property placeholders in Spring @Value annotations.
-	@Bean
-	static PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer() {
-		return new PropertySourcesPlaceholderConfigurer();
-	}
-
-	@Bean
-	CacheServerConfigurer cacheServerPortConfigurer(
-			@Value("${spring.session.data.geode.cache.server.port:40404}") int port) { // <5>
-
-		return (beanName, cacheServerFactoryBean) ->
-			cacheServerFactoryBean.setPort(port);
 	}
 }
 // end::class[]
