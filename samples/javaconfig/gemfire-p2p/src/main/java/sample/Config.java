@@ -16,14 +16,12 @@
 
 package sample;
 
-import org.springframework.data.gemfire.config.annotation.EnableManager;
 import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 
 // tag::class[]
 @PeerCacheApplication(name = "SpringSessionSampleJavaConfigGemFireP2p", logLevel = "error") // <1>
 @EnableGemFireHttpSession // <2>
-@EnableManager(start = true) // <3>
 public class Config {
 
 }

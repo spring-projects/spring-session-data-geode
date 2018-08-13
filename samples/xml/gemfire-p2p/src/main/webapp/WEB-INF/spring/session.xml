@@ -20,8 +20,6 @@
 	<util:properties id="gemfireProperties">
 		<prop key="name">SpringSessionSampleXmlGemFireP2p</prop>
 		<prop key="log-level">${spring.session.data.geode.log-level:error}</prop>
-		<prop key="jmx-manager">true</prop>
-		<prop key="jmx-manager-start">true</prop>
 	</util:properties>
 
 	<!--2-->
