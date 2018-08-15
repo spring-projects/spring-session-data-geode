@@ -24,6 +24,7 @@ class GemFireServerPlugin implements Plugin<Project> {
 				project.gretty {
 					jvmArgs = [
 						"-Dspring.data.gemfire.cache.server.port=${project.tasks.gemfireServer.port}",
+						"-Dspring.data.gemfire.pool.servers=localhost[${project.tasks.gemfireServer.port}]",
 						"-Dspring.session.data.geode.cache.server.port=${project.tasks.gemfireServer.port}"
 					]
 				}
@@ -60,7 +61,7 @@ class GemFireServerPlugin implements Plugin<Project> {
 			String[] commandLine = [
 				'java', '-server', '-ea', '-classpath', classpath,
 				//"-Dgemfire.log-file=gemfire-server.log",
-				"-Dgemfire.log-level=" + gemfireLogLevel,
+				"-Dgemfire.log-level=${gemfireLogLevel}",
 				"-Dspring.session.data.geode.cache.server.port=${port}",
 				mainClassName
 			]
