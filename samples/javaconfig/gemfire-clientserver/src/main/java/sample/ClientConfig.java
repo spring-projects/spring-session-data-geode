@@ -16,17 +16,24 @@
 
 package sample;
 
-import org.springframework.context.annotation.Import;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
-import org.springframework.data.gemfire.tests.integration.config.SubscriptionEnabledClientServerIntegrationTestsConfiguration;
+import org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer;
+import org.springframework.data.gemfire.tests.integration.ClientServerIntegrationTestsSupport;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 
 // tag::class[]
-@ClientCacheApplication(name = "SpringSessionDataGeodeClientJavaConfigSample", logLevel = "error",
-	pingInterval = 5000L, readTimeout = 15000, retryAttempts = 1, subscriptionEnabled = true) // <1>
+@ClientCacheApplication(name = "SpringSessionDataGeodeJavaConfigSampleClient", logLevel = "error",
+	readTimeout = 15000, retryAttempts = 1, subscriptionEnabled = true) // <1>
 @EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 30, poolName = "DEFAULT") // <2>
-@Import(SubscriptionEnabledClientServerIntegrationTestsConfiguration.class) // <3>
-public class ClientConfig extends IntegrationTestConfig {
+public class ClientConfig extends ClientServerIntegrationTestsSupport {
 
+	@Bean
+	ClientCacheConfigurer gemfireServerReadyConfigurer( // <3>
+			@Value("${spring.data.gemfire.cache.server.port:40404}") int cacheServerPort) {
+
+		return (beanName, clientCacheFactoryBean) -> waitForServerToStart("localhost", cacheServerPort);
+	}
 }
 // end::class[]

@@ -19,21 +19,17 @@ package sample;
 import java.io.IOException;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
-import org.springframework.data.gemfire.tests.integration.config.ClientServerIntegrationTestsConfiguration;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 
 // tag::class[]
-@CacheServerApplication(name = "SpringSessionSampleJavaConfigGemFireClientServer", logLevel = "error") // <1>
+@CacheServerApplication(name = "SpringSessionDataGeodeJavaConfigSampleServer", logLevel = "error") // <1>
 @EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 30) // <2>
-@Import(ClientServerIntegrationTestsConfiguration.class) // <3>
 public class ServerConfig {
 
 	@SuppressWarnings("resource")
 	public static void main(String[] args) throws IOException {
 		new AnnotationConfigApplicationContext(ServerConfig.class).registerShutdownHook();
 	}
-
 }
 // end::class[]

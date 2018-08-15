@@ -27,9 +27,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
-import org.springframework.data.gemfire.tests.integration.config.ClientServerIntegrationTestsConfiguration;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -70,10 +68,9 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 
-	@ClientCacheApplication(name = "SpringSessionDataGeodeClientWithScopedProxiesBootSample", logLevel = "error",
+	@ClientCacheApplication(name = "SpringSessionDataGeodeBootSampleWithScopedProxiesClient", logLevel = "error",
 		pingInterval = 5000L, readTimeout = 15000, retryAttempts = 1, subscriptionEnabled = true)  // <3>
 	@EnableGemFireHttpSession(poolName = "DEFAULT") // <4>
-	@Import(ClientServerIntegrationTestsConfiguration.class)
 	static class ClientCacheConfiguration { }
 
 	@Configuration

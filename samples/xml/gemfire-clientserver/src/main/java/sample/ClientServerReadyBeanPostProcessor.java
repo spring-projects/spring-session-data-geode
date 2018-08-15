@@ -16,139 +16,28 @@
 
 package sample;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.Pool;
-import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.PoolImpl;
-import org.apache.geode.management.membership.ClientMembership;
-import org.apache.geode.management.membership.ClientMembershipEvent;
-import org.apache.geode.management.membership.ClientMembershipListenerAdapter;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.data.gemfire.config.xml.GemfireConstants;
-import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
-import org.springframework.util.Assert;
+import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
+import org.springframework.data.gemfire.tests.integration.ClientServerIntegrationTestsSupport;
 
-public class ClientServerReadyBeanPostProcessor implements BeanPostProcessor {
+@SuppressWarnings("unused")
+public class ClientServerReadyBeanPostProcessor extends ClientServerIntegrationTestsSupport
+		implements BeanPostProcessor {
 
-	private static final long DEFAULT_TIMEOUT = TimeUnit.SECONDS.toMillis(60);
-
-	private static final CountDownLatch LATCH = new CountDownLatch(1);
-
-	private static final String GEMFIRE_DEFAULT_POOL_NAME = "DEFAULT";
-
-	static {
-		ClientMembership.registerClientMembershipListener(
-			new ClientMembershipListenerAdapter() {
-				@Override
-				public void memberJoined(ClientMembershipEvent event) {
-					LATCH.countDown();
-				}
-			}
-		);
-	}
-
-	@Value("${spring.session.data.geode.cache.server.port:${application.geode.client-server.port:40404}}")
+	@Value("${spring.session.data.geode.cache.server.port:${spring.data.gemfire.cache.server.port:40404}}")
 	private int port;
 
-	@Value("${application.geode.client-server.host:localhost}")
+	@Value("${spring.session.data.geode.cache.server.host:${spring.data.gemfire.cache.server.host:localhost}}")
 	private String host;
-
-	private final AtomicBoolean checkGemFireServerIsRunning = new AtomicBoolean(true);
-	private final AtomicReference<Pool> gemfirePool = new AtomicReference<Pool>(null);
 
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
-		if (shouldCheckWhetherGemFireServerIsRunning(bean, beanName)) {
-			try {
-				validateCacheClientNotified();
-				validateCacheClientSubscriptionQueueConnectionEstablished();
-			}
-			catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
+		if (bean instanceof ClientCacheFactoryBean) {
+			waitForServerToStart(host, port);
 		}
 
-		return bean;
-	}
-
-	private boolean shouldCheckWhetherGemFireServerIsRunning(Object bean, String beanName) {
-
-		return (isGemFireRegion(bean, beanName)
-			? this.checkGemFireServerIsRunning.compareAndSet(true, false)
-			: whenGemFirePool(bean, beanName));
-	}
-
-	private boolean isGemFireRegion(Object bean, String beanName) {
-
-		return (GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME.equals(beanName)
-			|| bean instanceof Region);
-	}
-
-	private boolean whenGemFirePool(Object bean, String beanName) {
-
-		if (bean instanceof Pool) {
-			this.gemfirePool.compareAndSet(null, (Pool) bean);
-		}
-
-		return false;
-	}
-
-	private void validateCacheClientNotified() throws InterruptedException {
-
-		boolean didNotTimeout = LATCH.await(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
-
-		Assert.state(didNotTimeout, String.format(
-			"Apache Geode Cache Server failed to start on host [%s] and port [%d]", this.host, this.port));
-	}
-
-	@SuppressWarnings("all")
-	private void validateCacheClientSubscriptionQueueConnectionEstablished() throws InterruptedException {
-
-		boolean cacheClientSubscriptionQueueConnectionEstablished = false;
-
-		Pool pool = defaultIfNull(this.gemfirePool.get(),
-			GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, GEMFIRE_DEFAULT_POOL_NAME);
-
-		if (pool instanceof PoolImpl) {
-
-			long timeout = (System.currentTimeMillis() + DEFAULT_TIMEOUT);
-
-			while (System.currentTimeMillis() < timeout && !((PoolImpl) pool).isPrimaryUpdaterAlive()) {
-
-				synchronized (pool) {
-					TimeUnit.MILLISECONDS.timedWait(pool, 500L);
-				}
-
-			}
-
-			cacheClientSubscriptionQueueConnectionEstablished |=
-				((PoolImpl) pool).isPrimaryUpdaterAlive();
-		}
-
-		Assert.state(cacheClientSubscriptionQueueConnectionEstablished,
-			String.format("Cache client subscription queue connection not established;  Apache Geode Pool was [%s];"
-				+ "  Apache Geode Pool configuration was [locators = %s, servers = %s]",
-					pool, pool.getLocators(), pool.getServers()));
-	}
-
-	private Pool defaultIfNull(Pool pool, String... poolNames) {
-
-		for (String poolName : poolNames) {
-			pool = (pool != null ? pool : PoolManager.find(poolName));
-		}
-
-		return pool;
-	}
-
-	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		return bean;
 	}
 }

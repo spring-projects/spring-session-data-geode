@@ -20,7 +20,6 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
-import org.springframework.data.gemfire.tests.integration.config.ClientServerIntegrationTestsConfiguration;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 
 /**
@@ -34,12 +33,11 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
  * @see org.apache.geode.cache.Cache
  * @since 1.2.1
  */
-@SuppressWarnings("unused")
 // tag::class[]
 @SpringBootApplication // <1>
-@CacheServerApplication(name = "SpringSessionDataGeodeServerBootSample", logLevel = "error") // <2>
+@CacheServerApplication(name = "SpringSessionDataGeodeBootSampleServer", logLevel = "config") // <2>
 @EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 20) // <3>
-public class GemFireServer extends ClientServerIntegrationTestsConfiguration {
+public class GemFireServer {
 
 	public static void main(String[] args) {
 

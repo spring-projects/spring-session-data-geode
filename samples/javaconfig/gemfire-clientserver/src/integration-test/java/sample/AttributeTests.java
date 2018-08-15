@@ -58,5 +58,4 @@ public class AttributeTests {
 		assertThat(home.attributes()).extracting("attributeName").containsOnly("a");
 		assertThat(home.attributes()).extracting("attributeValue").containsOnly("b");
 	}
-
 }

@@ -28,9 +28,9 @@
 	<gfe:client-cache properties-ref="gemfireProperties" pool-name="gemfirePool"/>
 
 	<!--3-->
-	<gfe:pool ping-interval="5000" read-timeout="15000" retry-attempts="1" subscription-enabled="true">
-		<gfe:server host="${application.geode.client-server.host}"
-                    port="${spring.session.data.geode.cache.server.port:${application.geode.client-server.port:40404}}"/>
+	<gfe:pool read-timeout="15000" retry-attempts="1" subscription-enabled="true">
+		<gfe:server host="${spring.session.data.geode.cache.server.host:${spring.data.gemfire.cache.server.host:localhost}}"
+                    port="${spring.session.data.geode.cache.server.port:${spring.data.gemfire.cache.server.port:40404}}"/>
 	</gfe:pool>
 
 	<!--4-->

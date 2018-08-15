@@ -84,11 +84,12 @@ integrationTest {
 	dependsOn runGemFireServer
 	doFirst {
 		def port = reservePort()
-		systemProperties['management.port'] = 0
-		systemProperties['server.port'] = port
 		//systemProperties['gemfire.log-file'] = "gemfire-client.log"
 		//systemProperties['gemfire.log-level'] = "config"
+		systemProperties['management.port'] = 0
+		systemProperties['server.port'] = port
 		systemProperties['spring.data.gemfire.cache.server.port'] = runGemFireServer.port
+		systemProperties['spring.data.gemfire.pool.servers'] = "localhost[${runGemFireServer.port}]"
 	}
 	doLast {
 		println 'Stopping Apache Geode Server...'
