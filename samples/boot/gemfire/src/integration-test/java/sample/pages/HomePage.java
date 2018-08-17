@@ -64,7 +64,9 @@ public class HomePage {
 	}
 
 	private static void get(WebDriver driver, String get) {
+
 		String baseUrl = String.format("http://localhost:%s", System.getProperty("app.port", "8080"));
+
 		driver.get(baseUrl + get);
 	}
 
@@ -76,12 +78,16 @@ public class HomePage {
 	}
 
 	public void containCookie(String cookieName) {
+
 		Set<Cookie> cookies = this.driver.manage().getCookies();
+
 		assertThat(cookies).extracting("name").contains(cookieName);
 	}
 
 	public void doesNotContainCookie(String cookieName) {
+
 		Set<Cookie> cookies = this.driver.manage().getCookies();
+
 		assertThat(cookies).extracting("name").doesNotContain(cookieName);
 	}
 
@@ -103,8 +109,11 @@ public class HomePage {
 	}
 
 	public HomePage logout() {
+
 		WebElement logout = this.driver.findElement(By.cssSelector("input[type=\"submit\"]"));
+
 		logout.click();
+
 		return PageFactory.initElements(this.driver, HomePage.class);
 	}
 

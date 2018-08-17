@@ -16,6 +16,8 @@
 
 package sample.pages;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -29,12 +31,11 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.pagefactory.DefaultElementLocatorFactory;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * @author Eddú Meléndez
  * @author Rob Winch
  */
+@SuppressWarnings("unused")
 public class HomePage {
 
 	private WebDriver driver;
@@ -49,7 +50,7 @@ public class HomePage {
 
 	public HomePage(WebDriver driver) {
 		this.driver = driver;
-		this.attributes = new ArrayList<Attribute>();
+		this.attributes = new ArrayList<>();
 	}
 
 	private static void get(WebDriver driver, String get) {
@@ -73,14 +74,13 @@ public class HomePage {
 	}
 
 	public HomePage logout() {
-		WebElement logout = this.driver
-				.findElement(By.cssSelector("input[type=\"submit\"]"));
+		WebElement logout = this.driver.findElement(By.cssSelector("input[type=\"submit\"]"));
 		logout.click();
 		return PageFactory.initElements(this.driver, HomePage.class);
 	}
 
 	public List<Attribute> attributes() {
-		List<Attribute> rows = new ArrayList<Attribute>();
+		List<Attribute> rows = new ArrayList<>();
 		for (WebElement tr : this.trs) {
 			rows.add(new Attribute(tr));
 		}
@@ -93,6 +93,7 @@ public class HomePage {
 	}
 
 	public class Form {
+
 		@FindBy(name = "attributeName")
 		WebElement attributeName;
 
@@ -123,6 +124,7 @@ public class HomePage {
 	}
 
 	public static class Attribute {
+
 		@FindBy(xpath = ".//td[1]")
 		WebElement attributeName;
 
@@ -147,5 +149,4 @@ public class HomePage {
 			return this.attributeValue.getText();
 		}
 	}
-
 }

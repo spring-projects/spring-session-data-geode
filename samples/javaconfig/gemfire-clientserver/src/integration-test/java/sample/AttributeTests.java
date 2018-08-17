@@ -16,14 +16,16 @@
 
 package sample;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-import sample.pages.HomePage;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import sample.pages.HomePage;
 
 /**
  * @author Eddú Meléndez
@@ -51,10 +53,7 @@ public class AttributeTests {
 	@Test
 	public void createAttribute() {
 		HomePage home = HomePage.go(this.driver, HomePage.class);
-		home = home.form()
-				.attributeName("a")
-				.attributeValue("b")
-				.submit(HomePage.class);
+		home = home.form().attributeName("a").attributeValue("b").submit(HomePage.class);
 		assertThat(home.attributes()).extracting("attributeName").containsOnly("a");
 		assertThat(home.attributes()).extracting("attributeValue").containsOnly("b");
 	}
