@@ -15,12 +15,12 @@
 	<!-- tag::beans[] -->
 	<context:annotation-config/>
 
-	<context:property-placeholder location="classpath:META-INF/spring/application.properties"/>
+	<context:property-placeholder/>
 
 	<!--1-->
 	<util:properties id="gemfireProperties">
-		<prop key="name">SpringSessionDataGeodeXmlSampleServer</prop>
-		<prop key="log-level">${spring.session.data.gemfire.log-level:error}</prop>
+		<prop key="name">SpringSessionDataGeodeSampleXmlServer</prop>
+		<prop key="log-level">${spring.session.data.geode.log-level:error}</prop>
 	</util:properties>
 
 	<!--2-->
@@ -28,8 +28,8 @@
 
 	<!--3-->
 	<gfe:cache-server auto-startup="true"
-                      bind-address="${spring.session.data.geode.cache.server.host:${spring.data.gemfire.cache.server.host:localhost}}"
-                      host-name-for-clients="${spring.session.data.geode.cache.server.host:${spring.data.gemfire.cache.server.host:localhost}}"
+                      bind-address="${spring.session.data.geode.cache.server.host:localhost}"
+                      host-name-for-clients="${spring.session.data.geode.cache.server.hostname-for-clients:${spring.data.gemfire.cache.server.hostname-for-clients:localhost}}"
                       port="${spring.session.data.geode.cache.server.port:${spring.data.gemfire.cache.server.port:40404}}"/>
 
 	<!--4-->

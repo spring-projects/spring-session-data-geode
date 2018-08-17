@@ -15,7 +15,7 @@
 	<!-- tag::beans[] -->
 	<context:annotation-config/>
 
-	<context:property-placeholder location="classpath:META-INF/spring/application.properties"/>
+	<context:property-placeholder/>
 
 	<bean class="sample.ClientServerReadyBeanPostProcessor"/>
 
@@ -29,7 +29,7 @@
 
 	<!--3-->
 	<gfe:pool read-timeout="15000" retry-attempts="1" subscription-enabled="true">
-		<gfe:server host="${spring.session.data.geode.cache.server.host:${spring.data.gemfire.cache.server.host:localhost}}"
+		<gfe:server host="${spring.session.data.geode.cache.server.host:localhost}"
                     port="${spring.session.data.geode.cache.server.port:${spring.data.gemfire.cache.server.port:40404}}"/>
 	</gfe:pool>
 

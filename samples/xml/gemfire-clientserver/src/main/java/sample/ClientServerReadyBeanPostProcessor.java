@@ -16,28 +16,107 @@
 
 package sample;
 
+import java.io.IOException;
+import java.net.Socket;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
-import org.springframework.data.gemfire.tests.integration.ClientServerIntegrationTestsSupport;
+import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 
 @SuppressWarnings("unused")
-public class ClientServerReadyBeanPostProcessor extends ClientServerIntegrationTestsSupport
-		implements BeanPostProcessor {
+public class ClientServerReadyBeanPostProcessor implements BeanPostProcessor {
 
-	@Value("${spring.session.data.geode.cache.server.port:${spring.data.gemfire.cache.server.port:40404}}")
+	private static final long DEFAULT_TIMEOUT = TimeUnit.SECONDS.toMillis(20);
+
+	private final AtomicBoolean verifyGemFireServerIsRunning = new AtomicBoolean(true);
+
+	@Value("${spring.data.gemfire.cache.server.port:40404}")
 	private int port;
 
-	@Value("${spring.session.data.geode.cache.server.host:${spring.data.gemfire.cache.server.host:localhost}}")
-	private String host;
-
+	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
-		if (bean instanceof ClientCacheFactoryBean) {
-			waitForServerToStart(host, port);
+		if (isGemFireServerRunningVerificationEnabled(bean, beanName)) {
+			waitOn(getGemFireServerSocketCondition(this.port));
 		}
 
 		return bean;
+	}
+
+	private boolean isGemFireServerRunningVerificationEnabled(Object bean, String beanName) {
+
+		return isSessionGemFireRegion(bean, beanName)
+			&& this.verifyGemFireServerIsRunning.compareAndSet(true, false);
+	}
+
+	private boolean isSessionGemFireRegion(Object bean, String beanName) {
+		return GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME.equals(beanName);
+	}
+
+	private Condition getGemFireServerSocketCondition(int port) {
+
+		AtomicBoolean gemfireServerRunning = new AtomicBoolean(false);
+
+		return () -> {
+
+			Socket socket = null;
+
+			try {
+				if (!gemfireServerRunning.get()) {
+					socket = new Socket("localhost", port);
+					gemfireServerRunning.set(true);
+				}
+			}
+			catch (IOException ignore) { }
+			finally {
+				safeClose(socket);
+			}
+
+			return gemfireServerRunning.get();
+		};
+	}
+
+	private boolean safeClose(Socket socket) {
+
+		try {
+			if (socket != null) {
+				socket.close();
+			}
+
+			return true;
+		}
+		catch (IOException ignore) {
+			return false;
+		}
+	}
+
+	private boolean waitOn(Condition condition) {
+
+		long timeout = System.currentTimeMillis() + DEFAULT_TIMEOUT;
+
+		while (doWait(condition, timeout)) {
+			synchronized (this) {
+				try {
+					TimeUnit.MICROSECONDS.timedWait(this, 500L);
+				}
+				catch (InterruptedException cause) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+
+		return condition.evaluate();
+	}
+
+	private boolean doWait(Condition condition, long timeout) {
+		return !Thread.currentThread().isInterrupted() && System.currentTimeMillis() < timeout && !condition.evaluate();
+	}
+
+	@FunctionalInterface
+	interface Condition {
+		boolean evaluate();
 	}
 }
