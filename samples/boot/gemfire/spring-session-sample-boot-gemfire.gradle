@@ -1,6 +1,5 @@
 apply plugin: 'io.spring.convention.spring-sample-boot'
 apply plugin: "application"
-apply from: IDE_GRADLE
 
 repositories {
 	mavenCentral()

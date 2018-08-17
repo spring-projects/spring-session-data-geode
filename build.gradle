@@ -19,8 +19,6 @@ ext['groovy.version'] = "$groovyVersion"
 group = 'org.springframework.session'
 description = 'Spring Session for Apache Geode'
 
-ext.releaseBuild = version.endsWith('RELEASE')
 ext.snapshotBuild = version.endsWith('SNAPSHOT')
+ext.releaseBuild = version.endsWith('RELEASE')
 ext.milestoneBuild = !(releaseBuild || snapshotBuild)
-
-ext.IDE_GRADLE = "$rootDir/gradle/ide.gradle"
