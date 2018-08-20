@@ -9,6 +9,12 @@ def SUCCESS = hudson.model.Result.SUCCESS.toString()
 
 currentBuild.result = SUCCESS
 
+pipeline {
+    options {
+        timeout(time: 10, unit: 'MINUTES')
+    }
+}
+
 try {
 	parallel check: {
 		stage('Check') {
