@@ -9,41 +9,41 @@ def SUCCESS = hudson.model.Result.SUCCESS.toString()
 
 currentBuild.result = SUCCESS
 
-pipeline {
-    options {
-        timeout(time: 10, unit: 'MINUTES')
-    }
-}
-
 try {
 	parallel check: {
 		stage('Check') {
-			node {
-				checkout scm
-				try {
-					sh "./gradlew clean check --refresh-dependencies --no-daemon"
-				}
-				catch (Exception cause) {
-					currentBuild.result = 'FAILED: check'
-					throw cause
-				}
-				finally {
-					junit '**/build/*-results/*.xml'
-				}
-			}
+		    timeout(time: 10, unit: 'MINUTES') {
+                node {
+				    checkout scm
+				    try {
+					    sh "./gradlew clean check --refresh-dependencies --no-daemon"
+				    }
+				    catch (Exception cause) {
+					    currentBuild.result = 'FAILED: check'
+					    throw cause
+				    }
+				    finally {
+					    junit '**/build/*-results/*.xml'
+				    }
+			    }
+		    }
 		}
 	},
 	springio: {
 		stage('Spring IO') {
-			node {
-				checkout scm
-				try {
-					sh "./gradlew clean springIoCheck -PplatformVersion=Cairo-BUILD-SNAPSHOT -PexcludeProjects='**/samples/**' --refresh-dependencies --no-daemon --stacktrace"
-				} catch(Exception e) {
-					currentBuild.result = 'FAILED: springio'
-					throw e
-				} finally {
-					junit '**/build/spring-io*-results/*.xml'
+		    timeout(time: 10, unit: 'MINUTES') {
+			    node {
+				    checkout scm
+				    try {
+					    sh "./gradlew clean springIoCheck -PplatformVersion=Cairo-BUILD-SNAPSHOT -PexcludeProjects='**/samples/**' --refresh-dependencies --no-daemon --stacktrace"
+				    }
+				    catch(Exception e) {
+					    currentBuild.result = 'FAILED: springio'
+					    throw e
+				    }
+				    finally {
+					    junit '**/build/spring-io*-results/*.xml'
+				    }
 				}
 			}
 		}
