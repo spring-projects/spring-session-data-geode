@@ -16,8 +16,6 @@
 
 package sample;
 
-import java.io.IOException;
-
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
@@ -28,7 +26,7 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
 public class ServerConfig {
 
 	@SuppressWarnings("resource")
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		new AnnotationConfigApplicationContext(ServerConfig.class).registerShutdownHook();
 	}
 }

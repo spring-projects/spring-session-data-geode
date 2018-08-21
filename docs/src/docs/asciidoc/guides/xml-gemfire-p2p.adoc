@@ -2,7 +2,7 @@
 John Blum
 :toc:
 
-This guide describes how to configure Apache Geode as a provider in _Spring Session_ to transparently manage
+This guide describes how to configure Apache Geode as a provider in Spring Session to transparently manage
 a Web application's `javax.servlet.http.HttpSession` using XML configuration.
 
 NOTE: The completed guide can be found in the
@@ -10,7 +10,7 @@ NOTE: The completed guide can be found in the
 
 == Updating Dependencies
 
-Before using _Spring Session_, you must ensure that the required dependencies are included.
+Before using Spring Session, you must ensure that the required dependencies are included.
 If you are using _Maven_, include the following `dependencies` in your `pom.xml`:
 
 .pom.xml
@@ -35,7 +35,7 @@ If you are using _Maven_, include the following `dependencies` in your `pom.xml`
 ----
 
 ifeval::["{version-snapshot}" == "true"]
-Since we are using a SNAPSHOT version, we need to add the _Spring_ Snapshot Maven Repository.
+Since we are using a SNAPSHOT version, we need to add the Spring Snapshot Maven Repository.
 If you are using _Maven_, include the following `repository` declaration in your `pom.xml`:
 
 .pom.xml
@@ -53,7 +53,7 @@ If you are using _Maven_, include the following `repository` declaration in your
 endif::[]
 
 ifeval::["{version-milestone}" == "true"]
-Since we are using a Milestone version, we need to add the _Spring_ Milestone Maven Repository.
+Since we are using a Milestone version, we need to add the Spring Milestone Maven Repository.
 If you are using _Maven_, include the following `repository` declaration in your `pom.xml`:
 
 .pom.xml
@@ -74,10 +74,10 @@ endif::[]
 [[httpsession-spring-xml-configuration]]
 == Spring XML Configuration
 
-After adding the required dependencies and repository declarations, we can create the _Spring_ configuration.
+After adding the required dependencies and repository declarations, we can create the Spring configuration.
 
-The _Spring_ configuration is responsible for creating a `Servlet` `Filter` that replaces the `javax.servlet.http.HttpSession`
-with an implementation backed by _Spring Session_ and Apache Geode.
+The Spring configuration is responsible for creating a `Servlet` `Filter` that replaces the
+`javax.servlet.http.HttpSession` with an implementation backed by Spring Session and Apache Geode.
 
 Add the following Spring configuration:
 
@@ -88,25 +88,21 @@ include::{samples-dir}xml/gemfire-p2p/src/main/webapp/WEB-INF/spring/session.xml
 ----
 
 <1> (Optional) First, we can include a `Properties` bean to configure certain aspects of the Apache Geode peer `Cache`
-using http://geode.apache.org/docs/guide/12/reference/topics/gemfire_properties.html[Pivotal GemFire Properties].
-In this case, we are just setting Apache Geode's "`log-level`" from a application-specific System property,
-defaulting to "`warning`" if unspecified.
-<2> We must configure an Apache Geode peer `Cache` instance initialized with the Apache Geode properties.
-<3> Finally, we enable _Spring Session_ functionality  by registering an instance of `GemFireHttpSessionConfiguration`.
+using {data-store-docs}/reference/topics/gemfire_properties.html[Pivotal GemFire Properties]. In this case, we are just
+setting Apache Geode's "`log-level`" using an application-specific System property, defaulting to "`warning`"
+if unspecified.
+<2> We must configure an Apache Geode peer `Cache` instance. We initialize it with the Apache Geode properties.
+<3> Finally, we enable Spring Session functionality by registering an instance of `GemFireHttpSessionConfiguration`.
 
-TIP: Additionally, we have configured this data node (server) as a Apache Geode Manager as well using Apache Geode-specific
-JMX properties that enable JMX client (e.g. _Gfsh_) to connect to this running server.
-
-NOTE: For more information on configuring _Spring Data Geode, refer to the
-http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[Reference Guide].
+NOTE: For more information on configuring Spring Data for Apache Geode, refer to the {sdg-docs}[Reference Guide].
 
 == XML Servlet Container Initialization
 
-The <<httpsession-spring-xml-configuration,Spring XML Configuration>> created a _Spring_ bean named `springSessionRepositoryFilter`
-that implements `javax.servlet.Filter`. The `springSessionRepositoryFilter` bean is responsible for replacing
-the `javax.servlet.http.HttpSession` with a custom implementation that is backed by _Spring Session_ and Apache Geode.
+The <<httpsession-spring-xml-configuration,Spring XML Configuration>> created a Spring bean named `springSessionRepositoryFilter`
+that implements `javax.servlet.Filter`. The `springSessionRepositoryFilter` bean is responsible for replacing the
+`javax.servlet.http.HttpSession` with a custom implementation that is backed by Spring Session and Apache Geode.
 
-In order for our `Filter` to do its magic, we need to instruct _Spring_ to load our `session.xml` configuration file.
+In order for our `Filter` to do its magic, we need to instruct Spring to load our `session.xml` configuration file.
 
 We do this with the following configuration:
 
@@ -168,44 +164,8 @@ We interact with the standard `HttpSession` in the `SessionServlet` shown below:
 include::{samples-dir}xml/gemfire-p2p/src/main/java/sample/SessionServlet.java[tags=class]
 ----
 
-Instead of using Tomcat's `HttpSession`, we are actually persisting the Session in Apache Geode.
+Instead of using Tomcat's `HttpSession`, we are actually persisting the session in Apache Geode.
 
-_Spring Session_ creates a cookie named SESSION in your browser that contains the id of your session.
+Spring Session creates a cookie named SESSION in your browser that contains the id of your session.
 Go ahead and view the cookies (click for help with https://developer.chrome.com/devtools/docs/resources#cookies[Chrome]
 or https://getfirebug.com/wiki/index.php/Cookies_Panel#Cookies_List[Firefox]).
-
-NOTE: The following instructions assume you have a local Apache Geode installation.  For more information on installation,
-see http://geode.apache.org/docs/guide/12/prereq_and_install.html[Prerequisites and Installation Instructions].
-
-If you like, you can easily remove the session using `gfsh`.
-
-For example, on a Linux-based system type the following at the command-line:
-
-	$ gfsh
-
-Then, enter the following into _Gfsh_, ensuring to replace `70002719-3c54-4c20-82c3-e7faa6b718f3` with the value
-of your SESSION cookie, or the Session id returned by the Apache Geode OQL query (which should match):
-
-....
-gfsh>connect --jmx-manager=localhost[1099]
-
-gfsh>query --query='SELECT * FROM /ClusteredSpringSessions.keySet'
-
-Result     : true
-startCount : 0
-endCount   : 20
-Rows       : 1
-
-Result
-------------------------------------
-70002719-3c54-4c20-82c3-e7faa6b718f3
-
-NEXT_STEP_NAME : END
-
-gfsh>remove --region=/ClusteredSpringSessions --key="70002719-3c54-4c20-82c3-e7faa6b718f3"
-....
-
-NOTE: The _Apache Geode User Guide_ contains more detailed instructions on using
-http://geode.apache.org/docs/guide/12/tools_modules/gfsh/chapter_overview.html[gfsh].
-
-Now visit the application at `http://localhost:8080/` again and observe the attribute we added is no longer displayed.

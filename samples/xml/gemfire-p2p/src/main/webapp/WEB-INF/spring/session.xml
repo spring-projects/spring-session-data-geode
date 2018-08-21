@@ -18,12 +18,12 @@
 
 	<!--1-->
 	<util:properties id="gemfireProperties">
-		<prop key="name">SpringSessionSampleXmlGemFireP2p</prop>
+		<prop key="name">SpringSessionDataGeodeXmlP2pSample</prop>
 		<prop key="log-level">${spring.session.data.geode.log-level:error}</prop>
 	</util:properties>
 
 	<!--2-->
-	<gfe:cache properties-ref="gemfireProperties" use-bean-factory-locator="false"/>
+	<gfe:cache properties-ref="gemfireProperties"/>
 
 	<!--3-->
 	<bean class="org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration"/>

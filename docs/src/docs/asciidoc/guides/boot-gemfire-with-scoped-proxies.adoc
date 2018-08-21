@@ -2,13 +2,13 @@
 John Blum
 :toc:
 
-This guide describes how to build a _Spring Boot_ Web application configured with _Spring Session_ to transparently
-manage a Web application's `javax.servlet.http.HttpSession` using Apache Geode in a clustered (distributed),
-replicated, highly available and optionally, durable manner.
+This guide describes how to build a Spring Boot Web application configured with Spring Session to transparently
+manage a Web application's `javax.servlet.http.HttpSession` using Apache Geode in a clustered (distributed)
+and replicated.
 
-In addition, this samples explores the effects of using _Spring Session_ and Apache Geode to manage the `HttpSession`
-when the _Spring Boot_ Web application also declares both "_session_" and "_request_" scope bean definitions to process
-client HTTP requests.
+In addition, this samples explores the effects of using Spring Session and Apache Geode to manage the `HttpSession`
+when the Spring Boot Web application also declares both "_session_" and "_request_" scoped bean definitions
+to process client HTTP requests.
 
 This sample is based on a https://stackoverflow.com/questions/45674137/can-session-scope-beans-be-used-with-spring-session-and-gemfire[_StackOverflow_ post],
 which posed the following question...
@@ -17,22 +17,22 @@ which posed the following question...
 
 The poster of the question when on to state and ask...
 
-> When using Spring Session for "session" scope beans, Spring creates an extra HttpSession for this bean.
+> When using Spring Session for "session" scope beans, Spring creates an extra `HttpSession` for this bean.
 Is this an existing issue? What is the solution for this?
 
-The answer to the first question is most definitely, *yes*.  And, the second statement/question is not correct/valid,
-as explained in the answer.
+The answer to the first question is most definitely, *yes*.  And, the second statement/question is not correct,
+nor even valid, as explained in the answer.
 
-This sample uses Apache Geode's client/server topology with a pair of _Spring Boot_ applications, one to configure
-and run a Apache Geode server, and another to configure and run a Apache Geode client, which is also a _Spring_ MVC Web application
-making use of an `HttpSession`.
+This sample uses Apache Geode's client/server topology with a pair of Spring Boot applications, one to configure
+and run an Apache Geode server, and another to configure and run an Apache Geode client, which is also
+a Spring Web MVC application making use of an `HttpSession`.
 
 NOTE: The completed guide can be found below, in section
 <<spring-session-sample-boot-geode-with-scoped-proxies,Sample Spring Boot Web Application using Apache Geode-managed HttpSessions with Request and Session Scoped Proxy Beans>>.
 
 == Updating Dependencies
 
-Before using _Spring Session_, you must ensure that the required dependencies are included.
+Before using Spring Session, you must ensure that the required dependencies are included.
 If you are using _Maven_, include the following `dependencies` in your `pom.xml`:
 
 .pom.xml
@@ -59,7 +59,7 @@ NOTE: If you are using Pivotal GemFire instead of Apache Geode, you may substitu
 artifact for `spring-session-data-geode`.
 
 ifeval::["{version-snapshot}" == "true"]
-Since we are using a SNAPSHOT version, we need to add the _Spring_ Snapshot Maven Repository.
+Since we are using a SNAPSHOT version, we need to add the Spring Snapshot Maven Repository.
 If you are using _Maven_, include the following `repository` declaration in your `pom.xml`:
 
 .pom.xml
@@ -77,7 +77,7 @@ If you are using _Maven_, include the following `repository` declaration in your
 endif::[]
 
 ifeval::["{version-milestone}" == "true"]
-Since we are using a Milestone version, we need to add the _Spring_ Milestone Maven Repository.
+Since we are using a Milestone version, we need to add the Spring Milestone Maven Repository.
 If you are using _Maven_, include the following `repository` declaration in your `pom.xml`:
 
 .pom.xml
@@ -98,66 +98,54 @@ endif::[]
 [[httpsession-spring-java-configuration-gemfire-boot]]
 == Spring Boot Configuration
 
-After adding the required dependencies and repository declarations, we can create the _Spring_ configuration
-for both our Apache Geode client and server using _Spring Boot_.  The _Spring_ configuration is responsible for
-creating a `Servlet Filter` that replaces the `HttpSession` with an implementation backed by _Spring Session_
+After adding the required dependencies and repository declarations, we can create the Spring configuration
+for both our Apache Geode client and server using Spring Boot.  The Spring configuration is responsible for
+creating a Servlet `Filter` that replaces the `HttpSession` with an implementation backed by Spring Session
 and Apace Geode.
 
 === Spring Boot, Apache Geode Cache Server
 
-We start with a _Spring Boot_ application to configure and bootstrap the Apache Geode server process...
+We start with a Spring Boot application to configure and bootstrap the Apache Geode server:
 
 [source,java]
 ----
 include::{samples-dir}boot/gemfire-with-scoped-proxies/src/main/java/sample/server/GemFireServer.java[tags=class]
 ----
 
-<1> First, we annotate the `GemFireServer` class with `@SpringBootApplication` declaring that this is a _Spring Boot_
-application, which allows us to leverage all of _Spring Boot's_ features (e.g. _auto-configuration_).
-<2> Next, we also annotate the `GemFireServer` class with _Spring Data Geode's_ `@CacheServerApplication`,
-which creates a peer, cache server allowing cache clients to connect.
-<3> (_Optional_) Then, we declare the `@EnableGemFireHttpSession` annotation to create the necessary server-side `Region`
-(by default, "_ClusteredSpringSessions_") used to store the `HttpSession` state.  This step is optional since
-the Region used to store session state could be manually created.  Using `@EnableGemFireHttpSession` is easy
-and convenient, and ensures that our client and server-side Regions match by name, which is required by Apache Geode.
-<4> (_Optional_) Additionally, we also enable Apache Geode's embedded Management service, which allows JMX clients
-(e.g. Apache Geode's _Gfsh_ shell tool) to connect to the server in order to manage the server or the entire cluster.
-<5> Finally, we adjust the port that the `CacheServer` uses to listen for cache client connections by declaring
-a `CacheServerConfigurer` bean, which gives us access to SDG's `CacheServerFactoryBean` in order to modify the port.
-Property placeholders can be used to externalize the cache server port configuration.  The cache server port
-defaults to *40404* if not explicitly configured.
+<1> First, we annotate the `GemFireServer` class with `@SpringBootApplication` to declare that this is a Spring Boot
+application, allowing us to leverage all of Spring Boot's features (e.g. _auto-configuration_).
+<2> Next, we use the Spring Data for Apache Geode configuration annotation `@CacheServerApplication` to simplify
+the creation of a peer cache instance containing a `CacheServer` for cache clients to connect.
+<3> (Optional) Then, the `@EnableGemFireHttpSession` annotation is used to create the necessary server-side `Region`
+(by default, "_ClusteredSpringSessions_") to store the `HttpSessions` state.  This step is optional since the
+Session `Region` could be created manually, perhaps even using external means.  Using `@EnableGemFireHttpSession`
+is convenient and quick.
 
 === Spring Boot, Apache Geode Cache Client Web application
 
-Now, we create a _Spring Boot_ Web application exposing our Web service with _Spring_ MVC, running as an Apache Geode
-cache client connected to our _Spring Boot_, Apache Geode server.  The Web application will use _Spring Session_
-backed by Apache Geode to manage `HttpSession` state in a clustered (i.e. distributed), replicated and highly available
-manner.
+Now, we create a Spring Boot Web application exposing our Web service with Spring Web MVC, running as an Apache Geode
+cache client connected to our Spring Boot, Apache Geode server.  The Web application will use Spring Session
+backed by Apache Geode to manage `HttpSession` state in a clustered (distributed) and replicated manner.
 
 [source,java]
 ----
 include::{samples-dir}boot/gemfire-with-scoped-proxies/src/main/java/sample/client/Application.java[tags=class]
 ----
 
-<1> Like the server, we declare our Web application to be a _Spring Boot_ application
+<1> Like the server, we declare our Web application to be a Spring Boot application
 by annotating our `Application` class with `@SpringBootApplication`.
-<2> `@Controller` is a _Spring_ Web MVC annotation enabling our MVC request mapping handler methods (i.e. methods
-annotated with `@RequestMapping`) to process client HTTP requests (e.g. <6>)
+<2> `@Controller` is a Spring Web MVC annotation enabling our MVC handler mapping methods (i.e. methods
+annotated with `@RequestMapping`) to process HTTP requests (e.g. <6>)
 <3> We also declare our Web application to be an Apache Geode cache client by annotating our `Application` class
-with `@ClientCacheApplication`.  Additionally, we adjust a few basic, "DEFAULT" client Pool settings.
-<4> Next, we declare that the Web application will use _Spring Session_ backed by Apache Geode to manage
+with `@ClientCacheApplication`.  Additionally, we adjust a few basic, "DEFAULT" `Pool` settings (e.g. `readTimeout`).
+<4> Next, we declare that the Web application will use Spring Session backed by Apache Geode to manage
 the `HttpSession's` state by annotating the nested `ClientCacheConfiguration` class with `@EnableGemFireHttpSession`.
 This will create the necessary client-side `PROXY` Region (by default, "_ClusteredSpringSessions_") corresponding to
 the same server Region by name. All session state will be sent from the client to the server through Region
-data access operations.  The client-side Region uses the "DEFAULT" Pool (of connections) to communicate
-with the server.
-<5> Then, we adjust the port used by the client Pool to connect to the cache server using _Spring Data Geode's_
-`ClientCacheConfigurer`.  This callback interface is similar in purpose to the `CacheServerConfigurer` we saw
-in the server's configuration.  In this case, the `ClientCacheConfigurer` gives us access to the underlying
-SDG `ClientCacheFactoryBean` in order to adjust the configuration of the Apache Geode `ClientCache`.
-<6> We adjust the _Spring_ Web MVC configuration to set the home page, and finally...
-<7> We declare the `/counts` HTTP request mapping handler method to keep track of the number of instances
-created by the _Spring_ container for both "_request_" and "_session_" scoped proxy beans, of types
+data access operations.  The client-side Region uses the "DEFAULT" `Pool`.
+<5> We adjust the Spring Web MVC configuration to set the home page, and finally...
+<6> We declare the `/counts` HTTP request mapping handler method to keep track of the number of instances
+created by the Spring container for both "_request_" and "_session_" scoped proxy beans, of types
 `RequestScopedProxyBean` and `SessionScopedProxyBean`, respectively, each and every time a request is processed by
 the handler method.
 
@@ -165,62 +153,58 @@ TIP: In typical Apache Geode production deployments, where the cluster includes 
 of servers (a.k.a. data nodes), it is more common for clients to connect to 1 or more Apache Geode Locators running
 in the same cluster. A Locator passes meta-data to clients about the servers available in the cluster, the individual
 server load and which servers have the client's data of interest, which is particularly important for direct,
-single-hop data access and latency-sensitive operations.  See more details about the
-http://geode.apache.org/docs/guide/12/topologies_and_comm/cs_configuration/standard_client_server_deployment.html[Client/Server Deployment]
+single-hop data access and latency-sensitive applications.  See more details about the
+{data-store-docs}/topologies_and_comm/cs_configuration/standard_client_server_deployment.html[Client/Server Deployment]
 in the Apache Geode User Guide.
 
-NOTE: For more information on configuring _Spring Data Geode_, refer to the
-http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[Reference Guide].
+NOTE: For more information on configuring _Spring Data for Apache Geode_, refer to the {sdg-docs}[Reference Guide].
 
 ==== Enabling Pivotal GemFire HttpSession Management
 
-`@EnableGemFireHttpSession` enables a developer to configure certain aspects of both _Spring Session_ and Apache Geode
-out-of-the-box using the following attributes:
+The `@EnableGemFireHttpSession` annotation enables developers to configure certain aspects of both Spring Session
+and Apache Geode out-of-the-box using the following attributes:
 
-* `clientRegionShortcut` - specifies the Apache Geode http://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
-used on the client with http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
+* `clientRegionShortcut` - specifies Apache Geode {data-store-docs}/developing/region_options/region_types.html[data management policy]
+on the client with the {data-store-javadoc}/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
 (default is `PROXY`).  This attribute is only used when configuring the client `Region`.
-* `indexableSessionAttributes` - Identifies session attributes by name that should be indexed for querying purposes.
-Only session attributes explicitly identified by name will be indexed. This is useful in situations where your application
-is looking up the `HttpSession` by the currently authenticated principal's name, for example.
-* `maxInactiveIntervalInSeconds` - controls `HttpSession` _idle-timeout expiration_ (TTI; defaults to **30 minutes**).
-* `poolName` - name of the dedicated Apache Geode Pool used by a client to connect to a cluster of servers (defaults to
-"_gemfirePool_").
-* `regionName` - specifies the name of the Apache Geode Region used to store and manage `HttpSession` state
-(defaults to "_ClusteredSpringSessions_").
-* `serverRegionShortcut` - specifies the Apache Geode http://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
-used on the server with http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
-(default is `PARTITION`).  This attribute is only used when configuring server Regions, or when Apache Geode's P2P
-topology is employed.
-* `sessionSerializerBeanName` - refers to the name of the bean that handles serialization of the `HttpSession` state
-between the client and the server.
+* `indexableSessionAttributes` - Identifies the Session attributes by name that should be indexed for querying purposes.
+Only Session attributes explicitly identified by name will be indexed.
+* `maxInactiveIntervalInSeconds` - controls _HttpSession_ idle-timeout expiration (defaults to **30 minutes**).
+* `poolName` - name of the dedicated Apache Geode `Pool` used to connect a client to the cluster of servers.
+This attribute is only used when the application is a cache client.  Defaults to `gemfirePool`.
+* `regionName` - specifies the name of the Apache Geode `Region` used to store and manage `HttpSession` state
+(default is "*ClusteredSpringSessions*").
+* `serverRegionShortcut` - specifies Apache Geode {data-store-docs}/developing/region_options/region_types.html[data management policy]
+on the server with the {data-store-javadoc}/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
+(default is `PARTITION`).  This attribute is only used when configuring server `Regions`,
+or when a P2P topology is employed.
 
-NOTE: It is important to remember that the Apache Geode client Region name must match a server Region by the same name
-if the client Region is either a `PROXY` or `CACHING_PROXY`.  Client and server Region names are not required to match
-if the client Region used to store session state is `LOCAL` only.  However, keep in mind that session state will not
-be propagated to the server when the client Region is only `LOCAL` to the client.  Additionally, you lose all benefits
-of using Apache Geode to store and manage session state on servers in a clustered, replicated and highly available
-manner.
+NOTE: It is important to remember that the Apache Geode client `Region` name must match a server `Region`
+by the same name if the client `Region` is a `PROXY` or `CACHING_PROXY`.  Client and server `Region` names
+are not required to match if the client `Region` used to store session state is `LOCAL`.  However, keep in mind
+that Session state will not be propagated to the server and you lose all the benefits of using Apache Geode
+to store and manage distributed, replicated session state information on the servers in a distributed,
+replicated manner.
 
 === Session-scoped Proxy Bean
 
-The _Spring Boot_ Apache Geode cache client Web application defines the `SessionScopedProxyBean` domain class.
+The Spring Boot Apache Geode cache client Web application defines the `SessionScopedProxyBean` domain class.
 
 [source,java]
 ----
 include::{samples-dir}boot/gemfire-with-scoped-proxies/src/main/java/sample/client/model/SessionScopedProxyBean.java[tags=class]
 ----
 
-<1> First, the `SessionScopedProxyBean` domain class is stereotyped as a _Spring_ `@Component` to be picked up by
-_Spring's classpath component-scan_.
+<1> First, the `SessionScopedProxyBean` domain class is stereotyped as a Spring `@Component` picked up by
+Spring's classpath component-scan.
 <2> Additionally, instances of this class are scoped to the `HttpSession`.  Therefore, each time a client request
-results in a new `HttpSession` (such as during a login event), a single instance of this class is created and will last
-for the duration of the `HttpSession`.  When the `HttpSession` ends or expires, this instance is destroyed by
-the _Spring_ container.  If the client re-establishes a new `HttpSession`, then another, new instance of this class
-will be provided to the application's beans.  However only ever 1 instance of this class exists for the duration of
-the `HttpSession` and no more!
-<3> Finally, this class keeps track of how many instances of this type are created by the _Spring_ container throughout
-the entire application lifecycle.
+results in creating a new `HttpSession` (such as during a login event), a single instance of this class is created
+and will last for the duration of the `HttpSession`.  When the `HttpSession` expires or is invalidated, this instance
+is destroyed by the Spring container.  If the client re-establishes a new `HttpSession`, then another, new instance of
+this class will be provided to the application's beans.  However only ever 1 instance of this class exists for
+the duration of the `HttpSession`; no more!
+<3> Finally, this class keeps track of how many instances of this type are created by the Spring container
+throughout the entire application lifecycle.
 
 TIP: More information on Spring's `@SessionScope` (i.e. "_session_" scope proxy beans) can be found in the
 https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#beans-factory-scopes-other[Reference Documentation],
@@ -228,24 +212,23 @@ along with https://docs.spring.io/spring/docs/current/spring-framework-reference
 
 === Request-scoped Proxy Bean
 
-The _Spring Boot_ Apache Geode cache client Web application additionally defines the `RequestScopedProxyBean`
-domain class.
+The Spring Boot Apache Geode cache client Web application additionally defines the `RequestScopedProxyBean` domain class.
 
 [source,java]
 ----
 include::{samples-dir}boot/gemfire-with-scoped-proxies/src/main/java/sample/client/model/RequestScopedProxyBean.java[tags=class]
 ----
 
-<1> First, this `RequestScopedProxyBean` domain class is stereotyped as a _Spring_ `@Component` to be picked up by
-_Spring's classpath component-scan_.
+<1> First, the `RequestScopedProxyBean` domain class is stereotyped as a Spring `@Component` picked up by
+Spring's classpath component-scan.
 <2> Additionally, instances of this class are scoped to the `HttpServletRequest`.  Therefore, each time a client HTTP
 request is sent (e.g. to process a Thread-scoped transaction), a single instance of this class will be created
 and will last for the duration of the `HttpServletRequest`.  When the request ends, this instance is destroyed
-by the _Spring_ container. Any subsequent client `HttpServletRequests` results in another, new instance of this
+by the Spring container. Any subsequent client `HttpServletRequests` results in another, new instance of this
 class, which will be provided to the application's beans.  However, only ever 1 instance of this class exists
-for the duration of the `HttpServletRequest` and  no more!
-<3> Finally, this class keeps track of how many instances of this type are created by the _Spring_ container throughout
-the entire application lifecycle.
+for the duration of the `HttpServletRequest`; no more!
+<3> Finally, this class keeps track of how many instances of this class are created by the Spring container
+throughout the entire application lifecycle.
 
 TIP: More information on Spring's `@RequestScope` (i.e. "_request_" scope proxy beans) can be found in the
 https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#beans-factory-scopes-other[Reference Documentation],
@@ -281,14 +264,13 @@ image::{samples-dir}/boot/gemfire-with-scoped-proxies/sample-boot-gemfire-with-s
 The table shows 1 row with 3 columns of information.
 
 The `Session ID` and `Session Count` columns show current `HttpSession` information including the current
-`HttpSession's` ID along with the number of `HttpSessions` created during the (client) application's current run.
+`HttpSession's` ID and the number of `HttpSessions` created during the application's current run.
 
 Additionally, the current `Request Count` is shown to indicate how many requests have been made by the client,
 which in this case is your web browser.
 
-You can use your web browser's refresh button to increase both the session and request count.
-However, the session count only increases after the current session ends or times out and a new session
-has been created for the client.
+You can use your web browser's refresh button to increase both the session and request count. However, the session count
+only increases after the current session expires and a new session has been created for the client.
 
 The session will time out after *10 seconds*, which was configured on the server using the `@EnableGemFireHttpSession`
 annotation as we saw before (#3)...
@@ -307,9 +289,9 @@ public class GemFireServer {
 
 Here, you see that `maxInactiveIntervalInSeconds` is set to *10 seconds*.  After 10 seconds, Apache Geode will expire
 the `HttpSession`, and upon refreshing your web browser, a new session will be created and the session count
-will increase.
+will be incremented.
 
-However, every request naturally results in incrementing the request count.
+Naturally, every request results in incrementing the request count.
 
 === How does it work?
 
@@ -329,12 +311,12 @@ public String requestAndSessionInstanceCount(HttpServletRequest request, HttpSes
 }
 ----
 
-We see that we have injected a reference to the `HttpSession` as a request mapping method handler parameter.
+We see that we have injected a reference to the `HttpSession` as a request mapping handler method parameter.
 This will result in a new `HttpSession` on the client's first HTTP request.  Subsequent requests from the same client
 within the duration of the existing, current `HttpSession` will result in the same `HttpSession` being injected.
 
 Of course, an `HttpSession` is identified by the session's identifier, which is stored in a Cookie sent between
-the client and server during HTTP request processing.
+the client and the server during HTTP request processing.
 
 Additionally, we also see that we have injected references to the `SessionScopedProxyBean` and `RequestScopedProxyBean`
 in our `@Controller` class...
@@ -350,9 +332,9 @@ private SessionScopedProxyBean sessionBean;
 ----
 
 Based on the class definitions of these two types, as previously shown, these bean instances are scoped according
-to _Spring's_ "_request_" and "_session_" scopes, respectively.  The 2 scopes can only be used in Web applications.
+to Spring's "_request_" and "_session_" scopes, respectively.  The 2 scopes can only be used in Web applications.
 
-For each and every HTTP request sent by the client (i.e. on each web browser refresh), _Spring_ will create
+For each and every HTTP request sent by the client (i.e. on each web browser refresh), Spring will create
 a new instance of the `RequestScopedProxyBean`.  This is why the request count increases with every refresh,
 which effectively is sending another HTTP request to the server to access and pull the content.
 
@@ -360,7 +342,7 @@ Furthermore, after each new `HttpSession`, a new instance of `SessionScopedProxy
 persists for the duration of the session.  If the `HttpSession` remains inactive (i.e. no request has been made)
 for longer than *10 seconds*, the client's current `HttpSession` will expire.  Therefore, on any subsequent client
 HTTP request, a new `HttpSession` will be created by the Web container (e.g. Tomcat), which is replaced by
-_Spring Session_ and backed with Apache Geode.
+Spring Session and backed with Apache Geode.
 
 Additionally, this "_session_" scope bean is stored in the `HttpSession`, referenced by a session attribute.
 Therefore, you will also notice that the `SessionScopedProxyBean` class, unlike the `RequestScopedProxyBean` class,
@@ -380,4 +362,4 @@ This class is `Serializable` since it is stored in the `HttpSession`, which will
 the `HttpSession` when sent to the Apache Geode cluster to be managed.  Therefore, the type must be `Serializable`.
 
 Any `RequestScopedProxyBeans` are not stored in the `HttpSession` and therefore will not be sent to the server,
-and as such, do not need to be `Serializable`.
+and as such, do not need to implement `java.io.Serializable`.

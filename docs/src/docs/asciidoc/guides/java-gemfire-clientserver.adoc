@@ -2,7 +2,7 @@
 John Blum
 :toc:
 
-This guide describes how to configure _Spring Session_ to transparently leverage Apache Geode to manage
+This guide describes how to configure Spring Session to transparently leverage Apache Geode to manage
 a Web application's `javax.servlet.http.HttpSession` using Java Configuration.
 
 NOTE: The completed guide can be found in the
@@ -10,7 +10,7 @@ NOTE: The completed guide can be found in the
 
 == Updating Dependencies
 
-Before using _Spring Session_, you must ensure that the required dependencies are included.
+Before using Spring Session, you must ensure that the required dependencies are included.
 If you are using _Maven_, include the following `dependencies` in your `pom.xml`:
 
 .pom.xml
@@ -35,7 +35,7 @@ If you are using _Maven_, include the following `dependencies` in your `pom.xml`
 ----
 
 ifeval::["{version-snapshot}" == "true"]
-Since we are using a SNAPSHOT version, we need to add the _Spring_ Snapshot Maven Repository.
+Since we are using a SNAPSHOT version, we need to add the Spring Snapshot Maven Repository.
 If you are using _Maven_, include the following `repository` declaration in your `pom.xml`:
 
 .pom.xml
@@ -53,7 +53,7 @@ If you are using _Maven_, include the following `repository` declaration in your
 endif::[]
 
 ifeval::["{version-milestone}" == "true"]
-Since we are using a Milestone version, we need to add the _Spring_ Milestone Maven Repository.
+Since we are using a Milestone version, we need to add the Spring Milestone Maven Repository.
 If you are using _Maven_, include the following `repository` declaration in your `pom.xml`:
 
 .pom.xml
@@ -74,99 +74,95 @@ endif::[]
 [[httpsession-spring-java-configuration]]
 == Spring Java Configuration
 
-After adding the required dependencies and repository declarations, we can create the _Spring_ configuration.
-The _Spring_ configuration is responsible for creating a `Servlet Filter` that replaces the `HttpSession`
-with an implementation backed by _Spring Session_ and Apache Geode.
+After adding the required dependencies and repository declarations, we can create the Spring configuration.
+The Spring configuration is responsible for creating a Servlet `Filter` that replaces the `HttpSession`
+with an implementation backed by Spring Session and Apache Geode.
 
 === Client Configuration
 
-Add the following _Spring_ configuration:
+Add the following Spring configuration:
 
 [source,java]
 ----
 include::{samples-dir}javaconfig/gemfire-clientserver/src/main/java/sample/ClientConfig.java[tags=class]
 ----
 
-<1> First, we declare our Web application to be a Apache Geode cache client by annotating our `ClientConfig` class
-with `@ClientCacheApplication`.  Additionally, we adjust a few basic, "DEFAULT" `Pool` settings.
-<2> `@EnableGemFireHttpSession` creates a _Spring_ bean named `springSessionRepositoryFilter` that implements
-`javax.servlet.Filter`. The filter is what replaces the `HttpSession` with an implementation provided by _Spring Session_
-and backed by Apache Geode. This will also create the necessary client-side `Region` (by default, "ClusteredSpringSessions`,
-which is a `PROXY` `Region`) corresponding to the same server-side `Region` by name. All Session state will be sent
-from the cache client Web application to the server through `Region` data access operations.  The client-side `Region`
-will use the "DEFAULT" `Pool`.
-<3> Then, we adjust the port used by the cache client `Pool` to connect to the `CacheServer`
-using a SDG `ClientCacheConfigurer`.
+<1> First, we declare our Web application to be an Apache Geode cache client by annotating our `ClientConfig` class
+with `@ClientCacheApplication`.  Additionally, we adjust a few basic, "DEFAULT" `Pool` settings (e.g. `readTimeout`).
+<2> `@EnableGemFireHttpSession` creates a Spring bean named `springSessionRepositoryFilter` that implements
+`javax.servlet.Filter`. The filter replaces the `HttpSession` with an implementation provided by Spring Session
+and backed by Apache Geode. Additionall, the configuration will also create the necessary client-side `Region`
+(by default, "ClusteredSpringSessions`, which is a `PROXY` `Region`) corresponding to the same server-side `Region`
+by name. All session state is sent from the client to the server through `Region` data access operations.
+The client-side `Region` use the "DEFAULT" `Pool`.
+<3> Then, we wait to ensure the Apache Geode Server is up and running before we proceed.  This is only really useful
+for automated (integration) testing purposes.
 
 TIP: In typical Apache Geode production deployments, where the cluster includes potentially hundreds or thousands
-of Apache Geode servers (data nodes), it is more common for clients to connect to 1 or more Apache Geode Locators running
-in the cluster.  A Locator passes meta-data to clients about the servers available in the cluster, the server load
-and which servers have the client's data of interest, which is particularly important for direct, single-hop data access
-and latency-sensitive operations.  See more details about the
-http://geode.apache.org/docs/guide/12/topologies_and_comm/cs_configuration/standard_client_server_deployment.html[Client/Server Deployment]
+of servers (a.k.a. data nodes), it is more common for clients to connect to 1 or more Apache Geode Locators running
+in the same cluster. A Locator passes meta-data to clients about the servers available in the cluster, the individual
+server load and which servers have the client's data of interest, which is particularly important for direct,
+single-hop data access and latency-sensitive applications.  See more details about the
+{data-store-docs}/topologies_and_comm/cs_configuration/standard_client_server_deployment.html[Client/Server Deployment]
 in the Apache Geode User Guide.
 
-NOTE: For more information on configuring _Spring Data Geode, refer to the
-http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[Reference Guide].
+NOTE: For more information on configuring Spring Data Geode, refer to the {sdg-docs}[Reference Guide].
 
-`@EnableGemFireHttpSession` enables a developer to configure certain aspects of both _Spring Session_ and Apache Geode
-out-of-the-box using the following attributes:
+The `@EnableGemFireHttpSession` annotation enables developers to configure certain aspects of both Spring Session
+and Apache Geode out-of-the-box using the following attributes:
 
-* `clientRegionShortcut` - specifies Apache Geode http://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
-on the client with a Apache Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
-(default is `PROXY`).  This attribute is only used when configuring a client `Region`.
-* `indexableSessionAttributes` - Identifies the Session attributes by name that should be indexed for querying operations.
-Only Session attributes identified by name will be indexed.
+* `clientRegionShortcut` - specifies Apache Geode {data-store-docs}/developing/region_options/region_types.html[data management policy]
+on the client with the {data-store-javadoc}/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
+(default is `PROXY`).  This attribute is only used when configuring the client `Region`.
+* `indexableSessionAttributes` - Identifies the Session attributes by name that should be indexed for querying purposes.
+Only Session attributes explicitly identified by name will be indexed.
 * `maxInactiveIntervalInSeconds` - controls _HttpSession_ idle-timeout expiration (defaults to **30 minutes**).
-* `poolName` - name of the dedicated Apache Geode `Pool` used to connect a client to the cluster of servers.  The attribute
-is only used when the application is a cache client.  Defaults to `gemfirePool`.
+* `poolName` - name of the dedicated Apache Geode `Pool` used to connect a client to the cluster of servers.
+This attribute is only used when the application is a cache client.  Defaults to `gemfirePool`.
 * `regionName` - specifies the name of the Apache Geode `Region` used to store and manage `HttpSession` state
 (default is "*ClusteredSpringSessions*").
-* `serverRegionShortcut` - specifies Apache Geode http://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
-on the server using a Apache Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
-(default is `PARTITION`).  This attribute is only used when configuring server `Regions`, or when a P2P topology is employed.
+* `serverRegionShortcut` - specifies Apache Geode {data-store-docs}/developing/region_options/region_types.html[data management policy]
+on the server with the {data-store-javadoc}/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
+(default is `PARTITION`).  This attribute is only used when configuring server `Regions`,
+or when a P2P topology is employed.
 
 NOTE: It is important to remember that the Apache Geode client `Region` name must match a server `Region`
 by the same name if the client `Region` is a `PROXY` or `CACHING_PROXY`.  Client and server `Region` names
-are not required to match if the client `Region` used to store Sessions is `LOCAL`.  However, keep in mind
+are not required to match if the client `Region` used to store session state is `LOCAL`.  However, keep in mind
 that Session state will not be propagated to the server and you lose all the benefits of using Apache Geode
-to store and manage distributed, replicated Session state information on the servers in a cluster.
+to store and manage distributed, replicated session state information on the servers in a distributed,
+replicated manner.
 
 === Server Configuration
 
 So far, we only covered one side of the equation.  We also need an Apache Geode Server for our cache client to talk to
-and send Session state to the server to manage.
+and send session state to the server to manage.
 
-In this sample, we will use the following Java configuration to spin up an Apache Geode Server:
+In this sample, we will use the following Java configuration to configure and run an Apache Geode Server:
 
 [source,java]
 ----
 include::{samples-dir}javaconfig/gemfire-clientserver/src/main/java/sample/ServerConfig.java[tags=class]
 ----
 
-<1> First, we use the **new** _Spring Data Geode_ configuration annotation `@CacheServerApplication` to simplify
-the creation of a peer cache instance along with a `CacheServer` for cache clients to connect.
+<1> First, we use the `@CacheServerApplication` annotation to simplify the creation of a peer cache instance
+containing with a `CacheServer` for cache clients to connect.
 <2> (Optional) Then, the `ServerConfig` class is annotated with `@EnableGemFireHttpSession` to create the necessary
-server-side `Region` (by default, "_ClusteredSpringSessions_") used to store the `HttpSessions` state.  This step is
+server-side `Region` (by default, "_ClusteredSpringSessions_") used to store `HttpSession` state.  This step is
 optional since the Session `Region` could be created manually, perhaps using external means.
-Using `@EnableGemFireHttpSession` is convenient.
-<3> Finally, we adjust the port that the `CacheServer` will use to listen for cache clients by declaring
-a `CacheServerConfigurer` bean to modify the SDG `CacheServerFactoryBean` using property placeholders.
-
-The sample makes use of _Spring's_ `PropertySourcesPlaceholderConfigurer` in order to externalize the sample
-application's configuration using a properties file or with JVM System properties, which ever.
+Using `@EnableGemFireHttpSession` is convenient and quick.
 
 == Java Servlet Container Initialization
 
-Our <<httpsession-spring-java-configuration,Spring Java Configuration>> created a _Spring_ bean named `springSessionRepositoryFilter`
+Our <<httpsession-spring-java-configuration,Spring Java Configuration>> created a Spring bean named `springSessionRepositoryFilter`
 that implements `javax.servlet.Filter`. The `springSessionRepositoryFilter` bean is responsible for replacing the
-`javax.servlet.http.HttpSession` with a custom implementation backed by _Spring Session_ and Apache Geode.
+`javax.servlet.http.HttpSession` with a custom implementation backed by Spring Session and Apache Geode.
 
-In order for our `Filter` to do its magic, _Spring_ needs to load the `ClientConfig` class. We also need to ensure our
+In order for our `Filter` to do its magic, Spring needs to load the `ClientConfig` class. We also need to ensure our
 Servlet container (i.e. Tomcat) uses our `springSessionRepositoryFilter` for every request.
 
-Fortunately, _Spring Session_ provides a utility class named `AbstractHttpSessionApplicationInitializer` to make both
-of these steps extremely easy.
+Fortunately, Spring Session provides a utility class named `AbstractHttpSessionApplicationInitializer` to make both
+steps extremely easy.
 
 You can find an example below:
 
@@ -179,9 +175,9 @@ include::{samples-dir}javaconfig/gemfire-clientserver/src/main/java/sample/Initi
 NOTE: The name of our class (`Initializer`) does not matter. What is important is that we extend
 `AbstractHttpSessionApplicationInitializer`.
 
-<1> The first step is to extend `AbstractHttpSessionApplicationInitializer`. This ensures that a _Spring_ bean named
+<1> The first step is to extend `AbstractHttpSessionApplicationInitializer`. This ensures that a Spring bean named
 `springSessionRepositoryFilter` is registered with our Servlet container and used on every HTTP request.
-<2> `AbstractHttpSessionApplicationInitializer` also provides a mechanism to easily allow _Spring_ to load
+<2> `AbstractHttpSessionApplicationInitializer` also provides a mechanism to easily allow Spring to load
 our `ClientConfig`.
 // end::config[]
 
@@ -230,47 +226,6 @@ include::{samples-dir}javaconfig/gemfire-clientserver/src/main/java/sample/Sessi
 
 Instead of using Tomcat's `HttpSession`, we are actually persisting the Session in Apache Geode.
 
-_Spring Session_ creates a cookie named SESSION in your browser that contains the id of your Session.
+Spring Session creates a cookie named SESSION in your browser that contains the id of your Session.
 Go ahead and view the cookies (click for help with https://developer.chrome.com/devtools/docs/resources#cookies[Chrome]
 or https://getfirebug.com/wiki/index.php/Cookies_Panel#Cookies_List[Firefox]).
-
-NOTE: The following instructions assume you have a local Apache Geode installation.  For more information on installation,
-see http://geode.apache.org/docs/guide/12/prereq_and_install.html[Prerequisites and Installation Instructions].
-
-If you like, you can easily remove the Session using `gfsh`.
-
-For example, on a Linux-based system type the following at the command-line:
-
-	$ gfsh
-
-Then, enter the following commands in _Gfsh_, ensuring to replace `70002719-3c54-4c20-82c3-e7faa6b718f3` with the value
-of your SESSION cookie, or the Session id returned by the Apache Geode OQL query (which should match):
-
-....
-gfsh>connect --jmx-manager=localhost[1099]
-
-gfsh>query --query='SELECT * FROM /ClusteredSpringSessions.keySet'
-
-Result     : true
-startCount : 0
-endCount   : 20
-Rows       : 1
-
-Result
-------------------------------------
-70002719-3c54-4c20-82c3-e7faa6b718f3
-
-NEXT_STEP_NAME : END
-
-gfsh>remove --region=/ClusteredSpringSessions --key="70002719-3c54-4c20-82c3-e7faa6b718f3"
-....
-
-NOTE: The _Apache Geode User Guide_ contains more detailed instructions on using
-http://geode.apache.org/docs/guide/12/tools_modules/gfsh/chapter_overview.html[gfsh].
-
-Now visit the application at `http://localhost:8080/` again and observe the attribute we added is no longer displayed.
-
-Alternatively, you can wait **20 seconds** for the Session to timeout and expire and then refresh the page.
-The attribute we added should no longer be displayed in the table. However, keep in mind, by refreshing the page,
-you will inadvertently create a new (empty) Session.  If you run the query again, you will also see two Session ids,
-the new and the old, since Apache Geode keeps a "tombstone" of the old Session around.

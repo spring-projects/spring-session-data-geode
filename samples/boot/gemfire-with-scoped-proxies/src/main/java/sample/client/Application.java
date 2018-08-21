@@ -69,7 +69,7 @@ public class Application {
 	}
 
 	@ClientCacheApplication(name = "SpringSessionDataGeodeBootSampleWithScopedProxiesClient", logLevel = "error",
-		pingInterval = 5000L, readTimeout = 15000, retryAttempts = 1, subscriptionEnabled = true)  // <3>
+		readTimeout = 15000, retryAttempts = 1, subscriptionEnabled = true)  // <3>
 	@EnableGemFireHttpSession(poolName = "DEFAULT") // <4>
 	static class ClientCacheConfiguration { }
 
