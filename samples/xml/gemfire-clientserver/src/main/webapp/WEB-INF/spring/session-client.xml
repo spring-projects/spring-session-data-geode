@@ -35,7 +35,7 @@
 
 	<!--4-->
 	<bean class="org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration"
-		  p:maxInactiveIntervalInSeconds="30" p:poolName="DEFAULT"/>
+		  p:poolName="DEFAULT"/>
 	<!-- end::beans[] -->
 
 </beans>
