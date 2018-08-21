@@ -21,7 +21,7 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
 
 // tag::class[]
 @PeerCacheApplication(name = "SpringSessionDataGeodeJavaConfigP2pSample", logLevel = "error") // <1>
-@EnableGemFireHttpSession // <2>
+@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 30) // <2>
 public class Config {
 
 }
