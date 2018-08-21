@@ -21,10 +21,8 @@
 	<util:properties id="gemfireProperties">
 		<prop key="name">SpringSessionSampleXmlGemFireClientServer</prop>
 		<prop key="log-level">${spring.session.data.gemfire.log-level:error}</prop>
-<!--
 		<prop key="jmx-manager">true</prop>
 		<prop key="jmx-manager-start">true</prop>
--->
 	</util:properties>
 
 	<!--2-->

@@ -89,7 +89,7 @@ include::{samples-dir}javaconfig/gemfire-p2p/src/main/java/sample/Config.java[ta
 the creation of a peer cache instance.
 <2> Then, the `Config` class is annotated with `@EnableGemFireHttpSession` to create the necessary server-side `Region`
 (by default, "_ClusteredSpringSessions_") used to store the `HttpSessions` state.
-<3> (Optionally) Finally, we annotated the `Config` class with `@EnableManager` to start an embedded Apache Geode Manager
+<3> (Optional) Finally, we annotated the `Config` class with `@EnableManager` to start an embedded Apache Geode Manager
 service to allow JMX clients (e.g. Apache Geode's _Gfsh_ shell tool) to connect and inspect the server.
 
 NOTE: For more information on configuring _Spring Data Geode, refer to the

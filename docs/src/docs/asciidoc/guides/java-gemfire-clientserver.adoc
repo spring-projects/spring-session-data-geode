@@ -150,7 +150,9 @@ the creation of a peer cache instance along with a `CacheServer` for cache clien
 server-side `Region` (by default, "_ClusteredSpringSessions_") used to store the `HttpSessions` state.  This step is
 optional since the Session `Region` could be created manually, perhaps using external means.
 Using `@EnableGemFireHttpSession` is convenient.
-<3> Finally, we adjust the port that the `CacheServer` will use to listen for cache clients by declaring
+<3> (Optional) We annotate the `Config` class with `@EnableManager` to start an embedded Apache Geode Manager
+service to allow JMX clients (e.g. Apache Geode's _Gfsh_ shell tool) to connect and inspect the server.
+<4> Finally, we adjust the port that the `CacheServer` will use to listen for cache clients by declaring
 a `CacheServerConfigurer` bean to modify the SDG `CacheServerFactoryBean` using property placeholders.
 
 The sample makes use of _Spring's_ `PropertySourcesPlaceholderConfigurer` in order to externalize the sample

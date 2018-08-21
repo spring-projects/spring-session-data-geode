@@ -22,7 +22,7 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
 
 // tag::class[]
 @PeerCacheApplication(name = "SpringSessionSampleJavaConfigGemFireP2p", logLevel = "error") // <1>
-@EnableGemFireHttpSession // <2>
+@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 30) // <2>
 @EnableManager(start = true) // <3>
 public class Config {
 

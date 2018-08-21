@@ -24,11 +24,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
 import org.springframework.data.gemfire.config.annotation.CacheServerConfigurer;
+import org.springframework.data.gemfire.config.annotation.EnableManager;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 
 // tag::class[]
 @CacheServerApplication(name = "SpringSessionSampleJavaConfigGemFireClientServer", logLevel = "error") // <1>
 @EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 30) // <2>
+@EnableManager(start = true) // <3>
 public class ServerConfig {
 
 	@SuppressWarnings("resource")
@@ -44,7 +46,7 @@ public class ServerConfig {
 
 	@Bean
 	CacheServerConfigurer cacheServerPortConfigurer(
-			@Value("${spring.session.data.geode.cache.server.port:40404}") int port) { // <3>
+			@Value("${spring.session.data.geode.cache.server.port:40404}") int port) { // <4>
 
 		return (beanName, cacheServerFactoryBean) -> {
 			cacheServerFactoryBean.setPort(port);
