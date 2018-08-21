@@ -197,13 +197,13 @@ You can run the sample by obtaining the {download-url}[source code] and invoking
 First, you need to run the server using:
 
 ----
-$ ./gradlew :spring-session-sample-javaconfig-gemfire-clientserver:run [-gemfire.log-level=info]
+$ ./gradlew :spring-session-sample-javaconfig-gemfire-clientserver:run
 ----
 
 Then, in a separate terminal, run the client using:
 
 ----
-$ ./gradlew :spring-session-sample-javaconfig-gemfire-clientserver:tomcatRun [-gemfire.log-level=info]
+$ ./gradlew :spring-session-sample-javaconfig-gemfire-clientserver:tomcatRun
 ----
 
 You should now be able to access the application at http://localhost:8080/.

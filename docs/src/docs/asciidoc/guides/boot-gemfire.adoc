@@ -180,13 +180,13 @@ You can run the sample by obtaining the {download-url}[source code] and invoking
 First, you must run the server:
 
 ----
-$ ./gradlew :spring-session-sample-boot-gemfire:run [-Dgemfire.log-level=config]
+$ ./gradlew :spring-session-sample-boot-gemfire:run
 ----
 
 Then, in a separate terminal, run the client:
 
 ----
-$ ./gradlew :spring-session-sample-boot-gemfire:bootRun [-Dgemfire.log-level=config]
+$ ./gradlew :spring-session-sample-boot-gemfire:bootRun
 ----
 
 You should now be able to access the application at http://localhost:8080/.
