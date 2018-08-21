@@ -494,22 +494,11 @@ public class GemFireHttpSessionConfigurationTests {
 		assertThat(entryIdleTimeoutExpiration.getAction()).isEqualTo(ExpirationAction.INVALIDATE);
 		assertThat(entryIdleTimeoutExpiration.getTimeout()).isEqualTo(0);
 	}
-
 	@Test
-	public void expirationIsAllowed() {
 
-		Cache mockCache = mock(Cache.class);
+	public void clientExpirationIsAllowed() {
 
 		ClientCache mockClientCache = mock(ClientCache.class);
-
-		this.gemfireConfiguration.setClientRegionShortcut(ClientRegionShortcut.PROXY);
-		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.REPLICATE);
-
-		assertThat(this.gemfireConfiguration.isExpirationAllowed(mockCache)).isTrue();
-
-		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW);
-
-		assertThat(this.gemfireConfiguration.isExpirationAllowed(mockCache)).isTrue();
 
 		this.gemfireConfiguration.setClientRegionShortcut(ClientRegionShortcut.CACHING_PROXY);
 		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.PARTITION_PROXY);
@@ -517,25 +506,55 @@ public class GemFireHttpSessionConfigurationTests {
 		assertThat(this.gemfireConfiguration.isExpirationAllowed(mockClientCache)).isTrue();
 
 		this.gemfireConfiguration.setClientRegionShortcut(ClientRegionShortcut.LOCAL_PERSISTENT_OVERFLOW);
-		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.REPLICATE_PROXY);
+		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.REPLICATE);
 
 		assertThat(this.gemfireConfiguration.isExpirationAllowed(mockClientCache)).isTrue();
 	}
 
 	@Test
-	public void expirationIsNotAllowed() {
+	public void serverExpirationIsAllowed() {
 
 		Cache mockCache = mock(Cache.class);
+
+		this.gemfireConfiguration.setClientRegionShortcut(ClientRegionShortcut.PROXY);
+		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.REPLICATE);
+
+		assertThat(this.gemfireConfiguration.isExpirationAllowed(mockCache)).isTrue();
+
+		this.gemfireConfiguration.setClientRegionShortcut(ClientRegionShortcut.LOCAL);
+		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW);
+
+		assertThat(this.gemfireConfiguration.isExpirationAllowed(mockCache)).isTrue();
+	}
+
+	@Test
+	public void clientExpirationIsNotAllowed() {
 
 		ClientCache mockClientCache = mock(ClientCache.class);
 
 		this.gemfireConfiguration.setClientRegionShortcut(ClientRegionShortcut.PROXY);
-		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.PARTITION);
+		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.PARTITION_PROXY);
 
 		assertThat(this.gemfireConfiguration.isExpirationAllowed(mockClientCache)).isFalse();
 
-		this.gemfireConfiguration.setClientRegionShortcut(ClientRegionShortcut.LOCAL);
+		this.gemfireConfiguration.setClientRegionShortcut(ClientRegionShortcut.PROXY);
+		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.REPLICATE);
+
+		assertThat(this.gemfireConfiguration.isExpirationAllowed(mockClientCache)).isFalse();
+	}
+
+	@Test
+	public void serverExpirationIsNotAllowed() {
+
+		Cache mockCache = mock(Cache.class);
+
+		this.gemfireConfiguration.setClientRegionShortcut(ClientRegionShortcut.PROXY);
 		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.PARTITION_PROXY);
+
+		assertThat(this.gemfireConfiguration.isExpirationAllowed(mockCache)).isFalse();
+
+		this.gemfireConfiguration.setClientRegionShortcut(ClientRegionShortcut.LOCAL);
+		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.REPLICATE_PROXY);
 
 		assertThat(this.gemfireConfiguration.isExpirationAllowed(mockCache)).isFalse();
 	}

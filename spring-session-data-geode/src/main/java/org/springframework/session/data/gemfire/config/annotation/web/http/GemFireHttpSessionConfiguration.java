@@ -376,8 +376,8 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 			AnnotationAttributes.fromMap(importMetadata.getAnnotationAttributes(
 				EnableGemFireHttpSession.class.getName()));
 
-		ClientRegionShortcut defaultClientRegionShortcut = ClientRegionShortcut.class
-			.cast(enableGemFireHttpSessionAttributes.getEnum("clientRegionShortcut"));
+		ClientRegionShortcut defaultClientRegionShortcut =
+			enableGemFireHttpSessionAttributes.getEnum("clientRegionShortcut");
 
 		setClientRegionShortcut(resolveProperty(clientRegionShortcutPropertyName(),
 			ClientRegionShortcut.class, defaultClientRegionShortcut));
@@ -402,8 +402,8 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 
 		setSessionRegionName(resolveProperty(sessionRegionNamePropertyName(), defaultSessionRegionName));
 
-		RegionShortcut defaultServerRegionShortcut = RegionShortcut.class
-			.cast(enableGemFireHttpSessionAttributes.getEnum("serverRegionShortcut"));
+		RegionShortcut defaultServerRegionShortcut =
+			enableGemFireHttpSessionAttributes.getEnum("serverRegionShortcut");
 
 		setServerRegionShortcut(resolveProperty(serverRegionShortcutPropertyName(),
 			RegionShortcut.class, defaultServerRegionShortcut));
@@ -597,9 +597,9 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 */
 	boolean isExpirationAllowed(GemFireCache gemfireCache) {
 
-		return !GemFireUtils.isClient(gemfireCache)
+		return !(GemFireUtils.isClient(gemfireCache)
 			? GemFireUtils.isProxy(getClientRegionShortcut())
-			: GemFireUtils.isProxy(getServerRegionShortcut());
+			: GemFireUtils.isProxy(getServerRegionShortcut()));
 	}
 
 	/**
