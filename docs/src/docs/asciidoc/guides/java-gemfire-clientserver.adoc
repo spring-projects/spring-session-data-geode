@@ -169,7 +169,7 @@ You can find an example below:
 .src/main/java/sample/Initializer.java
 [source,java]
 ----
-include::{samples-dir}javaconfig/gemfire-clientserver/src/main/java/sample/Initializer.java[tags=class]
+include::{samples-dir}javaconfig/gemfire-clientserver/src/main/java/sample/client/Initializer.java[tags=class]
 ----
 
 NOTE: The name of our class (`Initializer`) does not matter. What is important is that we extend
@@ -179,7 +179,6 @@ NOTE: The name of our class (`Initializer`) does not matter. What is important i
 `springSessionRepositoryFilter` is registered with our Servlet container and used on every HTTP request.
 <2> `AbstractHttpSessionApplicationInitializer` also provides a mechanism to easily allow Spring to load
 our `ClientConfig`.
-// end::config[]
 
 [[spring-session-sample-java-geode-clientserver]]
 == HttpSession managed by a Java configured, Apache Geode Client/Server Sample Application
@@ -220,7 +219,7 @@ We interact with the standard `HttpSession` in the `SessionServlet` shown below:
 .src/main/java/sample/SessionServlet.java
 [source,java]
 ----
-include::{samples-dir}javaconfig/gemfire-clientserver/src/main/java/sample/SessionServlet.java[tags=class]
+include::{samples-dir}javaconfig/gemfire-clientserver/src/main/java/sample/client/SessionServlet.java[tags=class]
 ----
 
 Instead of using Tomcat's `HttpSession`, we are actually persisting the Session in Apache Geode.

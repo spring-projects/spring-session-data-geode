@@ -220,7 +220,7 @@ We interact with the standard `HttpSession` in the `SessionServlet` shown below:
 .src/main/java/sample/SessionServlet.java
 [source,java]
 ----
-include::{samples-dir}xml/gemfire-clientserver/src/main/java/sample/SessionServlet.java[tags=class]
+include::{samples-dir}xml/gemfire-clientserver/src/main/java/sample/client/SessionServlet.java[tags=class]
 ----
 
 Instead of using Tomcat's `HttpSession`, we are actually persisting the Session in Apache Geode.
