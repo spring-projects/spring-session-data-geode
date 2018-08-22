@@ -16,6 +16,7 @@
 
 package sample;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +31,9 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.GemFi
 public class ClientServerReadyBeanPostProcessor implements BeanPostProcessor {
 
 	private static final long DEFAULT_TIMEOUT = TimeUnit.SECONDS.toMillis(20);
+	private static final long DEFAULT_WAIT_DURATION = 500L;
+
+	private static final String DEFAULT_HOST = "localhost";
 
 	private final AtomicBoolean verifyGemFireServerIsRunning = new AtomicBoolean(true);
 
@@ -66,7 +70,7 @@ public class ClientServerReadyBeanPostProcessor implements BeanPostProcessor {
 
 			try {
 				if (!gemfireServerRunning.get()) {
-					socket = new Socket("localhost", port);
+					socket = new Socket(DEFAULT_HOST, port);
 					gemfireServerRunning.set(true);
 				}
 			}
@@ -79,11 +83,11 @@ public class ClientServerReadyBeanPostProcessor implements BeanPostProcessor {
 		};
 	}
 
-	private boolean safeClose(Socket socket) {
+	private boolean safeClose(Closeable closeable) {
 
 		try {
-			if (socket != null) {
-				socket.close();
+			if (closeable != null) {
+				closeable.close();
 			}
 
 			return true;
@@ -98,14 +102,7 @@ public class ClientServerReadyBeanPostProcessor implements BeanPostProcessor {
 		long timeout = System.currentTimeMillis() + DEFAULT_TIMEOUT;
 
 		while (doWait(condition, timeout)) {
-			synchronized (this) {
-				try {
-					TimeUnit.MICROSECONDS.timedWait(this, 500L);
-				}
-				catch (InterruptedException cause) {
-					Thread.currentThread().interrupt();
-				}
-			}
+			doPause(DEFAULT_WAIT_DURATION);
 		}
 
 		return condition.evaluate();
@@ -113,6 +110,20 @@ public class ClientServerReadyBeanPostProcessor implements BeanPostProcessor {
 
 	private boolean doWait(Condition condition, long timeout) {
 		return !Thread.currentThread().isInterrupted() && System.currentTimeMillis() < timeout && !condition.evaluate();
+	}
+
+	private boolean doPause(long duration) {
+
+		synchronized (this) {
+			try {
+				TimeUnit.MICROSECONDS.timedWait(this, duration);
+				return true;
+			}
+			catch (InterruptedException cause) {
+				Thread.currentThread().interrupt();
+				return false;
+			}
+		}
 	}
 
 	@FunctionalInterface
