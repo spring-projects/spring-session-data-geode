@@ -16,35 +16,31 @@
 
 package sample;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.net.Socket;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.data.gemfire.tests.integration.ClientServerIntegrationTestsSupport;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 
 @SuppressWarnings("unused")
-public class ClientServerReadyBeanPostProcessor implements BeanPostProcessor {
-
-	private static final long DEFAULT_TIMEOUT = TimeUnit.SECONDS.toMillis(20);
-	private static final long DEFAULT_WAIT_DURATION = 500L;
-
-	private static final String DEFAULT_HOST = "localhost";
+public class ClientServerReadyBeanPostProcessor extends ClientServerIntegrationTestsSupport
+		implements BeanPostProcessor {
 
 	private final AtomicBoolean verifyGemFireServerIsRunning = new AtomicBoolean(true);
 
 	@Value("${spring.data.gemfire.cache.server.port:40404}")
 	private int port;
 
+	@Value("${spring.session.data.geode.cache.server.host:localhost}")
+	private String host;
+
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
 		if (isGemFireServerRunningVerificationEnabled(bean, beanName)) {
-			waitOn(getGemFireServerSocketCondition(this.port));
+			waitForServerToStart(host, port);
 		}
 
 		return bean;
@@ -58,76 +54,5 @@ public class ClientServerReadyBeanPostProcessor implements BeanPostProcessor {
 
 	private boolean isSessionGemFireRegion(Object bean, String beanName) {
 		return GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME.equals(beanName);
-	}
-
-	private Condition getGemFireServerSocketCondition(int port) {
-
-		AtomicBoolean gemfireServerRunning = new AtomicBoolean(false);
-
-		return () -> {
-
-			Socket socket = null;
-
-			try {
-				if (!gemfireServerRunning.get()) {
-					socket = new Socket(DEFAULT_HOST, port);
-					gemfireServerRunning.set(true);
-				}
-			}
-			catch (IOException ignore) { }
-			finally {
-				safeClose(socket);
-			}
-
-			return gemfireServerRunning.get();
-		};
-	}
-
-	private boolean safeClose(Closeable closeable) {
-
-		try {
-			if (closeable != null) {
-				closeable.close();
-			}
-
-			return true;
-		}
-		catch (IOException ignore) {
-			return false;
-		}
-	}
-
-	private boolean waitOn(Condition condition) {
-
-		long timeout = System.currentTimeMillis() + DEFAULT_TIMEOUT;
-
-		while (doWait(condition, timeout)) {
-			doPause(DEFAULT_WAIT_DURATION);
-		}
-
-		return condition.evaluate();
-	}
-
-	private boolean doWait(Condition condition, long timeout) {
-		return !Thread.currentThread().isInterrupted() && System.currentTimeMillis() < timeout && !condition.evaluate();
-	}
-
-	private boolean doPause(long duration) {
-
-		synchronized (this) {
-			try {
-				TimeUnit.MICROSECONDS.timedWait(this, duration);
-				return true;
-			}
-			catch (InterruptedException cause) {
-				Thread.currentThread().interrupt();
-				return false;
-			}
-		}
-	}
-
-	@FunctionalInterface
-	interface Condition {
-		boolean evaluate();
 	}
 }
