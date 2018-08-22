@@ -39,7 +39,7 @@
 
 	<servlet>
 		<servlet-name>session</servlet-name>
-		<servlet-class>sample.SessionServlet</servlet-class>
+		<servlet-class>sample.client.SessionServlet</servlet-class>
 	</servlet>
 
 	<servlet-mapping>

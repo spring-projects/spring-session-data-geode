@@ -20,17 +20,14 @@
 	<!--1-->
 	<util:properties id="gemfireProperties">
 		<prop key="name">SpringSessionDataGeodeSampleXmlServer</prop>
-		<prop key="log-level">${spring.session.data.geode.log-level:error}</prop>
+		<prop key="log-level">${spring.data.gemfire.cache.log-level:error}</prop>
 	</util:properties>
 
 	<!--2-->
 	<gfe:cache properties-ref="gemfireProperties"/>
 
 	<!--3-->
-	<gfe:cache-server auto-startup="true"
-                      bind-address="${spring.session.data.geode.cache.server.host:localhost}"
-                      host-name-for-clients="${spring.session.data.geode.cache.server.hostname-for-clients:${spring.data.gemfire.cache.server.hostname-for-clients:localhost}}"
-                      port="${spring.session.data.geode.cache.server.port:${spring.data.gemfire.cache.server.port:40404}}"/>
+	<gfe:cache-server port="${spring.data.gemfire.cache.server.port:40404}"/>
 
 	<!--4-->
 	<bean class="org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration"

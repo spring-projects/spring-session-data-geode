@@ -23,7 +23,7 @@ class GemFireServerPlugin implements Plugin<Project> {
 				project.gretty {
 					jvmArgs = [
 						"-Dspring.data.gemfire.cache.server.port=${project.tasks.gemfireServer.port}",
-						"-Dspring.data.gemfire.pool.servers=localhost[${project.tasks.gemfireServer.port}]",
+						"-Dspring.data.gemfire.pool.servers=localhost[${project.tasks.gemfireServer.port}]"
 					]
 				}
 			}

@@ -26,4 +26,4 @@ dependencies {
 
 }
 
-mainClassName = "sample.ServerConfig"
+mainClassName = "sample.server.GemFireServer"

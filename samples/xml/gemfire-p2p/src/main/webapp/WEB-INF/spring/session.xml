@@ -20,7 +20,7 @@
 	<!--1-->
 	<util:properties id="gemfireProperties">
 		<prop key="name">SpringSessionDataGeodeXmlP2pSample</prop>
-		<prop key="log-level">${spring.session.data.geode.log-level:error}</prop>
+		<prop key="log-level">${spring.data.gemfire.cache.log-level:error}</prop>
 	</util:properties>
 
 	<!--2-->

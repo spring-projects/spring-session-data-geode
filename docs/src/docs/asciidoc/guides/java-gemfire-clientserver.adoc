@@ -84,14 +84,14 @@ Add the following Spring configuration:
 
 [source,java]
 ----
-include::{samples-dir}javaconfig/gemfire-clientserver/src/main/java/sample/ClientConfig.java[tags=class]
+include::{samples-dir}javaconfig/gemfire-clientserver/src/main/java/sample/client/ClientConfig.java[tags=class]
 ----
 
 <1> First, we declare our Web application to be an Apache Geode cache client by annotating our `ClientConfig` class
 with `@ClientCacheApplication`.  Additionally, we adjust a few basic, "DEFAULT" `Pool` settings (e.g. `readTimeout`).
 <2> `@EnableGemFireHttpSession` creates a Spring bean named `springSessionRepositoryFilter` that implements
 `javax.servlet.Filter`. The filter replaces the `HttpSession` with an implementation provided by Spring Session
-and backed by Apache Geode. Additionall, the configuration will also create the necessary client-side `Region`
+and backed by Apache Geode. Additionally, the configuration will also create the necessary client-side `Region`
 (by default, "ClusteredSpringSessions`, which is a `PROXY` `Region`) corresponding to the same server-side `Region`
 by name. All session state is sent from the client to the server through `Region` data access operations.
 The client-side `Region` use the "DEFAULT" `Pool`.
@@ -142,12 +142,12 @@ In this sample, we will use the following Java configuration to configure and ru
 
 [source,java]
 ----
-include::{samples-dir}javaconfig/gemfire-clientserver/src/main/java/sample/ServerConfig.java[tags=class]
+include::{samples-dir}javaconfig/gemfire-clientserver/src/main/java/sample/server/GemFireServer.java[tags=class]
 ----
 
 <1> First, we use the `@CacheServerApplication` annotation to simplify the creation of a peer cache instance
 containing with a `CacheServer` for cache clients to connect.
-<2> (Optional) Then, the `ServerConfig` class is annotated with `@EnableGemFireHttpSession` to create the necessary
+<2> (Optional) Then, the `GemFireServer` class is annotated with `@EnableGemFireHttpSession` to create the necessary
 server-side `Region` (by default, "_ClusteredSpringSessions_") used to store `HttpSession` state.  This step is
 optional since the Session `Region` could be created manually, perhaps using external means.
 Using `@EnableGemFireHttpSession` is convenient and quick.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package sample;
+package sample.server;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
-import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportResource;
 
 // tag::class[]
-@CacheServerApplication(name = "SpringSessionDataGeodeJavaConfigSampleServer", logLevel = "error") // <1>
-@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 30) // <2>
-public class ServerConfig {
+@Configuration // <1>
+@ImportResource("META-INF/spring/session-server.xml") // <2>
+public class GemFireServer {
 
-	@SuppressWarnings("resource")
 	public static void main(String[] args) {
-		new AnnotationConfigApplicationContext(ServerConfig.class).registerShutdownHook();
+		new AnnotationConfigApplicationContext(GemFireServer.class).registerShutdownHook();
 	}
 }
-// end::class[]
+// tag::end[]

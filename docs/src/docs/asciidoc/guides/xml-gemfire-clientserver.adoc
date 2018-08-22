@@ -133,7 +133,7 @@ The Apache Geode Server gets bootstrapped with the following:
 
 [source,java]
 ----
-include::{samples-dir}xml/gemfire-clientserver/src/main/java/sample/ServerConfig.java[tags=class]
+include::{samples-dir}xml/gemfire-clientserver/src/main/java/sample/server/GemFireServer.java[tags=class]
 ----
 
 TIP: Rather than defining a simple Java class with a `main` method, you might consider using Spring Boot instead.

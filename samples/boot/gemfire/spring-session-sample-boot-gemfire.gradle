@@ -1,4 +1,5 @@
 apply plugin: 'io.spring.convention.spring-sample-boot'
+apply plugin: "gemfire-server"
 apply plugin: "application"
 
 repositories {
@@ -45,62 +46,4 @@ run {
 	doFirst {
 		mainClassName = 'sample.server.GemFireServer'
 	}
-}
-
-task runGemFireServer() {
-	doLast {
-		ext.port = reservePort()
-
-		println "Starting Apache Geode Server on port [$port] ..."
-
-		def out = new StringBuilder()
-		def err = new StringBuilder()
-
-		String classpath = project.sourceSets.main.runtimeClasspath.collect { it }.join(File.pathSeparator)
-
-		String[] commandLine = [
-			'java', '-server', '-ea', '-classpath', classpath,
-			//"-Dgemfire.log-file=gemfire-server.log",
-			//"-Dgemfire.log-level=config",
-			"-Dspring.data.gemfire.cache.server.port=$port",
-			'sample.server.GemFireServer'
-		]
-
-		//println commandLine
-
-		ext.process = commandLine.execute()
-		//ext.process = new ProcessBuilder().command(commandLine).redirectErrorStream(true).start();
-
-		ext.process.consumeProcessOutput(out, err)
-
-		//println 'OUT: ' + out
-		//println 'ERR: ' + err
-	}
-}
-
-
-integrationTest {
-	dependsOn runGemFireServer
-	doFirst {
-		def port = reservePort()
-		//systemProperties['gemfire.log-file'] = "gemfire-client.log"
-		//systemProperties['gemfire.log-level'] = "config"
-		systemProperties['management.port'] = 0
-		systemProperties['server.port'] = port
-		systemProperties['spring.data.gemfire.cache.server.port'] = runGemFireServer.port
-		systemProperties['spring.data.gemfire.pool.servers'] = "localhost[${runGemFireServer.port}]"
-	}
-	doLast {
-		println 'Stopping Apache Geode Server...'
-		runGemFireServer.process?.destroy()
-//		runGemFireServer.process?.destroyForcibly()
-	}
-}
-
-
-def reservePort() {
-	def socket = new ServerSocket(0)
-	def result = socket.localPort
-	socket.close()
-	result
 }

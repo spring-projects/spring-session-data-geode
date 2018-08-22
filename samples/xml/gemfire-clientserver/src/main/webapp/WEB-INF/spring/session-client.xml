@@ -17,11 +17,11 @@
 
 	<context:property-placeholder/>
 
-	<bean class="sample.ClientServerReadyBeanPostProcessor"/>
+	<bean class="sample.client.ClientServerReadyBeanPostProcessor"/>
 
 	<!--1-->
 	<util:properties id="gemfireProperties">
-		<prop key="log-level">${spring.session.data.geode.log-level:error}</prop>
+		<prop key="log-level">${spring.data.gemfire.cache.log-level:error}</prop>
 	</util:properties>
 
 	<!--2-->
@@ -29,8 +29,7 @@
 
 	<!--3-->
 	<gfe:pool read-timeout="15000" retry-attempts="1" subscription-enabled="true">
-		<gfe:server host="${spring.session.data.geode.cache.server.host:localhost}"
-                    port="${spring.session.data.geode.cache.server.port:${spring.data.gemfire.cache.server.port:40404}}"/>
+		<gfe:server host="localhost" port="${spring.data.gemfire.cache.server.port:40404}"/>
 	</gfe:pool>
 
 	<!--4-->
