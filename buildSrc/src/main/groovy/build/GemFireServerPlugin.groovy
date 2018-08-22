@@ -17,9 +17,17 @@ class GemFireServerPlugin implements Plugin<Project> {
 			project.tasks.gemfireServer.process?.destroy()
 		}
 
-		project.tasks.prepareAppServerForIntegrationTests {
-			dependsOn project.tasks.gemfireServer
-			doFirst {
+		if (project.tasks.findByName("bootRun") != null) {
+			project.tasks.integrationTest.dependsOn project.tasks.gemfireServer
+			project.tasks.integrationTest.doFirst {
+				systemProperties['spring.data.gemfire.cache.server.port'] = project.tasks.gemfireServer.port
+				systemProperties['spring.data.gemfire.pool.servers'] = "localhost[${project.tasks.gemfireServer.port}]"
+			}
+		}
+
+		project.tasks.findByName("prepareAppServerForIntegrationTests")?.configure { task ->
+			task.dependsOn project.tasks.gemfireServer
+			task.doFirst {
 				project.gretty {
 					jvmArgs = [
 						"-Dspring.data.gemfire.cache.server.port=${project.tasks.gemfireServer.port}",
@@ -66,7 +74,11 @@ class GemFireServerPlugin implements Plugin<Project> {
 
 			//println commandLine
 
-			project.tasks.appRun.ext.process = process = commandLine.execute()
+			process = commandLine.execute()
+
+			if (project.tasks.findByName("appRun") != null) {
+				project.tasks.appRun.ext.process = process
+			}
 
 			process.consumeProcessOutput(out, err)
 		}
