@@ -15,7 +15,6 @@ class GemFireServerPlugin implements Plugin<Project> {
 		project.tasks.integrationTest.doLast {
 			println 'Stopping Apache Geode Server...'
 			project.tasks.gemfireServer.process?.destroy()
-//			project.tasks.gemfireServer.process?.destroyForcibly()
 		}
 
 		project.tasks.prepareAppServerForIntegrationTests {
@@ -25,7 +24,6 @@ class GemFireServerPlugin implements Plugin<Project> {
 					jvmArgs = [
 						"-Dspring.data.gemfire.cache.server.port=${project.tasks.gemfireServer.port}",
 						"-Dspring.data.gemfire.pool.servers=localhost[${project.tasks.gemfireServer.port}]",
-						"-Dspring.session.data.geode.cache.server.port=${project.tasks.gemfireServer.port}"
 					]
 				}
 			}
@@ -40,7 +38,7 @@ class GemFireServerPlugin implements Plugin<Project> {
 
 	static class GemFireServerTask extends DefaultTask {
 
-		def mainClassName = "sample.ServerConfig"
+		def mainClassName = "sample.server.GemFireServer"
 		def port
 		def process
 
@@ -56,7 +54,7 @@ class GemFireServerPlugin implements Plugin<Project> {
 			def err = debug ? System.err : new StringBuilder()
 
 			String classpath = project.sourceSets.main.runtimeClasspath.collect { it }.join(File.pathSeparator)
-			String gemfireLogLevel = System.getProperty('spring.session.data.geode.log-level', 'warning')
+			String gemfireLogLevel = System.getProperty('spring.data.gemfire.cache.log-level', 'warning')
 
 			String[] commandLine = [
 				'java', '-server', '-ea', '-classpath', classpath,
