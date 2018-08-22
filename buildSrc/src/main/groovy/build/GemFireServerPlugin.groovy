@@ -62,7 +62,7 @@ class GemFireServerPlugin implements Plugin<Project> {
 				'java', '-server', '-ea', '-classpath', classpath,
 				//"-Dgemfire.log-file=gemfire-server.log",
 				"-Dgemfire.log-level=${gemfireLogLevel}",
-				"-Dspring.session.data.geode.cache.server.port=${port}",
+				"-Dspring.data.gemfire.cache.server.port=${port}",
 				mainClassName
 			]
 
