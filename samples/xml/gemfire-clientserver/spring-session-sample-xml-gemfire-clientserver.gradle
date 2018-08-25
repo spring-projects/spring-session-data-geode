@@ -18,7 +18,6 @@ dependencies {
 
 	testCompile "junit:junit"
 	testCompile "org.assertj:assertj-core"
-	testCompile seleniumDependencies
 
 	integrationTestCompile seleniumDependencies
 

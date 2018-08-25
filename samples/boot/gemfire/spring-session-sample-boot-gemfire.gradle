@@ -28,8 +28,6 @@ dependencies {
 		exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
 	}
 
-	testCompile seleniumDependencies
-
 	integrationTestCompile seleniumDependencies
 
 	integrationTestRuntime "org.springframework.shell:spring-shell"
