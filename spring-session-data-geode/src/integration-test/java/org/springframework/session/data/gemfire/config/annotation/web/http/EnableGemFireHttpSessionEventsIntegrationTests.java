@@ -73,6 +73,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @ContextConfiguration
 @DirtiesContext
 @WebAppConfiguration
+@SuppressWarnings("unused")
 public class EnableGemFireHttpSessionEventsIntegrationTests extends AbstractGemFireIntegrationTests {
 
 	private static final int MAX_INACTIVE_INTERVAL_IN_SECONDS = 1;
@@ -230,9 +231,11 @@ public class EnableGemFireHttpSessionEventsIntegrationTests extends AbstractGemF
 	}
 
 	@PeerCacheApplication(name = "EnableGemFireHttpSessionEventsIntegrationTests", logLevel = GEMFIRE_LOG_LEVEL)
-	@EnableGemFireHttpSession(regionName = SPRING_SESSION_DATA_GEMFIRE_REGION_NAME,
+	@EnableGemFireHttpSession(
+		regionName = SPRING_SESSION_DATA_GEMFIRE_REGION_NAME,
 		maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS,
-			serverRegionShortcut = RegionShortcut.REPLICATE)
+		serverRegionShortcut = RegionShortcut.REPLICATE
+	)
 	@SuppressWarnings("unused")
 	static class SpringSessionGemFireConfiguration {
 
