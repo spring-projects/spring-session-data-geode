@@ -18,7 +18,9 @@ package org.springframework.session.data.gemfire.expiration;
 
 import java.time.Duration;
 
-import org.springframework.lang.NonNull;
+import org.apache.geode.cache.Region;
+
+import org.springframework.lang.Nullable;
 import org.springframework.session.Session;
 
 /**
@@ -42,12 +44,18 @@ public interface SessionExpirationPolicy {
 	/**
 	 * Defines the {@link Duration length of time} until the given {@link Session} will expire.
 	 *
-	 * @param session {@link Session} to evaluate.
+	 * May return {@literal null}, which indicates to Apache Geode or Pivotal GemFire that it should default to
+	 * the configured Idle Timeout (TTI) Expiration Policy for the {@link Session} {@link Region} to determine when
+	 * the {@link Session} will expire.
+	 *
+	 * @param session {@link Session} to evaluate. A {@link Session} object is required.
 	 * @return a {@link Duration} specifying the length of time until the {@link Session} will expire.
+	 * May return {@literal null} to indicate that the default, configured Idle Timeout (TTI) Expiration Policy
+	 * for the {@link Session} {@link Region} should be used to determine when the {@link Session} will expire.
 	 * @see org.springframework.session.Session
 	 * @see java.time.Duration
 	 */
-	@NonNull
+	@Nullable
 	Duration expireAfter(Session session);
 
 	/**
@@ -73,6 +81,5 @@ public interface SessionExpirationPolicy {
 		public static ExpirationAction defaultIfNull(ExpirationAction expirationAction) {
 			return expirationAction != null ? expirationAction : INVALIDATE;
 		}
-
 	}
 }
