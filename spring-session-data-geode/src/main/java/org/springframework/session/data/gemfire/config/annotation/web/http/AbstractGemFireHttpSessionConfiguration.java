@@ -32,6 +32,9 @@ import org.springframework.session.config.annotation.web.http.SpringHttpSessionC
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * The {@link AbstractGemFireHttpSessionConfiguration} class is an abstract base class containing configuration logic
  * common to Apache Geode and Pivotal GemFire in order to manage {@link javax.servlet.http.HttpSession} state.
@@ -59,6 +62,8 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 
 	private Environment environment;
 
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+
 	/**
 	 * Sets a reference the Spring {@link ApplicationContext}.
 	 *
@@ -68,7 +73,9 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+
 		super.setApplicationContext(applicationContext);
+
 		this.applicationContext = applicationContext;
 	}
 
@@ -144,6 +151,16 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 		return this.environment;
 	}
 
+	/**
+	 * Return a reference to the configured SLF4J {@link Logger}.
+	 *
+	 * @return a reference to the configured SLF4J {@link Logger}.
+	 * @see org.slf4j.Logger
+	 */
+	protected Logger getLogger() {
+		return this.logger;
+	}
+
 	protected String clientRegionShortcutPropertyName() {
 		return propertyName("cache.client.region.shortcut");
 	}
@@ -166,6 +183,10 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 
 	protected String sessionPropertyName(String propertyNameSuffix) {
 		return propertyName(String.format("session.%s", propertyNameSuffix));
+	}
+
+	protected String sessionExpirationPolicyBeanNamePropertyName() {
+		return sessionPropertyName("expiration.bean-name");
 	}
 
 	protected String sessionRegionNamePropertyName() {

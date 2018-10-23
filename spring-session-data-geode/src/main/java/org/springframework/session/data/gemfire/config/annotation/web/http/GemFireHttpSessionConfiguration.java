@@ -16,6 +16,7 @@
 
 package org.springframework.session.data.gemfire.config.annotation.web.http;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -49,6 +50,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.data.gemfire.GemfireTemplate;
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.IndexFactoryBean;
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
@@ -61,6 +63,9 @@ import org.springframework.session.data.gemfire.GemFireOperationsSessionReposito
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.GemFireCacheTypeAwareRegionFactoryBean;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionAttributesIndexFactoryBean;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer;
+import org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy;
+import org.springframework.session.data.gemfire.expiration.config.SessionExpirationTimeoutAwareBeanPostProcessor;
+import org.springframework.session.data.gemfire.expiration.support.SessionExpirationPolicyCustomExpiryAdapter;
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 import org.springframework.session.data.gemfire.serialization.data.provider.DataSerializableSessionSerializer;
 import org.springframework.session.data.gemfire.serialization.data.support.DataSerializerSessionSerializerAdapter;
@@ -87,20 +92,26 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.DependsOn
+ * @see org.springframework.context.annotation.Import
  * @see org.springframework.context.annotation.ImportAware
  * @see org.springframework.core.annotation.AnnotationAttributes
  * @see org.springframework.core.type.AnnotationMetadata
+ * @see org.springframework.data.gemfire.CacheFactoryBean
  * @see org.springframework.data.gemfire.GemfireOperations
  * @see org.springframework.data.gemfire.GemfireTemplate
  * @see org.springframework.data.gemfire.IndexFactoryBean
  * @see org.springframework.data.gemfire.RegionAttributesFactoryBean
  * @see org.springframework.session.Session
+ * @see org.springframework.session.SessionRepository
  * @see org.springframework.session.config.annotation.web.http.SpringHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.AbstractGemFireHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.GemFireCacheTypeAwareRegionFactoryBean
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionAttributesIndexFactoryBean
+ * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy
+ * @see org.springframework.session.data.gemfire.expiration.config.SessionExpirationTimeoutAwareBeanPostProcessor
+ * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
  * @since 1.1.0
  */
 @Configuration
@@ -137,6 +148,11 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	public static final String DEFAULT_POOL_NAME = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
 
 	/**
+	 * Default name for the {@link SessionExpirationPolicy} bean.
+	 */
+	public static final String DEFAULT_SESSION_EXPIRATION_POLICY_BEAN_NAME = "";
+
+	/**
 	 * Default name of (Client)Cache {@link Region} used to store {@link Session} state.
 	 */
 	public static final String DEFAULT_SESSION_REGION_NAME = "ClusteredSpringSessions";
@@ -164,6 +180,8 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	private String poolName = DEFAULT_POOL_NAME;
 
 	private String sessionRegionName = DEFAULT_SESSION_REGION_NAME;
+
+	private String sessionExpirationPolicyBeanName = DEFAULT_SESSION_EXPIRATION_POLICY_BEAN_NAME;
 
 	private String sessionSerializerBeanName = DEFAULT_SESSION_SERIALIZER_BEAN_NAME;
 
@@ -195,7 +213,9 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @see org.apache.geode.cache.client.ClientRegionShortcut
 	 */
 	protected ClientRegionShortcut getClientRegionShortcut() {
-		return Optional.ofNullable(this.clientRegionShortcut).orElse(DEFAULT_CLIENT_REGION_SHORTCUT);
+
+		return Optional.ofNullable(this.clientRegionShortcut)
+			.orElse(DEFAULT_CLIENT_REGION_SHORTCUT);
 	}
 
 	/**
@@ -216,7 +236,9 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * for which an Index will be created. Defaults to an empty array if unspecified.
 	 */
 	protected String[] getIndexableSessionAttributes() {
-		return Optional.ofNullable(this.indexableSessionAttributes).orElse(DEFAULT_INDEXABLE_SESSION_ATTRIBUTES);
+
+		return Optional.ofNullable(this.indexableSessionAttributes)
+			.orElse(DEFAULT_INDEXABLE_SESSION_ATTRIBUTES);
 	}
 
 	/**
@@ -259,7 +281,10 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @see org.apache.geode.cache.client.Pool#getName()
 	 */
 	protected String getPoolName() {
-		return Optional.ofNullable(this.poolName).filter(StringUtils::hasText).orElse(DEFAULT_POOL_NAME);
+
+		return Optional.ofNullable(this.poolName)
+			.filter(StringUtils::hasText)
+			.orElse(DEFAULT_POOL_NAME);
 	}
 
 	/**
@@ -288,7 +313,19 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @see org.apache.geode.cache.RegionShortcut
 	 */
 	protected RegionShortcut getServerRegionShortcut() {
-		return Optional.ofNullable(this.serverRegionShortcut).orElse(DEFAULT_SERVER_REGION_SHORTCUT);
+
+		return Optional.ofNullable(this.serverRegionShortcut)
+			.orElse(DEFAULT_SERVER_REGION_SHORTCUT);
+	}
+
+	public void setSessionExpirationPolicyBeanName(String sessionExpirationPolicyBeanName) {
+		this.sessionExpirationPolicyBeanName = sessionExpirationPolicyBeanName;
+	}
+
+	protected Optional<String> getSessionExpirationPolicyBeanName() {
+
+		return Optional.ofNullable(this.sessionExpirationPolicyBeanName)
+			.filter(StringUtils::hasText);
 	}
 
 	/**
@@ -310,7 +347,9 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @see org.apache.geode.cache.Region#getName()
 	 */
 	protected String getSessionRegionName() {
-		return Optional.ofNullable(this.sessionRegionName).filter(StringUtils::hasText)
+
+		return Optional.ofNullable(this.sessionRegionName)
+			.filter(StringUtils::hasText)
 			.orElse(DEFAULT_SESSION_REGION_NAME);
 	}
 
@@ -346,7 +385,9 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
 	 */
 	protected String getSessionSerializerBeanName() {
-		return Optional.ofNullable(this.sessionSerializerBeanName).filter(StringUtils::hasText)
+
+		return Optional.ofNullable(this.sessionSerializerBeanName)
+			.filter(StringUtils::hasText)
 			.orElse(DEFAULT_SESSION_SERIALIZER_BEAN_NAME);
 	}
 
@@ -376,45 +417,83 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 			AnnotationAttributes.fromMap(importMetadata.getAnnotationAttributes(
 				EnableGemFireHttpSession.class.getName()));
 
+		configureClientRegionShortcut(enableGemFireHttpSessionAttributes);
+		configureIndexableSessionAttributes(enableGemFireHttpSessionAttributes);
+		configureMaxInactiveIntervalInSeconds(enableGemFireHttpSessionAttributes);
+		configurePoolName(enableGemFireHttpSessionAttributes);
+		configureServerRegionShortcut(enableGemFireHttpSessionAttributes);
+		configureSessionExpirationPolicyBeanName(enableGemFireHttpSessionAttributes);
+		configureSessionRegionName(enableGemFireHttpSessionAttributes);
+		configureSessionSerializerBeanName(enableGemFireHttpSessionAttributes);
+
+		applySpringSessionGemFireConfigurer();
+	}
+
+	private void configureClientRegionShortcut(AnnotationAttributes enableGemFireHttpSessionAttributes) {
+
 		ClientRegionShortcut defaultClientRegionShortcut =
 			enableGemFireHttpSessionAttributes.getEnum("clientRegionShortcut");
 
 		setClientRegionShortcut(resolveProperty(clientRegionShortcutPropertyName(),
 			ClientRegionShortcut.class, defaultClientRegionShortcut));
+	}
+
+	private void configureIndexableSessionAttributes(AnnotationAttributes enableGemFireHttpSessionAttributes) {
 
 		String[] defaultIndexableSessionAttributes =
 			enableGemFireHttpSessionAttributes.getStringArray("indexableSessionAttributes");
 
 		setIndexableSessionAttributes(resolveProperty(indexableSessionAttributesPropertyName(),
 			defaultIndexableSessionAttributes));
+	}
+
+	private void configureMaxInactiveIntervalInSeconds(AnnotationAttributes enableGemFireHttpSessionAttributes) {
 
 		Integer defaultMaxInactiveIntervalInSeconds =
 			enableGemFireHttpSessionAttributes.getNumber("maxInactiveIntervalInSeconds").intValue();
 
 		setMaxInactiveIntervalInSeconds(resolveProperty(maxInactiveIntervalInSecondsPropertyName(),
 			defaultMaxInactiveIntervalInSeconds));
+	}
 
+	private void configurePoolName(AnnotationAttributes enableGemFireHttpSessionAttributes) {
 		String defaultPoolName = enableGemFireHttpSessionAttributes.getString("poolName");
 
 		setPoolName(resolveProperty(poolNamePropertyName(), defaultPoolName));
+	}
 
-		String defaultSessionRegionName = enableGemFireHttpSessionAttributes.getString("regionName");
-
-		setSessionRegionName(resolveProperty(sessionRegionNamePropertyName(), defaultSessionRegionName));
+	private void configureServerRegionShortcut(AnnotationAttributes enableGemFireHttpSessionAttributes) {
 
 		RegionShortcut defaultServerRegionShortcut =
 			enableGemFireHttpSessionAttributes.getEnum("serverRegionShortcut");
 
 		setServerRegionShortcut(resolveProperty(serverRegionShortcutPropertyName(),
 			RegionShortcut.class, defaultServerRegionShortcut));
+	}
+
+	private void configureSessionExpirationPolicyBeanName(AnnotationAttributes enableGemFireHttpSessionAttributes) {
+
+		String defaultSessionExpirationPolicyBeanName =
+			enableGemFireHttpSessionAttributes.getString("sessionExpirationPolicyBeanName");
+
+		setSessionExpirationPolicyBeanName(resolveProperty(sessionExpirationPolicyBeanNamePropertyName(),
+			defaultSessionExpirationPolicyBeanName));
+	}
+
+	private void configureSessionRegionName(AnnotationAttributes enableGemFireHttpSessionAttributes) {
+
+		String defaultSessionRegionName = enableGemFireHttpSessionAttributes.getString("regionName");
+
+		setSessionRegionName(resolveProperty(sessionRegionNamePropertyName(), defaultSessionRegionName));
+	}
+
+	private void configureSessionSerializerBeanName(AnnotationAttributes enableGemFireHttpSessionAttributes) {
 
 		String defaultSessionSerializerBeanName =
 			enableGemFireHttpSessionAttributes.getString("sessionSerializerBeanName");
 
 		setSessionSerializerBeanName(resolveProperty(sessionSerializerBeanNamePropertyName(),
 			defaultSessionSerializerBeanName));
-
-		applySpringSessionGemFireConfigurer();
 	}
 
 	private Optional<SpringSessionGemFireConfigurer> resolveSpringSessionGemFireConfigurer() {
@@ -452,6 +531,36 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	@PostConstruct
 	public void init() {
 		getBeanFactory().registerAlias(getSessionSerializerBeanName(), SESSION_SERIALIZER_BEAN_ALIAS);
+	}
+
+	@Bean
+	BeanPostProcessor sessionExpirationTimeoutAwareBeanPostProcessor() {
+
+		Duration expirationTimeout = Duration.ofSeconds(getMaxInactiveIntervalInSeconds());
+
+		return new SessionExpirationTimeoutAwareBeanPostProcessor(expirationTimeout);
+	}
+
+	private Optional<SessionExpirationPolicy> resolveSessionExpirationPolicy() {
+
+		Optional<String> sessionExpirationPolicyBeanName = getSessionExpirationPolicyBeanName();
+
+		if (sessionExpirationPolicyBeanName.isPresent()) {
+			if (getApplicationContext().containsBean(sessionExpirationPolicyBeanName.get())) {
+				return Optional.of(getApplicationContext()
+					.getBean(sessionExpirationPolicyBeanName.get(), SessionExpirationPolicy.class));
+			}
+			else {
+
+				String logMessage = "No Bean with name [{}] and type [{}] was configured;"
+					+ " Defaulting to Expiration policy configured for Region [{}]";
+
+				getLogger().warn(logMessage, sessionExpirationPolicyBeanName.get(),
+					SessionExpirationPolicy.class.getName(), getSessionRegionName());
+			}
+		}
+
+		return Optional.empty();
 	}
 
 	@Bean
@@ -576,9 +685,23 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 		regionAttributes.setValueConstraint(SESSION_REGION_VALUE_CONSTRAINT);
 
 		if (isExpirationAllowed(gemfireCache)) {
+
 			regionAttributes.setStatisticsEnabled(true);
-			regionAttributes.setEntryIdleTimeout(
-				new ExpirationAttributes(Math.max(getMaxInactiveIntervalInSeconds(), 0), ExpirationAction.INVALIDATE));
+
+			Optional<SessionExpirationPolicy> sessionExpirationPolicy = resolveSessionExpirationPolicy();
+
+			if (sessionExpirationPolicy.isPresent()) {
+				regionAttributes.setCustomEntryIdleTimeout(new SessionExpirationPolicyCustomExpiryAdapter(
+					sessionExpirationPolicy.get()));
+			}
+			else {
+				regionAttributes.setEntryIdleTimeout(new ExpirationAttributes(
+					Math.max(getMaxInactiveIntervalInSeconds(), 0), ExpirationAction.INVALIDATE));
+			}
+		}
+		else {
+			getLogger().info("Expiration is not allowed on Regions with a data management policy of {}",
+				GemfireUtils.isClient(gemfireCache) ? getClientRegionShortcut() : getServerRegionShortcut());
 		}
 
 		return regionAttributes;
@@ -634,7 +757,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 */
 	@Bean
 	public GemFireOperationsSessionRepository sessionRepository(
-		@Qualifier("sessionRegionTemplate") GemfireOperations gemfireOperations) {
+			@Qualifier("sessionRegionTemplate") GemfireOperations gemfireOperations) {
 
 		GemFireOperationsSessionRepository sessionRepository =
 			new GemFireOperationsSessionRepository(gemfireOperations);

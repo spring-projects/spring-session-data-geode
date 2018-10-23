@@ -34,6 +34,7 @@ import org.apache.geode.cache.client.Pool;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.session.Session;
+import org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy;
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 import org.springframework.session.web.http.SessionRepositoryFilter;
 
@@ -179,10 +180,26 @@ public @interface EnableGemFireHttpSession {
 	RegionShortcut serverRegionShortcut() default RegionShortcut.PARTITION;
 
 	/**
+	 * Defines the name of the bean referring to the {@link SessionExpirationPolicy} used to configure
+	 * the {@link Session} expiration logic and strategy.
+	 *
+	 * The {@link Object bean} referred to by its {@link String name} must be of type {@link SessionExpirationPolicy}.
+	 *
+	 * Defaults to unset.
+
+	 * Use the {@literal spring.session.data.gemfire.session.expiration.bean-name} in Spring Boot
+	 * {@literal application.properties}.
+	 *
+	 * @return a {@link String} containing the bean name of the configured {@link SessionExpirationPolicy}.
+	 * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy
+	 */
+	String sessionExpirationPolicyBeanName() default GemFireHttpSessionConfiguration.DEFAULT_SESSION_EXPIRATION_POLICY_BEAN_NAME;
+
+	/**
 	 * Defines the bean name of the {@link SessionSerializer} used to serialize {@link Session} state
 	 * between client and server or to disk when persisting or overflowing {@link Session} state.
 	 *
-	 * The bean referred to by its name must be of type {@link SessionSerializer}.
+	 * The {@link Object bean referred to by its {@link String name} must be of type {@link SessionSerializer}.
 	 *
 	 * Defaults to {@literal SessionPdxSerializer}.
 	 *
