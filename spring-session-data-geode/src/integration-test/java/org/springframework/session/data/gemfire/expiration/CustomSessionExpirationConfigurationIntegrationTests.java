@@ -90,7 +90,7 @@ public class CustomSessionExpirationConfigurationIntegrationTests {
 	public void sessionExpirationPolicyConfigurationIsCorrect() {
 
 		assertThat(this.sessionExpirationPolicy).isInstanceOf(TestSessionExpirationPolicy.class);
-		assertThat(this.sessionExpirationPolicy.expireAfter(null)).isEqualTo(Duration.ofMinutes(10));
+		assertThat(this.sessionExpirationPolicy.determineExpirationTimeout(null)).isEqualTo(Duration.ofMinutes(10));
 	}
 
 	@Test
@@ -154,7 +154,7 @@ public class CustomSessionExpirationConfigurationIntegrationTests {
 		}
 
 		@Override
-		public Duration expireAfter(Session session) {
+		public Duration determineExpirationTimeout(Session session) {
 			return this.expirationTimeout;
 		}
 	}

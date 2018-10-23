@@ -48,12 +48,12 @@ public class SessionExpirationPolicyUnitTests {
 	@Test
 	public void expirationActionDefaultsToInvalidate() {
 
-		when(this.mockSessionExpirationPolicy.getAction()).thenCallRealMethod();
+		when(this.mockSessionExpirationPolicy.getExpirationAction()).thenCallRealMethod();
 
-		assertThat(this.mockSessionExpirationPolicy.getAction())
+		assertThat(this.mockSessionExpirationPolicy.getExpirationAction())
 			.isEqualTo(SessionExpirationPolicy.ExpirationAction.INVALIDATE);
 
-		verify(this.mockSessionExpirationPolicy, times(1)).getAction();
+		verify(this.mockSessionExpirationPolicy, times(1)).getExpirationAction();
 	}
 
 	@Test
