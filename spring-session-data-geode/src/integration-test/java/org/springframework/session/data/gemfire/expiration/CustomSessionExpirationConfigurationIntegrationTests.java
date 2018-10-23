@@ -26,6 +26,8 @@ import javax.annotation.Resource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 
@@ -47,6 +49,8 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author John Blum
  * @see org.junit.Test
+ * @see org.apache.geode.cache.ExpirationAction
+ * @see org.apache.geode.cache.ExpirationAttributes
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.RegionAttributes
  * @see org.springframework.context.annotation.Bean
@@ -90,7 +94,7 @@ public class CustomSessionExpirationConfigurationIntegrationTests {
 	}
 
 	@Test
-	public void regionIdleTimeoutExpirationConfigurationIsCorrect() throws Exception {
+	public void regionCustomEntryIdleTimeoutExpirationConfigurationIsCorrect() throws Exception {
 
 		assertThat(this.sessions).isNotNull();
 
@@ -100,11 +104,30 @@ public class CustomSessionExpirationConfigurationIntegrationTests {
 		assertThat(sessionRegionAttributes.getCustomEntryIdleTimeout())
 			.isInstanceOf(SessionExpirationPolicyCustomExpiryAdapter.class);
 
-		SessionExpirationPolicyCustomExpiryAdapter adapter =
+		SessionExpirationPolicyCustomExpiryAdapter customEntryIdleTimeout =
 			(SessionExpirationPolicyCustomExpiryAdapter) sessionRegionAttributes.getCustomEntryIdleTimeout();
 
-		assertThat(this.<SessionExpirationPolicy>invokeMethod(adapter, "getSessionExpirationPolicy"))
-			.isEqualTo(this.sessionExpirationPolicy);
+		SessionExpirationPolicy actualSessionExpirationPolicy =
+			invokeMethod(customEntryIdleTimeout, "getSessionExpirationPolicy");
+
+		assertThat(actualSessionExpirationPolicy).isEqualTo(this.sessionExpirationPolicy);
+
+	}
+
+	@Test
+	public void regionEntryIdleTimeoutExpirationConfigurationIsCorrect() {
+
+		assertThat(this.sessions).isNotNull();
+
+		RegionAttributes<String, Object> sessionRegionAttributes = this.sessions.getAttributes();
+
+		assertThat(sessionRegionAttributes).isNotNull();
+
+		ExpirationAttributes entryIdleTimeout = sessionRegionAttributes.getEntryIdleTimeout();
+
+		assertThat(entryIdleTimeout).isNotNull();
+		assertThat(entryIdleTimeout.getTimeout()).isEqualTo(600);
+		assertThat(entryIdleTimeout.getAction()).isEqualTo(ExpirationAction.INVALIDATE);
 	}
 
 	@PeerCacheApplication
