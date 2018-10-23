@@ -81,14 +81,16 @@ import org.springframework.util.StringUtils;
  * {@link javax.servlet.http.HttpSession} provider implementation in Spring {@link Session}.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.ExpirationAttributes
- * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.RegionAttributes
  * @see org.apache.geode.cache.RegionShortcut
+ * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.client.ClientRegionShortcut
  * @see org.apache.geode.cache.client.Pool
- * @see org.springframework.beans.factory.BeanClassLoaderAware
+ * @see org.apache.geode.pdx.PdxSerializer
+ * @see org.springframework.beans.factory.config.BeanPostProcessor
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.DependsOn
@@ -109,8 +111,10 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.GemFireCacheTypeAwareRegionFactoryBean
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionAttributesIndexFactoryBean
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer
  * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy
  * @see org.springframework.session.data.gemfire.expiration.config.SessionExpirationTimeoutAwareBeanPostProcessor
+ * @see org.springframework.session.data.gemfire.expiration.support.SessionExpirationPolicyCustomExpiryAdapter
  * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
  * @since 1.1.0
  */
@@ -524,6 +528,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 			setPoolName(configurer.getPoolName());
 			setServerRegionShortcut(configurer.getServerRegionShortcut());
 			setSessionRegionName(configurer.getRegionName());
+			setSessionExpirationPolicyBeanName(configurer.getSessionExpirationPolicyBeanName());
 			setSessionSerializerBeanName(configurer.getSessionSerializerBeanName());
 		});
 	}

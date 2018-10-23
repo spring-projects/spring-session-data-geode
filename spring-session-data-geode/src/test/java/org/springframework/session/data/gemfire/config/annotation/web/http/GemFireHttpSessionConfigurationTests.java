@@ -66,9 +66,12 @@ import org.springframework.util.ReflectionUtils;
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.RegionAttributes
+ * @see org.apache.geode.cache.RegionShortcut
  * @see org.apache.geode.cache.ExpirationAttributes
  * @see org.apache.geode.cache.RegionAttributes
  * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.client.ClientRegionShortcut
  * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.core.type.AnnotationMetadata

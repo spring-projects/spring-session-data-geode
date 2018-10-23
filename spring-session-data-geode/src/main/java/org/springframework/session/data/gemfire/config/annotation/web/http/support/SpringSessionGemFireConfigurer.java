@@ -25,6 +25,7 @@ import org.apache.geode.cache.client.Pool;
 
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
+import org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy;
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 
 /**
@@ -33,8 +34,16 @@ import org.springframework.session.data.gemfire.serialization.SessionSerializer;
  * in Spring Session.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.RegionShortcut
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.client.ClientRegionShortcut
+ * @see org.apache.geode.cache.client.Pool
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
+ * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy
+ * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
  * @since 1.0.0
  */
 @SuppressWarnings("unused")
@@ -125,10 +134,25 @@ public interface SpringSessionGemFireConfigurer {
 	}
 
 	/**
+	 * Defines the name of the bean referring to the {@link SessionExpirationPolicy} used to configure
+	 * the {@link Session} expiration logic and strategy.
+	 *
+	 * The {@link Object bean} referred to by its {@link String name} must be of type {@link SessionExpirationPolicy}.
+	 *
+	 * Defaults to unset.
+
+	 * @return a {@link String} containing the bean name of the configured {@link SessionExpirationPolicy}.
+	 * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy
+	 */
+	default String getSessionExpirationPolicyBeanName() {
+		return GemFireHttpSessionConfiguration.DEFAULT_SESSION_EXPIRATION_POLICY_BEAN_NAME;
+	}
+
+	/**
 	 * Defines the bean name of the {@link SessionSerializer} used to serialize {@link Session} state
 	 * between client and server or to disk when persisting or overflowing {@link Session} state.
 	 *
-	 * The bean referred to by its name must be of type {@link SessionSerializer}.
+	 * The {@link Object bean} referred to by its {@link String name} must be of type {@link SessionSerializer}.
 	 *
 	 * Defaults to {@literal SessionPdxSerializer}.
 	 *
