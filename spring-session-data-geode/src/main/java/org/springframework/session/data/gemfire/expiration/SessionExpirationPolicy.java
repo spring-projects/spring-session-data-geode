@@ -42,7 +42,7 @@ import org.springframework.session.Session;
 public interface SessionExpirationPolicy {
 
 	/**
-	 * Defines the {@link Duration length of time} until the given {@link Session} will expire.
+	 * Determines the {@link Duration length of time} until the given {@link Session} will expire.
 	 *
 	 * May return {@literal null}, which indicates to Apache Geode or Pivotal GemFire that it should default to
 	 * the configured Idle Timeout (TTI) Expiration Policy for the {@link Session} {@link Region} to determine when
@@ -78,6 +78,13 @@ public interface SessionExpirationPolicy {
 		DESTROY,
 		INVALIDATE;
 
+		/**
+		 * Null-safe operation defaulting the {@link ExpirationAction} to {@link #INVALIDATE} if the given
+		 * {@link ExpirationAction} is {@literal null}.
+		 *
+		 * @param expirationAction {@link ExpirationAction} to evaluate.
+		 * @return the given {@link ExpirationAction} if not {@literal null}, otherwise return {@link #INVALIDATE}.
+		 */
 		public static ExpirationAction defaultIfNull(ExpirationAction expirationAction) {
 			return expirationAction != null ? expirationAction : INVALIDATE;
 		}
