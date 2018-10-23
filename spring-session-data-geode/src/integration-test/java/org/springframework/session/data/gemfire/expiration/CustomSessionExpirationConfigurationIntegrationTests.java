@@ -38,6 +38,7 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 import org.springframework.session.data.gemfire.expiration.config.SessionExpirationTimeoutAware;
 import org.springframework.session.data.gemfire.expiration.support.SessionExpirationPolicyCustomExpiryAdapter;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ReflectionUtils;
 
@@ -51,14 +52,17 @@ import org.springframework.util.ReflectionUtils;
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
  * @see org.springframework.data.gemfire.tests.mock.annotation.EnableGemFireMockObjects
+ * @see org.springframework.session.Session
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.expiration.config.SessionExpirationTimeoutAware
  * @see org.springframework.session.data.gemfire.expiration.support.SessionExpirationPolicyCustomExpiryAdapter
+ * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringRunner
  * @since 2.1.0
  */
 @RunWith(SpringRunner.class)
+@ContextConfiguration
 @SuppressWarnings("unused")
 public class CustomSessionExpirationConfigurationIntegrationTests {
 
