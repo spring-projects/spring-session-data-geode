@@ -329,6 +329,7 @@ public class GemFireHttpSessionConfigurationTests {
 		annotationAttributes.put("poolName", "TestPool");
 		annotationAttributes.put("serverRegionShortcut", RegionShortcut.REPLICATE);
 		annotationAttributes.put("regionName", "TEST");
+		annotationAttributes.put("sessionExpirationPolicyBeanName", "testSessionExpirationPolicy");
 		annotationAttributes.put("sessionSerializerBeanName", "testSessionSerializer");
 
 		given(mockAnnotationMetadata.getAnnotationAttributes(eq(EnableGemFireHttpSession.class.getName())))
@@ -342,6 +343,8 @@ public class GemFireHttpSessionConfigurationTests {
 		assertThat(this.gemfireConfiguration.getPoolName()).isEqualTo("TestPool");
 		assertThat(this.gemfireConfiguration.getServerRegionShortcut()).isEqualTo(RegionShortcut.REPLICATE);
 		assertThat(this.gemfireConfiguration.getSessionRegionName()).isEqualTo("TEST");
+		assertThat(this.gemfireConfiguration.getSessionExpirationPolicyBeanName().orElse(null))
+			.isEqualTo("testSessionExpirationPolicy");
 		assertThat(this.gemfireConfiguration.getSessionSerializerBeanName()).isEqualTo("testSessionSerializer");
 
 		verify(mockAnnotationMetadata, times(1))
