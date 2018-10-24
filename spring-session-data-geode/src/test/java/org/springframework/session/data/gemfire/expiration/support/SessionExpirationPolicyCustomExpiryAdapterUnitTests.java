@@ -20,12 +20,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,7 +70,7 @@ public class SessionExpirationPolicyCustomExpiryAdapterUnitTests {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void constructNewSessionExpirationPolicyCustomExpiryAdapterWithNullSessionExpirationPolicy() {
+	public void constructsNewSessionExpirationPolicyCustomExpiryAdapterWithNullSessionExpirationPolicy() {
 
 		try {
 			new SessionExpirationPolicyCustomExpiryAdapter(null);
@@ -84,19 +86,27 @@ public class SessionExpirationPolicyCustomExpiryAdapterUnitTests {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void getExpiryHandlesInvalidRegionEntryValueType() {
+	public void getExpiryHandlesNoExpirationTimeout() {
+
+		when(this.mockSessionExpirationPolicy.determineExpirationTimeout(any(Session.class)))
+			.thenReturn(Optional.empty());
+
+		Session mockSession = mock(Session.class);
 
 		Region.Entry<String, Object> mockRegionEntry = mock(Region.Entry.class);
 
-		when(mockRegionEntry.getValue()).thenReturn("MockSession");
+		when(mockRegionEntry.getValue()).thenReturn(mockSession);
 
 		SessionExpirationPolicyCustomExpiryAdapter adapter =
 			new SessionExpirationPolicyCustomExpiryAdapter(this.mockSessionExpirationPolicy);
 
-		assertThat(adapter.getExpiry(mockRegionEntry)).isNull();
+		ExpirationAttributes expirationAttributes = adapter.getExpiry(mockRegionEntry);
+
+		assertThat(expirationAttributes).isNull();
 
 		verify(mockRegionEntry, times(1)).getValue();
-		verifyZeroInteractions(this.mockSessionExpirationPolicy);
+		verify(this.mockSessionExpirationPolicy, times(1)).determineExpirationTimeout(eq(mockSession));
+		verify(this.mockSessionExpirationPolicy, never()).getExpirationAction();
 	}
 
 	@Test
@@ -150,18 +160,37 @@ public class SessionExpirationPolicyCustomExpiryAdapterUnitTests {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void getExpiryReturnsExpirationAttributes() {
-
-		Duration expirationTimeout = Duration.ofMinutes(30);
-
-		SessionExpirationPolicy.ExpirationAction expirationAction = SessionExpirationPolicy.ExpirationAction.DESTROY;
-
-		when(this.mockSessionExpirationPolicy.getAction()).thenReturn(expirationAction);
-		when(this.mockSessionExpirationPolicy.expireAfter(any(Session.class))).thenReturn(expirationTimeout);
+	public void getExpiryHandlesUnresolvableSession() {
 
 		Region.Entry<String, Object> mockRegionEntry = mock(Region.Entry.class);
 
+		when(mockRegionEntry.getValue()).thenReturn("MockSession");
+
+		SessionExpirationPolicyCustomExpiryAdapter adapter =
+			new SessionExpirationPolicyCustomExpiryAdapter(this.mockSessionExpirationPolicy);
+
+		assertThat(adapter.getExpiry(mockRegionEntry)).isNull();
+
+		verify(mockRegionEntry, times(1)).getValue();
+		verifyZeroInteractions(this.mockSessionExpirationPolicy);
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void getExpiryReturnsExpirationAttributes() {
+
+		Duration expirationTimeout = Duration.ofMinutes(30L);
+
+		SessionExpirationPolicy.ExpirationAction expirationAction = SessionExpirationPolicy.ExpirationAction.DESTROY;
+
+		when(this.mockSessionExpirationPolicy.determineExpirationTimeout(any(Session.class)))
+			.thenReturn(Optional.of(expirationTimeout));
+
+		when(this.mockSessionExpirationPolicy.getExpirationAction()).thenReturn(expirationAction);
+
 		Session mockSession = mock(Session.class);
+
+		Region.Entry<String, Object> mockRegionEntry = mock(Region.Entry.class);
 
 		when(mockRegionEntry.getValue()).thenReturn(mockSession);
 
@@ -175,18 +204,20 @@ public class SessionExpirationPolicyCustomExpiryAdapterUnitTests {
 		assertThat(expirationAttributes.getTimeout()).isEqualTo(expirationTimeout.getSeconds());
 
 		verify(mockRegionEntry, times(1)).getValue();
-		verify(this.mockSessionExpirationPolicy, times(1)).getAction();
-		verify(this.mockSessionExpirationPolicy, times(1)).expireAfter(eq(mockSession));
+		verify(this.mockSessionExpirationPolicy, times(1)).determineExpirationTimeout(eq(mockSession));
+		verify(this.mockSessionExpirationPolicy, times(1)).getExpirationAction();
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void getExpiryWithPdxInstanceAndOverflowedExpirationTimeoutAndNullExpirationAction() {
+	public void getExpiryWithPdxInstanceAndOverflowedExpirationTimeoutAndNullExpirationActionReturnsExpirationAttributes() {
 
 		Duration expirationTimeout = Duration.ofSeconds(987654321369L);
 
-		when(this.mockSessionExpirationPolicy.getAction()).thenReturn(null);
-		when(this.mockSessionExpirationPolicy.expireAfter(any(Session.class))).thenReturn(expirationTimeout);
+		when(this.mockSessionExpirationPolicy.determineExpirationTimeout(any(Session.class)))
+			.thenReturn(Optional.of(expirationTimeout));
+
+		when(this.mockSessionExpirationPolicy.getExpirationAction()).thenReturn(null);
 
 		Session mockSession = mock(Session.class);
 
@@ -208,20 +239,22 @@ public class SessionExpirationPolicyCustomExpiryAdapterUnitTests {
 
 		verify(mockPdxInstance, times(1)).getObject();
 		verify(mockRegionEntry, times(1)).getValue();
-		verify(this.mockSessionExpirationPolicy, times(1)).getAction();
-		verify(this.mockSessionExpirationPolicy, times(1)).expireAfter(eq(mockSession));
+		verify(this.mockSessionExpirationPolicy, times(1)).determineExpirationTimeout(eq(mockSession));
+		verify(this.mockSessionExpirationPolicy, times(1)).getExpirationAction();
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void getExpiryWithUnderflowExpirationTimeout() {
+	public void getExpiryWithUnderflowExpirationTimeoutReturnsExpirationAttributes() {
 
-		Duration expirationTimeout = Duration.ofSeconds(-120);
+		Duration expirationTimeout = Duration.ofSeconds(-120L);
 
 		SessionExpirationPolicy.ExpirationAction expirationAction = SessionExpirationPolicy.ExpirationAction.DESTROY;
 
-		when(this.mockSessionExpirationPolicy.getAction()).thenReturn(expirationAction);
-		when(this.mockSessionExpirationPolicy.expireAfter(any(Session.class))).thenReturn(expirationTimeout);
+		when(this.mockSessionExpirationPolicy.determineExpirationTimeout(any(Session.class)))
+			.thenReturn(Optional.of(expirationTimeout));
+
+		when(this.mockSessionExpirationPolicy.getExpirationAction()).thenReturn(expirationAction);
 
 		Session mockSession = mock(Session.class);
 
@@ -239,7 +272,7 @@ public class SessionExpirationPolicyCustomExpiryAdapterUnitTests {
 		assertThat(expirationAttributes.getTimeout()).isEqualTo(1);
 
 		verify(mockRegionEntry, times(1)).getValue();
-		verify(this.mockSessionExpirationPolicy, times(1)).getAction();
-		verify(this.mockSessionExpirationPolicy, times(1)).expireAfter(eq(mockSession));
+		verify(this.mockSessionExpirationPolicy, times(1)).determineExpirationTimeout(eq(mockSession));
+		verify(this.mockSessionExpirationPolicy, times(1)).getExpirationAction();
 	}
 }

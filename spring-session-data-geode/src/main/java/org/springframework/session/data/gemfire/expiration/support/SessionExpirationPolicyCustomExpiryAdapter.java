@@ -34,13 +34,14 @@ import org.springframework.util.Assert;
 /**
  * The {@link SessionExpirationPolicyCustomExpiryAdapter} class is an Apache Geode/Pivotal GemFire {@link CustomExpiry}
  * implementation wrapping and adapting an instance of the {@link SessionExpirationPolicy} strategy interface
- * to plugin to GemFire/Geode's expiration logistics.
+ * to plugin to and affect Apache Geode/Pivotal GemFire's expiration behavior.
  *
  * @author John Blum
  * @see org.apache.geode.cache.CustomExpiry
  * @see org.apache.geode.cache.ExpirationAction
  * @see org.apache.geode.cache.ExpirationAttributes
  * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.pdx.PdxInstance
  * @see org.springframework.session.Session
  * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy
  * @since 1.0.0
@@ -48,15 +49,18 @@ import org.springframework.util.Assert;
 @SuppressWarnings("unused")
 public class SessionExpirationPolicyCustomExpiryAdapter implements CustomExpiry<String, Object> {
 
+	protected static final SessionExpirationPolicy.ExpirationAction DEFAULT_EXPIRATION_ACTION =
+		SessionExpirationPolicy.ExpirationAction.INVALIDATE;
+
 	private final SessionExpirationPolicy sessionExpirationPolicy;
 
 	/**
-	 * Constructs a new instance of {@link SessionExpirationPolicyCustomExpiryAdapter} initialized with
+	 * Constructs a new {@link SessionExpirationPolicyCustomExpiryAdapter} initialized with
 	 * the given, required {@link SessionExpirationPolicy}.
 	 *
-	 * @param sessionExpirationPolicy {@link SessionExpirationPolicy} used to enforce the expiration policy
-	 * on all {@link Session Sessions}.
-	 * @throws IllegalArgumentException if the {@link SessionExpirationPolicy} is {@literal null}.
+	 * @param sessionExpirationPolicy {@link SessionExpirationPolicy} used to determine the expiration policy
+	 * for all {@link Session Sessions}.
+	 * @throws IllegalArgumentException if {@link SessionExpirationPolicy} is {@literal null}.
 	 * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy
 	 */
 	public SessionExpirationPolicyCustomExpiryAdapter(@NonNull SessionExpirationPolicy sessionExpirationPolicy) {
@@ -67,10 +71,10 @@ public class SessionExpirationPolicyCustomExpiryAdapter implements CustomExpiry<
 	}
 
 	/**
-	 * Returns a reference to the {@link SessionExpirationPolicy} defining the expiration policies
+	 * Returns the configured {@link SessionExpirationPolicy} defining the expiration policies
 	 * for all managed {@link Session Sessions}.
 	 *
-	 * @return a reference to the {@link SessionExpirationPolicy}.
+	 * @return the configured {@link SessionExpirationPolicy}.
 	 * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy
 	 */
 	protected SessionExpirationPolicy getSessionExpirationPolicy() {
@@ -80,59 +84,61 @@ public class SessionExpirationPolicyCustomExpiryAdapter implements CustomExpiry<
 	@Nullable @Override
 	public ExpirationAttributes getExpiry(@Nullable Region.Entry<String, Object> regionEntry) {
 
-		return Optional.ofNullable(resolveSession(regionEntry))
-			.map(this::newExpirationAttributes)
+		return resolveSession(regionEntry)
+			.flatMap(getSessionExpirationPolicy()::determineExpirationTimeout)
+			.map(expirationTimeout ->
+				newExpirationAttributes(expirationTimeout, getSessionExpirationPolicy().getExpirationAction()))
 			.orElse(null);
 	}
 
 	/**
-	 * Constructs {@link ExpirationAttributes} from the given {@link Session}.
+	 * Constructs a new {@link ExpirationAttributes} initialized with the given {@link Duration expiration timeut}
+	 * and default {@link ExpirationAction#INVALIDATE expirtion action}.
 	 *
-	 * @param session {@link Session} used to construct the {@link ExpirationAttributes}.
-	 * @return a new {@link ExpirationAttributes} constructed from the given {@link Session}.
+	 * @param expirationTimeout {@link Duration} specifying the expiration timeout.
+	 * @return the new {@link ExpirationAttributes}.
 	 * @see #newExpirationAttributes(Duration, SessionExpirationPolicy.ExpirationAction)
 	 * @see org.apache.geode.cache.ExpirationAttributes
-	 * @see org.springframework.session.Session
+	 * @see java.time.Duration
 	 */
-	private ExpirationAttributes newExpirationAttributes(Session session) {
-
-		SessionExpirationPolicy sessionExpirationPolicy = getSessionExpirationPolicy();
-		Duration sessionExpirationDuration = sessionExpirationPolicy.expireAfter(session);
-		SessionExpirationPolicy.ExpirationAction sessionExpirationAction = sessionExpirationPolicy.getAction();
-
-		return newExpirationAttributes(sessionExpirationDuration, sessionExpirationAction);
+	@NonNull
+	protected ExpirationAttributes newExpirationAttributes(@NonNull Duration expirationTimeout) {
+		return newExpirationAttributes(expirationTimeout, DEFAULT_EXPIRATION_ACTION);
 	}
 
 	/**
 	 * Constructs a new {@link ExpirationAttributes} initialized with the given {@link Duration expiration timeout}
 	 * and {@link SessionExpirationPolicy.ExpirationAction} to take when the {@link Session} expires.
 	 *
-	 * @param duration {@link Duration} specifying the expiration timeout.
-	 * @param expirationAction {@link SessionExpirationPolicy.ExpirationAction} to take when
-	 * the {@link Session} expires.
+	 * @param expirationTimeout {@link Duration} specifying the expiration timeout.
+	 * @param expirationAction {@link SessionExpirationPolicy.ExpirationAction} taken when the {@link Session} expires.
 	 * @return the new {@link ExpirationAttributes}.
-	 * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy.ExpirationAction
 	 * @see #newExpirationAttributes(int, ExpirationAction)
+	 * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy.ExpirationAction
 	 * @see org.apache.geode.cache.ExpirationAttributes
 	 * @see java.time.Duration
 	 */
-	private ExpirationAttributes newExpirationAttributes(Duration duration,
-			SessionExpirationPolicy.ExpirationAction expirationAction) {
+	@NonNull
+	protected ExpirationAttributes newExpirationAttributes(@NonNull Duration expirationTimeout,
+			@Nullable SessionExpirationPolicy.ExpirationAction expirationAction) {
 
-		int expirationTimeout = (int) Math.min(Integer.MAX_VALUE, Math.max(duration.getSeconds(), 1));
+		int expirationTimeoutInSeconds =
+			(int) Math.min(Integer.MAX_VALUE, Math.max(expirationTimeout.getSeconds(), 1));
 
-		return newExpirationAttributes(expirationTimeout, resolveExpirationAction(expirationAction));
+		return newExpirationAttributes(expirationTimeoutInSeconds, toGemFireExpirationAction(expirationAction));
 	}
 
 	/**
-	 * Constructs new {@link ExpirationAttributes} with the given {@link Integer expiration timeout}
-	 * and {@link ExpirationAction} to take when the {@link Session} expires.
+	 * Constructs a new {@link ExpirationAttributes} initialized with the given {@link Integer expiration timeout}
+	 * in seconds and {@link ExpirationAction} taken when the {@link Session} expires.
 	 *
-	 * @param expirationTimeInSeconds length of time in seconds until the {@link Session} expires.
-	 * @param expirationAction {@link ExpirationAction} to take when the {@link Session} expires.
+	 * @param expirationTimeInSeconds {@link Integer length of time} in seconds until the {@link Session} expires.
+	 * @param expirationAction {@link ExpirationAction} taken when the {@link Session} expires.
 	 * @return the new {@link ExpirationAttributes}.
+	 * @see org.apache.geode.cache.ExpirationAction
 	 * @see org.apache.geode.cache.ExpirationAttributes
 	 */
+	@NonNull
 	private ExpirationAttributes newExpirationAttributes(int expirationTimeInSeconds,
 			ExpirationAction expirationAction) {
 
@@ -140,20 +146,57 @@ public class SessionExpirationPolicyCustomExpiryAdapter implements CustomExpiry<
 	}
 
 	/**
-	 * Resolves the {@link org.apache.geode.cache.ExpirationAction} from the given
+	 * Resolves an {@link Optional} {@link Session} object from the {@link Region.Entry#getValue() Region Entry Value}.
+	 *
+	 * @param regionEntry {@link Region.Entry} from which to extract the {@link Session} value.
+	 * @return an {@link Optional} {@link Session} object from the {@link Region.Entry#getValue() Region Entry Value}.
+	 * @see org.apache.geode.cache.Region.Entry
+	 * @see org.springframework.session.Session
+	 * @see java.util.Optional
+	 * @see #resolveSession(Object)
+	 */
+	private Optional<Session> resolveSession(@Nullable Region.Entry<String, Object> regionEntry) {
+
+		return Optional.ofNullable(regionEntry)
+			.map(Region.Entry::getValue)
+			.flatMap(this::resolveSession);
+	}
+
+	/**
+	 * Resolves an {@link Optional} {@link Session} object from the given {@link Object} value.
+	 *
+	 * The {@link Object} may already be a {@link Session} or may possibly be a {@link PdxInstance}
+	 * if Apache Geode/Pivotal GemFire PDX serialization is enabled.
+	 *
+	 * @param value {@link Object} to evaluate as a {@link Session}.
+	 * @return an {@link Optional} {@link Session} from the given {@link Object}.
+	 * @see org.springframework.session.Session
+	 * @see org.apache.geode.pdx.PdxInstance
+	 * @see java.util.Optional
+	 * @see java.lang.Object
+	 */
+	private Optional<Session> resolveSession(@Nullable Object value) {
+
+		return Optional.ofNullable(value instanceof Session ? (Session) value
+			: value instanceof PdxInstance ? (Session) ((PdxInstance) value).getObject()
+			: null);
+	}
+
+	/**
+	 * Converts the {@link org.apache.geode.cache.ExpirationAction} from the given
 	 * {@link SessionExpirationPolicy.ExpirationAction}.
 	 *
 	 * Defaults to {@link ExpirationAction#INVALIDATE} if {@link SessionExpirationPolicy.ExpirationAction}
 	 * is {@literal null}.
 	 *
-	 * @param expirationAction {@link SessionExpirationPolicy.ExpirationAction} to convert into a
+	 * @param expirationAction {@link SessionExpirationPolicy.ExpirationAction} to convert into an
 	 * {@link org.apache.geode.cache.ExpirationAction}.
 	 * @return an {@link org.apache.geode.cache.ExpirationAction} from the given
-	 * {@link SessionExpirationPolicy.ExpirationAction}.
+	 * {@link SessionExpirationPolicy.ExpirationAction}; defaults to {@link ExpirationAction#INVALIDATE}.
 	 * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy.ExpirationAction
 	 * @see org.apache.geode.cache.ExpirationAction
 	 */
-	private ExpirationAction resolveExpirationAction(SessionExpirationPolicy.ExpirationAction expirationAction) {
+	private ExpirationAction toGemFireExpirationAction(SessionExpirationPolicy.ExpirationAction expirationAction) {
 
 		switch (SessionExpirationPolicy.ExpirationAction.defaultIfNull(expirationAction)) {
 			case DESTROY:
@@ -161,39 +204,5 @@ public class SessionExpirationPolicyCustomExpiryAdapter implements CustomExpiry<
 			default:
 				return ExpirationAction.INVALIDATE;
 		}
-	}
-
-	/**
-	 * Resolves a {@link Session} object from the given {@link Region.Entry#getValue() Region Entry Value}.
-	 *
-	 * @param regionEntry {@link Region.Entry} from which to extract the {@link Session} value.
-	 * @return a {@link Session} object from the given {@link Region.Entry#getValue()}.
-	 * @see org.springframework.session.Session
-	 * @see org.apache.geode.cache.Region.Entry
-	 * @see #resolveSession(Object)
-	 */
-	@Nullable
-	private Session resolveSession(Region.Entry<String, Object> regionEntry) {
-		return resolveSession(Optional.ofNullable(regionEntry).map(Region.Entry::getValue).orElse(null));
-	}
-
-	/**
-	 * Resolves a {@link Session} object from the given {@link Object} value.
-	 *
-	 * The {@link Object} may already be a {@link Session} or may possibly be a {@link PdxInstance} if GemFire/Geode
-	 * PDX serialization is enabled.
-	 *
-	 * @param regionEntryValue {@link Object} to evaluate as a {@link Session}.
-	 * @return a {@link Session} from the given {@link Object}.
-	 * @see org.springframework.session.Session
-	 * @see org.apache.geode.pdx.PdxInstance
-	 * @see java.lang.Object
-	 */
-	@Nullable
-	private Session resolveSession(Object regionEntryValue) {
-
-		return regionEntryValue instanceof Session ? (Session) regionEntryValue
-			: regionEntryValue instanceof PdxInstance ? (Session) ((PdxInstance) regionEntryValue).getObject()
-			: null;
 	}
 }
