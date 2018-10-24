@@ -51,6 +51,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.session.Session;
+import org.springframework.session.SessionRepository;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.session.events.AbstractSessionEvent;
 import org.springframework.util.StringUtils;
@@ -100,9 +101,16 @@ public abstract class AbstractGemFireIntegrationTests {
 	@Autowired(required = false)
 	protected GemFireOperationsSessionRepository gemfireSessionRepository;
 
+	@Autowired(required = false)
+	protected SessionRepository<Session> sessionRepository;
+
 	@Before
 	public void setup() {
+
 		System.setProperty("gemfire.Query.VERBOSE", String.valueOf(isQueryDebuggingEnabled()));
+
+		this.sessionRepository = this.sessionRepository != null
+			? this.sessionRepository : this.gemfireSessionRepository;
 	}
 
 	protected static String buildClassPathContainingJarFiles(String... jarFilenames) {
@@ -125,7 +133,7 @@ public abstract class AbstractGemFireIntegrationTests {
 	private static Optional<URL> findClassInFileSystem(Class<?> type) {
 
 		return Optional.ofNullable(type)
-			.map(AbstractGemFireIntegrationTests::getResourceName)
+			.map(AbstractGemFireIntegrationTests::toResourceName)
 			.map(resourceName -> type.getClassLoader().getResource(resourceName));
 	}
 
@@ -134,7 +142,7 @@ public abstract class AbstractGemFireIntegrationTests {
 			.filter(element -> element.contains(jarFilename)).findFirst();
 	}
 
-	private static String getResourceName(Class<?> type) {
+	private static String toResourceName(Class<?> type) {
 		return type.getName().replaceAll("\\.", "/").concat(".class");
 	}
 
@@ -204,7 +212,7 @@ public abstract class AbstractGemFireIntegrationTests {
 			.map(File::getAbsolutePath)
 			.map(pathname -> {
 
-				int indexOfTypeName = pathname.indexOf(getResourceName(type));
+				int indexOfTypeName = pathname.indexOf(toResourceName(type));
 
 				pathname = (indexOfTypeName > -1 ? pathname.substring(0, indexOfTypeName) : pathname);
 				pathname = (pathname.endsWith(File.separator) ? pathname.substring(0, pathname.length() - 1) : pathname);
@@ -375,12 +383,14 @@ public abstract class AbstractGemFireIntegrationTests {
 	}
 
 	protected void assertValidSession(Session session) {
+
 		assertThat(session).isNotNull();
 		assertThat(session.getId()).isNotEmpty();
 		assertThat(session.isExpired()).isFalse();
 	}
 
 	protected void assertRegion(Region<?, ?> actualRegion, String expectedName, DataPolicy expectedDataPolicy) {
+
 		assertThat(actualRegion).isNotNull();
 		assertThat(actualRegion.getName()).isEqualTo(expectedName);
 		assertThat(actualRegion.getFullPath()).isEqualTo(GemFireUtils.toRegionPath(expectedName));
@@ -389,6 +399,7 @@ public abstract class AbstractGemFireIntegrationTests {
 	}
 
 	protected void assertIndex(Index index, String expectedExpression, String expectedFromClause) {
+
 		assertThat(index).isNotNull();
 		assertThat(index.getIndexedExpression()).isEqualTo(expectedExpression);
 		assertThat(index.getFromClause()).isEqualTo(expectedFromClause);
@@ -418,10 +429,14 @@ public abstract class AbstractGemFireIntegrationTests {
 		return gemfireCache.rootRegions().stream().map(Region::getFullPath).collect(Collectors.toList());
 	}
 
+	protected SessionRepository<Session> getSessionRepository() {
+		return this.sessionRepository;
+	}
+
 	@SuppressWarnings("unchecked")
 	protected <T extends Session> T createSession() {
 
-		T session = (T) this.gemfireSessionRepository.createSession();
+		T session = (T) getSessionRepository().createSession();
 
 		assertThat(session).isNotNull();
 
@@ -440,7 +455,7 @@ public abstract class AbstractGemFireIntegrationTests {
 
 	@SuppressWarnings("all")
 	protected <T extends Session> T delete(T session) {
-		this.gemfireSessionRepository.delete(session);
+		getSessionRepository().deleteById(session.getId());
 		return session;
 	}
 
@@ -451,11 +466,11 @@ public abstract class AbstractGemFireIntegrationTests {
 
 	@SuppressWarnings("unchecked")
 	protected <T extends Session> T get(String sessionId) {
-		return (T) this.gemfireSessionRepository.findById(sessionId);
+		return (T) getSessionRepository().findById(sessionId);
 	}
 
 	protected <T extends Session> T save(T session) {
-		this.gemfireSessionRepository.save(session);
+		getSessionRepository().save(session);
 		return session;
 	}
 
