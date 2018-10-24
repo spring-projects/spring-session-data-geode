@@ -50,6 +50,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
+import org.springframework.data.gemfire.tests.integration.IntegrationTestsSupport;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
@@ -71,10 +72,11 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.query.Index
  * @see org.apache.geode.cache.server.CacheServer
  * @see org.apache.geode.internal.InternalDataSerializer
+ * @see org.springframework.data.gemfire.tests.integration.IntegrationTestsSupport
  * @see org.springframework.session.Session
  */
 @SuppressWarnings("unused")
-public abstract class AbstractGemFireIntegrationTests {
+public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSupport {
 
 	protected static final boolean DEFAULT_ENABLE_QUERY_DEBUGGING = false;
 
