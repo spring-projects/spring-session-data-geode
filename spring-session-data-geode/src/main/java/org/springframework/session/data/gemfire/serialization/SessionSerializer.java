@@ -62,7 +62,10 @@ public interface SessionSerializer<T, IN, OUT> {
 	 * @see #canSerialize(Class)
 	 */
 	default boolean canSerialize(Object obj) {
-		return Optional.ofNullable(obj).map(Object::getClass).filter(this::canSerialize).isPresent();
-	}
 
+		return Optional.ofNullable(obj)
+			.map(Object::getClass)
+			.filter(this::canSerialize)
+			.isPresent();
+	}
 }
