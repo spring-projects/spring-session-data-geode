@@ -234,14 +234,29 @@ the `@EnableGemFireHttpSession` attributes.
 | Description
 | Default
 
+| spring.session.data.gemfire.cache.client.pool.name
+| `EnableGemFireHttpSession.poolName`
+| Name of the dedicated Pool used by the client Region storing/accessing Session state.
+| gemfirePool
+
 | spring.session.data.gemfire.cache.client.region.shortcut
 | `EnableGemFireHttpSession.clientRegionShortcut`
 | Sets the client Region data management policy in the client-server topology.
 | ClientRegionShortcut.PROXY
 
+| spring.session.data.gemfire.cache.server.region.shortcut
+| `EnableGemFireHttpSession.serverRegionShortcut`
+| Sets the peer Region data management policy in the peer-to-peer (P2P) topology.
+| RegionShortcut.PARTITION
+
 | spring.session.data.gemfire.session.attributes.indexable
 | `EnableGemFireHttpSession.indexableSessionAttributes`
 | Comma-delimited list of Session attributes to indexed in the Session Region.
+|
+
+| spring.session.data.gemfire.session.expiration.bean-name
+| `EnableGemFireHttpSession.sessionExpirationPolicyBeanName`
+| Name of the bean in the Spring container implementing the expiration strategy
 |
 
 | spring.session.data.gemfire.session.expiration.max-inactive-interval-seconds
@@ -249,20 +264,10 @@ the `@EnableGemFireHttpSession` attributes.
 | Session expiration timeout in seconds
 | 1800
 
-| spring.session.data.gemfire.cache.client.pool.name
-| `EnableGemFireHttpSession.poolName`
-| Name of the dedicated Pool used by the client Region storing/accessing Session state.
-| gemfirePool
-
 | spring.session.data.gemfire.session.region.name
 | `EnableGemFireHttpSession.regionName`
 | Name of the client or peer Region used to store and access Session state.
 | ClusteredSpringSessions
-
-| spring.session.data.gemfire.session.region.name
-| `EnableGemFireHttpSession.serverRegionShortcut`
-| Sets the peer Region data management policy in the peer-to-peer (P2P) topology.
-| RegionShortcut.PARTITION
 
 | spring.session.data.gemfire.session.serializer.bean-name
 | `EnableGemFireHttpSession.sessionSerializerBeanName`
@@ -407,6 +412,197 @@ However, if you are not using Spring Boot, then you must explicitly register a s
 `PropertySourcesPlaceholderConfigurer` bean definition.
 
 The choice is yours.
+
+[[httpsession-gemfire-expiration]]
+=== {data-store-name} Expiration
+
+By default, {data-store-name} is configured with a Region Entry, Idle Timeout (TTI) Expiration Policy, using an
+expiration timeout of 30 minutes and INVALIDATE entry as the action.  This means when a user's Session remains inactive
+(i.e. idle) for more than 30 minutes, the Session expires, or is invalidated, and the user must begin a new Session
+to access the application once again.
+
+However, what if you have application specific requirements around Session state management and expiration, and using
+the default, Idle Timeout (TTI) Expiration Policy is insufficient for your Use Case (UC)?
+
+Now, Spring Session for {data-store-name} supports application specific, custom expiration policies.  As an application
+developer, you may specify custom rules governing the expiration of a Session managed by Spring Session.
+
+Spring Session for {data-store-name} provides the new `SessionExpirationPolicy` strategy interface.
+
+.SessionExpirationPolicy interface
+[source,java]
+----
+@FunctionalInterface
+interface SessionExpirationPolicy {
+
+    // determine timeout for expiration of individual Session
+    Duration determineExpirationTimeout(Session session);
+
+    // define the action taken on expiration
+    default ExpirationAction getExpirationAction() {
+        return ExpirationAction.INVALIDATE;
+    }
+
+    enum ExpirationAction {
+
+        DESTROY,
+        INVALIDATE
+
+    }
+}
+----
+
+You implement this interface to specify the Session expiration policies required by your application and then register
+the instance as a bean in the Spring application context.
+
+Use the `@EnableGemFireHttpSession` annotation, `sessionExpirationPolicyBeanName` attribute to configure the name of
+the `SessionExpirationPolicy` bean implementing your custom application policies and rules around Session expiration.
+
+For example:
+
+.Custom, Application `SessionExpirationPolicy`
+[source,java]
+----
+class MySessionExpirationPolicy implements SessionExpirationPolicy {
+
+    public Duration determineExpirationTimeout(Session session) {
+        // return a java.time.Duration specifying the length of time until the Session expires
+    }
+}
+----
+
+Then, in your application, you simple declare the following:
+
+.Custom, Appliation `SessionExpirationPolicy` configuration
+[source,java]
+----
+@SpringBootApplication
+@EnableGemFireHttpSession(
+    maxInactiveIntervalInSeconds = 600,
+    sessionExpirationPolicyBeanName = "expirationPolicy"
+)
+class MySpringSessionApplication {
+
+    ...
+
+    @Bean
+    SessionExpirationPolicy expirationPolicy() {
+        return new MySessionExpirationPolicy();
+    }
+}
+----
+
+TIP: Alternatively, the name of the `SessionExpirationPolicy` bean can be configured using the
+`spring.session.data.gemfire.session.expiration.bean-name` property, or by declaring a `SpringSessionGemFireConfigurer`
+bean and overriding the `getSessionExpirationPolicyBeanName()` method.
+
+You are only required to implement the `expireAfter(:Session):Duration` method, which encapsulates the rules
+determining when the Session should expire.  The expiration timeout for a Session is expressed as a
+`java.time.Duration`, which specifies the length of time until the Session will expire.
+
+The `expireAfter` method can be Session specific and may change with each invocation.
+
+Optionally, you may implement the `getAction` method to specify the action taken when the Session expires. By default,
+the Region Entry is invalidated.  Another option is to destroy the Region Entry, which removes both the key (Session ID)
+and value (Session).  Invalidate only removes the value.
+
+NOTE: Under-the-hood, the `SessionExpirationPolicy` is adapted as an instance of the {data-store-name}
+{data-store-javadoc}/org/apache/geode/cache/CustomExpiry.html[`CustomExpiry`] interface.  This Spring Session
+`CustomExpiry` object is then set as the Session Region's
+{data-store-javadoc}/org/apache/geode/cache/RegionFactory.html#setCustomEntryIdleTimeout-org.apache.geode.cache.CustomExpiry-[custom entry, idle timeout expiration policy].
+
+TIP: {data-store-name}'s expiration thread(s) run once every second, evaluating each entry (i.e. Session) in the Region
+to determine if the entry has expired.  You can control the number of {data-store-name} expiration threads with the
+`gemfire.EXPIRY_THREADS` property.  See the {data-store-name} {data-store-docs}/developing/expiration/chapter_overview.html[docs]
+for more details.
+
+NOTE: During expiration determination, the `CustomExpiry.getExpiry(:Region.Entry<String, Object>)` method is invoked
+for each entry (i.e. Session) in the Region every time the expiration thread(s) run, which in turn calls our
+`SessionExpirationPolicy.expireAfter(:Session)` method. The returned `java.time.Duration` is used as
+the expiration timeout in the {data-store-javadoc}/org/apache/geode/cache/ExpirationAttributes.html[`ExpirationAttributes`]
+returned from {data-store-javadoc}org/apache/geode/cache/CustomExpiry.html#getExpiry-org.apache.geode.cache.Region.Entry-[`CustomExpiry.getExpiry(..)`]
+method invocation.
+
+[[httpsession-gemfire-expiration-timeout-configuration]]
+==== Expiration Timeout Configuration
+
+If you would like to base the expiration timeout for your custom `SessionExpirationPolicy` on
+the `@EnableGemFireHttpSession` annotation, `maxInactiveIntervalInSeconds` attribute, or alternatively,
+the corresponding `spring.session.data.gemfire.session.expiration.max-inactive-interval-seconds` property,
+then your custom `SessionExpirationPolicy` implementation may also implement the `SessionExpirationTimeoutAware`
+interface.
+
+The `SessionExpirationTimeoutAware` interface is defined as:
+
+.SessionExpirationTimeoutAware interface
+[source,java]
+----
+interface SessionExpirationTimeoutAware {
+
+    void setExpirationTimeout(Duration expirationTimeout);
+
+}
+----
+
+When your custom `SessionExpirationPolicy` implementation also implements the `SessionExpirationTimeoutAware` interface,
+then Spring Session for {data-store-name} will supply your implementation with the value from the
+`@EnableGemFireHttpSession` annotation, `maxInactiveIntervalInSeconds` attribute, or from the
+`spring.session.data.gemfire.session.expiration.max-inactive-interval-seconds` property or from any
+`SpringSessionGemFireConfigurer` bean declared in the Spring application context, as an instance of `java.time.Duration`.
+
+When more than 1 configuration option is used, the following order takes precedence:
+
+1. `SpringSessionGemFireConfigurer.getMaxInactiveIntervalInSeconds()`
+2. `spring.session.data.gemfire.session.expiration.max-inactive-interval-seconds` property
+3. `@EnableGemFireHttpSession` annotation, `maxInactiveIntervalInSeconds` attribute
+
+[[httpsession-gemfire-expiration-fixed-timeout-configuration]]
+==== Fixed Timeout Session Expiration
+
+For added convenience, Spring Session for {data-store-name} provides an implementation of the `SessionExpirationPolicy`
+strategy interface for fixed duration expiration (or "_Absolute session timeouts_" as described in Spring Session
+https://github.com/spring-projects/spring-session/issues/922[Issue #922]).
+
+It is perhaps necessary, in certain cases, such as for security reasons, to expire the user's Session after a fixed
+length of time (e.g. every hour), regardless if the user's Session is still active.
+
+Spring Session for {data-store-name} provides the `FixedTimeoutSessionExpirationPolicy` implementation out-of-the-box
+for this exact Use Case (UC).
+
+To configure the `FixedTimeoutSessionExpirationPolicy`, do the following:
+
+.Fixed Duration Expiraton Configuration
+[source,java]
+----
+@SpringBootApplication
+@EnableGemFireHttpSession(sessionExpirationPolicyBeanName = "fixedTimeoutExpirationPolicy")
+class MySpringSessionApplication {
+
+    ...
+
+    @Bean
+    SessionExpirationPolicy fixedTimeoutExpirationPolicy() {
+        return new FixedTimeoutSessionExpirationPolicy(Duration.ofMinutes(60L));
+    }
+}
+----
+
+In the example above, the `FixedTimeoutSessionExpirationPolicy` was declared as a bean in the Spring application context
+initialized with a fixed expiration timeout of 60 minutes.  As a result the users Session will either expire after
+the idle timeout or after the fixed duration expiration timeout, which ever occurs first.
+
+TIP: It is also possible to implement lazy, fixed duration expiration timeout on Session access by using the
+`FixedDurationExpirationSessionRepositoryBeanPostProcessor`.  This BPP wraps any data store specific `SessionRepository`
+in a `FixedDurationExpirationSessionRepository` and evaluates a Sessions expiration on access, only.  This approach
+is agnostic to the underlying data store and therefore can be used with any Spring Session provider.  The expiration
+determination is based solely on the Session `creationTime` property and a provided, required `java.time.Duration`
+specifying the fixed duration expiration timeout.
+
+CAUTION: The `FixedDurationExpirationSessionRepository` should not be used in strict expiration policy cases, such as
+when the Session must expire immediately when the fixed duration expiration timeout has elapsed.  Additionally, unlike
+the `FixedTimeoutSessionExpirationPolicy`, the `FixedDurationExpirationSessionRepository` does not take idle timeout
+expiration into consideration.  That is, it only considers the fixed duration timeout
+when determining expiration timeout.
 
 [[httpsession-gemfire-serialization]]
 === {data-store-name} Serialization
