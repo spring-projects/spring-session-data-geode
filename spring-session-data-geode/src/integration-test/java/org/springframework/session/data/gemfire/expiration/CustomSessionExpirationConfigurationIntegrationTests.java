@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.Optional;
 
 import javax.annotation.Resource;
 
@@ -45,7 +46,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Integration tests for {@link EnableGemFireHttpSession} and {@link GemFireHttpSessionConfiguration}.
+ * Integration tests for {@link EnableGemFireHttpSession} and {@link GemFireHttpSessionConfiguration}
+ * involving {@link Session} expiration configuration.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -90,7 +92,8 @@ public class CustomSessionExpirationConfigurationIntegrationTests {
 	public void sessionExpirationPolicyConfigurationIsCorrect() {
 
 		assertThat(this.sessionExpirationPolicy).isInstanceOf(TestSessionExpirationPolicy.class);
-		assertThat(this.sessionExpirationPolicy.determineExpirationTimeout(null)).isEqualTo(Duration.ofMinutes(10));
+		assertThat(this.sessionExpirationPolicy.determineExpirationTimeout(null).orElse(null))
+			.isEqualTo(Duration.ofMinutes(10));
 	}
 
 	@Test
@@ -154,8 +157,8 @@ public class CustomSessionExpirationConfigurationIntegrationTests {
 		}
 
 		@Override
-		public Duration determineExpirationTimeout(Session session) {
-			return this.expirationTimeout;
+		public Optional<Duration> determineExpirationTimeout(Session session) {
+			return Optional.ofNullable(this.expirationTimeout);
 		}
 	}
 }

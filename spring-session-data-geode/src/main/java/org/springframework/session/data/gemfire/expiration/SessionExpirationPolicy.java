@@ -17,21 +17,22 @@
 package org.springframework.session.data.gemfire.expiration;
 
 import java.time.Duration;
+import java.util.Optional;
 
 import org.apache.geode.cache.Region;
 
 import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.session.Session;
 
 /**
  * The {@link SessionExpirationPolicy} interface is a Strategy Interface defining a contract for users to implement
- * custom application expiration policies and rules for {@link Session} management.
+ * custom application expiration policies and rules for {@link Session} state management.
  *
  * Examples of different {@link Session} expiration strategies might include, but are not limited to:
  * idle expiration timeouts, fixed duration expiration timeouts, Time-To-Live (TTL) expiration, and so on.
  *
  * @author John Blum
+ * @see java.lang.FunctionalInterface
  * @see org.apache.geode.cache.Region
  * @see org.springframework.session.Session
  * @see org.springframework.session.data.gemfire.expiration.support.FixedTimeoutSessionExpirationPolicy
@@ -42,21 +43,26 @@ import org.springframework.session.Session;
 public interface SessionExpirationPolicy {
 
 	/**
-	 * Determines the {@link Duration length of time} until the given {@link Session} will expire.
+	 * Determines an {@link Optional} {@link Duration length of time} until the given {@link Session} will expire.
+	 * A {@link Duration#ZERO Zero} or {@link Duration#isNegative() Negative Duration} indicates that
+	 * the {@link Session} has expired.
 	 *
-	 * May return {@literal null}, which indicates to Apache Geode or Pivotal GemFire that it should default to
-	 * the configured Idle Timeout (TTI) Expiration Policy for the {@link Session} {@link Region} to determine when
-	 * the {@link Session} will expire.
+	 * May return {@link Optional#EMPTY} as a "suggestion" that the Session should not expire or that the expiration
+	 * determination should be handled by the next expiration policy in a chain of policies.  Implementors are free
+	 * to compose 2 or more expiration policies using Composite Software Design Pattern as necessary.
 	 *
-	 * @param session {@link Session} to evaluate. A {@link Session} object is required.
-	 * @return a {@link Duration} specifying the length of time until the {@link Session} will expire.
-	 * May return {@literal null} to indicate that the default, configured Idle Timeout (TTI) Expiration Policy
-	 * for the {@link Session} {@link Region} should be used to determine when the {@link Session} will expire.
+	 * In Apache Geode or Pivotal GemFire's case, an {@link Optional#EMPTY} return value will indicate that it
+	 * should default to the configured Entry Idle Timeout (TTI) Expiration Policy of the {@link Region} managing
+	 * {@link Session} state to determine exactly when the {@link Session} will expire.
+	 *
+	 * @param session {@link Session} to evaluate. {@link Session} is required.
+	 * @return an {@link Optional} {@link Duration} specifying the length of time until the {@link Session} will expire.
+	 * @see <a href="https://en.wikipedia.org/wiki/Composite_pattern">Composite Software Design Pattern</a>
 	 * @see org.springframework.session.Session
 	 * @see java.time.Duration
+	 * @see java.util.Optional
 	 */
-	@Nullable
-	Duration determineExpirationTimeout(@NonNull Session session);
+	Optional<Duration> determineExpirationTimeout(@NonNull Session session);
 
 	/**
 	 * Specifies the {@link ExpirationAction action} to take when the {@link Session} expires.
@@ -71,7 +77,7 @@ public interface SessionExpirationPolicy {
 	}
 
 	/**
-	 * Enumeration of different actions to take when the {@link Session} expires.
+	 * Enumeration of different actions to take when a {@link Session} expires.
 	 */
 	enum ExpirationAction {
 
