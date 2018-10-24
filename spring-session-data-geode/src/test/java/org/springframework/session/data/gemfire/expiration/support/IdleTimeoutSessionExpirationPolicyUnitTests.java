@@ -22,6 +22,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.session.data.gemfire.expiration.support.IdleTimeoutSessionExpirationPolicy.DEFAULT_IDLE_TIMEOUT;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -34,6 +35,8 @@ import org.springframework.session.Session;
  * Unit tests for {@link IdleTimeoutSessionExpirationPolicy}.
  *
  * @author John Blum
+ * @see java.time.Duration
+ * @see java.time.Instant
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.springframework.session.Session
@@ -43,72 +46,121 @@ import org.springframework.session.Session;
 public class IdleTimeoutSessionExpirationPolicyUnitTests {
 
 	@Test
-	public void constructIdleTimeoutSessionExpirationPolicy() {
+	public void constructDefaultIdleTimeoutExpirationPolicy() {
 
-		Duration idleExpirationTimeout = Duration.ofSeconds(60);
+		IdleTimeoutSessionExpirationPolicy sessionExpirationPolicy = new IdleTimeoutSessionExpirationPolicy();
+
+		assertThat(sessionExpirationPolicy).isNotNull();
+		assertThat(sessionExpirationPolicy.getIdleTimeout().orElse(null)).isEqualTo(DEFAULT_IDLE_TIMEOUT);
+	}
+
+	@Test
+	public void constructNewIdleTimeoutSessionExpirationPolicyWithIdleTimeout() {
+
+		Duration idleExpirationTimeout = Duration.ofMinutes(60L);
 
 		IdleTimeoutSessionExpirationPolicy sessionExpirationPolicy =
 			new IdleTimeoutSessionExpirationPolicy(idleExpirationTimeout);
 
 		assertThat(sessionExpirationPolicy).isNotNull();
-		assertThat(sessionExpirationPolicy.getIdleExpirationTimeout()).isEqualTo(idleExpirationTimeout);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void constructIdleTimeoutSessionExpirationPolicyWithNullDuration() {
-
-		try {
-			new IdleTimeoutSessionExpirationPolicy(null);
-		}
-		catch (IllegalArgumentException expected) {
-
-			assertThat(expected).hasMessage("Idle expiration timeout is required");
-			assertThat(expected).hasNoCause();
-
-			throw expected;
-		}
+		assertThat(sessionExpirationPolicy.getIdleTimeout().orElse(null)).isEqualTo(idleExpirationTimeout);
 	}
 
 	@Test
-	public void expireAfterReturnsFutureDuration() {
+	public void constructNewIdleTimeoutSessionExpirationPolicyWithNullIdleTimeout() {
 
-		Duration expirationTimeout = Duration.ofSeconds(30);
+		IdleTimeoutSessionExpirationPolicy sessionExpirationPolicy = new IdleTimeoutSessionExpirationPolicy(null);
+
+		assertThat(sessionExpirationPolicy).isNotNull();
+		assertThat(sessionExpirationPolicy.getIdleTimeout().orElse(null)).isNull();
+	}
+
+	@Test
+	public void determineExpirationTimeoutReturnsExpiredDuration() {
+
+		Duration idleTimeout = Duration.ofSeconds(60L);
 
 		IdleTimeoutSessionExpirationPolicy sessionExpirationPolicy =
-			new IdleTimeoutSessionExpirationPolicy(expirationTimeout);
+			new IdleTimeoutSessionExpirationPolicy(idleTimeout);
+
+		assertThat(sessionExpirationPolicy.getIdleTimeout().orElse(null)).isEqualTo(idleTimeout);
 
 		Session mockSession = mock(Session.class);
 
 		when(mockSession.getLastAccessedTime())
-			.thenReturn(Instant.ofEpochMilli(System.currentTimeMillis() - Duration.ofSeconds(15).toMillis()));
+			.thenReturn(Instant.ofEpochMilli(System.currentTimeMillis() - Duration.ofSeconds(61L).toMillis()));
 
-		Duration expireAfter = sessionExpirationPolicy.expireAfter(mockSession);
+		Duration expirationTimeout = sessionExpirationPolicy.determineExpirationTimeout(mockSession).orElse(null);
 
-		assertThat(expireAfter).isNotNull();
-		assertThat(expireAfter.getSeconds()).isLessThanOrEqualTo(15);
+		assertThat(expirationTimeout).isNotNull();
+		assertThat(expirationTimeout).isLessThan(Duration.ZERO);
 
-		verify(mockSession, times(1)).getLastAccessedTime();
 		verify(mockSession, never()).getCreationTime();
+		verify(mockSession, times(1)).getLastAccessedTime();
 	}
 
 	@Test
-	public void expireAfterReturnsZero() {
+	public void determineExpirationTimeoutReturnsNonExpiredDuration() {
 
-		Duration expirationTimeout = Duration.ofSeconds(30);
+		Duration idleTimeout = Duration.ofSeconds(60L);
 
 		IdleTimeoutSessionExpirationPolicy sessionExpirationPolicy =
-			new IdleTimeoutSessionExpirationPolicy(expirationTimeout);
+			new IdleTimeoutSessionExpirationPolicy(idleTimeout);
+
+		assertThat(sessionExpirationPolicy.getIdleTimeout().orElse(null)).isEqualTo(idleTimeout);
 
 		Session mockSession = mock(Session.class);
 
 		when(mockSession.getLastAccessedTime())
-			.thenReturn(Instant.ofEpochMilli(System.currentTimeMillis() - Duration.ofSeconds(60).toMillis()));
+			.thenReturn(Instant.ofEpochMilli(System.currentTimeMillis() - Duration.ofSeconds(30L).toMillis()));
 
-		Duration expireAfter = sessionExpirationPolicy.expireAfter(mockSession);
+		Duration expirationTimeout = sessionExpirationPolicy.determineExpirationTimeout(mockSession).orElse(null);
 
-		assertThat(expireAfter).isEqualTo(Duration.ZERO);
+		assertThat(expirationTimeout).isNotNull();
+		assertThat(expirationTimeout).isGreaterThan(Duration.ZERO);
 
-		verify(mockSession, times(1)).getLastAccessedTime();
 		verify(mockSession, never()).getCreationTime();
+		verify(mockSession, times(1)).getLastAccessedTime();
+	}
+
+	@Test
+	public void determineExpirationTimeoutWithNoIdleTimeoutConfiguredReturnsNoDuration() {
+
+		IdleTimeoutSessionExpirationPolicy sessionExpirationPolicy = new IdleTimeoutSessionExpirationPolicy(null);
+
+		assertThat(sessionExpirationPolicy.getIdleTimeout().orElse(null)).isNull();
+
+		Session mockSession = mock(Session.class);
+
+		Duration expirationTimeout = sessionExpirationPolicy.determineExpirationTimeout(mockSession).orElse(null);
+
+		assertThat(expirationTimeout).isNull();
+
+		verify(mockSession, never()).getCreationTime();
+		verify(mockSession, never()).getLastAccessedTime();
+	}
+
+	@Test
+	public void expirationTimeoutIsNotGreaterThanIdleTimeout() {
+
+		Duration idleTimeout = Duration.ofSeconds(60L);
+
+		IdleTimeoutSessionExpirationPolicy sessionExpirationPolicy =
+			new IdleTimeoutSessionExpirationPolicy(idleTimeout);
+
+		assertThat(sessionExpirationPolicy.getIdleTimeout().orElse(null)).isEqualTo(idleTimeout);
+
+		Session mockSession = mock(Session.class);
+
+		when(mockSession.getLastAccessedTime())
+			.thenReturn(Instant.ofEpochMilli(System.currentTimeMillis() + Duration.ofSeconds(60L).toMillis()));
+
+		Duration expirationTimeout = sessionExpirationPolicy.determineExpirationTimeout(mockSession).orElse(null);
+
+		assertThat(expirationTimeout).isNotNull();
+		assertThat(expirationTimeout).isEqualTo(idleTimeout);
+
+		verify(mockSession, never()).getCreationTime();
+		verify(mockSession, times(1)).getLastAccessedTime();
 	}
 }

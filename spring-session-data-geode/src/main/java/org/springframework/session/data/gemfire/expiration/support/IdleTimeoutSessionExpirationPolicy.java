@@ -17,62 +17,90 @@
 package org.springframework.session.data.gemfire.expiration.support;
 
 import java.time.Duration;
+import java.util.Optional;
 
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy;
-import org.springframework.util.Assert;
+import org.springframework.session.data.gemfire.expiration.config.SessionExpirationTimeoutAware;
 
 /**
- * An implementation of the {@link SessionExpirationPolicy} interface that specifies an expiration policy
- * based on inactive, idle {@link Session Sessions} exceeding a predefined time period for expiration.
+ * An implementation of the {@link SessionExpirationPolicy} interface that specifies an expiration policy for
+ * {@link Session Sessions} that have been idle, or inactive for a predefined {@link Duration duration of time}.
  *
  * @author John Blum
  * @see java.time.Duration
+ * @see java.util.Optional
  * @see org.springframework.session.Session
  * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy
+ * @see org.springframework.session.data.gemfire.expiration.config.SessionExpirationTimeoutAware
  * @since 2.1.0
  */
 @SuppressWarnings("unused")
-public class IdleTimeoutSessionExpirationPolicy implements SessionExpirationPolicy {
+public class IdleTimeoutSessionExpirationPolicy implements SessionExpirationPolicy, SessionExpirationTimeoutAware {
 
-	private final Duration idleExpirationTimeout;
+	protected static final Duration DEFAULT_IDLE_TIMEOUT = Duration.ofMinutes(30L);
+
+	private Duration idleTimeout;
 
 	/**
-	 * Constructs a new instance of {@link IdleTimeoutSessionExpirationPolicy} initialized with
-	 * the given {@link Duration expiration timeout}.
+	 * Constructs a new {@link IdleTimeoutSessionExpirationPolicy} initialized with
+	 * the {@link IdleTimeoutSessionExpirationPolicy#DEFAULT_IDLE_TIMEOUT}.
 	 *
-	 * @param idleExpirationTimeout {@link Duration} specifying the length of time until the {@link Session} expires.
-	 * @throws IllegalArgumentException if {@link Duration} is {@literal null}.
-	 * @see java.time.Duration
+	 * @see org.springframework.session.data.gemfire.expiration.support.IdleTimeoutSessionExpirationPolicy
+	 * 	#DEFAULT_IDLE_TIMEOUT
 	 */
-	public IdleTimeoutSessionExpirationPolicy(@NonNull Duration idleExpirationTimeout) {
-
-		Assert.notNull(idleExpirationTimeout, "Idle expiration timeout is required");
-
-		this.idleExpirationTimeout = idleExpirationTimeout;
-
+	public IdleTimeoutSessionExpirationPolicy() {
+		this(DEFAULT_IDLE_TIMEOUT);
 	}
 
 	/**
-	 * Return the configured {@link Duration idle expiration timeout}.
+	 * Constructs a new {@link IdleTimeoutSessionExpirationPolicy} initialized with
+	 * the given {@link Duration idle timeout}.
 	 *
-	 * @return the configured {@link Duration idle expiration timeout}.
+	 * @param idleTimeout {@link Duration length of time} until an idle, or inactive {@link Session} should expire;
+	 * Maybe {@literal null} to suggest the {@link Session} should not expire.
 	 * @see java.time.Duration
 	 */
-	protected Duration getIdleExpirationTimeout() {
-		return this.idleExpirationTimeout;
+	public IdleTimeoutSessionExpirationPolicy(@Nullable Duration idleTimeout) {
+		this.idleTimeout = idleTimeout;
 	}
 
-	@NonNull @Override
-	public Duration expireAfter(@NonNull Session session) {
+	/**
+	 * Configures the expiration {@link Duration idle timeout}.
+	 *
+	 * @param idleTimeout {@link Duration length of time} until an idle, or inactive {@link Session} should expire;
+	 * Maybe {@literal null} to suggest the {@link Session} should not expire.
+	 * @see java.time.Duration
+	 */
+	@Override
+	public void setExpirationTimeout(@Nullable Duration idleTimeout) {
+		this.idleTimeout = idleTimeout;
+	}
 
-		long currentTimeMinusLastAccessTime =
-			Math.max(System.currentTimeMillis() - session.getLastAccessedTime().toEpochMilli(), 0);
+	/**
+	 * Return an {@link Optional optionally} configured expiration {@link Duration idle timeout}.
+	 *
+	 * @return the {@link Optional optionally} configured expiration {@link Duration idle timeout}.
+	 * @see java.time.Duration
+	 * @see java.util.Optional
+	 */
+	protected Optional<Duration> getIdleTimeout() {
+		return Optional.ofNullable(this.idleTimeout);
+	}
 
-		Duration expirationDuration =
-			getIdleExpirationTimeout().minus(Duration.ofMillis(currentTimeMinusLastAccessTime));
+	@Override @SuppressWarnings("all")
+	public Optional<Duration> determineExpirationTimeout(@NonNull Session session) {
 
-		return expirationDuration.isNegative() ? Duration.ZERO : expirationDuration;
+		return getIdleTimeout()
+			.map(idleTimeout -> idleTimeout.minus(computeIdleTime(session)));
+	}
+
+	private Duration computeIdleTime(@NonNull Session session) {
+
+		long idleTime = Math.max(System.currentTimeMillis() - session.getLastAccessedTime().toEpochMilli(), 0L);
+
+		return Duration.ofMillis(idleTime);
 	}
 }
