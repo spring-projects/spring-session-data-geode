@@ -17,6 +17,7 @@
 package org.springframework.session.data.gemfire.expiration.support;
 
 import java.time.Duration;
+import java.util.Optional;
 
 import org.springframework.lang.NonNull;
 import org.springframework.session.Session;
@@ -25,34 +26,38 @@ import org.springframework.util.Assert;
 
 /**
  * An implementation of the {@link SessionExpirationPolicy} interface that specifies an expiration policy based on
- * a fixed period of time.  That is, the {@link Session} will timeout after a fixed {@link Duration} even if the
- * {@link Session} is still active.
+ * a {@link Duration fixed duration of time}.
+ *
+ * In other words, the {@link Session} will timeout after a {@link Duration fixed duration of time} even if
+ * the {@link Session} is still active (i.e. not idle).
  *
  * @author John Blum
  * @see java.time.Duration
  * @see org.springframework.session.Session
  * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy
+ * @see org.springframework.session.data.gemfire.expiration.support.IdleTimeoutSessionExpirationPolicy
  * @since 2.1.0
  */
 @SuppressWarnings("unused")
-public class FixedTimeoutSessionExpirationPolicy implements SessionExpirationPolicy {
+public class FixedTimeoutSessionExpirationPolicy extends IdleTimeoutSessionExpirationPolicy {
 
-	private final Duration fixedExpirationTimeout;
+	private final Duration fixedTimeout;
 
 	/**
-	 * Constructs a new {@link FixedTimeoutSessionExpirationPolicy} initialized with the given
-	 * {@link Duration fixed expiration timeout}.
+	 * Constructs a new {@link FixedTimeoutSessionExpirationPolicy} initialized with
+	 * the given {@link Duration fixed, expiration timeout}.
 	 *
-	 * @param fixedExpirationTimeout {@link Duration} specifying the fixed length of time until
-	 * the {@link Session} expires.
-	 * @throws IllegalArgumentException if {@link Duration} is {@literal null}.
+	 * @param fixedTimeout {@link Duration fixed length of time} until the {@link Session} will expire.
+	 * @throws IllegalArgumentException if the {@link Duration fixed timeout} is {@literal null}.
 	 * @see java.time.Duration
 	 */
-	public FixedTimeoutSessionExpirationPolicy(@NonNull Duration fixedExpirationTimeout) {
+	public FixedTimeoutSessionExpirationPolicy(@NonNull Duration fixedTimeout) {
 
-		Assert.notNull(fixedExpirationTimeout, "Fixed expiration timeout is required");
+		super(null);
 
-		this.fixedExpirationTimeout = fixedExpirationTimeout;
+		Assert.notNull(fixedTimeout, "Fixed expiration timeout is required");
+
+		this.fixedTimeout = fixedTimeout;
 	}
 
 	/**
@@ -61,19 +66,25 @@ public class FixedTimeoutSessionExpirationPolicy implements SessionExpirationPol
 	 * @return the configured {@link Duration fixed expiration timeout}.
 	 * @see java.time.Duration
 	 */
-	protected Duration getFixedExpirationTimeout() {
-		return this.fixedExpirationTimeout;
+	protected Duration getFixedTimeout() {
+		return this.fixedTimeout;
 	}
 
-	@NonNull @Override
-	public Duration expireAfter(@NonNull Session session) {
+	@Override
+	public Optional<Duration> determineExpirationTimeout(@NonNull Session session) {
 
-		long currentTimeMinusCreationTime =
-			Math.max(System.currentTimeMillis() - session.getCreationTime().toEpochMilli(), 0);
+		Optional<Duration> idleTimeout = super.determineExpirationTimeout(session);
 
-		Duration expirationDuration =
-			getFixedExpirationTimeout().minus(Duration.ofMillis(currentTimeMinusCreationTime));
+		Duration fixedExpirationTimeout = getFixedTimeout().minus(computeTimeSinceCreation(session));
 
-		return expirationDuration.isNegative() ? Duration.ZERO : expirationDuration;
+		return idleTimeout.filter(it -> it.compareTo(fixedExpirationTimeout) <= 0).isPresent()
+			? Optional.empty() : Optional.of(fixedExpirationTimeout);
+	}
+
+	private Duration computeTimeSinceCreation(@NonNull Session session) {
+
+		long timeSinceCreation = Math.max(System.currentTimeMillis() - session.getCreationTime().toEpochMilli(), 0L);
+
+		return Duration.ofMillis(timeSinceCreation);
 	}
 }
