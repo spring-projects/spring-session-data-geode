@@ -30,6 +30,7 @@ asciidoctor {
 		'gh-samples-url': "$ghUrl/samples/",
 		'download-url' : "https://github.com/spring-projects/spring-session-data-geode/archive/${ghTag}.zip",
 		'spring-version' : versions['org.springframework:spring-core'],
+//		'spring-version' : "$springVersion",
 		'spring-session-version' : version,
 		'docs-itest-dir' : rootProject.projectDir.path + '/docs/src/integration-test/java/',
 		'docs-test-dir' : rootProject.projectDir.path + '/docs/src/test/java/',

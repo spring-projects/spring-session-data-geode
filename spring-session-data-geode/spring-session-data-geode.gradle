@@ -2,10 +2,6 @@ apply plugin: 'io.spring.convention.spring-module'
 
 description = "Spring Session for Apache Geode"
 
-repositories {
-	maven { url "https://repo.spring.io/libs-snapshot" }
-}
-
 dependencies {
 
 	compile "org.springframework:spring-context-support"
