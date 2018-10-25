@@ -151,7 +151,7 @@ with {data-store-name} (Client-Server) Guide_ when integrating with your own app
 
 include::guides/java-gemfire-clientserver.adoc[tags=config,leveloffset=+3]
 
-[[http-session-gemfire-clientserver-xml]]
+[[httpsession-gemfire-clientserver-xml]]
 ===== {data-store-name} Client-Server XML-based Configuration
 
 This section describes how to configure {data-store-name}'s Client-Server topology to manage `HttpSession` state
