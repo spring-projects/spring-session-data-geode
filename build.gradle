@@ -4,8 +4,9 @@ buildscript {
 		classpath "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
 	}
 	repositories {
+		gradlePluginPortal()
 		maven { url 'https://repo.spring.io/libs-release' }
-		maven { url 'https://repo.spring.io/plugins-snapshot' }
+		maven { url 'https://repo.spring.io/plugins-release' }
 	}
 }
 
