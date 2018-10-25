@@ -196,10 +196,10 @@ public @interface EnableGemFireHttpSession {
 	String sessionExpirationPolicyBeanName() default GemFireHttpSessionConfiguration.DEFAULT_SESSION_EXPIRATION_POLICY_BEAN_NAME;
 
 	/**
-	 * Defines the bean name of the {@link SessionSerializer} used to serialize {@link Session} state
+	 * Defines the name of the bean referring to the {@link SessionSerializer} used to serialize {@link Session} state
 	 * between client and server or to disk when persisting or overflowing {@link Session} state.
 	 *
-	 * The {@link Object bean referred to by its {@link String name} must be of type {@link SessionSerializer}.
+	 * The {@link Object bean} referred to by its {@link String name} must be of type {@link SessionSerializer}.
 	 *
 	 * Defaults to {@literal SessionPdxSerializer}.
 	 *

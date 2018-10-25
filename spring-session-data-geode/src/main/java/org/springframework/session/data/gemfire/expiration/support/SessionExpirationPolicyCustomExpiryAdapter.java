@@ -108,10 +108,10 @@ public class SessionExpirationPolicyCustomExpiryAdapter implements CustomExpiry<
 
 	/**
 	 * Constructs a new {@link ExpirationAttributes} initialized with the given {@link Duration expiration timeout}
-	 * and {@link SessionExpirationPolicy.ExpirationAction} to take when the {@link Session} expires.
+	 * and action taken when the {@link Session} expires.
 	 *
 	 * @param expirationTimeout {@link Duration} specifying the expiration timeout.
-	 * @param expirationAction {@link SessionExpirationPolicy.ExpirationAction} taken when the {@link Session} expires.
+	 * @param expirationAction action taken when the {@link Session} expires.
 	 * @return the new {@link ExpirationAttributes}.
 	 * @see #newExpirationAttributes(int, ExpirationAction)
 	 * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy.ExpirationAction
