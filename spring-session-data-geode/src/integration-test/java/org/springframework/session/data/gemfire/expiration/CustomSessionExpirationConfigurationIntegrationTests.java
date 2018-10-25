@@ -37,6 +37,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
 import org.springframework.data.gemfire.tests.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.session.Session;
+import org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 import org.springframework.session.data.gemfire.expiration.config.SessionExpirationTimeoutAware;
@@ -59,6 +60,7 @@ import org.springframework.util.ReflectionUtils;
  * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
  * @see org.springframework.data.gemfire.tests.mock.annotation.EnableGemFireMockObjects
  * @see org.springframework.session.Session
+ * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.expiration.config.SessionExpirationTimeoutAware
@@ -70,7 +72,7 @@ import org.springframework.util.ReflectionUtils;
 @RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
-public class CustomSessionExpirationConfigurationIntegrationTests {
+public class CustomSessionExpirationConfigurationIntegrationTests extends AbstractGemFireIntegrationTests {
 
 	@Resource(name = GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME)
 	private Region<String, Object> sessions;
