@@ -40,6 +40,7 @@ import org.springframework.data.gemfire.config.annotation.ClientCacheApplication
 import org.springframework.data.gemfire.tests.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.mock.env.MockPropertySource;
 import org.springframework.session.Session;
+import org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer;
 import org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy;
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
@@ -56,11 +57,12 @@ import org.springframework.session.data.gemfire.serialization.SessionSerializer;
  * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
  * @see org.springframework.data.gemfire.tests.mock.annotation.EnableGemFireMockObjects
  * @see org.springframework.mock.env.MockPropertySource
+ * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer
  * @since 2.0.4
  */
 @SuppressWarnings("unused")
-public class ConfigurerBasedGemFireHttpSessionConfigurationIntegrationTests {
+public class ConfigurerBasedGemFireHttpSessionConfigurationIntegrationTests extends AbstractGemFireIntegrationTests {
 
 	private ConfigurableApplicationContext applicationContext;
 
