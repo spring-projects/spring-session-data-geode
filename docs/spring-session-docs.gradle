@@ -23,14 +23,14 @@ asciidoctor {
 	def ghTag = snapshotBuild ? 'master' : project.version
 	def ghUrl = "https://github.com/spring-projects/spring-session-data-geode/tree/$ghTag"
 
-	attributes	'version-snapshot': snapshotBuild,
+	attributes 'version-snapshot': snapshotBuild,
 		'version-milestone': milestoneBuild,
 		'version-release': releaseBuild,
 		'gh-url': ghUrl,
 		'gh-samples-url': "$ghUrl/samples/",
 		'download-url' : "https://github.com/spring-projects/spring-session-data-geode/archive/${ghTag}.zip",
-		'spring-version' : versions['org.springframework:spring-core'],
 //		'spring-version' : "$springVersion",
+		'spring-version' : versions['org.springframework:spring-core'],
 		'spring-session-version' : version,
 		'docs-itest-dir' : rootProject.projectDir.path + '/docs/src/integration-test/java/',
 		'docs-test-dir' : rootProject.projectDir.path + '/docs/src/test/java/',
@@ -44,8 +44,8 @@ javadoc {
 		links = [
 			"http://docs.spring.io/spring/docs/current/javadoc-api/",
 			"http://docs.spring.io/spring-data/commons/docs/current/api/index.html?index-all.html",
-			"http://docs.spring.io/spring-data-gemfire/docs/current/api/",
-			"http://docs.spring.io/spring-session/docs/2.0.0.BUILD-SNAPSHOT/api/",
+			"http://docs.spring.io/spring-data-geode/docs/current/api/",
+			"http://docs.spring.io/spring-session/docs/${springSessionVersion}/api/",
 			"http://geode.apache.org/releases/latest/javadoc/index.html",
 		]
 	}
