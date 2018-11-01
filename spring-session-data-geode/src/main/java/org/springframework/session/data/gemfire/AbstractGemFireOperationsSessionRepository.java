@@ -564,8 +564,8 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	}
 
 	@SuppressWarnings("unused")
-	public static class DeltaCapableGemFireSession extends GemFireSession<DeltaCapableGemFireSessionAttributes>
-			implements Delta {
+	public static class DeltaCapableGemFireSession
+			extends GemFireSession<DeltaCapableGemFireSessionAttributes> implements Delta {
 
 		public DeltaCapableGemFireSession() { }
 
@@ -614,6 +614,9 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		protected static final Duration DEFAULT_MAX_INACTIVE_INTERVAL = Duration.ZERO;
 
 		protected static final String SPRING_SECURITY_CONTEXT = "SPRING_SECURITY_CONTEXT";
+
+		private static final String GEMFIRE_SESSION_TO_STRING =
+			"{ @type = %1$s, id = %2$s, creationTime = %3$s, lastAccessedTime = %4$s, maxInactiveInterval = %5$s, principalName = %6$s }";
 
 		private transient boolean delta = false;
 
@@ -844,10 +847,8 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		@Override
 		public synchronized String toString() {
 
-			return String.format("{ @type = %1$s, id = %2$s, creationTime = %3$s, lastAccessedTime = %4$s"
-				+ ", maxInactiveInterval = %5$s, principalName = %6$s }",
-				getClass().getName(), getId(), getCreationTime(), getLastAccessedTime(),
-				getMaxInactiveInterval(), getPrincipalName());
+			return String.format(GEMFIRE_SESSION_TO_STRING, getClass().getName(), getId(),
+				getCreationTime(), getLastAccessedTime(), getMaxInactiveInterval(), getPrincipalName());
 		}
 	}
 
@@ -927,6 +928,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 			synchronized (getLock()) {
 				try {
+
 					int count = in.readInt();
 
 					Map<String, Object> deltas = new HashMap<>(count);
@@ -983,7 +985,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 
 		protected GemFireSessionAttributes(Object lock) {
-			this.lock = (lock != null ? lock : this);
+			this.lock = lock != null ? lock : this;
 		}
 
 		public static GemFireSessionAttributes create() {
@@ -999,13 +1001,16 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 
 		public Object setAttribute(String attributeName, Object attributeValue) {
+
 			synchronized (getLock()) {
-				return (attributeValue != null ? this.sessionAttributes.put(attributeName, attributeValue)
-					: removeAttribute(attributeName));
+				return attributeValue != null
+					? this.sessionAttributes.put(attributeName, attributeValue)
+					: removeAttribute(attributeName);
 			}
 		}
 
 		public Object removeAttribute(String attributeName) {
+
 			synchronized (getLock()) {
 				return this.sessionAttributes.remove(attributeName);
 			}
@@ -1013,12 +1018,14 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		@SuppressWarnings("unchecked")
 		public <T> T getAttribute(String attributeName) {
+
 			synchronized (getLock()) {
 				return (T) this.sessionAttributes.get(attributeName);
 			}
 		}
 
 		public Set<String> getAttributeNames() {
+
 			synchronized (getLock()) {
 				return Collections.unmodifiableSet(new HashSet<>(this.sessionAttributes.keySet()));
 			}
@@ -1043,8 +1050,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			};
 		}
 
-		public void clearDelta() {
-		}
+		public void clearDelta() { }
 
 		public void from(Session session) {
 
