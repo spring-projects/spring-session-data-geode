@@ -16,8 +16,14 @@
 
 package org.springframework.session.data.gemfire.config.annotation.web.http;
 
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
 
@@ -131,6 +137,33 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	public static final RegionShortcut DEFAULT_SERVER_REGION_SHORTCUT = RegionShortcut.PARTITION;
 
 	/**
+	 * {@link SpringSessionGemFireConfigurer} {@link Class} {@link Method} {@link String Names}
+	 */
+	public static final String CONFIGURER_GET_CLIENT_REGION_SHORTCUT_METHOD_NAME =
+		findByMethodName(SpringSessionGemFireConfigurer.class, "getClientRegionShortcut");
+
+	public static final String CONFIGURER_GET_INDEXABLE_SESSION_ATTRIBUTES_METHOD_NAME =
+		findByMethodName(SpringSessionGemFireConfigurer.class, "getIndexableSessionAttributes");
+
+	public static final String CONFIGURER_GET_MAX_INACTIVE_INTERVAL_IN_SECONDS_METHOD_NAME =
+		findByMethodName(SpringSessionGemFireConfigurer.class, "getMaxInactiveIntervalInSeconds");
+
+	public static final String CONFIGURER_GET_POOL_NAME_METHOD_NAME =
+		findByMethodName(SpringSessionGemFireConfigurer.class, "getPoolName");
+
+	public static final String CONFIGURER_GET_REGION_NAME_METHOD_NAME =
+		findByMethodName(SpringSessionGemFireConfigurer.class, "getRegionName");
+
+	public static final String CONFIGURER_GET_SERVER_REGION_SHORTCUT_METHOD_NAME =
+		findByMethodName(SpringSessionGemFireConfigurer.class, "getServerRegionShortcut");
+
+	public static final String CONFIGURER_GET_SESSION_EXPIRATION_POLICY_BEAN_NAME_METHOD_NAME =
+		findByMethodName(SpringSessionGemFireConfigurer.class, "getSessionExpirationPolicyBeanName");
+
+	public static final String CONFIGURER_GET_SESSION_SERIALIZER_BEAN_NAME_METHOD_NAME =
+		findByMethodName(SpringSessionGemFireConfigurer.class, "getSessionSerializerBeanName");
+
+	/**
 	 * Name of the connection {@link Pool} used by the client {@link Region} to send {@link Session} state
 	 * to the cluster of  Apache Geode servers.
 	 */
@@ -168,6 +201,34 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	private String sessionSerializerBeanName = DEFAULT_SESSION_SERIALIZER_BEAN_NAME;
 
 	private String[] indexableSessionAttributes = DEFAULT_INDEXABLE_SESSION_ATTRIBUTES;
+
+	private static String findByMethodName(Class<?> type, String methodName) {
+
+		return Arrays.stream(type.getDeclaredMethods())
+			.map(Method::getName)
+			.filter(declaredMethodName -> declaredMethodName.startsWith(methodName))
+			.findFirst()
+			.orElseThrow(() -> newIllegalArgumentException("No method with name [%1$s] was found on class [%2$s]",
+				methodName, type.getName()));
+	}
+
+	private static Optional<String> safeFindByMethodName(Class<?> type, String methodName) {
+
+		try {
+			return Optional.of(findByMethodName(type, methodName));
+		}
+		catch (Throwable ignore) {
+			return Optional.empty();
+		}
+	}
+
+	private static boolean isOverriddenMethodPresent(Object target, String methodName) {
+
+		return Optional.ofNullable(target)
+			.map(Object::getClass)
+			.flatMap(targetType -> safeFindByMethodName(targetType, methodName))
+			.isPresent();
+	}
 
 	/**
 	 * Gets the {@link ClientRegionShortcut} used to configure the data management policy of the {@link ClientCache}
@@ -417,6 +478,79 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 		applySpringSessionGemFireConfigurer();
 	}
 
+	private void applySpringSessionGemFireConfigurer() {
+
+		resolveSpringSessionGemFireConfigurer()
+			.map(this::applyClientRegionShortcut)
+			.map(this::applyIndexableSessionAttributes)
+			.map(this::applyMaxInactiveIntervalInSeconds)
+			.map(this::applyPoolName)
+			.map(this::applyServerRegionShortcut)
+			.map(this::applySessionRegionName)
+			.map(this::applySessionSerializerBeanName);
+	}
+
+	private <T> SpringSessionGemFireConfigurer applySpringSessionGemFireConfigurerConfiguration(
+			SpringSessionGemFireConfigurer configurer, String methodName,
+			Function<SpringSessionGemFireConfigurer, T> getter, Consumer<T> setter) {
+
+		Optional.ofNullable(configurer)
+			.filter(it -> isOverriddenMethodPresent(configurer, methodName))
+			.map(getter)
+			.ifPresent(setter);
+
+		return configurer;
+	}
+
+	private SpringSessionGemFireConfigurer applyClientRegionShortcut(SpringSessionGemFireConfigurer configurer) {
+
+		return applySpringSessionGemFireConfigurerConfiguration(configurer,
+			CONFIGURER_GET_CLIENT_REGION_SHORTCUT_METHOD_NAME,
+				SpringSessionGemFireConfigurer::getClientRegionShortcut, this::setClientRegionShortcut);
+	}
+
+	private SpringSessionGemFireConfigurer applyIndexableSessionAttributes(SpringSessionGemFireConfigurer configurer) {
+
+		return applySpringSessionGemFireConfigurerConfiguration(configurer,
+			CONFIGURER_GET_INDEXABLE_SESSION_ATTRIBUTES_METHOD_NAME,
+				SpringSessionGemFireConfigurer::getIndexableSessionAttributes, this::setIndexableSessionAttributes);
+	}
+
+	private SpringSessionGemFireConfigurer applyMaxInactiveIntervalInSeconds(SpringSessionGemFireConfigurer configurer) {
+
+		return applySpringSessionGemFireConfigurerConfiguration(configurer,
+			CONFIGURER_GET_MAX_INACTIVE_INTERVAL_IN_SECONDS_METHOD_NAME,
+				SpringSessionGemFireConfigurer::getMaxInactiveIntervalInSeconds, this::setMaxInactiveIntervalInSeconds);
+	}
+
+	private SpringSessionGemFireConfigurer applyPoolName(SpringSessionGemFireConfigurer configurer) {
+
+		return applySpringSessionGemFireConfigurerConfiguration(configurer,
+			CONFIGURER_GET_POOL_NAME_METHOD_NAME,
+				SpringSessionGemFireConfigurer::getPoolName, this::setPoolName);
+	}
+
+	private SpringSessionGemFireConfigurer applyServerRegionShortcut(SpringSessionGemFireConfigurer configurer) {
+
+		return applySpringSessionGemFireConfigurerConfiguration(configurer,
+			CONFIGURER_GET_SERVER_REGION_SHORTCUT_METHOD_NAME,
+				SpringSessionGemFireConfigurer::getServerRegionShortcut, this::setServerRegionShortcut);
+	}
+
+	private SpringSessionGemFireConfigurer applySessionRegionName(SpringSessionGemFireConfigurer configurer) {
+
+		return applySpringSessionGemFireConfigurerConfiguration(configurer,
+			CONFIGURER_GET_REGION_NAME_METHOD_NAME,
+				SpringSessionGemFireConfigurer::getRegionName, this::setSessionRegionName);
+	}
+
+	private SpringSessionGemFireConfigurer applySessionSerializerBeanName(SpringSessionGemFireConfigurer configurer) {
+
+		return applySpringSessionGemFireConfigurerConfiguration(configurer,
+			CONFIGURER_GET_SESSION_SERIALIZER_BEAN_NAME_METHOD_NAME,
+				SpringSessionGemFireConfigurer::getSessionSerializerBeanName, this::setSessionSerializerBeanName);
+	}
+
 	private Optional<SpringSessionGemFireConfigurer> resolveSpringSessionGemFireConfigurer() {
 
 		try {
@@ -434,19 +568,6 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 
 	private boolean isCauseBecauseNoSpringSessionGemFireConfigurerPresent(Exception cause) {
 		return (!(cause instanceof NoUniqueBeanDefinitionException) && cause instanceof NoSuchBeanDefinitionException);
-	}
-
-	private void applySpringSessionGemFireConfigurer() {
-
-		resolveSpringSessionGemFireConfigurer().ifPresent(configurer -> {
-			setClientRegionShortcut(configurer.getClientRegionShortcut());
-			setIndexableSessionAttributes(configurer.getIndexableSessionAttributes());
-			setMaxInactiveIntervalInSeconds(configurer.getMaxInactiveIntervalInSeconds());
-			setPoolName(configurer.getPoolName());
-			setServerRegionShortcut(configurer.getServerRegionShortcut());
-			setSessionRegionName(configurer.getRegionName());
-			setSessionSerializerBeanName(configurer.getSessionSerializerBeanName());
-		});
 	}
 
 	@PostConstruct
