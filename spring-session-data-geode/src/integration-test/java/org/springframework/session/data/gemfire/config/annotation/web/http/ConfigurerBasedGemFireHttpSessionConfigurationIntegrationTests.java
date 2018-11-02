@@ -47,18 +47,25 @@ import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 
 /**
  * Integration tests testing {@link SpringSessionGemFireConfigurer} based configuration of either Apache Geode
- * or Pivotal GemFire * as the (HTTP) {@link Session} state management provider in Spring Session.
+ * or Pivotal GemFire as the (HTTP) {@link Session} state management provider in Spring Session.
  *
  * @author John Blum
  * @see org.junit.Test
+ * @see org.mockito.Mockito
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.context.annotation.AnnotationConfigApplicationContext
+ * @see org.springframework.context.annotation.Bean
+ * @see org.springframework.context.annotation.Configuration
+ * @see org.springframework.context.support.PropertySourcesPlaceholderConfigurer
  * @see org.springframework.core.env.PropertySource
  * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
  * @see org.springframework.data.gemfire.tests.mock.annotation.EnableGemFireMockObjects
  * @see org.springframework.mock.env.MockPropertySource
+ * @see org.springframework.session.Session
  * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer
+ * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy
+ * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
  * @since 2.0.4
  */
 @SuppressWarnings("unused")
@@ -89,7 +96,7 @@ public class ConfigurerBasedGemFireHttpSessionConfigurationIntegrationTests exte
 	}
 
 	@Test
-	public void springSessionGemFireConfigurerOverridesAnnotationAttributesAndPropertyConfiguration() {
+	public void onlySpringSessionGemFireConfigurerImplementedCallbacksOverrideAnnotationAttributesAndPropertyConfiguration() {
 
 		MockPropertySource testPropertySource = new MockPropertySource("TestProperties")
 			.withProperty("spring.session.data.gemfire.cache.client.pool.name", "Car")
@@ -98,8 +105,7 @@ public class ConfigurerBasedGemFireHttpSessionConfigurationIntegrationTests exte
 			.withProperty("spring.session.data.gemfire.session.attributes.indexable", "firstName, lastName")
 			.withProperty("spring.session.data.gemfire.session.expiration.max-inactive-interval-seconds", "600")
 			.withProperty("spring.session.data.gemfire.session.region.name", "PropertyRegionName")
-			.withProperty("spring.session.data.gemfire.session.expiration.bean-name", "MockSessionExpirationPolicy")
-			.withProperty("spring.session.data.gemfire.session.serializer.bean-name", "MockSessionSerializer");
+			.withProperty("spring.session.data.gemfire.session.expiration.bean-name", "MockSessionExpirationPolicy");
 
 		this.applicationContext = newApplicationContext(testPropertySource, TestConfiguration.class);
 
@@ -108,29 +114,27 @@ public class ConfigurerBasedGemFireHttpSessionConfigurationIntegrationTests exte
 
 		assertThat(sessionConfiguration).isNotNull();
 		assertThat(sessionConfiguration.getClientRegionShortcut()).isEqualTo(ClientRegionShortcut.CACHING_PROXY);
-		assertThat(sessionConfiguration.getIndexableSessionAttributes()).containsExactly("two", "four");
+		assertThat(sessionConfiguration.getIndexableSessionAttributes()).containsExactly("firstName", "lastName");
 		assertThat(sessionConfiguration.getMaxInactiveIntervalInSeconds()).isEqualTo(3600);
 		assertThat(sessionConfiguration.getPoolName()).isEqualTo("Dead");
-		assertThat(sessionConfiguration.getServerRegionShortcut()).isEqualTo(RegionShortcut.PARTITION);
+		assertThat(sessionConfiguration.getServerRegionShortcut()).isEqualTo(RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW);
 		assertThat(sessionConfiguration.getSessionRegionName()).isEqualTo("ConfigurerRegionName");
 		assertThat(sessionConfiguration.getSessionExpirationPolicyBeanName().orElse(null)).isEqualTo("ConfigurerSessionExpirationPolicy");
-		assertThat(sessionConfiguration.getSessionSerializerBeanName()).isEqualTo("SessionPdxSerializer");
+		assertThat(sessionConfiguration.getSessionSerializerBeanName()).isEqualTo("TestSessionSerializer");
 	}
 
 	@Test
 	public void usesPrimarySpringSessionGemFireConfigurerWhenPresent() {
 
 		MockPropertySource testPropertySource = new MockPropertySource("TestProperties")
-			.withProperty("test.cache.client.region.shortcut", ClientRegionShortcut.CACHING_PROXY.name())
 			.withProperty("test.cache.client.pool.name", "Car")
+			.withProperty("test.cache.client.region.shortcut", ClientRegionShortcut.CACHING_PROXY.name())
 			.withProperty("test.session.expiration.max-inactive-interval-seconds", "300")
 			.withProperty("test.session.region.name", "TestSessionRegionName")
 			.withProperty("spring.session.data.gemfire.cache.client.region.shortcut", ClientRegionShortcut.LOCAL_PERSISTENT.name())
 			.withProperty("spring.session.data.gemfire.cache.server.region.shortcut", RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW.name())
-			.withProperty("spring.session.data.gemfire.session.attributes.indexable", "firstName, lastName")
 			.withProperty("spring.session.data.gemfire.session.expiration.max-inactive-interval-seconds", "120")
 			.withProperty("spring.session.data.gemfire.session.region.name", "PropertyRegionName");
-			//.withProperty("spring.session.data.gemfire.session.serializer.bean-name", "MockSessionSerializer");
 
 		this.applicationContext = newApplicationContext(testPropertySource,
 			TestConfiguration.class, TestSpringSessionGemFireConfigurerConfiguration.class);
@@ -140,13 +144,13 @@ public class ConfigurerBasedGemFireHttpSessionConfigurationIntegrationTests exte
 
 		assertThat(sessionConfiguration).isNotNull();
 		assertThat(sessionConfiguration.getClientRegionShortcut()).isEqualTo(ClientRegionShortcut.CACHING_PROXY);
-		assertThat(sessionConfiguration.getIndexableSessionAttributes()).isEmpty();
+		assertThat(sessionConfiguration.getIndexableSessionAttributes()).containsExactly("one", "two");
 		assertThat(sessionConfiguration.getMaxInactiveIntervalInSeconds()).isEqualTo(300);
 		assertThat(sessionConfiguration.getPoolName()).isEqualTo("Car");
 		assertThat(sessionConfiguration.getServerRegionShortcut()).isEqualTo(RegionShortcut.PARTITION_PERSISTENT);
 		assertThat(sessionConfiguration.getSessionRegionName()).isEqualTo("TestSessionRegionName");
-		assertThat(sessionConfiguration.getSessionExpirationPolicyBeanName().orElse(null)).isNull();
-		assertThat(sessionConfiguration.getSessionSerializerBeanName()).isEqualTo("SessionPdxSerializer");
+		assertThat(sessionConfiguration.getSessionExpirationPolicyBeanName().orElse(null)).isEqualTo("TestSessionExpirationPolicy");
+		assertThat(sessionConfiguration.getSessionSerializerBeanName()).isEqualTo("TestSessionSerializer");
 	}
 
 	@Test
@@ -159,13 +163,13 @@ public class ConfigurerBasedGemFireHttpSessionConfigurationIntegrationTests exte
 
 		assertThat(sessionConfiguration).isNotNull();
 		assertThat(sessionConfiguration.getClientRegionShortcut()).isEqualTo(ClientRegionShortcut.CACHING_PROXY);
-		assertThat(sessionConfiguration.getIndexableSessionAttributes()).containsExactly("two", "four");
+		assertThat(sessionConfiguration.getIndexableSessionAttributes()).containsExactly("one", "two");
 		assertThat(sessionConfiguration.getMaxInactiveIntervalInSeconds()).isEqualTo(3600);
 		assertThat(sessionConfiguration.getPoolName()).isEqualTo("Dead");
-		assertThat(sessionConfiguration.getServerRegionShortcut()).isEqualTo(RegionShortcut.PARTITION);
+		assertThat(sessionConfiguration.getServerRegionShortcut()).isEqualTo(RegionShortcut.REPLICATE);
 		assertThat(sessionConfiguration.getSessionRegionName()).isEqualTo("ConfigurerRegionName");
 		assertThat(sessionConfiguration.getSessionExpirationPolicyBeanName().orElse(null)).isEqualTo("ConfigurerSessionExpirationPolicy");
-		assertThat(sessionConfiguration.getSessionSerializerBeanName()).isEqualTo("SessionPdxSerializer");
+		assertThat(sessionConfiguration.getSessionSerializerBeanName()).isEqualTo("TestSessionSerializer");
 	}
 
 	@ClientCacheApplication
@@ -184,12 +188,17 @@ public class ConfigurerBasedGemFireHttpSessionConfigurationIntegrationTests exte
 
 		@Bean("Car")
 		Pool mockCarPool() {
-			return mock(Pool.class);
+			return mock(Pool.class, "Car");
 		}
 
 		@Bean("Dead")
 		Pool mockDeadPool() {
-			return mock(Pool.class);
+			return mock(Pool.class, "Dead");
+		}
+
+		@Bean("Swimming")
+		Pool mockSwimmingPool() {
+			return mock(Pool.class, "Swimming");
 		}
 
 		@Bean("TestSessionExpirationPolicy")
@@ -210,11 +219,6 @@ public class ConfigurerBasedGemFireHttpSessionConfigurationIntegrationTests exte
 				@Override
 				public ClientRegionShortcut getClientRegionShortcut() {
 					return ClientRegionShortcut.CACHING_PROXY;
-				}
-
-				@Override
-				public String[] getIndexableSessionAttributes() {
-					return new String[] { "two", "four" };
 				}
 
 				@Override
@@ -258,7 +262,7 @@ public class ConfigurerBasedGemFireHttpSessionConfigurationIntegrationTests exte
 		@Primary
 		SpringSessionGemFireConfigurer primarySpringSessionGemFireConfigurer(
 				@Value("${test.cache.client.pool.name:geodePool}") String poolName,
-				@Value("${test.cache.client.region.shortcut:PROXY}") ClientRegionShortcut clientRegionShortcut,
+				@Value("${test.cache.client.region.shortcut:LOCAL}") ClientRegionShortcut clientRegionShortcut,
 				@Value("${test.cache.server.region.shortcut:PARTITION_PERSISTENT}") RegionShortcut serverRegionShortcut,
 				@Value("${test.session.expiration.max-inactive-interval-seconds:600}") int maxInactiveIntervalInSeconds,
 				@Value("${test.session.region.name:MockSessionRegionName}") String regionName) {
