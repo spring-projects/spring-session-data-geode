@@ -61,7 +61,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @WebAppConfiguration
 public class GemFireHttpSessionJavaConfigurationTests extends AbstractGemFireIntegrationTests {
 
-	@Autowired
+	@Autowired @SuppressWarnings("unused")
 	private Cache gemfireCache;
 
 	protected <K, V> Region<K, V> assertCacheAndRegion(Cache gemfireCache,
@@ -115,9 +115,15 @@ public class GemFireHttpSessionJavaConfigurationTests extends AbstractGemFireInt
 		assertThat(sessionAttributesIndex).isNull();
 	}
 
-	@PeerCacheApplication(name = "GemFireHttpSessionJavaConfigurationTests", logLevel = "warning")
-	@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 900, regionName = "JavaExample",
-		serverRegionShortcut = RegionShortcut.REPLICATE)
-	static class GemFireConfiguration {
-	}
+	@PeerCacheApplication(
+		name = "GemFireHttpSessionJavaConfigurationTests",
+		logLevel = "error"
+	)
+	@EnableGemFireHttpSession(
+		maxInactiveIntervalInSeconds = 900,
+		regionName = "JavaExample",
+		serverRegionShortcut = RegionShortcut.REPLICATE
+	)
+	static class GemFireConfiguration { }
+
 }
