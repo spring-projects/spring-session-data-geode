@@ -59,7 +59,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * {@link AbstractGemFireIntegrationTests} is an abstract base class encapsulating common functionality
- * for writing Spring Session Data Pivotal GemFire & Apache Geode integration tests.
+ * for writing Spring Session for Apache Geode & Pivotal GemFire integration tests.
  *
  * @author John Blum
  * @since 1.1.0
@@ -71,16 +71,17 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.query.Index
  * @see org.apache.geode.cache.server.CacheServer
- * @see org.apache.geode.internal.InternalDataSerializer
  * @see org.springframework.data.gemfire.tests.integration.IntegrationTestsSupport
  * @see org.springframework.session.Session
+ * @see org.springframework.session.SessionRepository
  */
 @SuppressWarnings("unused")
 public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSupport {
 
 	protected static final boolean DEFAULT_ENABLE_QUERY_DEBUGGING = false;
 
-	protected static final boolean GEMFIRE_QUERY_DEBUG = Boolean.getBoolean("spring.session.data.gemfire.query.debug");
+	protected static final boolean GEMFIRE_QUERY_DEBUG =
+		Boolean.getBoolean("spring.session.data.gemfire.query.debug");
 
 	protected static final int DEFAULT_GEMFIRE_SERVER_PORT = CacheServer.DEFAULT_PORT;
 
@@ -119,15 +120,18 @@ public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSu
 
 		StringBuilder classpath = new StringBuilder();
 
-		stream(nullSafeArray(jarFilenames, String.class)).map(AbstractGemFireIntegrationTests::findJarInClasspath)
-			.forEach(classpathEntry -> classpathEntry.filter(StringUtils::hasText).ifPresent(it -> {
+		stream(nullSafeArray(jarFilenames, String.class))
+			.map(AbstractGemFireIntegrationTests::findJarInClassPath)
+			.forEach(classpathEntry -> classpathEntry
+				.filter(StringUtils::hasText)
+				.ifPresent(it -> {
 
-				if (classpath.length() > 0) {
-					classpath.append(File.pathSeparator);
-				}
+					if (classpath.length() > 0) {
+						classpath.append(File.pathSeparator);
+					}
 
-				classpath.append(it);
-			}));
+					classpath.append(it);
+				}));
 
 		return classpath.toString();
 	}
@@ -139,9 +143,13 @@ public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSu
 			.map(resourceName -> type.getClassLoader().getResource(resourceName));
 	}
 
-	private static Optional<String> findJarInClasspath(String jarFilename) {
-		return stream(nullSafeArray(System.getProperty("java.class.path").split(File.pathSeparator), String.class))
-			.filter(element -> element.contains(jarFilename)).findFirst();
+	private static Optional<String> findJarInClassPath(String jarFilename) {
+
+		String[] javaClassPath = System.getProperty("java.class.path").split(File.pathSeparator);
+
+		return stream(nullSafeArray(javaClassPath, String.class))
+			.filter(element -> element.contains(jarFilename))
+			.findFirst();
 	}
 
 	private static String toResourceName(Class<?> type) {
@@ -153,7 +161,8 @@ public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSu
 		File directory = new File(WORKING_DIRECTORY, pathname);
 
 		assertThat(directory.isDirectory() || directory.mkdirs())
-			.as(String.format("Failed to create directory [%s]", directory)).isTrue();
+			.as(String.format("Failed to create directory [%s]", directory))
+			.isTrue();
 
 		directory.deleteOnExit();
 
@@ -189,11 +198,17 @@ public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSu
 	}
 
 	private static List<String> extractJvmArguments(String... args) {
-		return stream(args).filter(arg -> arg.startsWith("-")).collect(Collectors.toList());
+
+		return stream(args)
+			.filter(arg -> arg.startsWith("-"))
+			.collect(Collectors.toList());
 	}
 
 	private static List<String> extractProgramArguments(String... args) {
-		return stream(args).filter(arg -> !arg.startsWith("-")).collect(Collectors.toList());
+
+		return stream(args)
+			.filter(arg -> !arg.startsWith("-"))
+			.collect(Collectors.toList());
 	}
 
 	// Run Java Class in Directory with Arguments
@@ -216,8 +231,8 @@ public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSu
 
 				int indexOfTypeName = pathname.indexOf(toResourceName(type));
 
-				pathname = (indexOfTypeName > -1 ? pathname.substring(0, indexOfTypeName) : pathname);
-				pathname = (pathname.endsWith(File.separator) ? pathname.substring(0, pathname.length() - 1) : pathname);
+				pathname = indexOfTypeName > -1 ? pathname.substring(0, indexOfTypeName) : pathname;
+				pathname = pathname.endsWith(File.separator) ? pathname.substring(0, pathname.length() - 1) : pathname;
 
 				return pathname;
 			})
@@ -236,12 +251,20 @@ public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSu
 	}
 
 	private static Process run(List<String> command, File directory) throws IOException {
-		return new ProcessBuilder().command(command).directory(directory).inheritIO().redirectErrorStream(true).start();
+
+		return new ProcessBuilder()
+			.command(command)
+			.directory(directory)
+			.inheritIO()
+			.redirectErrorStream(true)
+			.start();
 	}
 
 	protected static void unregisterAllDataSerializers() {
+
 		stream(nullSafeArray(InternalDataSerializer.getSerializers(), DataSerializer.class))
-			.map(DataSerializer::getId).forEach(InternalDataSerializer::unregister);
+			.map(DataSerializer::getId)
+			.forEach(InternalDataSerializer::unregister);
 	}
 
 	protected static boolean waitForCacheServerToStart(CacheServer cacheServer) {
@@ -424,11 +447,14 @@ public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSu
 	}
 
 	protected boolean isQueryDebuggingEnabled() {
-		return (GEMFIRE_QUERY_DEBUG || enableQueryDebugging());
+		return GEMFIRE_QUERY_DEBUG || enableQueryDebugging();
 	}
 
 	protected List<String> listRegions(GemFireCache gemfireCache) {
-		return gemfireCache.rootRegions().stream().map(Region::getFullPath).collect(Collectors.toList());
+
+		return gemfireCache.rootRegions().stream()
+			.map(Region::getFullPath)
+			.collect(Collectors.toList());
 	}
 
 	protected SessionRepository<Session> getSessionRepository() {
@@ -518,6 +544,7 @@ public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSu
 	 * The Condition interface defines a logical condition that must be satisfied before
 	 * it is safe to proceed.
 	 */
+	@FunctionalInterface
 	protected interface Condition {
 		boolean evaluate();
 	}
