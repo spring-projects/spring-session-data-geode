@@ -18,7 +18,6 @@ package org.springframework.session.data.gemfire.serialization;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -65,12 +64,6 @@ public class DataSerializationConfigurationIntegrationTests extends AbstractGemF
 	@Autowired
 	private GemFireCache gemfireCache;
 
-	@AfterClass
-	public static void tearDown() {
-		unregisterAllDataSerializers();
-		assertThat(waitForClientCacheToClose(DEFAULT_WAIT_DURATION)).isTrue();
-	}
-
 	@Test
 	public void gemfireCachePdxSerializerIsNull() {
 		assertThat(this.gemfireCache.getPdxSerializer()).isNull();
@@ -82,9 +75,15 @@ public class DataSerializationConfigurationIntegrationTests extends AbstractGemF
 
 	}
 
-	@ClientCacheApplication(name = "DataSerializationConfigurationIntegrationTests", logLevel = "warning")
-	@EnableGemFireHttpSession(clientRegionShortcut = ClientRegionShortcut.LOCAL, poolName = "DEFAULT",
-		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME)
-	static class TestConfiguration {
-	}
+	@ClientCacheApplication(
+		name = "DataSerializationConfigurationIntegrationTests",
+		logLevel = "error"
+	)
+	@EnableGemFireHttpSession(
+		clientRegionShortcut = ClientRegionShortcut.LOCAL,
+		poolName = "DEFAULT",
+		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME
+	)
+	static class TestConfiguration { }
+
 }

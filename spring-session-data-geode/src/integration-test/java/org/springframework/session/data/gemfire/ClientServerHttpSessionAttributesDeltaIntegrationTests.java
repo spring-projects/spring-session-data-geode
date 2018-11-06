@@ -18,38 +18,20 @@ package org.springframework.session.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
 
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.cache.client.ClientCache;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
-import org.springframework.data.gemfire.config.annotation.CacheServerConfigurer;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
-import org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer;
-import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.FileSystemUtils;
-import org.springframework.util.SocketUtils;
 
 /**
  * Integration tests testing the addition/removal of HTTP Session Attributes
@@ -72,68 +54,27 @@ import org.springframework.util.SocketUtils;
  * @since 1.3.1
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes =
-	ClientServerHttpSessionAttributesDeltaIntegrationTests.SpringSessionDataGemFireClientConfiguration.class)
+@ContextConfiguration(
+	classes = ClientServerHttpSessionAttributesDeltaIntegrationTests.SpringSessionDataGemFireClientConfiguration.class
+)
 public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends AbstractGemFireIntegrationTests {
 
 	private static final int MAX_INACTIVE_INTERVAL_IN_SECONDS = 1;
 
-	private static final DateFormat TIMESTAMP = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-
-	private static File processWorkingDirectory;
-
-	private static Process gemfireServer;
-
 	@BeforeClass
 	public static void startGemFireServer() throws IOException {
-
-		long t0 = System.currentTimeMillis();
-
-		int port = SocketUtils.findAvailableTcpPort();
-
-		System.err.printf("Starting a Pivotal GemFire Server running on host [%1$s] listening on port [%2$d]%n",
-			SpringSessionDataGemFireServerConfiguration.SERVER_HOSTNAME, port);
-
-		System.setProperty("spring.session.data.gemfire.port", String.valueOf(port));
-
-		String processWorkingDirectoryPathname =
-			String.format("gemfire-client-server-tests-%1$s", TIMESTAMP.format(new Date()));
-
-		processWorkingDirectory = createDirectory(processWorkingDirectoryPathname);
-
-		gemfireServer = run(SpringSessionDataGemFireServerConfiguration.class, processWorkingDirectory,
-			String.format("-Dspring.session.data.gemfire.port=%1$d", port));
-
-		assertThat(waitForCacheServerToStart(SpringSessionDataGemFireServerConfiguration.SERVER_HOSTNAME, port))
-			.isTrue();
-
-		System.err.printf("GemFire Server [startup time = %1$d ms]%n", System.currentTimeMillis() - t0);
-	}
-
-	@AfterClass
-	public static void stopGemFireServer() {
-
-		if (gemfireServer != null) {
-			gemfireServer.destroy();
-			System.err.printf("GemFire Server [exit code = %1$d]%n",
-				waitForProcessToStop(gemfireServer, processWorkingDirectory));
-		}
-
-		if (Boolean.valueOf(System.getProperty("spring.session.data.gemfire.fork.clean", Boolean.TRUE.toString()))) {
-			FileSystemUtils.deleteRecursively(processWorkingDirectory);
-		}
-
-		unregisterAllDataSerializers();
-		assertThat(waitForClientCacheToClose(DEFAULT_WAIT_DURATION)).isTrue();
+		startGemFireServer(SpringSessionDataGemFireServerConfiguration.class);
 	}
 
 	@Test
-	public void sessionCreationAndAccessIsSuccessful() {
+	public void sessionDeltaOperationsAreCorrect() {
 
 		Session session = save(touch(createSession()));
 
 		assertThat(session).isNotNull();
+		assertThat(session.getId()).isNotEmpty();
 		assertThat(session.isExpired()).isFalse();
+		assertThat(session.getAttributeNames()).isEmpty();
 
 		session.setAttribute("attrOne", 1);
 		session.setAttribute("attrTwo", 2);
@@ -143,104 +84,56 @@ public class ClientServerHttpSessionAttributesDeltaIntegrationTests extends Abst
 		Session loadedSession = get(session.getId());
 
 		assertThat(loadedSession).isNotNull();
-		assertThat(loadedSession.isExpired()).isFalse();
 		assertThat(loadedSession).isNotSameAs(session);
 		assertThat(loadedSession.getId()).isEqualTo(session.getId());
+		assertThat(loadedSession.isExpired()).isFalse();
 		assertThat(loadedSession.<Integer>getAttribute("attrOne")).isEqualTo(1);
 		assertThat(loadedSession.<Integer>getAttribute("attrTwo")).isEqualTo(2);
 
 		loadedSession.removeAttribute("attrTwo");
 
+		assertThat(loadedSession.getAttributeNames()).containsOnly("attrOne");
 		assertThat(loadedSession.getAttributeNames()).doesNotContain("attrTwo");
-		assertThat(loadedSession.getAttributeNames()).hasSize(1);
 
 		save(touch(loadedSession));
 
 		Session reloadedSession = get(loadedSession.getId());
 
 		assertThat(reloadedSession).isNotNull();
-		assertThat(reloadedSession.isExpired()).isFalse();
 		assertThat(reloadedSession).isNotSameAs(loadedSession);
+		assertThat(reloadedSession.isExpired()).isFalse();
 		assertThat(reloadedSession.getId()).isEqualTo(loadedSession.getId());
-		assertThat(reloadedSession.getAttributeNames()).hasSize(1);
+		assertThat(reloadedSession.getAttributeNames()).containsOnly("attrOne");
 		assertThat(reloadedSession.getAttributeNames()).doesNotContain("attrTwo");
 		assertThat(reloadedSession.<Integer>getAttribute("attrOne")).isEqualTo(1);
 	}
 
-	@ClientCacheApplication
-	@EnableGemFireHttpSession(poolName = "DEFAULT", sessionSerializerBeanName =
-		GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME)
-	@SuppressWarnings("unused")
-	static class SpringSessionDataGemFireClientConfiguration {
+	@ClientCacheApplication(
+		logLevel = "error",
+		subscriptionEnabled = true
+	)
+	@EnableGemFireHttpSession(
+		poolName = "DEFAULT",
+		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME
+	)
+	static class SpringSessionDataGemFireClientConfiguration { }
 
-		@Bean
-		static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-			return new PropertySourcesPlaceholderConfigurer();
-		}
-
-		@Bean ClientCacheConfigurer clientCachePoolPortConfigurer(
-				@Value("${spring.session.data.gemfire.port:" + DEFAULT_GEMFIRE_SERVER_PORT + "}") int port) {
-
-			return (beanName, clientCacheFactoryBean) -> {
-
-				clientCacheFactoryBean.setServers(Collections.singleton(
-					new ConnectionEndpoint(SpringSessionDataGemFireServerConfiguration.SERVER_HOSTNAME, port)));
-
-				clientCacheFactoryBean.setSubscriptionEnabled(true);
-			};
-		}
-
-		// used for debugging purposes
-		@SuppressWarnings("resource")
-		public static void main(String[] args) {
-
-			ConfigurableApplicationContext applicationContext =
-				new AnnotationConfigApplicationContext(SpringSessionDataGemFireClientConfiguration.class);
-
-			applicationContext.registerShutdownHook();
-
-			ClientCache clientCache = applicationContext.getBean(ClientCache.class);
-
-			for (InetSocketAddress server : clientCache.getCurrentServers()) {
-				System.err.printf("GemFire Server [host: %1$s, port: %2$d]%n",
-					server.getHostName(), server.getPort());
-			}
-		}
-	}
-
-	@CacheServerApplication(name = "ClientServerHttpSessionAttributesDeltaIntegrationTests")
-	@EnableGemFireHttpSession(maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS,
-		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME)
-	@SuppressWarnings("unused")
+	@CacheServerApplication(
+		name = "ClientServerHttpSessionAttributesDeltaIntegrationTests",
+		logLevel = "error"
+	)
+	@EnableGemFireHttpSession(
+		maxInactiveIntervalInSeconds = MAX_INACTIVE_INTERVAL_IN_SECONDS,
+		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME
+	)
 	static class SpringSessionDataGemFireServerConfiguration {
 
-		static final String SERVER_HOSTNAME = "localhost";
-
-		@Bean
-		static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-			return new PropertySourcesPlaceholderConfigurer();
-		}
-
-		@Bean
-		CacheServerConfigurer cacheServerPortConfigurer(
-				@Value("${spring.session.data.gemfire.port:" + DEFAULT_GEMFIRE_SERVER_PORT + "}") int port) {
-
-			return (beanName, cacheServerFactoryBean) -> {
-				cacheServerFactoryBean.setAutoStartup(true);
-				cacheServerFactoryBean.setBindAddress(SERVER_HOSTNAME);
-				cacheServerFactoryBean.setPort(port);
-			};
-		}
-
-		@SuppressWarnings("resource")
-		public static void main(String[] args) throws IOException {
+		public static void main(String[] args) {
 
 			AnnotationConfigApplicationContext applicationContext =
 				new AnnotationConfigApplicationContext(SpringSessionDataGemFireServerConfiguration.class);
 
 			applicationContext.registerShutdownHook();
-
-			writeProcessControlFile(WORKING_DIRECTORY);
 		}
 	}
 }

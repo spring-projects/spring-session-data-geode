@@ -55,7 +55,7 @@ import org.springframework.util.SocketUtils;
 
 /**
  * Integration tests asserting that a GemFire/Geode Server does not require any Spring Session Data GemFire/Geode
- * dependencies or any transitive dependencies when PDX serialization is in effect.
+ * dependencies or any transitive dependencies when PDX serialization is used.
  *
  * /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/bin/java -server -ea
  * -Dgemfire.log-level=FINEST -Dgemfire.Query.VERBOSE=false -Dspring.session.data.gemfire.cache.server.port=34095
@@ -84,9 +84,16 @@ import org.springframework.util.SocketUtils;
  * @author John Blum
  * @see org.junit.Test
  * @see org.apache.geode.cache.server.CacheServer
+ * @see org.springframework.context.annotation.Bean
+ * @see org.springframework.context.support.PropertySourcesPlaceholderConfigurer
  * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
  * @see org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer
  * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
+ * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
+ * @see org.springframework.session.data.gemfire.server.GemFireServer
+ * @see org.springframework.test.context.ContextConfiguration
+ * @see org.springframework.test.context.junit4.SpringRunner
  * @since 2.0.0
  */
 @RunWith(SpringRunner.class)
@@ -113,7 +120,7 @@ public class SessionSerializationWithPdxRequiresNoServerConfigurationIntegration
 
 		int port = SocketUtils.findAvailableTcpPort();
 
-		System.err.printf("Starting a Pivotal GemFire Server running on host [localhost] listening on port [%d]%n", port);
+		System.err.printf("Starting a Pivotal GemFire Server on host [localhost], listening on port [%d]%n", port);
 
 		System.setProperty("spring.session.data.gemfire.cache.server.port", String.valueOf(port));
 
@@ -130,7 +137,7 @@ public class SessionSerializationWithPdxRequiresNoServerConfigurationIntegration
 			processWorkingDirectory, String.format("-Dspring.session.data.gemfire.cache.server.port=%d", port),
 			String.format("-Dgemfire.log-level=%s", GEMFIRE_LOG_LEVEL));
 
-		assertThat(waitForCacheServerToStart("localhost", port)).isTrue();
+		assertThat(waitForServerToStart("localhost", port)).isTrue();
 
 		System.err.printf("GemFire Server [startup time = %d ms]%n", System.currentTimeMillis() - t0);
 	}
@@ -149,8 +156,6 @@ public class SessionSerializationWithPdxRequiresNoServerConfigurationIntegration
 		if (Boolean.valueOf(System.getProperty("spring.session.data.gemfire.fork.clean", Boolean.TRUE.toString()))) {
 			FileSystemUtils.deleteRecursively(processWorkingDirectory);
 		}
-
-		assertThat(waitForClientCacheToClose(DEFAULT_WAIT_DURATION)).isTrue();
 	}
 
 	@Test
@@ -184,7 +189,7 @@ public class SessionSerializationWithPdxRequiresNoServerConfigurationIntegration
 
 	@ClientCacheApplication(logLevel = GEMFIRE_LOG_LEVEL, subscriptionEnabled = true)
 	@EnableGemFireHttpSession(poolName = "DEFAULT")
-	static class GemFireCacheClientConfiguration {
+	static class GemFireClientConfiguration {
 
 		@Bean
 		static PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer() {
@@ -192,8 +197,8 @@ public class SessionSerializationWithPdxRequiresNoServerConfigurationIntegration
 		}
 
 		@Bean
-		ClientCacheConfigurer clientCachePoolPortConfigurer(
-				@Value("${spring.session.data.gemfire.cache.server.port:" + CacheServer.DEFAULT_PORT + "}") int cacheServerPort) {
+		ClientCacheConfigurer clientCachePoolPortConfigurer(@Value("${spring.session.data.gemfire.cache.server.port:"
+				+ CacheServer.DEFAULT_PORT + "}") int cacheServerPort) {
 
 			return (beanName, clientCacheFactoryBean) -> clientCacheFactoryBean.setServers(Collections.singletonList(
 				new ConnectionEndpoint("localhost", cacheServerPort)));

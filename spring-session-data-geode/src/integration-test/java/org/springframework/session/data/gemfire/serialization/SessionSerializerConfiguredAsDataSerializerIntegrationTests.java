@@ -19,7 +19,6 @@ package org.springframework.session.data.gemfire.serialization;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -75,12 +74,6 @@ public class SessionSerializerConfiguredAsDataSerializerIntegrationTests extends
 	@Qualifier("dataSerializerSessionSerializer")
 	private SessionSerializer dataSerializerSessionSerializer;
 
-	@AfterClass
-	public static void tearDown() {
-		unregisterAllDataSerializers();
-		assertThat(waitForClientCacheToClose(DEFAULT_WAIT_DURATION)).isTrue();
-	}
-
 	@Test
 	public void gemfireCachePdxSerializerIsNull() {
 		assertThat(this.gemfireCache.getPdxSerializer()).isNull();
@@ -96,9 +89,15 @@ public class SessionSerializerConfiguredAsDataSerializerIntegrationTests extends
 		assertThat(this.configuredSessionSerializer).isSameAs(this.customSessionSerializer);
 	}
 
-	@ClientCacheApplication(name = "SessionSerializerConfiguredAsPdxSerializerIntegrationTests", logLevel = "warning")
-	@EnableGemFireHttpSession(clientRegionShortcut = ClientRegionShortcut.LOCAL, poolName = "DEFAULT",
-		sessionSerializerBeanName = "customSessionSerializer")
+	@ClientCacheApplication(
+		name = "SessionSerializerConfiguredAsDataSerializerIntegrationTests",
+		logLevel = "error"
+	)
+	@EnableGemFireHttpSession(
+		clientRegionShortcut = ClientRegionShortcut.LOCAL,
+		poolName = "DEFAULT",
+		sessionSerializerBeanName = "customSessionSerializer"
+	)
 	static class TestConfiguration {
 
 		@Bean
