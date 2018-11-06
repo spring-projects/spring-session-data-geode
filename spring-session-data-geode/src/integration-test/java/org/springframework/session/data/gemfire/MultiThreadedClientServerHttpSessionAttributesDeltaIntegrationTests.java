@@ -52,32 +52,46 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
-public class MultiThreadedHttpSessionAttributesDeltaIntegrationTests extends AbstractGemFireIntegrationTests {
+public class MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests
+		extends AbstractGemFireIntegrationTests {
 
 	@Test
-	public void multiThreadedSessionAccessIsCorrect() throws Throwable {
+	public void multiThreadedSessionOperationsAreCorrect() throws Throwable {
 		TestFramework.runOnce(new MultiThreadedSessionAccessTestCase(this));
 	}
 
+	@SuppressWarnings("unused")
 	public static class MultiThreadedSessionAccessTestCase extends MultithreadedTestCase {
 
 		private final AtomicReference<String> sessionId = new AtomicReference<>(null);
 
-		private final MultiThreadedHttpSessionAttributesDeltaIntegrationTests testInstance;
+		private final MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests testInstance;
 
 		public MultiThreadedSessionAccessTestCase(
-				MultiThreadedHttpSessionAttributesDeltaIntegrationTests testInstance) {
+				MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests testInstance) {
 
 			this.testInstance = testInstance;
 		}
 
+		private Session findById(String id) {
+			return this.testInstance.get(id);
+		}
+
+		private Session newSession() {
+			return this.testInstance.createSession();
+		}
+
+		private <T extends Session> T save(T session) {
+			return this.testInstance.save(this.testInstance.touch(session));
+		}
+
 		public void thread1() {
 
-			Thread.currentThread().setName("Session User One");
+			Thread.currentThread().setName("User Session One");
 
 			assertTick(0);
 
-			Session session = this.testInstance.createSession();
+			Session session = newSession();
 
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isNotEmpty();
@@ -86,9 +100,9 @@ public class MultiThreadedHttpSessionAttributesDeltaIntegrationTests extends Abs
 
 			session.setAttribute("attributeOne", "foo");
 
-			this.testInstance.save(this.testInstance.touch(session));
+			save(session);
 
-			Session loadedSession = this.testInstance.get(session.getId());
+			Session loadedSession = findById(session.getId());
 
 			assertThat(loadedSession).isNotNull();
 			assertThat(loadedSession.getId()).isEqualTo(session.getId());
@@ -96,15 +110,16 @@ public class MultiThreadedHttpSessionAttributesDeltaIntegrationTests extends Abs
 			assertThat(loadedSession.getAttributeNames()).containsExactly("attributeOne");
 			assertThat(loadedSession.<String>getAttribute("attributeOne")).isEqualTo("foo");
 
-			session.setAttribute("attributeTwo", "bar");
+			loadedSession.setAttribute("attributeTwo", "bar");
 
-			this.testInstance.save(this.testInstance.touch(session));
+			save(loadedSession);
+
 			this.sessionId.set(loadedSession.getId());
 
 			waitForTick(2);
 			assertTick(2);
 
-			Session reloadedSession = this.testInstance.get(loadedSession.getId());
+			Session reloadedSession = findById(loadedSession.getId());
 
 			assertThat(reloadedSession).isNotNull();
 			assertThat(reloadedSession.getId()).isEqualTo(loadedSession.getId());
@@ -118,12 +133,13 @@ public class MultiThreadedHttpSessionAttributesDeltaIntegrationTests extends Abs
 			waitForTick(4);
 			assertTick(4);
 
-			Session endSession = this.testInstance.get(reloadedSession.getId());
+			Session endSession = findById(reloadedSession.getId());
 
 			assertThat(endSession).isNotNull();
 			assertThat(endSession.getId()).isEqualTo(reloadedSession.getId());
 			assertThat(endSession.isExpired()).isFalse();
 			assertThat(endSession.getAttributeNames()).containsOnly("attributeOne", "attributeThree");
+			assertThat(endSession.getAttributeNames()).doesNotContain("attributeTwo");
 			assertThat(endSession.<String>getAttribute("attributeOne")).isEqualTo("foo");
 			assertThat(endSession.<String>getAttribute("attributeTwo")).isNull();
 			assertThat(endSession.<String>getAttribute("attributeThree")).isEqualTo("baz");
@@ -131,12 +147,12 @@ public class MultiThreadedHttpSessionAttributesDeltaIntegrationTests extends Abs
 
 		public void thread2() {
 
-			Thread.currentThread().setName("Session User Two");
+			Thread.currentThread().setName("User Session Two");
 
 			waitForTick(1);
 			assertTick(1);
 
-			Session session = this.testInstance.get(this.sessionId.get());
+			Session session = findById(this.sessionId.get());
 
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(this.sessionId.get());
@@ -147,17 +163,18 @@ public class MultiThreadedHttpSessionAttributesDeltaIntegrationTests extends Abs
 
 			session.setAttribute("attributeThree", "baz");
 
-			this.testInstance.save(this.testInstance.touch(session));
+			save(session);
 
 			waitForTick(4);
 			assertTick(4);
 
-			Session endSession = this.testInstance.get(session.getId());
+			Session endSession = findById(session.getId());
 
 			assertThat(endSession).isNotNull();
 			assertThat(endSession.getId()).isEqualTo(session.getId());
 			assertThat(endSession.isExpired()).isFalse();
 			assertThat(endSession.getAttributeNames()).containsOnly("attributeOne", "attributeThree");
+			assertThat(endSession.getAttributeNames()).doesNotContain("attributeTwo");
 			assertThat(endSession.<String>getAttribute("attributeOne")).isEqualTo("foo");
 			assertThat(endSession.<String>getAttribute("attributeTwo")).isNull();
 			assertThat(endSession.<String>getAttribute("attributeThree")).isEqualTo("baz");
@@ -165,12 +182,12 @@ public class MultiThreadedHttpSessionAttributesDeltaIntegrationTests extends Abs
 
 		public void thread3() {
 
-			Thread.currentThread().setName("Session User Three");
+			Thread.currentThread().setName("User Session Three");
 
 			waitForTick(3);
 			assertTick(3);
 
-			Session session = this.testInstance.get(this.sessionId.get());
+			Session session = findById(this.sessionId.get());
 
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(this.sessionId.get());
@@ -182,10 +199,7 @@ public class MultiThreadedHttpSessionAttributesDeltaIntegrationTests extends Abs
 
 			session.setAttribute("attributeTwo", null);
 
-			this.testInstance.save(this.testInstance.touch(session));
-
-			waitForTick(5);
-			assertTick(5);
+			save(session);
 		}
 
 		@Override
@@ -197,6 +211,7 @@ public class MultiThreadedHttpSessionAttributesDeltaIntegrationTests extends Abs
 			assertThat(session.getId()).isEqualTo(this.sessionId.get());
 			assertThat(session.isExpired()).isFalse();
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeThree");
+			assertThat(session.getAttributeNames()).doesNotContain("attributeTwo");
 			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("foo");
 			assertThat(session.<String>getAttribute("attributeTwo")).isNull();
 			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("baz");
