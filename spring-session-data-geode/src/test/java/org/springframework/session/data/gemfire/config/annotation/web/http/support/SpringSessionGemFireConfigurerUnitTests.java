@@ -17,6 +17,7 @@
 package org.springframework.session.data.gemfire.config.annotation.web.http.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -90,7 +91,7 @@ public class SpringSessionGemFireConfigurerUnitTests {
 		return new SpringSessionGemFireConfigurer() { };
 	}
 
-	private SpringSessionGemFireConfigurer newTestConfigurerWithOverrides() {
+	private SpringSessionGemFireConfigurer newTestConfigurerWithSelectOverrides() {
 
 		return new SpringSessionGemFireConfigurer() {
 
@@ -116,6 +117,19 @@ public class SpringSessionGemFireConfigurerUnitTests {
 		};
 	}
 
+	private Method[] filterDeclaredMethods(Method[] methods) {
+
+		List<String> targetMethodNames =
+			Arrays.stream(nullSafeArray(SpringSessionGemFireConfigurer.class.getMethods(), Method.class))
+				.map(Method::getName)
+				.collect(Collectors.toList());
+
+		return Arrays.stream(nullSafeArray(methods, Method.class))
+			.filter(method -> targetMethodNames.contains(method.getName()))
+			.collect(Collectors.toList())
+			.toArray(new Method[0]);
+	}
+
 	@Test
 	public void classGetDeclaredMethodsOnCustomConfigurerObjectHasAllMethods() {
 
@@ -131,7 +145,7 @@ public class SpringSessionGemFireConfigurerUnitTests {
 		assertThat(testConfigurer.getSessionExpirationPolicyBeanName()).isEqualTo("MockExpirationPolicy");
 		assertThat(testConfigurer.getSessionSerializerBeanName()).isEqualTo("MockSerializer");
 
-		Method[] declaredMethods = testConfigurer.getClass().getDeclaredMethods();
+		Method[] declaredMethods = filterDeclaredMethods(testConfigurer.getClass().getDeclaredMethods());
 
 		List<String> declaredMethodNames =
 			Arrays.stream(declaredMethods).map(Method::getName).sorted().collect(Collectors.toList());
@@ -168,7 +182,7 @@ public class SpringSessionGemFireConfigurerUnitTests {
 		assertThat(testConfigurer.getSessionSerializerBeanName())
 			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SESSION_SERIALIZER_BEAN_NAME);
 
-		Method[] declaredMethods = testConfigurer.getClass().getDeclaredMethods();
+		Method[] declaredMethods = filterDeclaredMethods(testConfigurer.getClass().getDeclaredMethods());
 
 		assertThat(declaredMethods).isNotNull();
 		assertThat(declaredMethods).isEmpty();
@@ -177,7 +191,7 @@ public class SpringSessionGemFireConfigurerUnitTests {
 	@Test
 	public void classGetDeclaredMethodsOnCustomConfigurerObjectOnlyHasOverriddenMethods() {
 
-		SpringSessionGemFireConfigurer testConfigurer = newTestConfigurerWithOverrides();
+		SpringSessionGemFireConfigurer testConfigurer = newTestConfigurerWithSelectOverrides();
 
 		assertThat(testConfigurer).isNotNull();
 		assertThat(testConfigurer.getClientRegionShortcut()).isEqualTo(ClientRegionShortcut.CACHING_PROXY);
@@ -190,7 +204,7 @@ public class SpringSessionGemFireConfigurerUnitTests {
 		assertThat(testConfigurer.getSessionSerializerBeanName())
 			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SESSION_SERIALIZER_BEAN_NAME);
 
-		Method[] declaredMethods = testConfigurer.getClass().getDeclaredMethods();
+		Method[] declaredMethods = filterDeclaredMethods(testConfigurer.getClass().getDeclaredMethods());
 
 		List<String> declaredMethodNames =
 			Arrays.stream(declaredMethods).map(Method::getName).sorted().collect(Collectors.toList());
