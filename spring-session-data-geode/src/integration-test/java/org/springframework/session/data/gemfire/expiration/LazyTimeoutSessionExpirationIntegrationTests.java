@@ -70,14 +70,14 @@ public class LazyTimeoutSessionExpirationIntegrationTests extends AbstractGemFir
 		assertThat(session.getId()).isNotEmpty();
 		assertThat(session.isExpired()).isFalse();
 
-		waitOnCondition(() -> false, Duration.ofSeconds(1).toMillis());
+		waitOn(() -> false, Duration.ofSeconds(1).toMillis());
 
 		Session loadedSession = get(session.getId());
 
 		assertThat(loadedSession).isEqualTo(session);
 		assertThat(loadedSession.isExpired()).isFalse();
 
-		waitOnCondition(() -> false, Duration.ofSeconds(1).toMillis() + 1);
+		waitOn(() -> false, Duration.ofSeconds(1).toMillis() + 1);
 
 		Session expiredSession = get(loadedSession.getId());
 

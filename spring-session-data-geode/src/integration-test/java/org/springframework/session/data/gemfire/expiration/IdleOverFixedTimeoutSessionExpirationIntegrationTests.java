@@ -147,7 +147,7 @@ public class IdleOverFixedTimeoutSessionExpirationIntegrationTests extends Abstr
 		Instant creationTime = session.getCreationTime();
 		Instant lastAccessTime = session.getLastAccessedTime();
 
-		waitOnCondition(() -> false, Duration.ofSeconds(1).toMillis());
+		waitOn(() -> false, Duration.ofSeconds(1).toMillis());
 
 		Session loadedSession = get(session.getId());
 
@@ -155,7 +155,7 @@ public class IdleOverFixedTimeoutSessionExpirationIntegrationTests extends Abstr
 		assertThat(loadedSession.isExpired()).isFalse();
 		assertThat(loadedSession.getLastAccessedTime().isAfter(lastAccessTime)).isTrue();
 
-		waitOnCondition(() -> false, Duration.ofSeconds(2).toMillis() + 1);
+		waitOn(() -> false, Duration.ofSeconds(2).toMillis() + 1);
 
 		Session expiredSession = get(loadedSession.getId());
 

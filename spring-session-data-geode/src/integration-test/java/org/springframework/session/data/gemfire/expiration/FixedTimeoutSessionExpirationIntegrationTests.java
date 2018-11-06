@@ -138,7 +138,7 @@ public class FixedTimeoutSessionExpirationIntegrationTests extends AbstractGemFi
 		assertThat(session.getId()).isNotNull();
 		assertThat(session.isExpired()).isFalse();
 
-		waitOnCondition(() -> false, 1500L);
+		waitOn(() -> false, 1500L);
 
 		Session loadedSession = get(session.getId());
 
@@ -148,7 +148,7 @@ public class FixedTimeoutSessionExpirationIntegrationTests extends AbstractGemFi
 
 		Session updatedSession = save(touch(loadedSession));
 
-		waitOnCondition(() -> false, 1500L);
+		waitOn(() -> false, 1500L);
 
 		long currentTime = System.currentTimeMillis();
 
