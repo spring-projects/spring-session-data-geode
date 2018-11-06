@@ -19,7 +19,6 @@ package org.springframework.session.data.gemfire.serialization;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,6 +44,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author John Blum
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.pdx.PdxSerializer
+ * @see org.springframework.context.annotation.Bean
  * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
  * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
@@ -70,15 +70,11 @@ public class SessionSerializerConfiguredAsPdxSerializerIntegrationTests extends 
 	@Qualifier("customSessionSerializer")
 	private SessionSerializer customSessionSerializer;
 
-	@AfterClass
-	public static void tearDown() {
-		unregisterAllDataSerializers();
-		assertThat(waitForClientCacheToClose(DEFAULT_WAIT_DURATION)).isTrue();
-	}
-
 	@Test
 	public void gemfireCachePdxSerializerIsPdxSerializerSessionSerializerAdapter() {
+
 		assertThat(this.gemfireCache.getPdxSerializer()).isInstanceOf(PdxSerializerSessionSerializerAdapter.class);
+
 		assertThat(((PdxSerializerSessionSerializerAdapter) this.gemfireCache.getPdxSerializer()).getSessionSerializer())
 			.isSameAs(this.customSessionSerializer);
 	}
@@ -88,9 +84,15 @@ public class SessionSerializerConfiguredAsPdxSerializerIntegrationTests extends 
 		assertThat(this.configuredSessionSerializer).isSameAs(this.customSessionSerializer);
 	}
 
-	@ClientCacheApplication(name = "SessionSerializerConfiguredAsPdxSerializerIntegrationTests", logLevel = "warning")
-	@EnableGemFireHttpSession(clientRegionShortcut = ClientRegionShortcut.LOCAL, poolName = "DEFAULT",
-		sessionSerializerBeanName = "customSessionSerializer")
+	@ClientCacheApplication(
+		name = "SessionSerializerConfiguredAsPdxSerializerIntegrationTests",
+		logLevel = "error"
+	)
+	@EnableGemFireHttpSession(
+		clientRegionShortcut = ClientRegionShortcut.LOCAL,
+		poolName = "DEFAULT",
+		sessionSerializerBeanName = "customSessionSerializer"
+	)
 	static class TestConfiguration {
 
 		@Bean
