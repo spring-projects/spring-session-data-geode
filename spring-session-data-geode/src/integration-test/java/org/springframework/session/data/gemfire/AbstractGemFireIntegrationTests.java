@@ -22,35 +22,26 @@ import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.query.Index;
-import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.InternalDataSerializer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
-import org.springframework.data.gemfire.tests.integration.IntegrationTestsSupport;
+import org.springframework.data.gemfire.tests.integration.ForkingClientServerIntegrationTestsSupport;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
@@ -62,41 +53,36 @@ import org.springframework.util.StringUtils;
  * for writing Spring Session for Apache Geode & Pivotal GemFire integration tests.
  *
  * @author John Blum
- * @since 1.1.0
- * @see org.apache.geode.DataSerializer
+ * @see java.io.File
+ * @see java.net.URL
+ * @see java.time.Instant
  * @see org.apache.geode.cache.DataPolicy
  * @see org.apache.geode.cache.ExpirationAttributes
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
- * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.query.Index
- * @see org.apache.geode.cache.server.CacheServer
- * @see org.springframework.data.gemfire.tests.integration.IntegrationTestsSupport
+ * @see org.springframework.data.gemfire.tests.integration.ForkingClientServerIntegrationTestsSupport
  * @see org.springframework.session.Session
  * @see org.springframework.session.SessionRepository
+ * @see org.springframework.session.events.AbstractSessionEvent
+ * @since 1.1.0
  */
-@SuppressWarnings("unused")
-public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSupport {
+public abstract class AbstractGemFireIntegrationTests extends ForkingClientServerIntegrationTestsSupport {
 
 	protected static final boolean DEFAULT_ENABLE_QUERY_DEBUGGING = false;
 
 	protected static final boolean GEMFIRE_QUERY_DEBUG =
 		Boolean.getBoolean("spring.session.data.gemfire.query.debug");
 
-	protected static final int DEFAULT_GEMFIRE_SERVER_PORT = CacheServer.DEFAULT_PORT;
-
-	protected static final long DEFAULT_WAIT_DURATION = TimeUnit.SECONDS.toMillis(20);
-	protected static final long DEFAULT_WAIT_INTERVAL = 500L;
-
 	protected static final File WORKING_DIRECTORY = new File(System.getProperty("user.dir"));
 
 	protected static final String DEFAULT_PROCESS_CONTROL_FILENAME = "process.ctl";
 
 	protected static final String GEMFIRE_LOG_FILE_NAME =
-		System.getProperty("spring.session.data.gemfire.log-file", "gemfire-server.log");
+		System.getProperty("spring.session.data.gemfire.log.file", "gemfire-server.log");
 
 	protected static final String GEMFIRE_LOG_LEVEL =
-		System.getProperty("spring.session.data.gemfire.log-level", "error");
+		System.getProperty("spring.session.data.gemfire.log.level", "error");
 
 	@Autowired(required = false)
 	protected GemFireCache gemfireCache;
@@ -110,10 +96,9 @@ public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSu
 	@Before
 	public void setup() {
 
-		System.setProperty("gemfire.Query.VERBOSE", String.valueOf(isQueryDebuggingEnabled()));
-
 		this.sessionRepository = this.sessionRepository != null
-			? this.sessionRepository : this.gemfireSessionRepository;
+			? this.sessionRepository
+			: this.gemfireSessionRepository;
 	}
 
 	protected static String buildClassPathContainingJarFiles(String... jarFilenames) {
@@ -260,139 +245,6 @@ public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSu
 			.start();
 	}
 
-	protected static void unregisterAllDataSerializers() {
-
-		stream(nullSafeArray(InternalDataSerializer.getSerializers(), DataSerializer.class))
-			.map(DataSerializer::getId)
-			.forEach(InternalDataSerializer::unregister);
-	}
-
-	protected static boolean waitForCacheServerToStart(CacheServer cacheServer) {
-		return waitForCacheServerToStart(cacheServer, DEFAULT_WAIT_DURATION);
-	}
-
-	protected static boolean waitForCacheServerToStart(CacheServer cacheServer, long duration) {
-		return waitForCacheServerToStart(cacheServer.getBindAddress(), cacheServer.getPort(), duration);
-	}
-
-	protected static boolean waitForCacheServerToStart(String host, int port) {
-		return waitForCacheServerToStart(host, port, DEFAULT_WAIT_DURATION);
-	}
-
-	protected static boolean waitForCacheServerToStart(final String host, final int port, long duration) {
-
-		return waitOnCondition(new Condition() {
-
-			AtomicBoolean connected = new AtomicBoolean(false);
-
-			public boolean evaluate() {
-
-				Socket socket = null;
-
-				try {
-					if (!this.connected.get()) {
-						socket = new Socket(host, port);
-						this.connected.set(true);
-					}
-				}
-				catch (IOException ignore) {
-				}
-				finally {
-					GemFireUtils.close(socket);
-				}
-
-				return connected.get();
-			}
-		}, duration);
-	}
-
-	// NOTE this method would not be necessary except Spring Sessions' build does not fork
-	// the test JVM
-	// for every test class.
-	protected static boolean waitForClientCacheToClose() {
-		return waitForClientCacheToClose(DEFAULT_WAIT_DURATION);
-	}
-
-	protected static boolean waitForClientCacheToClose(long duration) {
-
-		try {
-
-			ClientCache clientCache = ClientCacheFactory.getAnyInstance();
-
-			clientCache.close();
-			waitOnCondition(clientCache::isClosed, duration);
-
-			return clientCache.isClosed();
-		}
-		catch (CacheClosedException ignore) {
-			return true;
-		}
-
-	}
-
-	protected static boolean waitForProcessToStart(Process process, File directory) {
-		return waitForProcessToStart(process, directory, DEFAULT_WAIT_DURATION);
-	}
-
-	@SuppressWarnings("all")
-	protected static boolean waitForProcessToStart(Process process, File directory, long duration) {
-
-		File processControl = new File(directory, DEFAULT_PROCESS_CONTROL_FILENAME);
-
-		waitOnCondition(new Condition() {
-			public boolean evaluate() {
-				return processControl.isFile();
-			}
-		}, duration);
-
-		return process.isAlive();
-	}
-
-	protected static int waitForProcessToStop(Process process, File directory) {
-		return waitForProcessToStop(process, directory, DEFAULT_WAIT_DURATION);
-	}
-
-	protected static int waitForProcessToStop(Process process, File directory, long duration) {
-
-		long timeout = (System.currentTimeMillis() + duration);
-
-		try {
-			while (process.isAlive() && System.currentTimeMillis() < timeout) {
-				if (process.waitFor(DEFAULT_WAIT_INTERVAL, TimeUnit.MILLISECONDS)) {
-					return process.exitValue();
-				}
-			}
-		}
-		catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
-
-		return (process.isAlive() ? -1 : process.exitValue());
-	}
-
-	protected static boolean waitOnCondition(Condition condition) {
-		return waitOnCondition(condition, DEFAULT_WAIT_DURATION);
-	}
-
-	@SuppressWarnings("all")
-	protected static boolean waitOnCondition(Condition condition, long duration) {
-
-		long timeout = (System.currentTimeMillis() + duration);
-
-		try {
-			while (!condition.evaluate() && System.currentTimeMillis() < timeout) {
-				synchronized (condition) {
-					TimeUnit.MILLISECONDS.timedWait(condition, DEFAULT_WAIT_INTERVAL);
-				}
-			}
-		}
-		catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
-
-		return condition.evaluate();
-	}
-
 	@SuppressWarnings("all")
 	protected static File writeProcessControlFile(File path) throws IOException {
 
@@ -446,10 +298,11 @@ public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSu
 		return DEFAULT_ENABLE_QUERY_DEBUGGING;
 	}
 
-	protected boolean isQueryDebuggingEnabled() {
-		return GEMFIRE_QUERY_DEBUG || enableQueryDebugging();
+	protected SessionRepository<Session> getSessionRepository() {
+		return this.sessionRepository;
 	}
 
+	@SuppressWarnings("unused")
 	protected List<String> listRegions(GemFireCache gemfireCache) {
 
 		return gemfireCache.rootRegions().stream()
@@ -457,8 +310,9 @@ public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSu
 			.collect(Collectors.toList());
 	}
 
-	protected SessionRepository<Session> getSessionRepository() {
-		return this.sessionRepository;
+	@Override
+	protected boolean withQueryDebugging() {
+		return enableQueryDebugging();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -534,18 +388,9 @@ public abstract class AbstractGemFireIntegrationTests extends IntegrationTestsSu
 
 		public <T extends AbstractSessionEvent> T waitForSessionEvent(long duration) {
 
-			waitOnCondition(() -> (SessionEventListener.this.sessionEvent != null), duration);
+			waitOn(() -> SessionEventListener.this.sessionEvent != null, duration);
 
 			return getSessionEvent();
 		}
-	}
-
-	/**
-	 * The Condition interface defines a logical condition that must be satisfied before
-	 * it is safe to proceed.
-	 */
-	@FunctionalInterface
-	protected interface Condition {
-		boolean evaluate();
 	}
 }
