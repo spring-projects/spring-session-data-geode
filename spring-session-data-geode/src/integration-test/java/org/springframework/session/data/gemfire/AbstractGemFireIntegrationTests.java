@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
+import org.mockito.Mockito;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheClosedException;
@@ -102,7 +103,18 @@ public abstract class AbstractGemFireIntegrationTests {
 
 	@Before
 	public void setup() {
+<<<<<<< HEAD
 		System.setProperty("gemfire.Query.VERBOSE", String.valueOf(isQueryDebuggingEnabled()));
+=======
+
+		this.sessionRepository = this.gemfireSessionRepository != null
+			? this.gemfireSessionRepository
+			: this.sessionRepository;
+
+		this.sessionRepository = Optional.ofNullable(this.sessionRepository)
+			.map(Mockito::spy)
+			.orElse(null);
+>>>>>>> 9f810ed... Add support to prevent SessionRepository.save(:Session) invocations for non-dirty Sessions.
 	}
 
 	protected static String buildClassPathContainingJarFiles(String... jarFilenames) {

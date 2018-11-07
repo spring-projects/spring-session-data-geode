@@ -19,10 +19,13 @@ package org.springframework.session.data.gemfire;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.geode.cache.query.SelectResults;
 
 import org.springframework.data.gemfire.GemfireOperations;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 
@@ -109,6 +112,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see org.springframework.session.Session
 	 * @see #getMaxInactiveIntervalInSeconds()
 	 */
+	@NonNull
 	public Session createSession() {
 		return GemFireSession.create(getMaxInactiveInterval());
 	}
@@ -124,6 +128,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see org.springframework.session.Session
 	 * @see #deleteById(String)
 	 */
+	@Nullable
 	public Session findById(String sessionId) {
 
 		Session storedSession = getTemplate().get(sessionId);
@@ -138,14 +143,35 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	}
 
 	/**
-	 * Saves the specified {@link Session} to GemFire.
+	 * Saves the specified {@link Session} to Apache Geode or Pivotal GemFire.
+	 *
+	 * Warning, the save method should never be called asynchronously and concurrently, from a separate Thread,
+	 * while the caller continues to modify the given {@link Session} from the forking Thread
+	 * or data loss can occur!  There is a reason why this method is blocking!
 	 *
 	 * @param session the {@link Session} to save.
 	 * @see org.springframework.data.gemfire.GemfireOperations#put(Object, Object)
 	 * @see org.springframework.session.Session
 	 */
-	public void save(Session session) {
+	public void save(@Nullable Session session) {
+
+		Optional.ofNullable(session)
+			.filter(this::isDirty)
+			.ifPresent(this::doSave);
+	}
+
+	private boolean isDirty(@NonNull Session session) {
+		return !(session instanceof GemFireSession) || ((GemFireSession) session).isDirty();
+	}
+
+	/*private*/ void doSave(@NonNull Session session) {
+
+		// Save Session As GemFireSession
 		getTemplate().put(session.getId(), GemFireSession.from(session));
+
+		if (session instanceof GemFireSession) {
+			((GemFireSession) session).commit();
+		}
 	}
 
 	/**

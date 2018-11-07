@@ -247,6 +247,17 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	}
 
 	/**
+	 * Gets a reference to the {@link GemfireOperations template} used to perform data access operations
+	 * and other interactions on the cache {@link Region} backing this {@link SessionRepository}.
+	 *
+	 * @return a reference to the {@link GemfireOperations template} used to interact with GemFire/Geode.
+	 * @see org.springframework.data.gemfire.GemfireOperations
+	 */
+	public GemfireOperations getTemplate() {
+		return this.template;
+	}
+
+	/**
 	 * Sets a condition indicating whether the DataSerialization framework has been configured.
 	 *
 	 * @param useDataSerialization boolean indicating whether the DataSerialization framework has been configured.
@@ -262,17 +273,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 */
 	protected static boolean isUsingDataSerialization() {
 		return usingDataSerialization.get();
-	}
-
-	/**
-	 * Gets a reference to the {@link GemfireOperations template} used to perform data access operations
-	 * and other interactions on the cache {@link Region} backing this {@link SessionRepository}.
-	 *
-	 * @return a reference to the {@link GemfireOperations template} used to interact with GemFire/Geode.
-	 * @see org.springframework.data.gemfire.GemfireOperations
-	 */
-	public GemfireOperations getTemplate() {
-		return this.template;
 	}
 
 	/**
@@ -613,13 +613,17 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		protected static final Duration DEFAULT_MAX_INACTIVE_INTERVAL = Duration.ZERO;
 
+		private static final String GEMFIRE_SESSION_TO_STRING =
+			"{ @type = %1$s, id = %2$s, creationTime = %3$s, lastAccessedTime = %4$s, maxInactiveInterval = %5$s, principalName = %6$s }";
+
 		protected static final String SPRING_SECURITY_CONTEXT = "SPRING_SECURITY_CONTEXT";
 
 		private transient boolean delta = false;
+		private transient boolean dirty = false;
 
 		private Duration maxInactiveInterval = DEFAULT_MAX_INACTIVE_INTERVAL;
 
-		private Instant creationTime;
+		private final Instant creationTime;
 		private Instant lastAccessedTime;
 
 		private transient final SpelExpressionParser parser = new SpelExpressionParser();
@@ -633,14 +637,16 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 
 		protected GemFireSession(String id) {
+
 			this.id = validateId(id);
 			this.creationTime = Instant.now();
+			this.dirty = true;
 			this.lastAccessedTime = this.creationTime;
 		}
 
 		protected GemFireSession(Session session) {
 
-			Assert.notNull(session, "The Session to copy cannot be null");
+			Assert.notNull(session, "The Session to copy must not be null");
 
 			this.id = session.getId();
 			this.creationTime = session.getCreationTime();
@@ -649,27 +655,31 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			this.sessionAttributes.from(session);
 		}
 
-		public static GemFireSession copy(Session session) {
-			return (isUsingDataSerialization() ? new DeltaCapableGemFireSession(session) : new GemFireSession(session));
-		}
-
 		public static GemFireSession create() {
 			return create(DEFAULT_MAX_INACTIVE_INTERVAL);
 		}
 
 		public static GemFireSession create(Duration maxInactiveInterval) {
 
-			GemFireSession session =
-				(isUsingDataSerialization() ? new DeltaCapableGemFireSession() : new GemFireSession());
+			GemFireSession session = isUsingDataSerialization()
+				? new DeltaCapableGemFireSession()
+				: new GemFireSession();
 
 			session.setMaxInactiveInterval(maxInactiveInterval);
 
 			return session;
 		}
 
+		public static GemFireSession copy(Session session) {
+
+			return isUsingDataSerialization()
+				? new DeltaCapableGemFireSession(session)
+				: new GemFireSession(session);
+		}
+
 		@SuppressWarnings("unchecked")
 		public static <T extends GemFireSession> T from(Session session) {
-			return (T) (session instanceof GemFireSession ? (GemFireSession) session : copy(session));
+			return (T) (session instanceof GemFireSession ? session : copy(session));
 		}
 
 		/**
@@ -683,10 +693,19 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 
 		private static String validateId(String id) {
-			return Optional.ofNullable(id).filter(StringUtils::hasText)
+
+			return Optional.ofNullable(id)
+				.filter(StringUtils::hasText)
 				.orElseThrow(() -> newIllegalArgumentException("ID is required"));
 		}
 
+		/**
+		 * Constructs a new {@link GemFireSessionAttributes} object to store and manage Session attributes.
+		 *
+		 * @param lock {@link Object} used as the mutex for concurrent access and Thread-safety.
+		 * @return the new {@link GemFireSessionAttributes}.
+		 * @see GemFireSessionAttributes
+		 */
 		@SuppressWarnings("unchecked")
 		protected T newSessionAttributes(Object lock) {
 			return (T) new GemFireSessionAttributes(lock);
@@ -697,6 +716,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 			this.id = generateId();
 
+			markDirty();
 			triggerDelta();
 
 			return getId();
@@ -707,16 +727,32 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 
 		public synchronized boolean hasDelta() {
-			return (this.delta || this.sessionAttributes.hasDelta());
+			return this.delta || getAttributes().hasDelta();
 		}
 
-		@SuppressWarnings("unused")
-		protected void triggerDelta() {
+		protected synchronized void triggerDelta() {
 			triggerDelta(true);
 		}
 
 		protected synchronized void triggerDelta(boolean condition) {
 			this.delta |= condition;
+		}
+
+		public synchronized void commit() {
+			this.dirty = false;
+			getAttributes().commit();
+		}
+
+		protected synchronized boolean isDirty() {
+			return this.dirty || getAttributes().isDirty();
+		}
+
+		protected synchronized void markDirty() {
+			markDirty(true);
+		}
+
+		protected synchronized void markDirty(boolean dirty) {
+			this.dirty |= dirty;
 		}
 
 		synchronized void setId(String id) {
@@ -727,24 +763,24 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			return this.id;
 		}
 
-		public void setAttribute(String attributeName, Object attributeValue) {
-			this.sessionAttributes.setAttribute(attributeName, attributeValue);
-		}
-
-		public void removeAttribute(String attributeName) {
-			this.sessionAttributes.removeAttribute(attributeName);
-		}
-
-		public <T> T getAttribute(String attributeName) {
-			return this.sessionAttributes.getAttribute(attributeName);
+		public T getAttributes() {
+			return this.sessionAttributes;
 		}
 
 		public Set<String> getAttributeNames() {
-			return this.sessionAttributes.getAttributeNames();
+			return getAttributes().getAttributeNames();
 		}
 
-		public T getAttributes() {
-			return this.sessionAttributes;
+		public void setAttribute(String attributeName, Object attributeValue) {
+			getAttributes().setAttribute(attributeName, attributeValue);
+		}
+
+		public void removeAttribute(String attributeName) {
+			getAttributes().removeAttribute(attributeName);
+		}
+
+		public <T> T getAttribute(String attributeName) {
+			return getAttributes().getAttribute(attributeName);
 		}
 
 		public synchronized Instant getCreationTime() {
@@ -757,12 +793,12 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 			Duration maxInactiveInterval = getMaxInactiveInterval();
 
-			return (isExpirationEnabled(maxInactiveInterval)
-				&& Instant.now().minus(maxInactiveInterval).isAfter(lastAccessedTime));
+			return isExpirationEnabled(maxInactiveInterval)
+				&& Instant.now().minus(maxInactiveInterval).isAfter(lastAccessedTime);
 		}
 
 		private boolean isExpirationDisabled(Duration duration) {
-			return (duration == null || duration.isNegative() || duration.isZero());
+			return duration == null || duration.isNegative() || duration.isZero();
 		}
 
 		private boolean isExpirationEnabled(Duration duration) {
@@ -770,7 +806,12 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 
 		public synchronized void setLastAccessedTime(Instant lastAccessedTime) {
-			triggerDelta(!ObjectUtils.nullSafeEquals(this.lastAccessedTime, lastAccessedTime));
+
+			boolean changed = !ObjectUtils.nullSafeEquals(this.lastAccessedTime, lastAccessedTime);
+
+			markDirty(changed);
+			triggerDelta(changed);
+
 			this.lastAccessedTime = lastAccessedTime;
 		}
 
@@ -779,7 +820,12 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 
 		public synchronized void setMaxInactiveInterval(Duration maxInactiveIntervalInSeconds) {
-			triggerDelta(!ObjectUtils.nullSafeEquals(this.maxInactiveInterval, maxInactiveIntervalInSeconds));
+
+			boolean changed = !ObjectUtils.nullSafeEquals(this.maxInactiveInterval, maxInactiveIntervalInSeconds);
+
+			markDirty(changed);
+			triggerDelta(changed);
+
 			this.maxInactiveInterval = maxInactiveIntervalInSeconds;
 		}
 
@@ -811,6 +857,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 
 		@SuppressWarnings("all")
+		@Override
 		public int compareTo(Session session) {
 			return getCreationTime().compareTo(session.getCreationTime());
 		}
@@ -844,10 +891,8 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		@Override
 		public synchronized String toString() {
 
-			return String.format("{ @type = %1$s, id = %2$s, creationTime = %3$s, lastAccessedTime = %4$s"
-				+ ", maxInactiveInterval = %5$s, principalName = %6$s }",
-				getClass().getName(), getId(), getCreationTime(), getLastAccessedTime(),
-				getMaxInactiveInterval(), getPrincipalName());
+			return String.format(GEMFIRE_SESSION_TO_STRING, getClass().getName(), getId(), getCreationTime(),
+				getLastAccessedTime(), getMaxInactiveInterval(), getPrincipalName());
 		}
 	}
 
@@ -974,6 +1019,8 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	@SuppressWarnings("serial")
 	public static class GemFireSessionAttributes extends AbstractMap<String, Object> {
 
+		private volatile transient boolean dirty = false;
+
 		private transient final Map<String, Object> sessionAttributes = new HashMap<>();
 
 		private transient final Object lock;
@@ -999,14 +1046,28 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		}
 
 		public Object setAttribute(String attributeName, Object attributeValue) {
+
 			synchronized (getLock()) {
-				return (attributeValue != null ? this.sessionAttributes.put(attributeName, attributeValue)
-					: removeAttribute(attributeName));
+				return attributeValue != null
+					? doSetAttribute(attributeName, attributeValue)
+					: removeAttribute(attributeName);
 			}
+		}
+
+		private Object doSetAttribute(String attributeName, Object attributeValue) {
+
+			Object previousAttributeValue = this.sessionAttributes.put(attributeName, attributeValue);
+
+			this.dirty |= !attributeValue.equals(previousAttributeValue);
+
+			return previousAttributeValue;
 		}
 
 		public Object removeAttribute(String attributeName) {
 			synchronized (getLock()) {
+
+				this.dirty |= this.sessionAttributes.containsKey(attributeName);
+
 				return this.sessionAttributes.remove(attributeName);
 			}
 		}
@@ -1046,6 +1107,10 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		public void clearDelta() {
 		}
 
+		public void commit() {
+			this.dirty = false;
+		}
+
 		public void from(Session session) {
 
 			synchronized (getLock()) {
@@ -1071,6 +1136,10 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		public boolean hasDelta() {
 			return false;
+		}
+
+		public boolean isDirty() {
+			return this.dirty;
 		}
 
 		@Override
