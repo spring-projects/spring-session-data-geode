@@ -25,16 +25,23 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willAnswer;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
+import static org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
+import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -42,6 +49,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -53,7 +61,6 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.gemfire.GemfireAccessor;
 import org.springframework.data.gemfire.GemfireOperations;
-import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.session.events.AbstractSessionEvent;
@@ -63,7 +70,9 @@ import org.springframework.session.events.SessionDeletedEvent;
  * Unit tests for {@link GemFireOperationsSessionRepository}.
  *
  * @author John Blum
- * @since 1.1.0
+ * @see java.time.Duration
+ * @see java.time.Instant
+ * @see java.util.UUID
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
@@ -78,6 +87,7 @@ import org.springframework.session.events.SessionDeletedEvent;
  * @see org.springframework.session.Session
  * @see org.springframework.session.events.AbstractSessionEvent
  * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
+ * @since 1.1.0
  */
 @RunWith(MockitoJUnitRunner.class)
 public class GemFireOperationsSessionRepositoryTests {
@@ -116,8 +126,28 @@ public class GemFireOperationsSessionRepositoryTests {
 		assertThat(this.sessionRepository.getMaxInactiveIntervalInSeconds()).isEqualTo(MAX_INACTIVE_INTERVAL_IN_SECONDS);
 	}
 
+	private Session mockSession() {
+
+		String sessionId = UUID.randomUUID().toString();
+
+		Instant now = Instant.now();
+
+		Duration maxInactiveInterval = Duration.ofSeconds(MAX_INACTIVE_INTERVAL_IN_SECONDS);
+
+		Session mockSession = mock(Session.class, withSettings().name(sessionId).lenient());
+
+		when(mockSession.getId()).thenReturn(sessionId);
+		when(mockSession.getAttributeNames()).thenReturn(Collections.emptySet());
+		when(mockSession.getCreationTime()).thenReturn(now);
+		when(mockSession.getLastAccessedTime()).thenReturn(now);
+		when(mockSession.getMaxInactiveInterval()).thenReturn(maxInactiveInterval);
+
+		return mockSession;
+	}
+
 	@After
 	public void tearDown() {
+
 		verify(this.mockAttributesMutator, times(1)).addCacheListener(same(this.sessionRepository));
 		verify(this.mockRegion, times(1)).getFullPath();
 		verify(this.mockTemplate, times(1)).getRegion();
@@ -125,7 +155,7 @@ public class GemFireOperationsSessionRepositoryTests {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void findByIndexNameValueFindsMatchingSession() {
+	public void findByIndexNameAndIndexValueFindsMatchingSession() {
 
 		Session mockSession = mock(Session.class, "MockSession");
 
@@ -138,8 +168,9 @@ public class GemFireOperationsSessionRepositoryTests {
 		String indexName = "vip";
 		String indexValue = "rwinch";
 
-		String expectedQql = String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_INDEX_NAME_INDEX_VALUE_QUERY,
-			this.sessionRepository.getFullyQualifiedRegionName(), indexName);
+		String expectedQql =
+			String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_INDEX_NAME_INDEX_VALUE_QUERY,
+				this.sessionRepository.getFullyQualifiedRegionName(), indexName);
 
 		given(this.mockTemplate.find(eq(expectedQql), eq(indexValue))).willReturn(mockSelectResults);
 
@@ -173,13 +204,14 @@ public class GemFireOperationsSessionRepositoryTests {
 
 		String principalName = "jblum";
 
-		String expectedOql = String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY,
-			this.sessionRepository.getFullyQualifiedRegionName());
+		String expectedOql =
+			String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY,
+				this.sessionRepository.getFullyQualifiedRegionName());
 
 		given(this.mockTemplate.find(eq(expectedOql), eq(principalName))).willReturn(mockSelectResults);
 
-		Map<String, Session> sessions = this.sessionRepository.findByIndexNameAndIndexValue(
-			FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME, principalName);
+		Map<String, Session> sessions =
+			this.sessionRepository.findByIndexNameAndIndexValue(PRINCIPAL_NAME_INDEX_NAME, principalName);
 
 		assertThat(sessions).isNotNull();
 		assertThat(sessions.size()).isEqualTo(3);
@@ -204,13 +236,14 @@ public class GemFireOperationsSessionRepositoryTests {
 
 		String principalName = "jblum";
 
-		String expectedOql = String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY,
-			this.sessionRepository.getFullyQualifiedRegionName());
+		String expectedOql =
+			String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY,
+				this.sessionRepository.getFullyQualifiedRegionName());
 
 		given(this.mockTemplate.find(eq(expectedOql), eq(principalName))).willReturn(mockSelectResults);
 
-		Map<String, Session> sessions = this.sessionRepository.findByIndexNameAndIndexValue(
-			FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME, principalName);
+		Map<String, Session> sessions =
+			this.sessionRepository.findByIndexNameAndIndexValue(PRINCIPAL_NAME_INDEX_NAME, principalName);
 
 		assertThat(sessions).isNotNull();
 		assertThat(sessions.isEmpty()).isTrue();
@@ -220,26 +253,30 @@ public class GemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void prepareQueryReturnsPrincipalNameOql() {
-
-		String actualQql =
-			this.sessionRepository.prepareQuery(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME);
-
-		String expectedOql = String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY,
-			this.sessionRepository.getFullyQualifiedRegionName());
-
-		assertThat(actualQql).isEqualTo(expectedOql);
-	}
-
-	@Test
 	public void prepareQueryReturnsIndexNameValueOql() {
 
 		String attributeName = "testAttributeName";
+
 		String actualOql = this.sessionRepository.prepareQuery(attributeName);
-		String expectedOql = String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_INDEX_NAME_INDEX_VALUE_QUERY,
-			this.sessionRepository.getFullyQualifiedRegionName(), attributeName);
+
+		String expectedOql =
+			String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_INDEX_NAME_INDEX_VALUE_QUERY,
+				this.sessionRepository.getFullyQualifiedRegionName(), attributeName);
 
 		assertThat(actualOql).isEqualTo(expectedOql);
+	}
+
+	@Test
+	public void prepareQueryReturnsPrincipalNameOql() {
+
+		String actualQql =
+			this.sessionRepository.prepareQuery(PRINCIPAL_NAME_INDEX_NAME);
+
+		String expectedOql =
+			String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY,
+				this.sessionRepository.getFullyQualifiedRegionName());
+
+		assertThat(actualQql).isEqualTo(expectedOql);
 	}
 
 	@Test
@@ -316,6 +353,7 @@ public class GemFireOperationsSessionRepositoryTests {
 
 		Session actualSession = this.sessionRepository.findById(expectedId);
 
+		assertThat(actualSession).isNotNull();
 		assertThat(actualSession).isNotSameAs(mockSession);
 		assertThat(actualSession.getId()).isEqualTo(expectedId);
 		assertThat(actualSession.getCreationTime()).isEqualTo(expectedCreationTime);
@@ -357,8 +395,8 @@ public class GemFireOperationsSessionRepositoryTests {
 		given(mockSession.getMaxInactiveInterval()).willReturn(expectedMaxInactiveInterval);
 		given(mockSession.getAttributeNames()).willReturn(Collections.emptySet());
 
-		given(this.mockTemplate.put(eq(expectedSessionId),
-			isA(AbstractGemFireOperationsSessionRepository.GemFireSession.class))).willAnswer(invocation -> {
+		given(this.mockTemplate.put(eq(expectedSessionId), isA(GemFireSession.class)))
+			.willAnswer(invocation -> {
 
 				Session session = invocation.getArgument(1);
 
@@ -380,7 +418,52 @@ public class GemFireOperationsSessionRepositoryTests {
 		verify(mockSession, times(1)).getMaxInactiveInterval();
 		verify(mockSession, times(1)).getAttributeNames();
 		verify(this.mockTemplate, times(1)).put(eq(expectedSessionId),
-			isA(AbstractGemFireOperationsSessionRepository.GemFireSession.class));
+			isA(GemFireSession.class));
+	}
+
+	@Test
+	public void saveStoresAndCommitsGemFireSession() {
+
+		GemFireSession<?> session = spy(GemFireSession.create());
+
+		assertThat(session).isNotNull();
+		assertThat(session.isDirty()).isTrue();
+
+		this.sessionRepository.save(session);
+
+		InOrder orderVerifier = inOrder(session);
+
+		orderVerifier.verify(session, times(2)).isDirty();
+		orderVerifier.verify(session, times(1)).getId();
+		orderVerifier.verify(session, times(1)).commit();
+
+		verify(this.mockTemplate, times(1)).put(eq(session.getId()), eq(session));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void saveDoesNotStoreNonDirtyGemFireSessions() {
+
+		GemFireSession session = spy(GemFireSession.from(mockSession()));
+
+		assertThat(session).isNotNull();
+		assertThat(session.hasDelta()).isFalse();
+		assertThat(session.isDirty()).isFalse();
+
+		this.sessionRepository.save(session);
+
+		verify(session, times(2)).isDirty();
+		verify(session, never()).getId();
+		verify(session, never()).commit();
+		verify(this.mockTemplate, never()).put(any(), any(GemFireSession.class));
+	}
+
+	@Test
+	public void saveIsNullSafe() {
+
+		this.sessionRepository.save(null);
+
+		verify(this.mockTemplate, never()).put(any(), any());
 	}
 
 	@Test
@@ -406,6 +489,7 @@ public class GemFireOperationsSessionRepositoryTests {
 			assertThat(sessionEvent.getSessionId()).isEqualTo(expectedSessionId);
 
 			return null;
+
 		}).given(this.mockApplicationEventPublisher).publishEvent(isA(SessionDeletedEvent.class));
 
 		this.sessionRepository.deleteById(expectedSessionId);
@@ -460,7 +544,6 @@ public class GemFireOperationsSessionRepositoryTests {
 			.publishEvent(isA(SessionDeletedEvent.class));
 	}
 
-	protected abstract class GemfireOperationsAccessor extends GemfireAccessor implements GemfireOperations {
+	protected abstract class GemfireOperationsAccessor extends GemfireAccessor implements GemfireOperations { }
 
-	}
 }

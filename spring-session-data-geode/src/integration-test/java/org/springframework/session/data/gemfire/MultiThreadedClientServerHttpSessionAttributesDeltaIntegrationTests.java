@@ -57,17 +57,17 @@ public class MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests
 
 	@Test
 	public void multiThreadedSessionOperationsAreCorrect() throws Throwable {
-		TestFramework.runOnce(new MultiThreadedSessionAccessTestCase(this));
+		TestFramework.runOnce(new MultiThreadedSessionOperationsTestCase(this));
 	}
 
 	@SuppressWarnings("unused")
-	public static class MultiThreadedSessionAccessTestCase extends MultithreadedTestCase {
+	public static class MultiThreadedSessionOperationsTestCase extends MultithreadedTestCase {
 
 		private final AtomicReference<String> sessionId = new AtomicReference<>(null);
 
 		private final MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests testInstance;
 
-		public MultiThreadedSessionAccessTestCase(
+		public MultiThreadedSessionOperationsTestCase(
 				MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests testInstance) {
 
 			this.testInstance = testInstance;
@@ -205,7 +205,7 @@ public class MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests
 		@Override
 		public void finish() {
 
-			Session session = this.testInstance.get(this.sessionId.get());
+			Session session = findById(this.sessionId.get());
 
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(this.sessionId.get());

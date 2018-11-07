@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
+import org.mockito.Mockito;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAction;
@@ -96,9 +97,13 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 	@Before
 	public void setup() {
 
-		this.sessionRepository = this.sessionRepository != null
-			? this.sessionRepository
-			: this.gemfireSessionRepository;
+		this.sessionRepository = this.gemfireSessionRepository != null
+			? this.gemfireSessionRepository
+			: this.sessionRepository;
+
+		this.sessionRepository = Optional.ofNullable(this.sessionRepository)
+			.map(Mockito::spy)
+			.orElse(null);
 	}
 
 	protected static String buildClassPathContainingJarFiles(String... jarFilenames) {

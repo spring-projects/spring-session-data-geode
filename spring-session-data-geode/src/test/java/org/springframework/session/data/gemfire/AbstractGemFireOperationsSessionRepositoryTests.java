@@ -36,6 +36,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 import static org.springframework.data.gemfire.util.CollectionUtils.asSet;
 import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSession;
 import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSessionAttributes;
@@ -49,9 +50,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
@@ -92,7 +95,6 @@ import org.apache.commons.logging.Log;
  * Unit tests for {@link AbstractGemFireOperationsSessionRepository}.
  *
  * @author John Blum
- * @since 1.1.0
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
@@ -101,12 +103,12 @@ import org.apache.commons.logging.Log;
  * @see org.mockito.Spy
  * @see org.springframework.data.gemfire.GemfireOperations
  * @see org.springframework.session.Session
- * @see org.springframework.session.Session
  * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.apache.geode.cache.Region
  * @see edu.umd.cs.mtc.MultithreadedTestCase
  * @see edu.umd.cs.mtc.TestFramework
+ * @since 1.1.0
  */
 @RunWith(MockitoJUnitRunner.class)
 public class AbstractGemFireOperationsSessionRepositoryTests {
@@ -161,6 +163,25 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	@SuppressWarnings("unchecked")
 	protected <K, V> RegionAttributes<K, V> mockRegionAttributes(String name) {
 		return mock(RegionAttributes.class, name);
+	}
+
+	private Session mockSession() {
+
+		String sessionId = UUID.randomUUID().toString();
+
+		Instant now = Instant.now();
+
+		Duration maxInactiveInterval = Duration.ofSeconds(MAX_INACTIVE_INTERVAL_IN_SECONDS);
+
+		Session mockSession = mock(Session.class, withSettings().name(sessionId).lenient());
+
+		when(mockSession.getId()).thenReturn(sessionId);
+		when(mockSession.getAttributeNames()).thenReturn(Collections.emptySet());
+		when(mockSession.getCreationTime()).thenReturn(now);
+		when(mockSession.getLastAccessedTime()).thenReturn(now);
+		when(mockSession.getMaxInactiveInterval()).thenReturn(maxInactiveInterval);
+
+		return mockSession;
 	}
 
 	protected Session mockSession(String sessionId, long creationAndLastAccessedTime,
@@ -1119,6 +1140,21 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
+	public void constructGemFireSessionWithNullId() {
+
+		try {
+			new GemFireSession((String) null);
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("ID is required");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
+	}
+
+	@Test(expected = IllegalArgumentException.class)
 	public void constructGemFireSessionWithUnspecifiedId() {
 
 		try {
@@ -1177,7 +1213,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		}
 		catch (IllegalArgumentException expected) {
 
-			assertThat(expected).hasMessage("The Session to copy cannot be null");
+			assertThat(expected).hasMessage("The Session to copy must not be null");
 			assertThat(expected).hasNoCause();
 
 			throw expected;
@@ -1293,7 +1329,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void isExpiredIsFalseWhenMaxInactiveIntervalIsNegative() {
+	public void isExpiredReturnsFalseWhenMaxInactiveIntervalIsNegative() {
 
 		Duration expectedMaxInactiveIntervalInSeconds = Duration.ofSeconds(-1);
 
@@ -1305,7 +1341,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void isExpiredIsFalseWhenMaxInactiveIntervalIsZero() {
+	public void isExpiredReturnsFalseWhenMaxInactiveIntervalIsZero() {
 
 		Duration expectedMaxInactiveIntervalInSeconds = Duration.ZERO;
 
@@ -1317,7 +1353,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void isExpiredIsFalseWhenSessionIsActive() {
+	public void isExpiredReturnsFalseWhenSessionIsActive() {
 
 		long expectedMaxInactiveIntervalInSeconds = TimeUnit.HOURS.toSeconds(2);
 
@@ -1336,7 +1372,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void isExpiredIsTrueWhenSessionIsInactive() {
+	public void isExpiredReturnsTrueWhenSessionIsInactive() {
 
 		int expectedMaxInactiveIntervalInSeconds = 60;
 
@@ -1380,12 +1416,12 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void hasDeltaWhenNoSessionChangesIsFalse() {
+	public void hasDeltaReturnsFalseWhenNoSessionChanges() {
 		assertThat(new AbstractGemFireOperationsSessionRepository.GemFireSession().hasDelta()).isFalse();
 	}
 
 	@Test
-	public void hasDeltaWhenSessionAttributesChangeIsTrue() {
+	public void hasDeltaReturnsTrueWhenSessionAttributesChange() {
 
 		GemFireSession session = new DeltaCapableGemFireSession();
 
@@ -1397,7 +1433,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void hasDeltaWhenSessionLastAccessedTimeIsUpdatedIsTrue() {
+	public void hasDeltaReturnsTrueWhenSessionLastAccessedTimeIsUpdated() {
 
 		Instant expectedLastAccessTime = Instant.ofEpochMilli(1L);
 
@@ -1419,7 +1455,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void hasDeltaWhenSessionMaxInactiveIntervalInSecondsIsUpdatedIsTrue() {
+	public void hasDeltaReturnsTrueWhenSessionMaxInactiveIntervalInSecondsIsUpdated() {
 
 		Duration expectedMaxInactiveIntervalInSeconds = Duration.ofSeconds(300L);
 
@@ -1490,7 +1526,188 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void sessionComparisons() {
+	public void isDirtyReturnsFalseWithExistingSession() {
+
+		GemFireSession<?> session = GemFireSession.from(this.mockSession);
+
+		assertThat(session).isNotNull();
+		assertThat(session.isDirty()).isFalse();
+	}
+
+	@Test
+	public void isDirtyReturnsTrueWithNewGemFireSession() {
+
+		GemFireSession<?> session = GemFireSession.create();
+
+		assertThat(session).isNotNull();
+		assertThat(session.isDirty()).isTrue();
+	}
+
+	@Test
+	public void isDirtyReturnsTrueWhenSessionAttributeIsAdded() {
+
+		GemFireSession<?> session = GemFireSession.from(this.mockSession);
+
+		assertThat(session).isNotNull();
+		assertThat(session.getAttributeNames()).isEmpty();
+		assertThat(session.isDirty()).isFalse();
+
+		session.setAttribute("attributeOne", "one");
+
+		assertThat(session.getAttributeNames()).containsExactly("attributeOne");
+		assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("one");
+		assertThat(session.isDirty()).isTrue();
+
+		session.commit();
+
+		assertThat(session.isDirty());
+	}
+
+	@Test
+	public void isDirtyReturnsTrueWhenSessionAttributeIsRemoved() {
+
+		GemFireSession<?> session = GemFireSession.create();
+
+		assertThat(session).isNotNull();
+
+		session.setAttribute("attributeOne", "one");
+		session.commit();
+
+		assertThat(session.getAttributeNames()).containsExactly("attributeOne");
+		assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("one");
+		assertThat(session.isDirty()).isFalse();
+
+		session.removeAttribute("attributeOne");
+
+		assertThat(session.getAttributeNames()).isEmpty();
+		assertThat(session.<String>getAttribute("attributeOne")).isNull();
+		assertThat(session.isDirty()).isTrue();
+
+		session.commit();
+
+		assertThat(session.isDirty());
+	}
+
+	@Test
+	public void isDirtyReturnsTrueWhenSessionAttributeIsUpdated() {
+
+		GemFireSession<?> session = GemFireSession.create();
+
+		assertThat(session).isNotNull();
+
+		session.setAttribute("attributeOne", "one");
+		session.commit();
+
+		assertThat(session.getAttributeNames()).containsExactly("attributeOne");
+		assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("one");
+		assertThat(session.isDirty()).isFalse();
+
+		session.setAttribute("attributeOne", "two");
+
+		assertThat(session.getAttributeNames()).containsExactly("attributeOne");
+		assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("two");
+		assertThat(session.isDirty()).isTrue();
+
+		session.commit();
+
+		assertThat(session.isDirty());
+	}
+
+	@Test
+	public void isDirtyReturnsTrueWhenSessionIdChanges() {
+
+		GemFireSession<?> session = GemFireSession.from(mockSession());
+
+		assertThat(session).isNotNull();
+		assertThat(session.getId()).isNotEmpty();
+		assertThat(session.isDirty()).isFalse();
+
+		String currentSessionId = session.getId();
+
+		assertThat(currentSessionId).isNotEmpty();
+		assertThat(session.changeSessionId()).isNotEqualTo(currentSessionId);
+		assertThat(session.isDirty()).isTrue();
+
+		session.commit();
+
+		assertThat(session.isDirty()).isFalse();
+	}
+
+	@Test
+	public void isDirtyReturnsTrueWhenSessionLastAccessedTimeChanges() {
+
+		GemFireSession<?> session = GemFireSession.from(mockSession());
+
+		assertThat(session).isNotNull();
+		assertThat(session.isDirty()).isFalse();
+
+		Instant lastAccessedTime = session.getLastAccessedTime();
+
+		assertThat(lastAccessedTime).isNotNull();
+
+		session.setLastAccessedTime(lastAccessedTime.plus(Duration.ofSeconds(5)));
+
+		assertThat(session.getLastAccessedTime()).isAfter(lastAccessedTime);
+		assertThat(session.isDirty()).isTrue();
+
+		session.commit();
+
+		assertThat(session.isDirty()).isFalse();
+	}
+
+	@Test
+	public void isDirtyReturnsTrueWhenSessionMaxInactiveIntervalChanges() {
+
+		GemFireSession<?> session = GemFireSession.from(mockSession());
+
+		assertThat(session).isNotNull();
+		assertThat(session.isDirty()).isFalse();
+
+		Duration maxInactiveInterval = session.getMaxInactiveInterval();
+
+		assertThat(maxInactiveInterval).isNotNull();
+
+		session.setMaxInactiveInterval(maxInactiveInterval.plus(Duration.ofSeconds(5)));
+
+		assertThat(session.getMaxInactiveInterval()).isGreaterThan(maxInactiveInterval);
+		assertThat(session.isDirty()).isTrue();
+
+		session.commit();
+
+		assertThat(session.isDirty()).isFalse();
+	}
+
+	@Test
+	public void isDirtyReturnsTrueWhenSessionIsDirtyAndAttributesAreNotModifiedOnSubsequentUpdate() {
+
+		GemFireSession<?> session = GemFireSession.from(mockSession());
+
+		assertThat(session).isNotNull();
+		assertThat(session.isDirty()).isFalse();
+
+		String previousSessionId = session.getId();
+
+		Instant newLastAccessedTime = session.getLastAccessedTime().plusSeconds(5L);
+
+		Duration newMaxLastInactiveInterval = session.getMaxInactiveInterval().plusSeconds(5L);
+
+		assertThat(session.changeSessionId()).isNotEqualTo(previousSessionId);
+
+		session.setAttribute("attributeOne", "testOne");
+		session.setLastAccessedTime(newLastAccessedTime);
+		session.setMaxInactiveInterval(newMaxLastInactiveInterval);
+
+		assertThat(session.isDirty()).isTrue();
+
+		session.setAttribute("attributeOne", "testOne");
+		session.setLastAccessedTime(newLastAccessedTime);
+		session.setMaxInactiveInterval(newMaxLastInactiveInterval);
+
+		assertThat(session.isDirty()).isTrue();
+	}
+
+	@Test
+	public void sessionCompareTo() {
 
 		Instant twoHoursAgo = Instant.now().minusMillis(TimeUnit.HOURS.toMillis(2));
 
@@ -1537,23 +1754,56 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		assertThat(session.hashCode()).isNotEqualTo("1".hashCode());
 	}
 
+	@Test @SuppressWarnings("unchecked")
+	public void sessionToStringContainsId() {
+
+		Session mockSession = mockSession();
+
+		GemFireSession session = GemFireSession.from(mockSession);
+
+		assertThat(session).isNotNull();
+		assertThat(session.getId()).isEqualTo(mockSession.getId());
+		assertThat(session.toString()).startsWith(String.format("{ @type = %1$s, id = %2$s",
+			session.getClass().getName(), session.getId()));
+	}
+
+	@Test
+	public void sessionAttributesFromMap() {
+
+		Map<String, Object> source = new HashMap<>();
+
+		source.put("attrOne", "testOne");
+		source.put("attrTwo", "testTwo");
+
+		GemFireSessionAttributes target = new GemFireSessionAttributes();
+
+		assertThat(target.getAttributeNames()).isEmpty();
+
+		target.from(source);
+
+		assertThat(target.getAttributeNames().size()).isEqualTo(2);
+		assertThat(target.getAttributeNames()).containsOnly("attrOne", "attrTwo");
+		assertThat(target.<String>getAttribute("attrOne")).isEqualTo("testOne");
+		assertThat(target.<String>getAttribute("attrTwo")).isEqualTo("testTwo");
+	}
+
 	@Test
 	public void sessionAttributesFromSession() {
 
 		Session mockSession = mock(Session.class);
 
-		given(mockSession.getAttributeNames()).willReturn(asSet("attrOne", "attrTwo"));
-		given(mockSession.getAttribute(eq("attrOne"))).willReturn("testOne");
-		given(mockSession.getAttribute(eq("attrTwo"))).willReturn("testTwo");
+		when(mockSession.getAttributeNames()).thenReturn(asSet("attrOne", "attrTwo"));
+		when(mockSession.getAttribute(eq("attrOne"))).thenReturn("testOne");
+		when(mockSession.getAttribute(eq("attrTwo"))).thenReturn("testTwo");
 
 		GemFireSessionAttributes sessionAttributes = new GemFireSessionAttributes();
 
-		assertThat(sessionAttributes.getAttributeNames().isEmpty()).isTrue();
+		assertThat(sessionAttributes.getAttributeNames()).isEmpty();
 
 		sessionAttributes.from(mockSession);
 
 		assertThat(sessionAttributes.getAttributeNames().size()).isEqualTo(2);
-		assertThat(sessionAttributes.getAttributeNames().containsAll(asSet("attrOne", "attrTwo"))).isTrue();
+		assertThat(sessionAttributes.getAttributeNames()).containsOnly("attrOne", "attrTwo");
 		assertThat(sessionAttributes.<String>getAttribute("attrOne")).isEqualTo("testOne");
 		assertThat(sessionAttributes.<String>getAttribute("attrTwo")).isEqualTo("testTwo");
 
@@ -1565,31 +1815,180 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	@Test
 	public void sessionAttributesFromSessionAttributes() {
 
-		AbstractGemFireOperationsSessionRepository.GemFireSessionAttributes source =
-			new AbstractGemFireOperationsSessionRepository.GemFireSessionAttributes();
+		GemFireSessionAttributes source = new GemFireSessionAttributes();
 
 		source.setAttribute("attrOne", "testOne");
 		source.setAttribute("attrTwo", "testTwo");
 
 		GemFireSessionAttributes target = new GemFireSessionAttributes();
 
-		assertThat(target.getAttributeNames().isEmpty()).isTrue();
+		assertThat(target.getAttributeNames()).isEmpty();
 
 		target.from(source);
 
 		assertThat(target.getAttributeNames().size()).isEqualTo(2);
-		assertThat(target.getAttributeNames().containsAll(asSet("attrOne", "attrTwo"))).isTrue();
+		assertThat(target.getAttributeNames()).containsOnly("attrOne", "attrTwo");
 		assertThat(target.<String>getAttribute("attrOne")).isEqualTo("testOne");
 		assertThat(target.<String>getAttribute("attrTwo")).isEqualTo("testTwo");
 	}
 
 	@Test
-	public void sessionAttributesHasDeltaIsFalse() {
-		assertThat(new AbstractGemFireOperationsSessionRepository.GemFireSessionAttributes().hasDelta()).isFalse();
+	public void sessionAttributesIsDirtyReturnsTrueOnSetWhenAdd() {
+
+		GemFireSessionAttributes sessionAttributes = new GemFireSessionAttributes();
+
+		assertThat(sessionAttributes.getAttributeNames()).isEmpty();
+		assertThat(sessionAttributes.isDirty()).isFalse();
+
+		sessionAttributes.setAttribute("attributeOne", "testOne");
+
+		// Set attribute to the same value again to make sure it does not clear the dirty bit
+		sessionAttributes.setAttribute("attributeOne", "testOne");
+
+		assertThat(sessionAttributes.getAttributeNames()).containsExactly("attributeOne");
+		assertThat(sessionAttributes.<String>getAttribute("attributeOne")).isEqualTo("testOne");
+		assertThat(sessionAttributes.isDirty()).isTrue();
+
+		sessionAttributes.commit();
+
+		assertThat(sessionAttributes.isDirty()).isFalse();
 	}
 
 	@Test
-	public void sessionAttributesHasDeltaIsTrue() {
+	public void sessionAttributesIsDirtyReturnsTrueOnSetWhenModified() {
+
+		GemFireSessionAttributes sessionAttributes = new GemFireSessionAttributes();
+
+		sessionAttributes.from(Collections.singletonMap("attributeOne", "testOne"));
+		sessionAttributes.commit();
+
+		assertThat(sessionAttributes.getAttributeNames()).containsExactly("attributeOne");
+		assertThat(sessionAttributes.<String>getAttribute("attributeOne")).isEqualTo("testOne");
+		assertThat(sessionAttributes.isDirty()).isFalse();
+
+		sessionAttributes.setAttribute("attributeOne", "testTwo");
+
+		assertThat(sessionAttributes.getAttributeNames()).containsExactly("attributeOne");
+		assertThat(sessionAttributes.<String>getAttribute("attributeOne")).isEqualTo("testTwo");
+		assertThat(sessionAttributes.isDirty()).isTrue();
+
+		sessionAttributes.commit();
+
+		assertThat(sessionAttributes.isDirty()).isFalse();
+	}
+
+	@Test
+	public void sessionAttributesIsDirtyReturnsFalseOnSetWhenNotModified() {
+
+		GemFireSessionAttributes sessionAttributes = new GemFireSessionAttributes();
+
+		sessionAttributes.from(Collections.singletonMap("attributeOne", "testOne"));
+		sessionAttributes.commit();
+
+		assertThat(sessionAttributes.getAttributeNames()).containsExactly("attributeOne");
+		assertThat(sessionAttributes.<String>getAttribute("attributeOne")).isEqualTo("testOne");
+		assertThat(sessionAttributes.isDirty()).isFalse();
+
+		sessionAttributes.setAttribute("attributeOne", "testOne");
+
+		assertThat(sessionAttributes.getAttributeNames()).containsExactly("attributeOne");
+		assertThat(sessionAttributes.<String>getAttribute("attributeOne")).isEqualTo("testOne");
+		assertThat(sessionAttributes.isDirty()).isFalse();
+
+		sessionAttributes.commit();
+
+		assertThat(sessionAttributes.isDirty()).isFalse();
+	}
+
+	@Test
+	public void sessionAttributesIsDirtyReturnsTrueOnSetWhenRemoved() {
+
+		GemFireSessionAttributes sessionAttributes = new GemFireSessionAttributes();
+
+		sessionAttributes.from(Collections.singletonMap("attributeOne", "testOne"));
+		sessionAttributes.commit();
+
+		assertThat(sessionAttributes.getAttributeNames()).containsExactly("attributeOne");
+		assertThat(sessionAttributes.<String>getAttribute("attributeOne")).isEqualTo("testOne");
+		assertThat(sessionAttributes.isDirty()).isFalse();
+
+		sessionAttributes.setAttribute("attributeOne", null);
+
+		assertThat(sessionAttributes.getAttributeNames()).isEmpty();
+		assertThat(sessionAttributes.<String>getAttribute("attributeOne")).isNull();
+		assertThat(sessionAttributes.isDirty()).isTrue();
+
+		sessionAttributes.commit();
+
+		assertThat(sessionAttributes.isDirty()).isFalse();
+	}
+
+	@Test
+	public void sessionAttributesIsDirtyReturnsTrueOnRemove() {
+
+		GemFireSessionAttributes sessionAttributes = new GemFireSessionAttributes();
+
+		sessionAttributes.from(Collections.singletonMap("attributeOne", "testOne"));
+		sessionAttributes.commit();
+
+		assertThat(sessionAttributes.getAttributeNames()).containsExactly("attributeOne");
+		assertThat(sessionAttributes.<String>getAttribute("attributeOne")).isEqualTo("testOne");
+		assertThat(sessionAttributes.isDirty()).isFalse();
+
+		sessionAttributes.removeAttribute("attributeOne");
+
+		// Remove attribute again to make sure it does not clear the dirty bit
+		sessionAttributes.removeAttribute("attributeOne");
+
+		assertThat(sessionAttributes.getAttributeNames()).isEmpty();
+		assertThat(sessionAttributes.<String>getAttribute("attributeOne")).isNull();
+		assertThat(sessionAttributes.isDirty()).isTrue();
+
+		sessionAttributes.commit();
+
+		assertThat(sessionAttributes.isDirty()).isFalse();
+	}
+
+	@Test
+	public void sessionAttributesIsDirtyReturnsFalseOnRemoveForNonExistingAttribute() {
+
+		GemFireSessionAttributes sessionAttributes = new GemFireSessionAttributes();
+
+		sessionAttributes.from(Collections.singletonMap("attributeOne", "testOne"));
+		sessionAttributes.commit();
+
+		assertThat(sessionAttributes.getAttributeNames()).containsExactly("attributeOne");
+		assertThat(sessionAttributes.<String>getAttribute("attributeOne")).isEqualTo("testOne");
+		assertThat(sessionAttributes.isDirty()).isFalse();
+
+		sessionAttributes.removeAttribute("nonExistingAttribute");
+
+		assertThat(sessionAttributes.getAttributeNames()).containsExactly("attributeOne");
+		assertThat(sessionAttributes.<String>getAttribute("attributeOne")).isEqualTo("testOne");
+		assertThat(sessionAttributes.isDirty()).isFalse();
+	}
+
+	@Test
+	public void sessionAttributesIsDirtyReturnsFalseOnRemoveForNullAttribute() {
+
+		GemFireSessionAttributes sessionAttributes = new GemFireSessionAttributes();
+
+		assertThat(sessionAttributes.getAttributeNames()).isEmpty();
+		assertThat(sessionAttributes.isDirty()).isFalse();
+
+		sessionAttributes.removeAttribute(null);
+
+		assertThat(sessionAttributes.getAttributeNames()).isEmpty();
+		assertThat(sessionAttributes.isDirty()).isFalse();
+	}
+
+	@Test
+	public void sessionAttributesHasDeltaReturnsFalse() {
+		assertThat(new GemFireSessionAttributes().hasDelta()).isFalse();
+	}
+
+	@Test
+	public void sessionAttributesHasDeltaReturnsTrue() {
 
 		GemFireSessionAttributes sessionAttributes = new DeltaCapableGemFireSessionAttributes();
 
@@ -1900,6 +2299,6 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		}
 	}
 
-	static class Tombstone {
-	}
+	static class Tombstone { }
+
 }
