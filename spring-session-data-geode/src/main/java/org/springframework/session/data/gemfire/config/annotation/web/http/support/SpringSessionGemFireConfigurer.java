@@ -101,6 +101,7 @@ public interface SpringSessionGemFireConfigurer {
 	 * @return the name of the {@link Pool} used by the {@link ClientCache} {@link Region}
 	 * to send {@link Session} state to the cluster of servers.
 	 * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration#DEFAULT_POOL_NAME
+	 * @see org.apache.geode.cache.client.Pool#getName()
 	 */
 	default String getPoolName() {
 		return GemFireHttpSessionConfiguration.DEFAULT_POOL_NAME;
@@ -114,6 +115,7 @@ public interface SpringSessionGemFireConfigurer {
 	 * @return a {@link String} specifying the name of the (client)cache {@link Region}
 	 * used to store {@link Session} state.
 	 * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration#DEFAULT_SESSION_REGION_NAME
+	 * @see org.apache.geode.cache.Region#getName()
 	 */
 	default String getRegionName() {
 		return GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME;
@@ -142,6 +144,7 @@ public interface SpringSessionGemFireConfigurer {
 	 * Defaults to unset.
 
 	 * @return a {@link String} containing the bean name of the configured {@link SessionExpirationPolicy}.
+	 * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration#DEFAULT_SESSION_EXPIRATION_POLICY_BEAN_NAME
 	 * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy
 	 */
 	default String getSessionExpirationPolicyBeanName() {
