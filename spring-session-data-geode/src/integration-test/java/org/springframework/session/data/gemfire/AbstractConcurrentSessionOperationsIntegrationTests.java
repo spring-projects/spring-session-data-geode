@@ -20,17 +20,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
 
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
+import org.springframework.util.ObjectUtils;
 
 /**
  * The {@link AbstractConcurrentSessionOperationsIntegrationTests} class is an abstract base class encapsulating
@@ -56,33 +62,49 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 
 		private final AbstractConcurrentSessionOperationsIntegrationTests testInstance;
 
+		private final GemFireOperationsSessionRepository sessionRepository;
+
 		protected AbstractConcurrentSessionOperationsTestCase(
-				AbstractConcurrentSessionOperationsIntegrationTests testInstance) {
+				@NonNull AbstractConcurrentSessionOperationsIntegrationTests testInstance) {
 
 			assertThat(testInstance).as("Test class instance must not be null").isNotNull();
 
 			this.testInstance = testInstance;
+
+			SessionRepository<?> sessionRepository = this.testInstance.getSessionRepository();
+
+			this.sessionRepository = Optional.ofNullable(sessionRepository)
+				.filter(GemFireOperationsSessionRepository.class::isInstance)
+				.map(GemFireOperationsSessionRepository.class::cast)
+				.map(Mockito::spy)
+				.orElseThrow(() -> newIllegalArgumentException("Expected SessionRepository of type [%1$s]; but was [%2$s]",
+					ObjectUtils.nullSafeClassName(sessionRepository), GemFireOperationsSessionRepository.class.getName()));
 		}
 
+		@NonNull @SuppressWarnings("unused")
 		protected AbstractConcurrentSessionOperationsIntegrationTests getTestInstance() {
 			return this.testInstance;
 		}
 
-		@SuppressWarnings("unchecked")
-		protected <T extends SessionRepository<? extends Session>> T getSessionRepository() {
-			return (T) getTestInstance().getSessionRepository();
+		@NonNull
+		protected GemFireOperationsSessionRepository getSessionRepository() {
+			return this.sessionRepository;
 		}
 
+		@Nullable
 		protected Session findById(String id) {
-			return getTestInstance().get(id);
+			return getSessionRepository().findById(id);
 		}
 
+		@NonNull
 		protected Session newSession() {
-			return getTestInstance().createSession();
+			return getSessionRepository().createSession();
 		}
 
-		protected <T extends Session> T save(T session) {
-			return getTestInstance().save(session);
+		@Nullable
+		protected <T extends Session> T save(@Nullable T session) {
+			getSessionRepository().save(session);
+			return session;
 		}
 	}
 

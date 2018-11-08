@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
-import org.mockito.Mockito;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAction;
@@ -62,12 +61,14 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.query.Index
+ * @see org.junit.Test
  * @see org.springframework.data.gemfire.tests.integration.ForkingClientServerIntegrationTestsSupport
  * @see org.springframework.session.Session
  * @see org.springframework.session.SessionRepository
  * @see org.springframework.session.events.AbstractSessionEvent
  * @since 1.1.0
  */
+@SuppressWarnings("unused")
 public abstract class AbstractGemFireIntegrationTests extends ForkingClientServerIntegrationTestsSupport {
 
 	protected static final boolean DEFAULT_ENABLE_QUERY_DEBUGGING = false;
@@ -100,10 +101,6 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 		this.sessionRepository = this.gemfireSessionRepository != null
 			? this.gemfireSessionRepository
 			: this.sessionRepository;
-
-		this.sessionRepository = Optional.ofNullable(this.sessionRepository)
-			.map(Mockito::spy)
-			.orElse(null);
 	}
 
 	protected static String buildClassPathContainingJarFiles(String... jarFilenames) {
