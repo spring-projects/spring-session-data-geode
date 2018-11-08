@@ -1,4 +1,4 @@
-dependencyManagement {
+	dependencyManagement {
 	imports {
 		mavenBom "org.springframework.boot:spring-boot-dependencies:$springBootVersion"
 	}
@@ -9,6 +9,7 @@ dependencyManagement {
 		dependency "org.apache.taglibs:taglibs-standard-impl:$apacheTaglibsStandardVersion"
 		dependency "org.apache.taglibs:taglibs-standard-jstlel:$apacheTaglibsStandardVersion"
 		dependency "org.apache.taglibs:taglibs-standard-spec:$apacheTaglibsStandardVersion"
+		dependency "org.mockito:mockito-core:$mockitoVersion"
 		dependency "org.springframework.data:spring-data-geode-test:$springDataGeodeTestVersion"
 		dependency "org.springframework.shell:spring-shell:$springShellVersion"
 		dependency 'org.webjars:bootstrap:2.3.2'
