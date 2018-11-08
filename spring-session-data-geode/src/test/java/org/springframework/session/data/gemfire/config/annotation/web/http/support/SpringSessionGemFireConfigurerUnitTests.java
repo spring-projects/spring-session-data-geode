@@ -76,11 +76,6 @@ public class SpringSessionGemFireConfigurerUnitTests {
 			}
 
 			@Override
-			public String getSessionExpirationPolicyBeanName() {
-				return "MockExpirationPolicy";
-			}
-
-			@Override
 			public String getSessionSerializerBeanName() {
 				return "MockSerializer";
 			}
@@ -142,7 +137,6 @@ public class SpringSessionGemFireConfigurerUnitTests {
 		assertThat(testConfigurer.getPoolName()).isEqualTo("MockPool");
 		assertThat(testConfigurer.getRegionName()).isEqualTo("MockRegion");
 		assertThat(testConfigurer.getServerRegionShortcut()).isEqualTo(RegionShortcut.REPLICATE);
-		assertThat(testConfigurer.getSessionExpirationPolicyBeanName()).isEqualTo("MockExpirationPolicy");
 		assertThat(testConfigurer.getSessionSerializerBeanName()).isEqualTo("MockSerializer");
 
 		Method[] declaredMethods = filterDeclaredMethods(testConfigurer.getClass().getDeclaredMethods());
@@ -151,12 +145,12 @@ public class SpringSessionGemFireConfigurerUnitTests {
 			Arrays.stream(declaredMethods).map(Method::getName).sorted().collect(Collectors.toList());
 
 		assertThat(declaredMethods).isNotNull();
-		assertThat(declaredMethods).hasSize(8);
+		assertThat(declaredMethods).hasSize(7);
 
 		assertThat(declaredMethodNames)
 			.containsExactly("getClientRegionShortcut", "getIndexableSessionAttributes",
 				"getMaxInactiveIntervalInSeconds", "getPoolName", "getRegionName", "getServerRegionShortcut",
-				"getSessionExpirationPolicyBeanName", "getSessionSerializerBeanName");
+				"getSessionSerializerBeanName");
 	}
 
 	@Test
@@ -177,8 +171,6 @@ public class SpringSessionGemFireConfigurerUnitTests {
 			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
 		assertThat(testConfigurer.getServerRegionShortcut())
 			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SERVER_REGION_SHORTCUT);
-		assertThat(testConfigurer.getSessionExpirationPolicyBeanName())
-			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SESSION_EXPIRATION_POLICY_BEAN_NAME);
 		assertThat(testConfigurer.getSessionSerializerBeanName())
 			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SESSION_SERIALIZER_BEAN_NAME);
 
@@ -200,7 +192,6 @@ public class SpringSessionGemFireConfigurerUnitTests {
 		assertThat(testConfigurer.getPoolName()).isEqualTo("TestPool");
 		assertThat(testConfigurer.getRegionName()).isEqualTo("TestRegion");
 		assertThat(testConfigurer.getServerRegionShortcut()).isEqualTo(RegionShortcut.PARTITION);
-		assertThat(testConfigurer.getSessionExpirationPolicyBeanName()).isEmpty();
 		assertThat(testConfigurer.getSessionSerializerBeanName())
 			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SESSION_SERIALIZER_BEAN_NAME);
 
@@ -213,11 +204,9 @@ public class SpringSessionGemFireConfigurerUnitTests {
 		assertThat(declaredMethods).hasSize(4);
 
 		assertThat(declaredMethodNames)
-			.containsExactly("getClientRegionShortcut", "getMaxInactiveIntervalInSeconds",
-				"getPoolName", "getRegionName");
+			.containsExactly("getClientRegionShortcut", "getMaxInactiveIntervalInSeconds", "getPoolName", "getRegionName");
 
 		assertThat(declaredMethodNames)
-			.doesNotContain("getIndexableSessionAttributes", "getServerRegionShortcut",
-				"getSessionExpirationPolicyBeanName", "getSessionSerializerBeanName");
+			.doesNotContain("getIndexableSessionAttributes", "getServerRegionShortcut", "getSessionSerializerBeanName");
 	}
 }

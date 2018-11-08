@@ -157,9 +157,6 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	public static final String CONFIGURER_GET_SERVER_REGION_SHORTCUT_METHOD_NAME =
 		findByMethodName(SpringSessionGemFireConfigurer.class, "getServerRegionShortcut");
 
-	public static final String CONFIGURER_GET_SESSION_EXPIRATION_POLICY_BEAN_NAME_METHOD_NAME =
-		findByMethodName(SpringSessionGemFireConfigurer.class, "getSessionExpirationPolicyBeanName");
-
 	public static final String CONFIGURER_GET_SESSION_SERIALIZER_BEAN_NAME_METHOD_NAME =
 		findByMethodName(SpringSessionGemFireConfigurer.class, "getSessionSerializerBeanName");
 
