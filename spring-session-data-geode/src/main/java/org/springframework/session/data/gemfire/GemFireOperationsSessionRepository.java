@@ -166,12 +166,20 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 
 	/*private*/ void doSave(@NonNull Session session) {
 
-		// Save Session As GemFireSession
-		getTemplate().put(session.getId(), GemFireSession.from(session));
+		GemFireSession sessionToSave = isUsingEagerCommit()
+			? GemFireSession.copyCommitted(session)
+			: GemFireSession.from(session);
 
-		if (session instanceof GemFireSession) {
+		// Save Session As GemFireSession
+		getTemplate().put(session.getId(), sessionToSave);
+
+		if (isCommittable(session)) {
 			((GemFireSession) session).commit();
 		}
+	}
+
+	private boolean isCommittable(@Nullable Session session) {
+		return !isUsingEagerCommit() && session instanceof GemFireSession;
 	}
 
 	/**

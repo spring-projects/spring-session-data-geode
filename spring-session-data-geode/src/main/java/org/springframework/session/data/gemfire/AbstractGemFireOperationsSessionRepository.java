@@ -106,6 +106,7 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 		implements ApplicationEventPublisherAware, FindByIndexNameSessionRepository<Session>, InitializingBean {
 
 	private static final AtomicBoolean usingDataSerialization = new AtomicBoolean(false);
+	private static final AtomicBoolean usingEagerCommit = new AtomicBoolean(false);
 
 	private ApplicationEventPublisher applicationEventPublisher = event -> {};
 
@@ -273,6 +274,25 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	 */
 	protected static boolean isUsingDataSerialization() {
 		return usingDataSerialization.get();
+	}
+
+	/**
+	 * Set a condition to determine whether a {@link Session} is copied and committed before saving.
+	 *
+	 * @param useEagerCommit boolean to determine whether to copy and commit a {@link Session} before saving.
+	 */
+	@SuppressWarnings("unused")
+	public void setUseEagerCommit(boolean useEagerCommit) {
+		usingEagerCommit.set(useEagerCommit);
+	}
+
+	/**
+	 * Determines whether a {@link Session} is copied and committed before saving.
+	 *
+	 * @return a boolean value indicating whether a {@link Session} is copied and committed before saving.
+	 */
+	protected boolean isUsingEagerCommit() {
+		return usingEagerCommit.get();
 	}
 
 	/**
@@ -675,6 +695,21 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			return isUsingDataSerialization()
 				? new DeltaCapableGemFireSession(session)
 				: new GemFireSession(session);
+		}
+
+		@SuppressWarnings("all")
+		public static GemFireSession copyCommitted(Session session) {
+
+			synchronized (session) {
+
+				GemFireSession sessionCopy = copy(session);
+
+				if (session instanceof GemFireSession) {
+					((GemFireSession) session).commit();
+				}
+
+				return sessionCopy;
+			}
 		}
 
 		@SuppressWarnings("unchecked")
