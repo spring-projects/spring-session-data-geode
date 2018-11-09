@@ -116,14 +116,19 @@ public class GemFireOperationsSessionRepositoryTests {
 		when(this.mockRegion.getFullPath()).thenReturn(GemFireUtils.toRegionPath("Example"));
 		when(this.mockTemplate.<Object, Session>getRegion()).thenReturn(this.mockRegion);
 
-		this.sessionRepository = new GemFireOperationsSessionRepository(this.mockTemplate);
+		this.sessionRepository = spy(new GemFireOperationsSessionRepository(this.mockTemplate));
 		this.sessionRepository.setApplicationEventPublisher(this.mockApplicationEventPublisher);
 		this.sessionRepository.setMaxInactiveIntervalInSeconds(MAX_INACTIVE_INTERVAL_IN_SECONDS);
+		this.sessionRepository.setUseDataSerialization(false);
+		this.sessionRepository.setUseEagerCommit(false);
 		this.sessionRepository.afterPropertiesSet();
 
 		assertThat(this.sessionRepository.getApplicationEventPublisher()).isSameAs(this.mockApplicationEventPublisher);
 		assertThat(this.sessionRepository.getFullyQualifiedRegionName()).isEqualTo(GemFireUtils.toRegionPath("Example"));
 		assertThat(this.sessionRepository.getMaxInactiveIntervalInSeconds()).isEqualTo(MAX_INACTIVE_INTERVAL_IN_SECONDS);
+		assertThat(this.sessionRepository.getTemplate()).isSameAs(this.mockTemplate);
+		assertThat(GemFireOperationsSessionRepository.isUsingDataSerialization()).isFalse();
+		assertThat(this.sessionRepository.isUsingEagerCommit()).isFalse();
 	}
 
 	private Session mockSession() {
@@ -378,6 +383,14 @@ public class GemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
+	public void saveIsNullSafe() {
+
+		this.sessionRepository.save(null);
+
+		verify(this.mockTemplate, never()).put(any(), any());
+	}
+
+	@Test
 	public void saveStoresSession() {
 
 		String expectedSessionId = "1";
@@ -389,14 +402,14 @@ public class GemFireOperationsSessionRepositoryTests {
 
 		Session mockSession = mock(Session.class);
 
-		given(mockSession.getId()).willReturn(expectedSessionId);
-		given(mockSession.getCreationTime()).willReturn(expectedCreationTime);
-		given(mockSession.getLastAccessedTime()).willReturn(expectedLastAccessTime);
-		given(mockSession.getMaxInactiveInterval()).willReturn(expectedMaxInactiveInterval);
-		given(mockSession.getAttributeNames()).willReturn(Collections.emptySet());
+		when(mockSession.getId()).thenReturn(expectedSessionId);
+		when(mockSession.getCreationTime()).thenReturn(expectedCreationTime);
+		when(mockSession.getLastAccessedTime()).thenReturn(expectedLastAccessTime);
+		when(mockSession.getMaxInactiveInterval()).thenReturn(expectedMaxInactiveInterval);
+		when(mockSession.getAttributeNames()).thenReturn(Collections.emptySet());
 
-		given(this.mockTemplate.put(eq(expectedSessionId), isA(GemFireSession.class)))
-			.willAnswer(invocation -> {
+		when(this.mockTemplate.put(eq(expectedSessionId), isA(GemFireSession.class)))
+			.thenAnswer(invocation -> {
 
 				Session session = invocation.getArgument(1);
 
@@ -422,7 +435,9 @@ public class GemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void saveStoresAndCommitsGemFireSession() {
+	public void saveStoresAndThenCommitsGemFireSession() {
+
+		assertThat(this.sessionRepository.isUsingEagerCommit()).isFalse();
 
 		GemFireSession<?> session = spy(GemFireSession.create());
 
@@ -438,11 +453,12 @@ public class GemFireOperationsSessionRepositoryTests {
 		orderVerifier.verify(session, times(1)).commit();
 
 		verify(this.mockTemplate, times(1)).put(eq(session.getId()), eq(session));
+		verify(this.mockTemplate, times(1)).put(eq(session.getId()), same(session));
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void saveDoesNotStoreNonDirtyGemFireSessions() {
+	public void saveWillNotStoreNonDirtyGemFireSessions() {
 
 		GemFireSession session = spy(GemFireSession.from(mockSession()));
 
@@ -459,11 +475,98 @@ public class GemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void saveIsNullSafe() {
+	public void saveEagerlyCommitsAndThenStoresSession() {
 
-		this.sessionRepository.save(null);
+		this.sessionRepository.setUseEagerCommit(true);
 
-		verify(this.mockTemplate, never()).put(any(), any());
+		assertThat(this.sessionRepository.isUsingEagerCommit()).isTrue();
+
+		GemFireSession<?> session = spy(GemFireSession.create());
+
+		assertThat(session).isNotNull();
+		assertThat(session.getId()).isNotEmpty();
+		assertThat(session.isDirty()).isTrue();
+		assertThat(session.hasDelta()).isFalse();
+		assertThat(session.isExpired()).isFalse();
+
+		when(this.mockTemplate.put(anyString(), any(GemFireSession.class))).thenAnswer(invocation -> {
+
+			String sessionId = invocation.getArgument(0);
+			GemFireSession<?> sessionToSave = invocation.getArgument(1);
+
+			assertThat(sessionId).isEqualTo(session.getId());
+			assertThat(sessionId).isEqualTo(sessionToSave.getId());
+			assertThat(sessionToSave).isNotSameAs(session);
+
+			return sessionToSave;
+		});
+
+		this.sessionRepository.save(session);
+
+		assertThat(session.isDirty()).isFalse();
+		assertThat(session.isExpired()).isFalse();
+
+		InOrder orderVerifier = inOrder(session);
+
+		orderVerifier.verify(session, times(1)).isDirty();
+		orderVerifier.verify(session, times(1)).commit();
+		orderVerifier.verify(session, times(2)).getId();
+
+		verify(this.sessionRepository, times(1)).doSave(eq(session));
+		verify(this.mockTemplate, times(1)).put(eq(session.getId()), isA(GemFireSession.class));
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void saveEagerlyCommitsStoresSessionAndResetsDirtyBitOnRuntimeException() {
+
+		this.sessionRepository.setUseEagerCommit(true);
+
+		assertThat(this.sessionRepository.isUsingEagerCommit()).isTrue();
+
+		GemFireSession<?> session = spy(GemFireSession.create());
+
+		assertThat(session).isNotNull();
+		assertThat(session.getId()).isNotEmpty();
+		assertThat(session.isDirty()).isTrue();
+		assertThat(session.hasDelta()).isFalse();
+		assertThat(session.isExpired()).isFalse();
+
+		when(this.mockTemplate.put(anyString(), any(GemFireSession.class))).thenAnswer(invocation -> {
+
+			String sessionId = invocation.getArgument(0);
+			GemFireSession<?> sessionToSave = invocation.getArgument(1);
+
+			assertThat(sessionId).isEqualTo(session.getId());
+			assertThat(sessionId).isEqualTo(sessionToSave.getId());
+			assertThat(sessionToSave).isNotSameAs(session);
+
+			throw new RuntimeException("TEST");
+		});
+
+		try {
+			this.sessionRepository.save(session);
+		}
+		catch (Exception expected) {
+
+			assertThat(expected).hasMessage("TEST");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
+		finally {
+
+			assertThat(session.isDirty()).isTrue();
+			assertThat(session.isExpired()).isFalse();
+
+			InOrder orderVerifier = inOrder(session);
+
+			orderVerifier.verify(session, times(1)).isDirty();
+			orderVerifier.verify(session, times(1)).commit();
+			orderVerifier.verify(session, times(2)).getId();
+
+			verify(this.sessionRepository, times(1)).doSave(eq(session));
+			verify(this.mockTemplate, times(1)).put(eq(session.getId()), isA(GemFireSession.class));
+		}
 	}
 
 	@Test

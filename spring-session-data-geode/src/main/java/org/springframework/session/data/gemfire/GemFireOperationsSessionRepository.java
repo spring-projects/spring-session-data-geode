@@ -166,20 +166,36 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 
 	/*private*/ void doSave(@NonNull Session session) {
 
-		GemFireSession sessionToSave = isUsingEagerCommit()
+		boolean usingEagerCommits = isUsingEagerCommit();
+
+		GemFireSession sessionToSave = usingEagerCommits
 			? GemFireSession.copyCommitted(session)
 			: GemFireSession.from(session);
 
-		// Save Session As GemFireSession
-		getTemplate().put(session.getId(), sessionToSave);
+		try {
+			// Save Session As GemFireSession
+			getTemplate().put(session.getId(), sessionToSave);
 
-		if (isCommittable(session)) {
-			((GemFireSession) session).commit();
+			if (isCommittable(usingEagerCommits, session)) {
+				((GemFireSession) session).commit();
+			}
+		}
+		catch (RuntimeException cause) {
+
+			if (isEagerlyCommittable(usingEagerCommits, session)) {
+				((GemFireSession) session).markDirty();
+			}
+
+			throw cause;
 		}
 	}
 
-	private boolean isCommittable(@Nullable Session session) {
-		return !isUsingEagerCommit() && session instanceof GemFireSession;
+	private boolean isCommittable(boolean usingEagerCommits, @Nullable Session session) {
+		return !usingEagerCommits && session instanceof GemFireSession;
+	}
+
+	private boolean isEagerlyCommittable(boolean usingEagerCommits, @Nullable Session session) {
+		return usingEagerCommits && session instanceof GemFireSession;
 	}
 
 	/**
