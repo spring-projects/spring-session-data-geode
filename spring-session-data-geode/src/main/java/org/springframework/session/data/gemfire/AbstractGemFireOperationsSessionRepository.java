@@ -122,6 +122,14 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	private String fullyQualifiedRegionName;
 
 	/**
+	 * Protected, default constructor used by extensions of {@link AbstractGemFireOperationsSessionRepository}
+	 * in order to affect and assess {@link SessionRepository} configuration and state.
+	 */
+	protected AbstractGemFireOperationsSessionRepository() {
+		this.template = null;
+	}
+
+	/**
 	 * Constructs an instance of {@link AbstractGemFireOperationsSessionRepository}
 	 * with a required {@link GemfireOperations} instance used to perform Pivotal GemFire data access operations
 	 * and interactions supporting the SessionRepository operations.
