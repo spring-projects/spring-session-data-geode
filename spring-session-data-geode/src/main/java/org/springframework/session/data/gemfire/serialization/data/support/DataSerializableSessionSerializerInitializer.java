@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
  * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.serialization.data.provider.DataSerializableSessionSerializer
- * @since 1.0.0
+ * @since 2.1.1
  */
 @SuppressWarnings("unused")
 public class DataSerializableSessionSerializerInitializer implements Declarable {

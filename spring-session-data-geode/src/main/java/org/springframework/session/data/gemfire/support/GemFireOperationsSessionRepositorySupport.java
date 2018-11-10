@@ -23,11 +23,15 @@ import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository;
 
 /**
- * The GemFireOperationsSessionRepositorySupport class...
+ * Framework supporting class for {@link AbstractGemFireOperationsSessionRepository} implementations.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.springframework.data.gemfire.GemfireOperations
+ * @see org.springframework.session.Session
+ * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository
+ * @since 2.1.1
  */
+@SuppressWarnings("unused")
 public abstract class GemFireOperationsSessionRepositorySupport
 		extends AbstractGemFireOperationsSessionRepository {
 
