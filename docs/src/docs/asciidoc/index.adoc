@@ -1012,7 +1012,7 @@ the application domain object types defined in the application _Repository_ inte
 This is accomplished by obtaining any currently registered `PdxSerializer` instance on the cache and composing it
 with the `PdxSerializerSessionSerializerAdapter` wrapping the user's custom application `SessionSerializer`
 implementation and re-registering this "_composite_" `PdxSerializer` on the {data-store-name} cache.  The "_composite_"
-`PdxSerializer` implementation is provided Spring Session for {data-store-name}'s
+`PdxSerializer` implementation is provided by Spring Session for {data-store-name}'s
 `org.springframework.session.data.gemfire.pdx.support.ComposablePdxSerializer` class
 when entities are stored in {data-store-name} as PDX.
 
@@ -1028,7 +1028,7 @@ interface, or for convenience, extend Spring Session for {data-store-name}'s
 and Spring Session for {data-store-name} will register the custom `SessionSerializer` as a `PdxSerializer`
 with {data-store-name}.
 
-2. The custom `SessionSerializer` implementation can extend the {data-store-name}'s `org.apache.geode.DataSerializable`
+2. The custom `SessionSerializer` implementation can extend the {data-store-name}'s `org.apache.geode.DataSerializer`
 class, or for convenience, extend Spring Session for {data-store-name}'s
 `org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer` class
 and Spring Session for {data-store-name} will register the custom `SessionSerializer` as a `DataSerializer`
@@ -1062,6 +1062,116 @@ class Application {
 Just by the very presence of the `DataSerializerSessionSerializerAdapter` registered as a bean in the Spring container,
 any neutral custom `SessionSerializer` implementation will be treated and registered as a `DataSerializer`
 in {data-store-name}.
+
+[[httpsession-gemfire-serialization-framework-data-serialization-support]]
+===== Additional Support for Data Serialization
+
+NOTE: Please feel free to skip this section if configuring and bootstraping {data-store-name} servers in your cluster
+using Spring (Boot) as generally, the information that follows will not apply.  Of course, it all depends on your
+declared dependencies and your Spring configuration.  However, if you are using *_Gfsh_* to start the servers
+in your cluster, then definitely read on.
+
+When using {data-store-name}'s _DataSerialization_ framework, especially from the client to serialize (HTTP) Session
+state to the servers in the cluster, you must take care to configure the {data-store-name} servers in your cluster
+with the appropriate dependencies.  This is especially true when leveraging deltas as explained in the earlier section
+on <<httpsession-gemfire-serialization-data>>.
+
+When using the _DataSerialization_ framework as your serialization strategy to serialize (HTTP) Session state from
+your Web application clients to the servers, then the servers must be properly configured with the Spring Session
+for {data-store-name} class types are used to represent the (HTTP) Session and its contents. This means including
+the Spring JARs on the servers classpath.
+
+Additionally, using _DataSerialization_ may also require you to include the JARs containing your application domain
+classes that are used by your Web application and put into the (HTTP) Session as Session Attribute values,
+particularly if:
+
+1. The types implement the `org.apache.geode.DataSerializable` interface.
+2. The type implement the `org.apache.geode.Delta` interface.
+3. You have registered a `org.apache.geode.DataSerializer` that identifies and serializes the types.
+4. The types implement the `java.io.Serializable` interface.
+
+Of course, you must ensure your application domain object types put in the (HTTP) Session are serializable in some
+form or another. However, you are not strictly required to use _DataSerialization_ nor are you necessarily
+required to have your application domain object types on the servers classpath if:
+
+1. The types implement the `org.apache.geode.pdx.PdxSerializable` interface.
+2. Or, you have registered an `org.apache.geode.pdx.PdxSerializer` that properly identifies and serializes the types.
+
+{data-store-name} will apply the following order of precedence when determining the serialization strategy to use
+to serialize an object graph:
+
+1. First, `DataSerializable` objects and/or any registered `DataSerializers` identifying the objects to serialize.
+2. Then `PdxSerializable` objects and/or any registered `PdxSerializer` identifying th objects to serialize.
+3. And finally, all `java.io.Serialiable` types.
+
+This also means that if a particular application domain object type (e.g. A) implements `java.io.Serializable`,
+however, a (custom) `PdxSerializer` has been registered with {data-store-name} identifying the same application
+domain object type (i.e. A), the {data-store-name} will use PDX to serialize "A" and *not* Java Serialization.
+
+This is especially useful since then you can use _DataSerialization_ to serialize the (HTTP) Session object, leveraging
+Deltas and all the powerful features of _DataSerialization_ but then use PDX to serialize your application domain object
+types, which greatly simplifies the configuration and/or effort involved.
+
+Now, that we have a general understanding of why this support exists, how do you enable it?
+
+First, create an {data-store-name} `cache.xml`, as follows:
+
+.{data-store-name} `cache.xml` configuration
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+	   version="1.0">
+
+  <initializer>
+    <class-name>
+      org.springframework.session.data.gemfire.serialization.data.support.DataSerializableSessionSerializerInitializer
+    </class-name>
+  </initializer>
+
+</cache>
+
+----
+
+Then when starting your servers using _*Gfsh*_, you specify:
+
+.Starting Server with Gfsh
+[source,txt]
+----
+gfsh> start server --name=InitializedServer --cache-xml-file=/path/to/cache.xml --classpath=...
+----
+
+Configuring the {data-store-name} server `classpath` with the appropriate dependencies is the tricky part,
+but generally, the following should work:
+
+.CLASSPATH configuration
+[source,txt]
+[subs="verbatim,attributes"]
+----
+
+set variable --name=REPO_HOME --value=${USER_HOME}/.m2/repository
+
+gfsh> start server ... --classpath=\
+${REPO_HOME}/org/springframework/spring-core/{spring-version}/spring-core-{spring-version}.jar\
+:${REPO_HOME}/org/springframework/spring-aop/{spring-version}/spring-aop-{spring-version}.jar\
+:${REPO_HOME}/org/springframework/spring-beans/{spring-version}/spring-beans-{spring-version}.jar\
+:${REPO_HOME}/org/springframework/spring-context/{spring-version}/spring-context-{spring-version}.jar\
+:${REPO_HOME}/org/springframework/spring-context-support/{spring-version}/spring-context-support-{spring-version}.jar\
+:${REPO_HOME}/org/springframework/spring-expression/{spring-version}/spring-expression-{spring-version}.jar\
+:${REPO_HOME}/org/springframework/spring-jcl/{spring-version}/spring-jcl-{spring-version}.jar\
+:${REPO_HOME}/org/springframework/spring-tx/{spring-version}/spring-tx-{spring-version}.jar\
+:${REPO_HOME}/org/springframework/data/spring-data-commons/{spring-data-commons-version}/spring-data-commons-{spring-data-commons-version}.jar\
+:${REPO_HOME}/org/springframework/data/spring-data-geode/{spring-data-geode-version}/spring-data-geode-{spring-data-geode-version}.jar\
+:${REPO_HOME}/org/springframework/session/spring-session-core/{spring-session-core-version}/spring-session-core-{spring-session-core-version}.jar\
+:${REPO_HOME}/org/springframework/session/spring-session-data-geode/{spring-session-data-geode-version}/spring-session-data-geode-{spring-session-data-geode-version}.jar\
+:${REPO_HOME}/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar
+----
+
+Keep in mind, you may need to add your application domain object JAR files to the server classpath as well.
+
+To get a complete picture of how this works, see the {gh-samples-url}[sample].
 
 [[httpsession-gemfire-serialization-framework-session-representation]]
 ===== Changing the Session Representation

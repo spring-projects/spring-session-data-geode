@@ -45,7 +45,7 @@ If you are using _Maven_, include the following `dependencies` in your `pom.xml`
 	<dependency>
 		<groupId>org.springframework.session</groupId>
 		<artifactId>spring-session-data-geode</artifactId>
-		<version>${spring-session-data-geode-version}</version>
+		<version>{spring-session-data-geode-version}</version>
 		<type>pom</type>
 	</dependency>
 	<dependency>
