@@ -1,0 +1,40 @@
+#tag::shell-script[]
+#!$GEODE_HOME/bin/gfsh
+
+set variable --name=USER_HOME --value=${SYS_USER_HOME}
+set variable --name=REPO_HOME --value=${USER_HOME}/.m2/repository
+set variable --name=SPRING_VERSION --value=@spring.version@
+set variable --name=SPRING_DATA_VERSION --value=@spring-data.version@
+set variable --name=SPRING_SESSION_VERSION --value=@spring-session.version@
+set variable --name=SPRING_SESSION_DATA_GEODE_VERSION --value=@spring-session-data-geode.version@
+set variable --name=MEMBER_TIMEOUT --value=5000
+set variable --name=CACHE_XML_FILE --value=${USER_HOME}/spring-session-data-geode/samples/boot/gemfire-with-gfsh-servers/src/main/resources/initializer-cache.xml
+
+#set variable --name=SERVER_CLASSPATH --value=${REPO_HOME}/org/springframework/spring-core/${SPRING_VERSION}/spring-core-${SPRING_VERSION}.jar\
+#:${REPO_HOME}/org/springframework/spring-aop/${SPRING_VERSION}/spring-aop-${SPRING_VERSION}.jar\
+#:${REPO_HOME}/org/springframework/spring-beans/${SPRING_VERSION}/spring-beans-${SPRING_VERSION}.jar\
+#:${REPO_HOME}/org/springframework/spring-context/${SPRING_VERSION}/spring-context-${SPRING_VERSION}.jar\
+#:${REPO_HOME}/org/springframework/spring-context-support/${SPRING_VERSION}/spring-context-support-${SPRING_VERSION}.jar\
+#:${REPO_HOME}/org/springframework/spring-expression/${SPRING_VERSION}/spring-expression-${SPRING_VERSION}.jar\
+#:${REPO_HOME}/org/springframework/spring-jcl/${SPRING_VERSION}/spring-jcl-${SPRING_VERSION}.jar\
+#:${REPO_HOME}/org/springframework/spring-tx/${SPRING_VERSION}/spring-tx-${SPRING_VERSION}.jar\
+#:${REPO_HOME}/org/springframework/data/spring-data-commons/${SPRING_DATA_VERSION}/spring-data-commons-${SPRING_DATA_VERSION}.jar\
+#:${REPO_HOME}/org/springframework/data/spring-data-geode/${SPRING_DATA_VERSION}/spring-data-geode-${SPRING_DATA_VERSION}.jar\
+#:${REPO_HOME}/org/springframework/session/spring-session-core/${SPRING_SESSION_VERSION}/spring-session-core-${SPRING_SESSION_VERSION}.jar\
+#:${REPO_HOME}/org/springframework/session/spring-session-data-geode/${SPRING_SESSION_DATA_GEODE_VERSION}/spring-session-data-geode-${SPRING_SESSION_DATA_GEODE_VERSION}.jar\
+#:${REPO_HOME}/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar
+
+set variable --name=SERVER_CLASSPATH --value=${REPO_HOME}/org/springframework/spring-core/${SPRING_VERSION}/spring-core-${SPRING_VERSION}.jar:${REPO_HOME}/org/springframework/spring-aop/${SPRING_VERSION}/spring-aop-${SPRING_VERSION}.jar:${REPO_HOME}/org/springframework/spring-beans/${SPRING_VERSION}/spring-beans-${SPRING_VERSION}.jar:${REPO_HOME}/org/springframework/spring-context/${SPRING_VERSION}/spring-context-${SPRING_VERSION}.jar:${REPO_HOME}/org/springframework/spring-context-support/${SPRING_VERSION}/spring-context-support-${SPRING_VERSION}.jar:${REPO_HOME}/org/springframework/spring-expression/${SPRING_VERSION}/spring-expression-${SPRING_VERSION}.jar:${REPO_HOME}/org/springframework/spring-jcl/${SPRING_VERSION}/spring-jcl-${SPRING_VERSION}.jar:${REPO_HOME}/org/springframework/spring-tx/${SPRING_VERSION}/spring-tx-${SPRING_VERSION}.jar:${REPO_HOME}/org/springframework/data/spring-data-commons/${SPRING_DATA_VERSION}/spring-data-commons-${SPRING_DATA_VERSION}.jar:${REPO_HOME}/org/springframework/data/spring-data-geode/${SPRING_DATA_VERSION}/spring-data-geode-${SPRING_DATA_VERSION}.jar:${REPO_HOME}/org/springframework/session/spring-session-core/${SPRING_SESSION_VERSION}/spring-session-core-${SPRING_SESSION_VERSION}.jar:${REPO_HOME}/org/springframework/session/spring-session-data-geode/${SPRING_SESSION_DATA_GEODE_VERSION}/spring-session-data-geode-${SPRING_SESSION_DATA_GEODE_VERSION}.jar:${REPO_HOME}/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar
+
+start locator --name=Locator1 --log-level=config
+#start locator --name=Locator1 --log-level=config --J=-Dgemfire.member-timeout=${MEMBER_TIMEOUT}
+
+start server --name=Server1 --log-level=config --cache-xml-file=${CACHE_XML_FILE} --classpath=${SERVER_CLASSPATH}
+#start server --name=Server1 --log-level=config --cache-xml-file=${CACHE_XML_FILE} --classpath=${SERVER_CLASSPATH} --J=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 --J=-Dgemfire.member-timeout=${MEMBER_TIMEOUT}
+
+start server --name=Server2 --server-port=0 --log-level=config --cache-xml-file=${CACHE_XML_FILE} --classpath=${SERVER_CLASSPATH}
+#start server --name=Server2 --server-port=0 --log-level=config --cache-xml-file=${CACHE_XML_FILE} --classpath=${SERVER_CLASSPATH} --J=-Dgemfire.member-timeout=${MEMBER_TIMEOUT}
+
+create region --name=Sessions --type=PARTITION --skip-if-exists --enable-statistics=true --entry-idle-time-expiration=15 --entry-idle-time-expiration-action=INVALIDATE
+
+#end::shell-script[]

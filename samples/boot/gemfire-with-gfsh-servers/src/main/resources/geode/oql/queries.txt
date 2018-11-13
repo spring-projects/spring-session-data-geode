@@ -1,0 +1,5 @@
+# tag::queries[]
+SELECT session.id FROM /Sessions session
+SELECT session.getClass().getName() FROM /Sessions session
+SELECT attributes.key, attributes.value FROM /Sessions session, session.attributes attributes
+# end::queries[]

@@ -1,0 +1,5 @@
+#!$GEODE_HOME/bin/gfsh
+
+stop server --name=Server2
+stop server --name=Server1
+stop locator --name=Locator1

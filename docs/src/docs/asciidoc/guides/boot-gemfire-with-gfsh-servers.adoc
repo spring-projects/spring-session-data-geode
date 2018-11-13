@@ -1,0 +1,411 @@
+= Spring Session - HttpSession with Apache Geode Client/Server using Spring Boot and Gfsh Started Servers
+John Blum
+:toc:
+:data-store-name: Apache Geode
+:data-store-version: 16
+:data-store-docs: http://geode.apache.org/docs/guide/{data-store-version}
+:data-store-javadoc: http://geode.apache.org/releases/latest/javadoc
+:data-store-website: http://geode.apache.org
+:sdg-name: Spring Data for {data-store-name}
+:sdg-docs: https://docs.spring.io/spring-data/geode/docs/current/reference/html
+:sdg-javadoc: https://docs.spring.io/spring-data/geode/docs/current/api
+
+This guide describes how to build a Spring Boot application configured with Spring Session to transparently
+leverage {data-store-name} in order to manage a Web application's `javax.servlet.http.HttpSession`.
+
+In this sample, we will use {data-store-name}'s client/server topology with a Spring Boot application that is both a
+Web application and a {data-store-name} client configured to manage `HttpSession` state stored in a cluster of
+{data-store-name} servers, which are configured and started with
+{data-store-docs}/tools_modules/gfsh/chapter_overview.html[_Gfsh_].
+
+In addition, this sample configures and uses {data-store-name}'s
+{data-store-docs}/developing/data_serialization/gemfire_data_serialization.html[_DataSerialization_] framework
+and {data-store-docs}/developing/delta_propagation/chapter_overview.html[Delta propagation] functionality
+to serialize the `HttpSession`.  Therefore, it is necessary to perform additional configuration steps to properly setup
+{data-store-name}'s _DataSerialization_ capabilities on the servers so {data-store-name} properly recognizes
+the Spring Session types.
+
+== Updating Dependencies
+
+Before using Spring Session, you must ensure that the required dependencies are included.
+If you are using _Maven_, include the following `dependencies` in your `pom.xml`:
+
+.pom.xml
+[source,xml]
+[subs="verbatim,attributes"]
+----
+<dependencies>
+
+	<!-- ... -->
+
+	<dependency>
+		<groupId>org.springframework.session</groupId>
+		<artifactId>spring-session-data-geode</artifactId>
+		<version>{spring-session-data-geode-version}</version>
+		<type>pom</type>
+	</dependency>
+
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-web</artifactId>
+	</dependency>
+
+</dependencies>
+----
+
+ifeval::["{version-snapshot}" == "true"]
+Since we are using a SNAPSHOT version, we need to add the Spring Snapshot Maven Repository.
+If you are using _Maven_, include the following `repository` declaration in your `pom.xml`:
+
+.pom.xml
+[source,xml]
+----
+<repositories>
+
+	<!-- ... -->
+
+	<repository>
+		<id>spring-snapshot</id>
+		<url>https://repo.spring.io/libs-snapshot</url>
+	</repository>
+
+</repositories>
+----
+endif::[]
+
+ifeval::["{version-milestone}" == "true"]
+Since we are using a Milestone version, we need to add the Spring Milestone Maven Repository.
+If you are using _Maven_, include the following `repository` declaration in your `pom.xml`:
+
+.pom.xml
+[source,xml]
+----
+<repositories>
+
+	<!-- ... -->
+
+	<repository>
+		<id>spring-milestone</id>
+		<url>https://repo.spring.io/libs-milestone</url>
+	</repository>
+
+</repositories>
+----
+endif::[]
+
+// tag::config[]
+[[httpsession-spring-configuration]]
+== Spring Boot Configuration
+
+After adding the required dependencies and repository declarations, we can create the Spring configuration for our
+{data-store-name} client using Spring Boot.  The Spring configuration is responsible for creating a Servlet `Filter`
+that replaces the Web container's `HttpSession` with an implementation backed by Spring Session, which is then stored
+and managed in {data-store-name}.
+
+[[httpsession-springboot-apachegeode-client-web-application]]
+=== The Spring Boot, {data-store-name} `ClientCache`, Web application
+
+Let's start by creating a Spring Boot, Web application to expose our Web Service using Spring Web MVC, running as
+an {data-store-name} client, connected to our {data-store-name} servers.  The Web application will use Spring Session
+backed by {data-store-name} to manage `HttpSession` state in a distributed and replicated manner.
+
+[source,java]
+----
+include::{samples-dir}boot/gemfire-with-gfsh-servers/src/main/java/sample/client/Application.java[tags=class]
+----
+
+<1> We start by declaring our Web application to be a Spring Boot application simply by annotating our application class
+with `@SpringBootApplication`.
+<2> We also declare our Web application to be an Apache Geode client by annotating our application class with
+`@ClientCacheApplication`.  Additionally, we set `subscriptionEnabled` to receive notifications for any updates
+to the `HttpSession` that may have originated from a different application client accessing the same `HttpSession`.
+<3> Next, we declare that the Web application will use Spring Session backed by {data-store-name} by annotating the
+application class with `@EnableGemFireHttpSession`.  This will create the necessary client-side PROXY `Region`,
+which we have explicitly named "_Sessions_".  This name must correspond to a server-side `Region` with the same name.
+All `HttpSession` state will be sent from the client to the server through `Region` data access operations
+using the "DEFAULT" connection `Pool`.
+<4> `@Controller` is a Spring Web MVC annotation enabling our MVC handler mapping methods (i.e. methods annotated
+with `@RequestMapping`, etc) to process HTTP requests (e.g. <7>)
+<5> Then, we adjust the Spring Web MVC configuration to set the home page, and...
+<6> Add an error handler to print out the Stack Trace of any Exception thrown by the server.
+<7> Finally, we declare the `/session` HTTP request handler method to set an `HttpSession` attribute
+and increment a count for the number of HTTP requests that have occurred during this `HttpSession`.
+
+There are many other useful utility methods, so please refer to the actual source code for full details.
+
+TIP: In typical {data-store-name} production deployments, where the cluster includes potentially hundreds or thousands
+of servers (a.k.a. data nodes), it is more common for clients to connect to 1 or more {data-store-name} Locators running
+in the same cluster. A Locator passes meta-data to clients about the servers available in the cluster, the individual
+server load and which servers have the client's data of interest, which is particularly important for direct, single-hop
+data access and latency-sensitive applications.  See more details about the
+{data-store-docs}/topologies_and_comm/cs_configuration/standard_client_server_deployment.html[Client/Server Topology]
+in the {data-store-name} User Guide.
+
+NOTE: For more information on configuring {sdg-name}, refer to the {sdg-docs}[Reference Guide].
+
+[[httpsession-springsession-configuration]]
+==== Enabling `HttpSession` Management
+
+The `@EnableGemFireHttpSession` annotation enables developers to configure certain aspects of both Spring Session
+and {data-store-name} out-of-the-box, using the following attributes:
+
+* `clientRegionShortcut` - Configures the {data-store-docs}/developing/region_options/region_types.html[data management policy]
+on the client using the {data-store-javadoc}/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut].
+Defaults to `PROXY`.  Only applicable on the client.
+* `indexableSessionAttributes` - Identifies the `HttpSession` attributes by name that should be indexed for queries.
+Only Session attributes explicitly identified by name will be indexed.
+* `maxInactiveIntervalInSeconds` - Controls `HttpSession` Idle Expiration Timeout (TTI; defaults to **30 minutes**).
+* `poolName` - Name of the dedicated connection `Pool` connecting the client to a cluster of servers.
+Defaults to `gemfirePool`. Only applicable on the client.
+* `regionName` - Declares the name of the `Region` used to store and manage `HttpSession` state.
+Defaults to "_ClusteredSpringSessions_".
+* `serverRegionShortcut` - Configures the {data-store-docs}/developing/region_options/region_types.html[data management policy]
+on the server using the {data-store-javadoc}/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
+Defaults to `PARTITION`.  Only applicable on the server, or when the P2P topology is employed.
+* `sessionExpirationPolicyBeanName` - Configures the name of the bean declared in the Spring context implementing
+the Expiration Policy used by {data-store-name} to expire stale `HttpSessions`.  Defaults to unset.
+* `sessionSerializerBeanName` - Configures the name of the bean declared in the Spring context used to handle
+de/serialization of the `HttpSession` between client and server.  Defaults to PDX.
+
+NOTE: It is important to remember that the {data-store-name} client `Region` name must match a server `Region`
+by the same name if the client `Region` is a `PROXY` or `CACHING_PROXY`.  Client and server `Region` names are not
+required to match if the client `Region` is `LOCAL`.  However, keep in mind that by using a client `LOCAL` Region,
+`HttpSession` state will not be propagated to the server and you lose all the benefits of using {data-store-name}
+to store and manage `HttpSession` state on the servers in a distributed, replicated manner.
+
+[[httpsession-apachegeode-servers-gfsh]]
+=== Starting {data-store-name} Servers with Gfsh
+
+Now, we must start a small {data-store-name} cluster.
+
+For this sample, we will start 1 Locator and 2 Servers.  In addition, we will create the "Sessions" `Region` used
+to store and manage the `HttpSession` in the cluster as a `PARTITION` `Region` using an Idle Expiration (TTI)
+timeout of 15 seconds.
+
+The following example shows the Gfsh shell script we will use to setup the cluster:
+
+[source,txt]
+----
+include::{samples-dir}boot/gemfire-with-gfsh-servers/src/main/resources/geode/bin/start-cluster.gfsh[tags=shell-script]
+----
+
+NOTE: You will minimally need to replace path to the `CACHE_XML_FILE` depending on where you cloned the
+{gh-url}[Spring Session for {data-store-name}] to on your system.
+
+This Gfsh shell script file contains two additional bits of key information.
+
+First, the shell script configures the CLASSPATH of the servers to contain all the Spring JARs.  If there were
+application domain classes being stored in the `HttpSession` (i.e. in Session attributes), then a JAR file containing
+the application types must also be on the CLASSPATH of the servers.
+
+This is necessary since, when {data-store-name} applies a delta (i.e. the client only sends `HttpSession` changes
+to the servers), it must deserialize the `HttpSession` object in order to apply the delta.  Therefore, it is also
+necessary to have your application domain objects present on the CLASSPATH as well.
+
+Second, we must include a small snippet of `cache.xml` to initialize the {data-store-name} _DataSerialization_
+framework in order to register and enable {data-store-name} to recognize the Spring Session types representing
+the `HttpSession`.  {data-store-name} is very precise and will only use _DataSerialization_ for the types
+it knows about through registration.
+
+But, as a user, you do not need to worry about which Spring Session types {data-store-name} needs to know about.
+That is the job of the Spring Session for {data-store-name}'s
+`o.s..session.data.gemfire.serialization.data.support.DataSerializableSessionSerializerInitializer` class.
+
+You simply just need to declare the provided Initializer in `cache.xml`, as follows:
+
+[source,xml]
+----
+include::{samples-dir}boot/gemfire-with-gfsh-servers/src/main/resources/initializer-cache.xml[tags=cache-xml]
+----
+
+Then, you include the `initializer-cache.xml` in the configuration of the server on startup:
+
+[source,txt]
+----
+gfsh> start server --name=Server1 ... --cache-xml-file=/absolute/filesystem/path/to/initializer-cache.xml
+----
+
+Of course, the `start-cluster.gfsh` shell script shown above handles these details for us.  You may recycle this Gfsh
+shell script for your own purposes.
+
+[[httpsession-sample-boot-with-gfsh-servers-run]]
+== Running the Sample
+
+Now it is time to run our sample.
+
+In order to run the sample, you must install a full installation of {data-store-name}.  You can download the bits
+from {data-store-website}/releases[here].
+
+After install, run Gfsh:
+
+[source,txt]
+----
+$ gfsh
+    _________________________     __
+   / _____/ ______/ ______/ /____/ /
+  / /  __/ /___  /_____  / _____  /
+ / /__/ / ____/  _____/ / /    / /
+/______/_/      /______/_/    /_/    1.6.0
+
+Monitor and Manage Apache Geode
+gfsh>
+----
+
+=== Running the server-side cluster
+
+We start the cluster by executing our `start-cluster.gfsh` shell script:
+
+[source,txt]
+----
+gfsh> run --file=${SYS_USER_HOME}/spring-session-data-geode/samples/boot/gemfire-with-gfsh-servers/src/main/resources/geode/bin/start-cluster.gfsh
+----
+
+In the shell, you will see each command listed out as it is executed by Gfsh and you will see the Locator
+and Servers startup, and the "_Sessions_" Region get created.
+
+If all is well, you should be able to `list members`, `describe region`, and so on:
+
+[source,txt]
+----
+gfsh> list members
+  Name   | Id
+-------- | ---------------------------------------------------------------
+Locator1 | 10.99.199.41(Locator1:80666:locator)<ec><v0>:1024 [Coordinator]
+Server1  | 10.99.199.41(Server1:80669)<v1>:1025
+Server2  | 10.99.199.41(Server2:80672)<v2>:1026
+
+gfsh> list regions
+List of regions
+---------------
+Sessions
+
+gfsh> describe region --name=/Sessions
+..........................................................
+Name            : Sessions
+Data Policy     : partition
+Hosting Members : Server1
+                  Server2
+
+Non-Default Attributes Shared By Hosting Members
+
+ Type  |          Name           | Value
+------ | ----------------------- | ---------
+Region | data-policy             | PARTITION
+       | entry-idle-time.timeout | 15
+       | size                    | 0
+       | statistics-enabled      | true
+----
+
+The "_Sessions_" Region configuration shown above is exactly the same configuration that Spring would have created
+for you if you were to configure and bootstrap your {data-store-name} servers using Spring Boot instead.
+
+For instance, you can achieve a similar effect with the following Spring Boot application class, which can be used to
+configure and bootstrap an {data-store-name} server:
+
+[source,java]
+----
+@SpringBootApplication
+@CacheServerApplication
+@EnableGemFireHttpSession(regionName = "Sessions",
+    maxInactiveIntervalInSeconds = 15)
+public class ServerApplication {
+
+    public static void main(String[] args) {
+
+        new SpringApplicationBuilder(ServerApplication.class)
+            .web(WebApplicationType.NONE)
+            .build()
+            .run(args);
+    }
+}
+----
+
+The nice thing about this approach is, whether you are launching the `ServerApplication` class from you IDE,
+or by using a Spring Boot JAR, since the Maven POM (or alternatively, Gradle build file) defines all your dependencies,
+you do not need to worry about the CLASSPATH (other than, perhaps your own application domain object types).
+
+This approach is shown in the
+link:guides/boot-gemfire.html[HttpSession with Spring Boot and {data-store-name} Sample Guide].
+
+=== Running the client
+
+Now, it is time to run the Spring Boot, {data-store-name} client, Web application.
+
+You can start the Web application from your IDE, or alternatively use the `bootRun` Gradle task
+to launch the application:
+
+[source,txt]
+----
+$ gradlew :spring-session-sample-boot-gemfire-with-gfsh-servers:bootRun
+----
+
+Once you have started the client, you can navigate your Web browser to `http://localhost:8080/ping`.  You should see
+the "PONG" response.
+
+Then navigate to `http://localhost:8080`.  This will return the `index.html` page where you can submit HTTP requests
+and add session attributes.  The page will refresh with a count of the number of HTTP requests for the current session.
+After 15 seconds, the HTTP session will expire and you will not longer see any session attributes. Additionally, your
+HTTP request count will reset to 0.
+
+image::{samples-dir}/boot/gemfire-with-gfsh-servers/sample-boot-gemfire-with-gfsh-servers.png[]
+
+While the application is running and before the HTTP session times out (again, the TTI expiration timeout is set to
+15 seconds), you can issue queries in Gfsh to see the contents of the "_Sessions)" Region.
+
+For example:
+
+[source,txt]
+----
+gfsh>query --query="SELECT session.id FROM /Sessions session"
+Result : true
+Limit  : 100
+Rows   : 1
+
+Result
+------------------------------------
+9becc38f-7249-4bd0-94eb-acff70f92b87
+
+
+gfsh>query --query="SELECT session.getClass().getName() FROM /Sessions session"
+Result : true
+Limit  : 100
+Rows   : 1
+
+Result
+--------------------------------------------------------------------------------------------------------------
+org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository$DeltaCapableGemFireSession
+
+
+gfsh>query --query="SELECT attributes.key, attributes.value FROM /Sessions session, session.attributes attributes"
+Result : true
+Limit  : 100
+Rows   : 3
+
+    key      | value
+------------ | -----
+requestCount | 2
+testTwo      | bar
+testOne      | foo
+----
+
+The list of {data-store-name} OQL queries used in this sample can be found in:
+
+.src/main/resources/geode/oql/queries.txt
+[source,txt]
+----
+include::{samples-dir}boot/gemfire-with-gfsh-servers/src/main/resources/geode/oql/queries.txt[tags=queries]
+----
+
+== Conclusion
+
+In this sample, we saw how to specifically configure and bootstrap a {data-store-name} cluster of servers with Gfsh
+and then connect to the cluster using a Spring Boot application enabled with Spring Session, configured with
+{data-store-name} as the backing store used to manage the `HttpSessions` for the Web application.
+
+Additionally, the application used {data-store-name}'s _DataSerialization_ framework to serialize the `HttpSession`
+state to the servers and also send deltas.  The setup and configuration expressed in the Gfsh shell script
+was necessary in order for {data-store-name} to properly identify the Spring Session types to handle.
+
+Feel free to modify this sample and play around for your learning purposes.
+
+Source code can be found {gh-samples-url}boot/gemfire-with-gfsh-servers[here].
