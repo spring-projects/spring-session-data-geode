@@ -25,6 +25,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.util.Set;
 
+import org.apache.geode.DataSerializer;
+
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 import org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer;
@@ -35,9 +37,10 @@ import org.springframework.session.data.gemfire.serialization.data.AbstractDataS
  * framework.
  *
  * @author John Blum
- * @see java.io.DataInput
- * @see java.io.DataOutput
+ * @see org.apache.geode.DataSerializer
  * @see org.springframework.session.Session
+ * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSessionAttributes
+ * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSessionAttributes
  * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
  * @see org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer
  * @since 2.0.0
@@ -46,22 +49,40 @@ import org.springframework.session.data.gemfire.serialization.data.AbstractDataS
 public class DataSerializableSessionAttributesSerializer
 		extends AbstractDataSerializableSessionSerializer<GemFireSessionAttributes> {
 
+	/**
+	 * Register custom Spring Session {@link DataSerializer DataSerializers} with Apache Geode/Pivotal GemFire
+	 * to handle de/serialization of Spring Session, {@link Session} attribute types.
+	 *
+	 * @see org.apache.geode.DataSerializer#register(Class)
+	 */
 	public static void register() {
 		register(DataSerializableSessionAttributesSerializer.class);
 	}
 
+	/**
+	 * Returns the identifier for this {@link DataSerializer}.
+	 *
+	 * @return the identifier for this {@link DataSerializer}.
+	 */
 	@Override
 	public int getId() {
 		return 0x8192ACE5;
 	}
 
+	/**
+	 * Returns the {@link Class types} supported and handled by this {@link DataSerializer} during de/serialization.
+	 *
+	 * @return the {@link Class types} supported and handled by this {@link DataSerializer} during de/serialization.
+	 * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSessionAttributes
+	 * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSessionAttributes
+	 * @see java.lang.Class
+	 */
 	@Override
 	public Class<?>[] getSupportedClasses() {
 		return asArray(GemFireSessionAttributes.class, DeltaCapableGemFireSessionAttributes.class);
 	}
 
 	@Override
-	//@SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
 	public void serialize(GemFireSessionAttributes sessionAttributes, DataOutput out) {
 
 		synchronized (sessionAttributes) {
