@@ -25,6 +25,8 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Set;
 
+import org.apache.geode.DataSerializer;
+
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSession;
 import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
@@ -41,7 +43,10 @@ import org.springframework.util.StringUtils;
  * @author John Blum
  * @see java.io.DataInput
  * @see java.io.DataOutput
+ * @see org.apache.geode.DataSerializer
  * @see org.springframework.session.Session
+ * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession
+ * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSession
  * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
  * @see org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer
  * @since 2.0.0
@@ -49,23 +54,42 @@ import org.springframework.util.StringUtils;
 @SuppressWarnings("unused")
 public class DataSerializableSessionSerializer extends AbstractDataSerializableSessionSerializer<GemFireSession> {
 
+	/**
+	 * Register custom Spring Session {@link DataSerializer DataSerializers} with Apache Geode/Pivotal GemFire
+	 * to handle de/serialization of Spring Session, {@link Session} and {@link Session} attribute types.
+	 *
+	 * @see org.springframework.session.data.gemfire.serialization.data.provider.DataSerializableSessionAttributesSerializer#register()
+	 * @see org.apache.geode.DataSerializer#register(Class)
+	 */
 	public static void register() {
 		register(DataSerializableSessionSerializer.class);
 		DataSerializableSessionAttributesSerializer.register();
 	}
 
+	/**
+	 * Returns the identifier for this {@link DataSerializer}.
+	 *
+	 * @return the identifier for this {@link DataSerializer}.
+	 */
 	@Override
 	public int getId() {
 		return 0x4096ACE5;
 	}
 
+	/**
+	 * Returns the {@link Class types} supported and handled by this {@link DataSerializer} during de/serialization.
+	 *
+	 * @return the {@link Class types} supported and handled by this {@link DataSerializer} during de/serialization.
+	 * @see DeltaCapableGemFireSession
+	 * @see GemFireSession
+	 * @see java.lang.Class
+	 */
 	@Override
 	public Class<?>[] getSupportedClasses() {
 		return asArray(GemFireSession.class, DeltaCapableGemFireSession.class);
 	}
 
 	@Override
-	//@SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
 	public void serialize(GemFireSession session, DataOutput out) {
 
 		synchronized (session) {
@@ -77,7 +101,7 @@ public class DataSerializableSessionSerializer extends AbstractDataSerializableS
 
 			String principalName = session.getPrincipalName();
 
-			int length = (StringUtils.hasText(principalName) ? principalName.length() : 0);
+			int length = StringUtils.hasText(principalName) ? principalName.length() : 0;
 
 			safeWrite(out, output -> output.writeInt(length));
 
@@ -85,10 +109,10 @@ public class DataSerializableSessionSerializer extends AbstractDataSerializableS
 				safeWrite(out, output -> output.writeUTF(principalName));
 			}
 
-			safeWrite(out, output -> serializeObject(session.getAttributes(), out));
+			safeWrite(out, output -> serializeObject(session.getAttributes(), output));
 
-			session.clearDelta();
 			session.getAttributes().clearDelta();
+			session.clearDelta();
 		}
 	}
 
