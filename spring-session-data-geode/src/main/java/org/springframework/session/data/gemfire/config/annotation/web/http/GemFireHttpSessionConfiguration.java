@@ -252,8 +252,10 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * of the {@link ClientCache} {@link Region}.
 	 * @see org.apache.geode.cache.client.ClientRegionShortcut
 	 */
-	protected ClientRegionShortcut getClientRegionShortcut() {
-		return Optional.ofNullable(this.clientRegionShortcut).orElse(DEFAULT_CLIENT_REGION_SHORTCUT);
+	public ClientRegionShortcut getClientRegionShortcut() {
+
+		return Optional.ofNullable(this.clientRegionShortcut)
+			.orElse(DEFAULT_CLIENT_REGION_SHORTCUT);
 	}
 
 	/**
@@ -273,8 +275,10 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @return an array of {@link String Strings} containing the names of all {@link Session} attributes
 	 * for which an Index will be created. Defaults to an empty array if unspecified.
 	 */
-	protected String[] getIndexableSessionAttributes() {
-		return Optional.ofNullable(this.indexableSessionAttributes).orElse(DEFAULT_INDEXABLE_SESSION_ATTRIBUTES);
+	public String[] getIndexableSessionAttributes() {
+
+		return Optional.ofNullable(this.indexableSessionAttributes)
+			.orElse(DEFAULT_INDEXABLE_SESSION_ATTRIBUTES);
 	}
 
 	/**
@@ -294,7 +298,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @return an integer value specifying the maximum interval in seconds that a {@link Session} can remain inactive
 	 * before it expires.
 	 */
-	protected int getMaxInactiveIntervalInSeconds() {
+	public int getMaxInactiveIntervalInSeconds() {
 		return this.maxInactiveIntervalInSeconds;
 	}
 
@@ -316,8 +320,11 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @return a {@link String} containing the name of a {@link Pool}.
 	 * @see org.apache.geode.cache.client.Pool#getName()
 	 */
-	protected String getPoolName() {
-		return Optional.ofNullable(this.poolName).filter(StringUtils::hasText).orElse(DEFAULT_POOL_NAME);
+	public String getPoolName() {
+
+		return Optional.ofNullable(this.poolName)
+			.filter(StringUtils::hasText)
+			.orElse(DEFAULT_POOL_NAME);
 	}
 
 	/**
@@ -345,8 +352,10 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * of the {@link Cache} {@link Region}.
 	 * @see org.apache.geode.cache.RegionShortcut
 	 */
-	protected RegionShortcut getServerRegionShortcut() {
-		return Optional.ofNullable(this.serverRegionShortcut).orElse(DEFAULT_SERVER_REGION_SHORTCUT);
+	public RegionShortcut getServerRegionShortcut() {
+
+		return Optional.ofNullable(this.serverRegionShortcut)
+			.orElse(DEFAULT_SERVER_REGION_SHORTCUT);
 	}
 
 	/**
@@ -367,8 +376,10 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * used to store {@link Session} state.
 	 * @see org.apache.geode.cache.Region#getName()
 	 */
-	protected String getSessionRegionName() {
-		return Optional.ofNullable(this.sessionRegionName).filter(StringUtils::hasText)
+	public String getSessionRegionName() {
+
+		return Optional.ofNullable(this.sessionRegionName)
+			.filter(StringUtils::hasText)
 			.orElse(DEFAULT_SESSION_REGION_NAME);
 	}
 
@@ -403,8 +414,10 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @see org.springframework.session.data.gemfire.serialization.data.provider.DataSerializableSessionSerializer
 	 * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
 	 */
-	protected String getSessionSerializerBeanName() {
-		return Optional.ofNullable(this.sessionSerializerBeanName).filter(StringUtils::hasText)
+	public String getSessionSerializerBeanName() {
+
+		return Optional.ofNullable(this.sessionSerializerBeanName)
+			.filter(StringUtils::hasText)
 			.orElse(DEFAULT_SESSION_SERIALIZER_BEAN_NAME);
 	}
 
