@@ -62,6 +62,8 @@ import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.util.ArrayUtils;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
@@ -155,7 +157,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	public static final RegionShortcut DEFAULT_SERVER_REGION_SHORTCUT = RegionShortcut.PARTITION;
 
 	/**
-	 * {@link SpringSessionGemFireConfigurer} {@link Class} {@link Method} {@link String Names}
+	 * {@link SpringSessionGemFireConfigurer} {@link Class Interface} {@link Method} {@link String Names}
 	 */
 	public static final String CONFIGURER_GET_CLIENT_REGION_SHORTCUT_METHOD_NAME =
 		findByMethodName(SpringSessionGemFireConfigurer.class, "getClientRegionShortcut");
@@ -227,7 +229,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 
 	private String[] indexableSessionAttributes = DEFAULT_INDEXABLE_SESSION_ATTRIBUTES;
 
-	private static String findByMethodName(Class<?> type, String methodName) {
+	private static String findByMethodName(@NonNull Class<?> type, @NonNull String methodName) {
 
 		return Arrays.stream(type.getDeclaredMethods())
 			.map(Method::getName)
@@ -237,7 +239,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 				methodName, type.getName()));
 	}
 
-	private static Optional<String> safeFindByMethodName(Class<?> type, String methodName) {
+	private static Optional<String> safeFindByMethodName(@NonNull Class<?> type, @NonNull String methodName) {
 
 		try {
 			return Optional.of(findByMethodName(type, methodName));
@@ -247,7 +249,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 		}
 	}
 
-	private static boolean isOverriddenMethodPresent(Object target, String methodName) {
+	private static boolean isOverriddenMethodPresent(@Nullable Object target, @Nullable String methodName) {
 
 		return Optional.ofNullable(target)
 			.map(Object::getClass)
@@ -581,8 +583,8 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	}
 
 	private <T> SpringSessionGemFireConfigurer applySpringSessionGemFireConfigurerConfiguration(
-			SpringSessionGemFireConfigurer configurer, String methodName,
-			Function<SpringSessionGemFireConfigurer, T> getter, Consumer<T> setter) {
+			@Nullable SpringSessionGemFireConfigurer configurer, @NonNull String methodName,
+			@NonNull Function<SpringSessionGemFireConfigurer, T> getter, @NonNull Consumer<T> setter) {
 
 		Optional.ofNullable(configurer)
 			.filter(it -> isOverriddenMethodPresent(configurer, methodName))
