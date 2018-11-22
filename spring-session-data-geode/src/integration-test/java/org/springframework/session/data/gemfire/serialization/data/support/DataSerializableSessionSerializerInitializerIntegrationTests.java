@@ -18,6 +18,7 @@ package org.springframework.session.data.gemfire.serialization.data.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -59,7 +60,7 @@ import org.springframework.session.data.gemfire.serialization.data.provider.Data
  * @see org.springframework.session.data.gemfire.serialization.data.provider.DataSerializableSessionAttributesSerializer
  * @see org.springframework.session.data.gemfire.serialization.data.provider.DataSerializableSessionSerializer
  * @see org.springframework.session.data.gemfire.serialization.data.support.DataSerializableSessionSerializerInitializer
- * @since 1.0.0
+ * @since 2.1.1
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DataSerializableSessionSerializerInitializerIntegrationTests extends AbstractGemFireIntegrationTests {
@@ -99,7 +100,18 @@ public class DataSerializableSessionSerializerInitializerIntegrationTests extend
 	}
 
 	@Test
-	public void initializeWithCacheAndPropertiesParametersSetGemFireCacheReferenceAndCallsDoInitialize() {
+	public void ofFactoryMethodWithNullCache() {
+
+		DataSerializableSessionSerializerInitializer initializer =
+			DataSerializableSessionSerializerInitializer.of(null);
+
+		assertThat(initializer).isNotNull();
+		assertThat(initializer.getGemFireCache().orElse(null)).isNull();
+		assertThat(initializer.getLogger()).isNotNull();
+	}
+
+	@Test
+	public void initializeWithCacheAndPropertiesParametersSetsGemFireCacheReferenceAndCallsDoInitialize() {
 
 		DataSerializableSessionSerializerInitializer initializer =
 			spy(DataSerializableSessionSerializerInitializer.of(null));
@@ -114,6 +126,23 @@ public class DataSerializableSessionSerializerInitializerIntegrationTests extend
 		assertThat(initializer.getGemFireCache().orElse(null)).isSameAs(this.mockCache);
 
 		verify(initializer, times(1)).doInitialization();
+	}
+
+	@Test
+	public void doInitializationResolvesGemFireCachesRegistersSessionSerializersAndConfiguresDataSerialization() {
+
+		DataSerializableSessionSerializerInitializer initializer =
+			spy(DataSerializableSessionSerializerInitializer.of(null));
+
+		doReturn(this.mockCache).when(initializer).resolveGemFireCache();
+		doNothing().when(initializer).registerDataSerializableSessionSerializer();
+		doNothing().when(initializer).configureUseDataSerialization();
+
+		initializer.doInitialization();
+
+		verify(initializer, times(1)).resolveGemFireCache();
+		verify(initializer, times(1)).registerDataSerializableSessionSerializer();
+		verify(initializer, times(1)).configureUseDataSerialization();
 	}
 
 	@Test
@@ -159,6 +188,7 @@ public class DataSerializableSessionSerializerInitializerIntegrationTests extend
 			assertThat(InitializingGemFireOperationsSessionRepository.INSTANCE.isDataSerializationConfigured()).isFalse();
 
 			verify(initializer, times(1)).resolveGemFireCache();
+			verify(initializer, never()).registerDataSerializableSessionSerializer();
 			verify(initializer, never()).configureUseDataSerialization();
 		}
 	}

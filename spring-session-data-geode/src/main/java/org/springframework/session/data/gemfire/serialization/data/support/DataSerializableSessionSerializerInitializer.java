@@ -29,7 +29,6 @@ import org.apache.geode.cache.GemFireCache;
 
 import org.springframework.lang.Nullable;
 import org.springframework.session.Session;
-import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 import org.springframework.session.data.gemfire.serialization.data.provider.DataSerializableSessionSerializer;
 import org.springframework.session.data.gemfire.support.GemFireOperationsSessionRepositorySupport;
 
@@ -37,10 +36,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Register the Spring Session for Apache Geode/Pivotal GemFire {@link DataSerializableSessionSerializer}
- * with Apache Geode/Pivotal GemFire's DataSerialization framework as the {@link DataSerializer} used to handle
- * de/serialization of the {@link Session}, the {@literal Session Attributes} and any application
- * domain model objects contained in the {@link Session} (if necessary).
+ * Register the custom Spring Session {@link DataSerializableSessionSerializer} with Apache Geode/Pivotal GemFire's
+ * DataSerialization framework as the {@link DataSerializer} used to handle de/serialization of the {@link Session},
+ * the {@link Session} Attributes and any application domain model objects contained in the {@link Session}
+ * (if necessary).
  *
  * @author John Blum
  * @see java.util.Properties
@@ -59,16 +58,9 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("unused")
 public class DataSerializableSessionSerializerInitializer implements Declarable {
 
-	private static final String DEFAULT_SESSION_REGION_NAME =
-		GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME;
-
-	private static final String SESSION_REGION_NAME_PROPERTY = "spring.session.data.gemfire.session.region.name";
-
 	private volatile GemFireCache gemfireCache;
 
-	private Logger logger = LoggerFactory.getLogger(getClass());
-
-	private String sessionRegionName;
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	/**
 	 * Factory method used to construct a new instance of {@link DataSerializableSessionSerializerInitializer}
@@ -157,8 +149,8 @@ public class DataSerializableSessionSerializerInitializer implements Declarable 
 	public void doInitialization() {
 
 		resolveGemFireCache();
+		registerDataSerializableSessionSerializer();
 		configureUseDataSerialization();
-		DataSerializableSessionSerializer.register();
 	}
 
 	/**
@@ -170,6 +162,16 @@ public class DataSerializableSessionSerializerInitializer implements Declarable 
 	 */
 	protected GemFireCache resolveGemFireCache() {
 		return getGemFireCache().orElseGet(CacheFactory::getAnyInstance);
+	}
+
+	/**
+	 * Registers the {@link DataSerializableSessionSerializer} with Apache Geode/Pivotal GemFire
+	 * in order to properly handle the Spring Session types.
+	 *
+	 * @see org.springframework.session.data.gemfire.serialization.data.provider.DataSerializableSessionSerializer#register()
+	 */
+	protected void registerDataSerializableSessionSerializer() {
+		DataSerializableSessionSerializer.register();
 	}
 
 	/**
