@@ -16,6 +16,9 @@
 
 package org.springframework.session.data.gemfire.config.annotation.web.http.support;
 
+import java.lang.annotation.Annotation;
+import java.util.Properties;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -61,6 +64,35 @@ public interface SpringSessionGemFireConfigurer {
 	 */
 	default ClientRegionShortcut getClientRegionShortcut() {
 		return GemFireHttpSessionConfiguration.DEFAULT_CLIENT_REGION_SHORTCUT;
+	}
+
+	/**
+	 * Determines whether the configuration for Spring Session using Apache Geode or Pivotal GemFire should be exposed
+	 * in the Spring {@link org.springframework.core.env.Environment} as {@link Properties}.
+	 *
+	 * Currently, users may configure Spring Session for Apache Geode or Pivotal GemFire using attributes on this
+	 * {@link Annotation}, using the well-known and documented {@link Properties}
+	 * (e.g. {@literal spring.session.data.gemfire.session.expiration.max-inactive-interval-seconds})
+	 * or using the {@link SpringSessionGemFireConfigurer} declared as a bean in the Spring application context.
+	 *
+	 * The {@link Properties} that are exposed will use the well-known property {@link String names} that are documented
+	 * in this {@link Annotation Annotation's} attributes.
+	 *
+	 * The values of the resulting {@link Properties} follows the precedence as outlined in the documentation:
+	 * first any {@link SpringSessionGemFireConfigurer} bean defined takes precedence, followed by explicit
+	 * {@link Properties} declared in Spring Boot {@literal application.properties} and finally, this
+	 * {@link Annotation Annotation's} attribute values.
+	 *
+	 * Defaults to {@literal false}.
+	 *
+	 * Use {@literal spring.session.data.gemfire.session.configuration.expose} in Spring Boot
+	 * {@literal application.properties}.
+	 *
+	 * @return a boolean value indicating whether to expose the configuration of Spring Session using Apache Geode
+	 * or Pivotal GemFire in the Spring {@link org.springframework.core.env.Environment} as {@link Properties}.
+	 */
+	default boolean getExposeConfigurationAsProperties() {
+		return GemFireHttpSessionConfiguration.DEFAULT_EXPOSE_CONFIGURATION_AS_PROPERTIES;
 	}
 
 	/**

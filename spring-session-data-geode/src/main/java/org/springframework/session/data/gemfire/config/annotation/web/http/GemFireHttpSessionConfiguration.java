@@ -18,10 +18,12 @@ package org.springframework.session.data.gemfire.config.annotation.web.http;
 
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -46,12 +48,17 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.PropertiesPropertySource;
+import org.springframework.core.env.PropertySource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.GemfireOperations;
@@ -134,6 +141,12 @@ import org.springframework.util.StringUtils;
 public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionConfiguration implements ImportAware {
 
 	/**
+	 * Default expose Spring Session using Apache Geode or Pivotal GemFire configuration as {@link Properties}
+	 * in Spring's {@link Environment}.
+	 */
+	public static final boolean DEFAULT_EXPOSE_CONFIGURATION_AS_PROPERTIES = false;
+
+	/**
 	 * Default maximum interval in seconds in which a {@link Session} can remain inactive before it expires.
 	 */
 	public static final int DEFAULT_MAX_INACTIVE_INTERVAL_IN_SECONDS = (int) TimeUnit.MINUTES.toSeconds(30);
@@ -161,6 +174,9 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 */
 	public static final String CONFIGURER_GET_CLIENT_REGION_SHORTCUT_METHOD_NAME =
 		findByMethodName(SpringSessionGemFireConfigurer.class, "getClientRegionShortcut");
+
+	public static final String CONFIGURER_GET_EXPOSE_CONFIGURATION_IN_PROPERTIES_METHOD_NAME =
+		findByMethodName(SpringSessionGemFireConfigurer.class, "getExposeConfigurationAsProperties");
 
 	public static final String CONFIGURER_GET_INDEXABLE_SESSION_ATTRIBUTES_METHOD_NAME =
 		findByMethodName(SpringSessionGemFireConfigurer.class, "getIndexableSessionAttributes");
@@ -208,10 +224,15 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 
 	public static final String DEFAULT_SESSION_SERIALIZER_BEAN_NAME = SESSION_PDX_SERIALIZER_BEAN_NAME;
 
+	protected static final String SPRING_SESSION_GEMFIRE_PROPERTY_SOURCE =
+		GemFireHttpSessionConfiguration.class.getName().concat(".PROPERTY_SOURCE");
+
 	/**
 	 * Defaults names of all {@link Session} attributes that will be indexed by Apache Geode.
 	 */
 	public static final String[] DEFAULT_INDEXABLE_SESSION_ATTRIBUTES = {};
+
+	private boolean exposeConfigurationAsProperties = DEFAULT_EXPOSE_CONFIGURATION_AS_PROPERTIES;
 
 	private int maxInactiveIntervalInSeconds = DEFAULT_MAX_INACTIVE_INTERVAL_IN_SECONDS;
 
@@ -229,7 +250,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 
 	private String[] indexableSessionAttributes = DEFAULT_INDEXABLE_SESSION_ATTRIBUTES;
 
-	private static String findByMethodName(@NonNull Class<?> type, @NonNull String methodName) {
+	private static @NonNull String findByMethodName(@NonNull Class<?> type, @NonNull String methodName) {
 
 		return Arrays.stream(type.getDeclaredMethods())
 			.map(Method::getName)
@@ -286,6 +307,48 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 
 		return Optional.ofNullable(this.clientRegionShortcut)
 			.orElse(DEFAULT_CLIENT_REGION_SHORTCUT);
+	}
+
+	/**
+	 * Sets whether to expose the configuration of Spring Session using Apache Geode or Pivotal GemFire
+	 * as {@link Properties} in the Spring {@link Environment}.
+	 *
+	 * @param exposeConfigurationAsProperties boolean indicating whether to expose the configuration
+	 * of Spring Session using Apache Geode or Pivotal GemFire as {@link Properties} in the Spring {@link Environment}.
+	 *
+	 * @see EnableGemFireHttpSession#exposeConfigurationAsProperties()
+	 */
+	public void setExposeConfigurationAsProperties(boolean exposeConfigurationAsProperties) {
+		this.exposeConfigurationAsProperties = exposeConfigurationAsProperties;
+	}
+
+	/**
+	 * Determines whether the configuration for Spring Session using Apache Geode or Pivotal GemFire should be exposed
+	 * in the Spring {@link org.springframework.core.env.Environment} as {@link Properties}.
+	 *
+	 * Currently, users may configure Spring Session for Apache Geode or Pivotal GemFire using attributes on this
+	 * {@link Annotation}, using the well-known and documented {@link Properties}
+	 * (e.g. {@literal spring.session.data.gemfire.session.expiration.max-inactive-interval-seconds})
+	 * or using the {@link SpringSessionGemFireConfigurer} declared as a bean in the Spring application context.
+	 *
+	 * The {@link Properties} that are exposed will use the well-known property {@link String names} that are documented
+	 * in this {@link Annotation Annotation's} attributes.
+	 *
+	 * The values of the resulting {@link Properties} follows the precedence as outlined in the documentation:
+	 * first any {@link SpringSessionGemFireConfigurer} bean defined takes precedence, followed by explicit
+	 * {@link Properties} declared in Spring Boot {@literal application.properties} and finally, this
+	 * {@link Annotation Annotation's} attribute values.
+	 *
+	 * Defaults to {@literal false}.
+	 *
+	 * Use {@literal spring.session.data.gemfire.session.configuration.expose} in Spring Boot
+	 * {@literal application.properties}.
+	 *
+	 * @return a boolean value indicating whether to expose the configuration of Spring Session using Apache Geode
+	 * or Pivotal GemFire in the Spring {@link org.springframework.core.env.Environment} as {@link Properties}.
+	 */
+	public boolean isExposeConfigurationAsProperties() {
+		return this.exposeConfigurationAsProperties;
 	}
 
 	/**
@@ -388,10 +451,24 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 			.orElse(DEFAULT_SERVER_REGION_SHORTCUT);
 	}
 
+	/**
+	 * Sets the {@link String name} of the bean configured in the Spring application context implementing
+	 * the {@link SessionExpirationPolicy} for {@link Session} expiration.
+	 *
+	 * @param sessionExpirationPolicyBeanName {@link String} containing the name of the bean configured in
+	 * the Spring application context implementing the {@link SessionExpirationPolicy} for {@link Session} expiration.
+	 */
 	public void setSessionExpirationPolicyBeanName(String sessionExpirationPolicyBeanName) {
 		this.sessionExpirationPolicyBeanName = sessionExpirationPolicyBeanName;
 	}
 
+	/**
+	 * Returns an {@link Optional} {@link String name} of the bean configured in the Spring application context
+	 * implementing the {@link SessionExpirationPolicy} for {@link Session} expiration.
+	 *
+	 * @return an {@link Optional} {@link String name} of the bean configured in the Spring application context
+	 * implementing the {@link SessionExpirationPolicy} for {@link Session} expiration.
+	 */
 	public Optional<String> getSessionExpirationPolicyBeanName() {
 
 		return Optional.ofNullable(this.sessionExpirationPolicyBeanName)
@@ -477,11 +554,13 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * Callback with the {@link AnnotationMetadata} of the class containing {@link Import @Import} annotation
 	 * that imported this {@link Configuration @Configuration} class.
 	 *
-	 * The {@link Configuration @Configuration} class should have been annotated with {@link EnableGemFireHttpSession}.
+	 * The {@link Configuration @Configuration} class should also be annotated with {@link EnableGemFireHttpSession}.
 	 *
 	 * @param importMetadata {@link AnnotationMetadata} of the application class importing
 	 * this {@link Configuration} class.
 	 * @see org.springframework.core.type.AnnotationMetadata
+	 * @see #applySpringSessionGemFireConfigurer()
+	 * @see #exposeSpringSessionGemFireConfigurationAsProperties()
 	 */
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
 
@@ -489,8 +568,11 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 			AnnotationAttributes.fromMap(importMetadata.getAnnotationAttributes(
 				EnableGemFireHttpSession.class.getName()));
 
+		// Apply configuration from {@link EnableGemFireHttpSession} annotation
+		// and well-known, documented {@link Properties}.
 		configureClientRegionShortcut(enableGemFireHttpSessionAttributes);
-		configureIndexableSessionAttributes(enableGemFireHttpSessionAttributes);
+		configureExposeConfigurationAsProperties(enableGemFireHttpSessionAttributes);
+		configureIndexedSessionAttributes(enableGemFireHttpSessionAttributes);
 		configureMaxInactiveIntervalInSeconds(enableGemFireHttpSessionAttributes);
 		configurePoolName(enableGemFireHttpSessionAttributes);
 		configureServerRegionShortcut(enableGemFireHttpSessionAttributes);
@@ -498,7 +580,12 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 		configureSessionRegionName(enableGemFireHttpSessionAttributes);
 		configureSessionSerializerBeanName(enableGemFireHttpSessionAttributes);
 
+		// Apply configuration from {@link SpringSessionGemFireConfigurer}.
 		applySpringSessionGemFireConfigurer();
+
+		// Expose configuration as {@link Properties} in the Spring {@link Environment}
+		// if {@link EnableGemFireHttpSession#exposeConfigurationAsProperties} is set to {@literal true}.
+		exposeSpringSessionGemFireConfigurationAsProperties();
 	}
 
 	private void configureClientRegionShortcut(AnnotationAttributes enableGemFireHttpSessionAttributes) {
@@ -510,13 +597,22 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 			ClientRegionShortcut.class, defaultClientRegionShortcut));
 	}
 
-	private void configureIndexableSessionAttributes(AnnotationAttributes enableGemFireHttpSessionAttributes) {
+	private void configureExposeConfigurationAsProperties(AnnotationAttributes enableGemFireHttpSessionAttributes) {
 
-		String[] defaultIndexableSessionAttributes =
+		boolean defaultExposeConfigurationAsProperties = Boolean.TRUE
+			.equals(enableGemFireHttpSessionAttributes.getBoolean("exposeConfigurationAsProperties"));
+
+		setExposeConfigurationAsProperties(resolveProperty(exposeConfigurationAsPropertiesPropertyName(),
+			defaultExposeConfigurationAsProperties));
+	}
+
+	private void configureIndexedSessionAttributes(AnnotationAttributes enableGemFireHttpSessionAttributes) {
+
+		String[] defaultIndexedSessionAttributes =
 			enableGemFireHttpSessionAttributes.getStringArray("indexableSessionAttributes");
 
-		setIndexableSessionAttributes(resolveProperty(indexableSessionAttributesPropertyName(),
-			defaultIndexableSessionAttributes));
+		setIndexableSessionAttributes(resolveProperty(indexedSessionAttributesPropertyName(),
+			resolveProperty(indexableSessionAttributesPropertyName(), defaultIndexedSessionAttributes)));
 	}
 
 	private void configureMaxInactiveIntervalInSeconds(AnnotationAttributes enableGemFireHttpSessionAttributes) {
@@ -569,10 +665,18 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 			defaultSessionSerializerBeanName));
 	}
 
-	private void applySpringSessionGemFireConfigurer() {
+	/**
+	 * Applies configuration from a single {@link SpringSessionGemFireConfigurer} bean
+	 * declared in the Spring {@link ApplicationContext}.
+	 *
+	 * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer
+	 * @see #resolveSpringSessionGemFireConfigurer()
+	 */
+	void applySpringSessionGemFireConfigurer() {
 
 		resolveSpringSessionGemFireConfigurer()
 			.map(this::applyClientRegionShortcut)
+			.map(this::applyExposeConfigurationAsProperties)
 			.map(this::applyIndexableSessionAttributes)
 			.map(this::applyMaxInactiveIntervalInSeconds)
 			.map(this::applyPoolName)
@@ -580,6 +684,25 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 			.map(this::applySessionExpirationPolicyBeanName)
 			.map(this::applySessionRegionName)
 			.map(this::applySessionSerializerBeanName);
+	}
+
+	private Optional<SpringSessionGemFireConfigurer> resolveSpringSessionGemFireConfigurer() {
+
+		try {
+			return Optional.of(getApplicationContext().getBean(SpringSessionGemFireConfigurer.class));
+		}
+		catch (BeansException cause) {
+
+			if (isCauseBecauseNoSpringSessionGemFireConfigurerPresent(cause)) {
+				return Optional.empty();
+			}
+
+			throw cause;
+		}
+	}
+
+	private boolean isCauseBecauseNoSpringSessionGemFireConfigurerPresent(Exception cause) {
+		return (!(cause instanceof NoUniqueBeanDefinitionException) && cause instanceof NoSuchBeanDefinitionException);
 	}
 
 	private <T> SpringSessionGemFireConfigurer applySpringSessionGemFireConfigurerConfiguration(
@@ -599,6 +722,13 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 		return applySpringSessionGemFireConfigurerConfiguration(configurer,
 			CONFIGURER_GET_CLIENT_REGION_SHORTCUT_METHOD_NAME,
 				SpringSessionGemFireConfigurer::getClientRegionShortcut, this::setClientRegionShortcut);
+	}
+
+	private <T> SpringSessionGemFireConfigurer applyExposeConfigurationAsProperties(SpringSessionGemFireConfigurer configurer) {
+
+		return applySpringSessionGemFireConfigurerConfiguration(configurer,
+			CONFIGURER_GET_EXPOSE_CONFIGURATION_IN_PROPERTIES_METHOD_NAME,
+				SpringSessionGemFireConfigurer::getExposeConfigurationAsProperties, this::setExposeConfigurationAsProperties);
 	}
 
 	private SpringSessionGemFireConfigurer applyIndexableSessionAttributes(SpringSessionGemFireConfigurer configurer) {
@@ -650,23 +780,63 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 				SpringSessionGemFireConfigurer::getSessionSerializerBeanName, this::setSessionSerializerBeanName);
 	}
 
-	private Optional<SpringSessionGemFireConfigurer> resolveSpringSessionGemFireConfigurer() {
+	/**
+	 * Exposes the configuration of Spring Session using either Apache Geode or Pivotal GemFire as {@link Properties}
+	 * in the Spring {@link Environment}.
+	 *
+	 * @see #isExposeConfigurationAsProperties()
+	 */
+	void exposeSpringSessionGemFireConfigurationAsProperties() {
 
-		try {
-			return Optional.of(getApplicationContext().getBean(SpringSessionGemFireConfigurer.class));
+		if (isExposeConfigurationAsProperties()) {
+
+			Optional.ofNullable(getEnvironment())
+				.filter(ConfigurableEnvironment.class::isInstance)
+				.map(ConfigurableEnvironment.class::cast)
+				.map(ConfigurableEnvironment::getPropertySources)
+				.map(propertySources -> {
+
+					Properties springSessionGemFireProperties = new Properties();
+
+					PropertySource springSessionGemFirePropertySource =
+						new PropertiesPropertySource(SPRING_SESSION_GEMFIRE_PROPERTY_SOURCE,
+							springSessionGemFireProperties);
+
+					propertySources.addFirst(springSessionGemFirePropertySource);
+
+					return springSessionGemFireProperties;
+				})
+				.ifPresent(properties -> {
+
+					properties.setProperty(clientRegionShortcutPropertyName(),
+						getClientRegionShortcut().name());
+
+					properties.setProperty(exposeConfigurationAsPropertiesPropertyName(),
+						String.valueOf(isExposeConfigurationAsProperties()));
+
+					// TODO: deprecate and remove indexableSessionAttributes
+					properties.setProperty(indexableSessionAttributesPropertyName(),
+						StringUtils.arrayToCommaDelimitedString(getIndexableSessionAttributes()));
+
+					properties.setProperty(indexedSessionAttributesPropertyName(),
+						StringUtils.arrayToCommaDelimitedString(getIndexableSessionAttributes()));
+
+					properties.setProperty(maxInactiveIntervalInSecondsPropertyName(),
+						String.valueOf(getMaxInactiveIntervalInSeconds()));
+
+					properties.setProperty(poolNamePropertyName(), getPoolName());
+
+					properties.setProperty(sessionRegionNamePropertyName(), getSessionRegionName());
+
+					properties.setProperty(serverRegionShortcutPropertyName(),
+						getServerRegionShortcut().name());
+
+					getSessionExpirationPolicyBeanName()
+						.ifPresent(it -> properties.setProperty(sessionExpirationPolicyBeanNamePropertyName(), it));
+
+					properties.setProperty(sessionSerializerBeanNamePropertyName(), getSessionSerializerBeanName());
+				});
 		}
-		catch (BeansException cause) {
-
-			if (isCauseBecauseNoSpringSessionGemFireConfigurerPresent(cause)) {
-				return Optional.empty();
-			}
-
-			throw cause;
-		}
-	}
-
-	private boolean isCauseBecauseNoSpringSessionGemFireConfigurerPresent(Exception cause) {
-		return (!(cause instanceof NoUniqueBeanDefinitionException) && cause instanceof NoSuchBeanDefinitionException);
 	}
 
 	@PostConstruct

@@ -16,11 +16,13 @@
 
 package org.springframework.session.data.gemfire.config.annotation.web.http;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Properties;
 
 import javax.servlet.http.HttpSession;
 
@@ -33,62 +35,77 @@ import org.apache.geode.cache.client.Pool;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 import org.springframework.session.Session;
+import org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer;
 import org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy;
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 import org.springframework.session.web.http.SessionRepositoryFilter;
 
 /**
- * Add this annotation to a Spring application defined {@code @Configuration} class exposing
- * the {@link SessionRepositoryFilter} as a bean named {@literal springSessionRepositoryFilter}
- * to back the {@link HttpSession} by Apache Geode or Pivotal GemFire.
+ * Add this {@link Annotation annotation} to a Spring application defined {@code @Configuration} {@link Class}
+ * exposing the {@link SessionRepositoryFilter} as a bean named {@literal springSessionRepositoryFilter}
+ * to back the {@link HttpSession} with either Apache Geode or Pivotal GemFire.
  *
- * In order to use this annotation, a single Apache Geode / Pivotal GemFire {@link Cache} or {@link ClientCache}
- * instance must be provided.
+ * In order to use this {@link Annotation annotation}, a single Apache Geode / Pivotal GemFire {@link ClientCache}
+ * or {@link Cache Peer Cache} instance must be provided.
+ *
+ * The most common use case is to use Apache Geode or Pivotal GemFire's client/server topology, where your
+ * Spring Session enabled application uses a {@link ClientCache} to manage {@link Session} state in a cluster
+ * of dedicated Apache Geode or Pivotal GemFire servers.
  *
  * For example:
  *
  * <pre>
  * <code>
- * {@literal @Configuration}
+ * {@literal @ClientCacheApplication(subscriptionEnabled = true)}
+ * {@literal @EnableGemFireHttpSession(poolName = "DEFAULT"}
+ * public class ClientCacheHttpSessionConfiguration {
+ *
+ * }
+ * </code>
+ * </pre>
+ *
+ * Alternatively, though less common (and not recommended), you can use Spring Session with Apache Geode
+ * or Pivotal GemFire in the embedded {@link Cache Peer Cache} scenario, where your Spring Session enabled application
+ * is technically a {@literal peer} in the Apache Geode or Pivotal GemFire cluster.
+ *
+ * For example:
+ *
+ * <pre>
+ * <code>
  * {@literal @PeerCacheApplication}
  * {@literal @EnableGemFireHttpSession}
  * public class PeerCacheHttpSessionConfiguration {
  *
  * }
- * </code> </pre>
- *
- * Alternatively, Spring Session can be configured to use Apache Geode / Pivotal GemFire as a cache client
- * with a dedicated Apache Geode / Pivotal GemFire cluster.
- *
- * For example:
- *
- * <code>
- * {@literal @Configuration}
- * {@literal @ClientCacheApplication}
- * {@literal @EnableGemFireHttpSession}
- * public class ClientCacheHttpSessionConfiguration {
- *
- * }
  * </code>
+ * </pre>
  *
  * More advanced configurations can extend {@link GemFireHttpSessionConfiguration} instead.
  *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
+ * @see java.util.Properties
+ * @see javax.servlet.http.HttpSession
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.client.Pool
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.Import
+ * @see org.springframework.core.env.Environment
  * @see org.springframework.session.Session
  * @see org.springframework.session.config.annotation.web.http.EnableSpringHttpSession
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer
+ * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy
+ * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
  * @since 1.1.0
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
 @Configuration
 @Import(GemFireHttpSessionConfiguration.class)
 public @interface EnableGemFireHttpSession {
@@ -108,6 +125,33 @@ public @interface EnableGemFireHttpSession {
 	ClientRegionShortcut clientRegionShortcut() default ClientRegionShortcut.PROXY;
 
 	/**
+	 * Determines whether the configuration for Spring Session using Apache Geode or Pivotal GemFire should be exposed
+	 * in the Spring {@link Environment} as {@link Properties}.
+	 *
+	 * Currently, users may configure Spring Session for Apache Geode or Pivotal GemFire using attributes on this
+	 * {@link Annotation}, using the well-known and documented {@link Properties}
+	 * (e.g. {@literal spring.session.data.gemfire.session.expiration.max-inactive-interval-seconds})
+	 * or using the {@link SpringSessionGemFireConfigurer} declared as a bean in the Spring application context.
+	 *
+	 * The {@link Properties} that are exposed will use the well-known property {@link String names} that are documented
+	 * in this {@link Annotation Annotation's} attributes.
+	 *
+	 * The values of the resulting {@link Properties} follows the precedence as outlined in the documentation:
+	 * first any {@link SpringSessionGemFireConfigurer} bean defined takes precedence, followed by explicit
+	 * {@link Properties} declared in Spring Boot {@literal application.properties} and finally, this
+	 * {@link Annotation Annotation's} attribute values.
+	 *
+	 * Defaults to {@literal false}.
+	 *
+	 * Use {@literal spring.session.data.gemfire.session.configuration.expose} in Spring Boot
+	 * {@literal application.properties}.
+	 *
+	 * @return a boolean value indicating whether to expose the configuration of Spring Session using Apache Geode
+	 * or Pivotal GemFire in the Spring {@link Environment} as {@link Properties}.
+	 */
+	boolean exposeConfigurationAsProperties() default GemFireHttpSessionConfiguration.DEFAULT_EXPOSE_CONFIGURATION_AS_PROPERTIES;
+
+	/**
 	 * Identifies the {@link Session} attributes by name that will be indexed for query operations.
 	 *
 	 * For instance, find all {@link Session Sessions} in Apache Geode or Pivotal GemFire having attribute A
@@ -115,8 +159,8 @@ public @interface EnableGemFireHttpSession {
 	 *
 	 * Defaults to empty {@link String} array.
 	 *
-	 * Use the {@literal spring.session.data.gemfire.session.attributes.indexable} in Spring Boot
-	 * {@literal application.properties}.
+	 * Use the {@literal spring.session.data.gemfire.session.attributes.indexed}
+	 * in Spring Boot {@literal application.properties}.
 	 *
 	 * @return an array of {@link String Strings} identifying the names of {@link Session} attributes to index.
 	 */

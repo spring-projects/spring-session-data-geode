@@ -43,10 +43,10 @@ import org.slf4j.LoggerFactory;
  * @see java.lang.ClassLoader
  * @see org.springframework.beans.factory.BeanClassLoaderAware
  * @see org.springframework.beans.factory.config.ConfigurableBeanFactory
- * @see org.springframework.core.env.Environment
  * @see org.springframework.context.ApplicationContext
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.context.EnvironmentAware
+ * @see org.springframework.core.env.Environment
  * @see org.springframework.session.config.annotation.web.http.SpringHttpSessionConfiguration
  * @since 2.0.4
  */
@@ -124,8 +124,9 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 		ApplicationContext applicationContext = getApplicationContext();
 
 		return Optional.ofNullable(applicationContext)
-			.filter(it -> it instanceof ConfigurableApplicationContext)
-			.map(it -> ((ConfigurableApplicationContext) it).getBeanFactory())
+			.filter(ConfigurableApplicationContext.class::isInstance)
+			.map(ConfigurableApplicationContext.class::cast)
+			.map(ConfigurableApplicationContext::getBeanFactory)
 			.orElseThrow(() -> newIllegalStateException("Unable to resolve a reference to a [%1$s] from a [%2$s]",
 				ConfigurableBeanFactory.class.getName(), ObjectUtils.nullSafeClassName(applicationContext)));
 	}
@@ -161,12 +162,43 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 		return this.logger;
 	}
 
+	/**
+	 * Returns the fully-qualified {@link String property name}.
+	 *
+	 * The fully qualified {@link String property name} consists of the {@link String base property name}
+	 * concatenated with the {@code propertyNameSuffix}.
+	 *
+	 * @param propertyNameSuffix {@link String} containing the property name suffix concatenated with
+	 * the {@link String base property name}.
+	 * @return the fully-qualified {@link String property name}.
+	 * @see java.lang.String
+	 */
+	private String propertyName(String propertyNameSuffix) {
+		return String.format("%1$s%2$s", SPRING_SESSION_PROPERTY_PREFIX, propertyNameSuffix);
+	}
+
+	private String cachePropertyName(String propertyNameSuffix) {
+		return propertyName(String.format("cache.%s", propertyNameSuffix));
+	}
+
+	private String sessionPropertyName(String propertyNameSuffix) {
+		return propertyName(String.format("session.%s", propertyNameSuffix));
+	}
+
 	protected String clientRegionShortcutPropertyName() {
-		return propertyName("cache.client.region.shortcut");
+		return cachePropertyName("client.region.shortcut");
+	}
+
+	protected String exposeConfigurationAsPropertiesPropertyName() {
+		return sessionPropertyName("configuration.expose");
 	}
 
 	protected String indexableSessionAttributesPropertyName() {
 		return sessionPropertyName("attributes.indexable");
+	}
+
+	protected String indexedSessionAttributesPropertyName() {
+		return sessionPropertyName("attributes.indexed");
 	}
 
 	protected String maxInactiveIntervalInSecondsPropertyName() {
@@ -174,15 +206,11 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 	}
 
 	protected String poolNamePropertyName() {
-		return propertyName("cache.client.pool.name");
+		return cachePropertyName("client.pool.name");
 	}
 
 	protected String serverRegionShortcutPropertyName() {
-		return propertyName("cache.server.region.shortcut");
-	}
-
-	protected String sessionPropertyName(String propertyNameSuffix) {
-		return propertyName(String.format("session.%s", propertyNameSuffix));
+		return cachePropertyName("server.region.shortcut");
 	}
 
 	protected String sessionExpirationPolicyBeanNamePropertyName() {
@@ -195,21 +223,6 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 
 	protected String sessionSerializerBeanNamePropertyName() {
 		return sessionPropertyName("serializer.bean-name");
-	}
-
-	/**
-	 * Returns the fully-qualified {@link String property name}.
-	 *
-	 * The fully qualified {@link String property name} consists of the {@link String base property name}
-	 * concatenated with the {@code propertyNameSuffix}.
-	 *
-	 * @param propertyNameSuffix {@link String} containing the property name suffix concatenated with
-	 * the {@link String base property name}.
-	 * @return the fully-qualified {@link String property name}.
-	 * @see java.lang.String
-	 */
-	protected String propertyName(String propertyNameSuffix) {
-		return String.format("%1$s%2$s", SPRING_SESSION_PROPERTY_PREFIX, propertyNameSuffix);
 	}
 
 	/**
@@ -246,8 +259,22 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 	 * @see java.lang.Enum
 	 */
 	protected <T extends Enum<T>> T resolveEnumeratedProperty(String propertyName, Class<T> targetType, T defaultValue) {
-
 		return resolveProperty(propertyName, targetType, defaultValue);
+	}
+
+	/**
+	 * Attempts to resolve the property with the given {@link String name} from the Spring {@link Environment}
+	 * as an {@link Boolean}.
+	 *
+	 * @param propertyName {@link String name} of the property to resolve.
+	 * @param defaultValue default value to return if the property is not defined or not set.
+	 * @return the value of the property identified by {@link String name} or the default value
+	 * if the property is not defined or not set.
+	 * @see #resolveProperty(String, Class, Object)
+	 * @see java.lang.Boolean
+	 */
+	protected Boolean resolveProperty(String propertyName, Boolean defaultValue) {
+		return resolveProperty(propertyName, Boolean.class, defaultValue);
 	}
 
 	/**
@@ -256,8 +283,8 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 	 *
 	 * @param propertyName {@link String name} of the property to resolve.
 	 * @param defaultValue default value to return if the property is not defined or not set.
-	 * @return the value of the property identified by {@link String name} or default value if the property
-	 * is not defined or not set.
+	 * @return the value of the property identified by {@link String name} or the default value
+	 * if the property is not defined or not set.
 	 * @see #resolveProperty(String, Class, Object)
 	 * @see java.lang.Integer
 	 */
@@ -271,8 +298,8 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 	 *
 	 * @param propertyName {@link String name} of the property to resolve.
 	 * @param defaultValue default value to return if the property is not defined or not set.
-	 * @return the value of the property identified by {@link String name} or default value if the property
-	 * is not defined or not set.
+	 * @return the value of the property identified by {@link String name} or the default value
+	 * if the property is not defined or not set.
 	 * @see #resolveProperty(String, Class, Object)
 	 * @see java.lang.String
 	 */
@@ -286,8 +313,8 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 	 *
 	 * @param propertyName {@link String name} of the property to resolve.
 	 * @param defaultValue default value to return if the property is not defined or not set.
-	 * @return the value of the property identified by {@link String name} or default value if the property
-	 * is not defined or not set.
+	 * @return the value of the property identified by {@link String name} or the default value
+	 * if the property is not defined or not set.
 	 * @see #resolveProperty(String, Class, Object)
 	 * @see java.lang.String
 	 */
@@ -298,11 +325,11 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 	/**
 	 * Attempts to resolve the property with the given {@link String name} from the Spring {@link Environment}.
 	 *
-	 * @param <T> {@link Class} type of the property value.
+	 * @param <T> {@link Class type} of the property value.
 	 * @param propertyName {@link String name} of the property to resolve.
-	 * @param targetType {@link Class} type of the property's value.
-	 * @return the value of the property identified by {@link String name} or {@literal null} if the property
-	 * is not defined or not set.
+	 * @param targetType {@link Class type} of the property's value.
+	 * @return the {@link Object value} of the property identified by {@link String name}
+	 * or {@literal null} if the property is not defined or not set.
 	 * @see #resolveProperty(String, Class, Object)
 	 */
 	protected <T> T resolveProperty(String propertyName, Class<T> targetType) {
