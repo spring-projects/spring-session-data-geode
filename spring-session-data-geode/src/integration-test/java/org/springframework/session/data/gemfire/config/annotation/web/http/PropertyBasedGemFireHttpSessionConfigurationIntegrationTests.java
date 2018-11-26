@@ -61,7 +61,7 @@ public class PropertyBasedGemFireHttpSessionConfigurationIntegrationTests extend
 	private ConfigurableApplicationContext applicationContext;
 
 	@After
-	public void tearDow() {
+	public void tearDown() {
 		Optional.ofNullable(this.applicationContext).ifPresent(ConfigurableApplicationContext::close);
 	}
 
