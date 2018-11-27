@@ -75,6 +75,7 @@ public class DataSerializableSessionSerializerTests {
 
 	@Test
 	public void supportedClassContainsGemFireSessionAndSubTypes() {
+
 		assertThat(this.sessionSerializer.getSupportedClasses()).contains(GemFireSession.class);
 		assertThat(this.sessionSerializer.getSupportedClasses()).contains(DeltaCapableGemFireSession.class);
 	}
@@ -100,7 +101,7 @@ public class DataSerializableSessionSerializerTests {
 
 		this.sessionSerializer.serialize(session, mockDataOutput);
 
-		assertThat(session.hasDelta()).isFalse();
+		assertThat(session.hasDelta()).isTrue();
 
 		verify(mockDataOutput, times(1)).writeUTF(eq(session.getId()));
 		verify(mockDataOutput, times(1)).writeLong(eq(session.getCreationTime().toEpochMilli()));
@@ -150,7 +151,7 @@ public class DataSerializableSessionSerializerTests {
 		assertThat(session.getLastAccessedTime()).isEqualTo(Instant.ofEpochMilli(expectedLastAccessedTime));
 		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(expectedMaxInactiveIntervalInSeconds));
 		assertThat(session.getPrincipalName()).isEqualTo(expectedPrincipalName);
-		assertThat(session.hasDelta()).isFalse();
+		assertThat(session.hasDelta()).isTrue();
 		assertThat(session.getAttributeNames()).hasSize(3);
 		assertThat(session.getAttributeNames()).containsAll(expectedAttributeNames);
 		assertThat(session.<String>getAttribute("attrOne")).isEqualTo("testOne");

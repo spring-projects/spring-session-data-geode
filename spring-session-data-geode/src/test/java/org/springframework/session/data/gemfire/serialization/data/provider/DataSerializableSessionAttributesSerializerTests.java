@@ -75,6 +75,9 @@ public class DataSerializableSessionAttributesSerializerTests {
 
 		GemFireSessionAttributes sessionAttributes = GemFireSessionAttributes.create();
 
+		assertThat(sessionAttributes).isNotNull();
+		assertThat(sessionAttributes.hasDelta()).isFalse();
+
 		sessionAttributes.setAttribute("attrOne", "testOne");
 		sessionAttributes.setAttribute("attrTwo", "testTwo");
 
@@ -88,7 +91,11 @@ public class DataSerializableSessionAttributesSerializerTests {
 
 		}).when(sessionAttributesSerializer).serializeObject(any(), any(DataOutput.class));
 
+		assertThat(sessionAttributes.hasDelta()).isTrue();
+
 		sessionAttributesSerializer.serialize(sessionAttributes, mockDataOutput);
+
+		assertThat(sessionAttributes.hasDelta()).isTrue();
 
 		verify(mockDataOutput, times(1)).writeInt(eq(2));
 		verify(mockDataOutput, times(1)).writeUTF(eq("attrOne"));
@@ -113,10 +120,11 @@ public class DataSerializableSessionAttributesSerializerTests {
 		GemFireSessionAttributes sessionAttributes = sessionAttributesSerializer.deserialize(mockDataInput);
 
 		assertThat(sessionAttributes).isNotNull();
-		assertThat(sessionAttributes.getAttributeNames()).hasSize(2);
+		assertThat(sessionAttributes).hasSize(2);
 		assertThat(sessionAttributes.getAttributeNames()).containsAll(asSet("attrOne", "attrTwo"));
 		assertThat(sessionAttributes.<String>getAttribute("attrOne")).isEqualTo("testOne");
 		assertThat(sessionAttributes.<String>getAttribute("attrTwo")).isEqualTo("testTwo");
+		assertThat(sessionAttributes.hasDelta()).isTrue();
 
 		verify(mockDataInput, times(1)).readInt();
 		verify(mockDataInput, times(2)).readUTF();
