@@ -75,8 +75,8 @@ import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
 import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
-import org.springframework.session.data.gemfire.config.annotation.web.http.support.GemFireCacheTypeAwareRegionFactoryBean;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionAttributesIndexFactoryBean;
+import org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionCacheTypeAwareRegionFactoryBean;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer;
 import org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy;
 import org.springframework.session.data.gemfire.expiration.config.SessionExpirationTimeoutAwareBeanPostProcessor;
@@ -127,7 +127,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.AbstractGemFireHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
- * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.GemFireCacheTypeAwareRegionFactoryBean
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionCacheTypeAwareRegionFactoryBean
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionAttributesIndexFactoryBean
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer
  * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy
@@ -982,7 +982,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 *
 	 * @param gemfireCache reference to the {@link GemFireCache}.
 	 * @param sessionRegionAttributes {@link RegionAttributes} used to configure the {@link Region}.
-	 * @return a {@link GemFireCacheTypeAwareRegionFactoryBean} used to configure and initialize
+	 * @return a {@link SessionCacheTypeAwareRegionFactoryBean} used to configure and initialize
 	 * the cache {@link Region} used to store and manage {@link Session} state.
 	 * @see org.apache.geode.cache.GemFireCache
 	 * @see org.apache.geode.cache.RegionAttributes
@@ -992,11 +992,11 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @see #getSessionRegionName()
 	 */
 	@Bean(name = DEFAULT_SESSION_REGION_NAME)
-	public GemFireCacheTypeAwareRegionFactoryBean<Object, Session> sessionRegion(GemFireCache gemfireCache,
+	public SessionCacheTypeAwareRegionFactoryBean<Object, Session> sessionRegion(GemFireCache gemfireCache,
 			@Qualifier("sessionRegionAttributes") RegionAttributes<Object, Session> sessionRegionAttributes) {
 
-		GemFireCacheTypeAwareRegionFactoryBean<Object, Session> sessionRegion =
-			new GemFireCacheTypeAwareRegionFactoryBean<>();
+		SessionCacheTypeAwareRegionFactoryBean<Object, Session> sessionRegion =
+			new SessionCacheTypeAwareRegionFactoryBean<>();
 
 		sessionRegion.setAttributes(sessionRegionAttributes);
 		sessionRegion.setCache(gemfireCache);

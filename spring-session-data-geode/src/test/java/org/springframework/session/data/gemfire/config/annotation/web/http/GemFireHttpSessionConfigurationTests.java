@@ -64,7 +64,7 @@ import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
-import org.springframework.session.data.gemfire.config.annotation.web.http.support.GemFireCacheTypeAwareRegionFactoryBean;
+import org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionCacheTypeAwareRegionFactoryBean;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer;
 import org.springframework.util.ReflectionUtils;
 
@@ -726,7 +726,7 @@ public class GemFireHttpSessionConfigurationTests {
 		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.PARTITION_REDUNDANT);
 		this.gemfireConfiguration.setSessionRegionName("TestRegion");
 
-		GemFireCacheTypeAwareRegionFactoryBean<Object, Session> sessionRegionFactoryBean =
+		SessionCacheTypeAwareRegionFactoryBean<Object, Session> sessionRegionFactoryBean =
 			this.gemfireConfiguration.sessionRegion(mockGemFireCache, mockRegionAttributes);
 
 		assertThat(sessionRegionFactoryBean).isNotNull();

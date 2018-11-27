@@ -19,23 +19,20 @@ package org.springframework.session.data.gemfire.config.annotation.web.http.supp
 import java.util.Optional;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.data.gemfire.client.Interest;
 import org.springframework.data.gemfire.config.annotation.support.CacheTypeAwareRegionFactoryBean;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
-import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * The {@link GemFireCacheTypeAwareRegionFactoryBean} class is a Spring {@link FactoryBean} used to construct,
+ * The {@link SessionCacheTypeAwareRegionFactoryBean} class is a Spring {@link FactoryBean} used to construct,
  * configure and initialize the Apache Geode/Pivotal GemFire cache {@link Region} used to store and manage
  * Session state.
  *
@@ -57,7 +54,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @since 1.1.0
  */
-public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends CacheTypeAwareRegionFactoryBean<K, V> {
+public class SessionCacheTypeAwareRegionFactoryBean<K, V> extends CacheTypeAwareRegionFactoryBean<K, V> {
 
 	protected static final ClientRegionShortcut DEFAULT_CLIENT_REGION_SHORTCUT =
 		GemFireHttpSessionConfiguration.DEFAULT_CLIENT_REGION_SHORTCUT;
@@ -73,39 +70,21 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends CacheTypeAware
 
 	private String regionName;
 
-	@Override
-	public void setClientRegionShortcut(ClientRegionShortcut clientRegionShortcut) {
-		super.setClientRegionShortcut(clientRegionShortcut != null ? clientRegionShortcut
-			: DEFAULT_CLIENT_REGION_SHORTCUT);
-	}
-
+	/**
+	 * Returns the {@link Region} data management policy used by the Apache Geode/Pivotal GemFire {@link ClientCache}
+	 * to manage {@link Session} state.
+	 *
+	 * Defaults to {@link ClientRegionShortcut#PROXY}.
+	 *
+	 * @return a {@link ClientRegionShortcut} specifying the client {@link Region} data management policy
+	 * used to manage {@link Session} state.
+	 * @see org.apache.geode.cache.client.ClientRegionShortcut
+	 */
 	@Override
 	public ClientRegionShortcut getClientRegionShortcut() {
-		return super.getClientRegionShortcut();
-	}
 
-	@Override
-	protected Interest<K>[] getInterests() {
-
-		ClientRegionShortcut clientRegionShortcut = getClientRegionShortcut();
-
-		return registerInterests(!(clientRegionShortcut == null || GemFireUtils.isLocal(clientRegionShortcut)));
-	}
-
-	/**
-	 * Decides whether interests will be registered for all keys. Interests is only registered on
-	 * a client and typically only when the client is a (CACHING) PROXY to the server (i.e. non-LOCAL only).
-	 *
-	 * @param register a boolean value indicating whether interests should be registered.
-	 * @return an array of Interests KEY/VALUE registrations.
-	 * @see org.springframework.data.gemfire.client.Interest
-	 */
-	@SuppressWarnings("unchecked")
-	protected Interest<K>[] registerInterests(boolean register) {
-
-		return register
-			? new Interest[] { new Interest<>("ALL_KEYS", InterestResultPolicy.KEYS) }
-			: new Interest[0];
+		return Optional.ofNullable(super.getClientRegionShortcut())
+			.orElse(DEFAULT_CLIENT_REGION_SHORTCUT);
 	}
 
 	/**
@@ -118,34 +97,6 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends CacheTypeAware
 	@Override
 	protected Optional<String> getPoolName() {
 		return Optional.of(super.getPoolName().orElse(DEFAULT_POOL_NAME));
-	}
-
-	/**
-	 * Sets the Pivotal GemFire {@link RegionAttributes} used to configure the Pivotal GemFire cache
-	 * {@link Region} used to store and manage Session state.
-	 *
-	 * @param regionAttributes the Pivotal GemFire {@link RegionAttributes} used to configure the
-	 * Pivotal GemFire cache {@link Region}.
-	 * @see org.apache.geode.cache.RegionAttributes
-	 * @deprecated use {@link #setAttributes(RegionAttributes)}.
-	 */
-	@Deprecated
-	public void setRegionAttributes(RegionAttributes<K, V> regionAttributes) {
-		setAttributes(regionAttributes);
-	}
-
-	/**
-	 * Returns the Pivotal GemFire {@link RegionAttributes} used to configure the Pivotal GemFire cache
-	 * {@link Region} used to store and manage Session state.
-	 *
-	 * @return the Pivotal GemFire {@link RegionAttributes} used to configure the Pivotal GemFire cache
-	 * {@link Region}.
-	 * @see org.apache.geode.cache.RegionAttributes
-	 * @deprecated use {@link #getAttributes()}.
-	 */
-	@Deprecated
-	protected RegionAttributes<K, V> getRegionAttributes() {
-		return getAttributes();
 	}
 
 	/**
@@ -168,25 +119,37 @@ public class GemFireCacheTypeAwareRegionFactoryBean<K, V> extends CacheTypeAware
 	 * @see org.apache.geode.cache.Region#getName()
 	 */
 	protected String getRegionName() {
-		return Optional.ofNullable(this.regionName).filter(StringUtils::hasText).orElse(DEFAULT_SESSION_REGION_NAME);
+
+		return Optional.ofNullable(this.regionName)
+			.filter(StringUtils::hasText)
+			.orElse(DEFAULT_SESSION_REGION_NAME);
 	}
 
+	/**
+	 * Resolves the {@link String name} of the {@link Region} used to manage {@link Session} state.
+	 *
+	 * @return the {@link String name} of the {@link Region} used to manage {@link Session} state.
+	 * @see #getRegionName()
+	 */
 	@Override
 	public String resolveRegionName() {
 		return getRegionName();
 	}
 
 	/**
-	 * Returns the {@link Region} data policy used by the Apache Geode/Pivotal GemFire peer {@link Cache}
+	 * Returns the {@link Region} data management policy used by the Apache Geode/Pivotal GemFire peer {@link Cache}
 	 * to manage {@link Session} state.
 	 *
 	 * Defaults to {@link RegionShortcut#PARTITION}.
 	 *
-	 * @return a {@link RegionShortcut} specifying the peer {@link Region} data management policy.
+	 * @return a {@link RegionShortcut} specifying the peer {@link Region} data management policy
+	 * to manage {@link Session} state.
 	 * @see org.apache.geode.cache.RegionShortcut
 	 */
 	@Override
 	public RegionShortcut getServerRegionShortcut() {
-		return Optional.ofNullable(super.getServerRegionShortcut()).orElse(DEFAULT_SERVER_REGION_SHORTCUT);
+
+		return Optional.ofNullable(super.getServerRegionShortcut())
+			.orElse(DEFAULT_SERVER_REGION_SHORTCUT);
 	}
 }
