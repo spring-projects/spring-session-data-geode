@@ -45,10 +45,13 @@ import org.springframework.util.StringUtils;
  * @see java.io.DataOutput
  * @see org.apache.geode.DataSerializer
  * @see org.springframework.session.Session
- * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession
  * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSession
+ * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSessionAttributes
+ * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession
+ * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSessionAttributes
  * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
  * @see org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer
+ * @see org.springframework.session.data.gemfire.support.AbstractSession
  * @since 2.0.0
  */
 @SuppressWarnings("unused")
@@ -101,18 +104,15 @@ public class DataSerializableSessionSerializer extends AbstractDataSerializableS
 
 			String principalName = session.getPrincipalName();
 
-			int length = StringUtils.hasText(principalName) ? principalName.length() : 0;
+			int principalNameLength = StringUtils.hasText(principalName) ? principalName.length() : 0;
 
-			safeWrite(out, output -> output.writeInt(length));
+			safeWrite(out, output -> output.writeInt(principalNameLength));
 
-			if (length > 0) {
+			if (principalNameLength > 0) {
 				safeWrite(out, output -> output.writeUTF(principalName));
 			}
 
 			safeWrite(out, output -> serializeObject(session.getAttributes(), output));
-
-			session.getAttributes().clearDelta();
-			session.clearDelta();
 		}
 	}
 
@@ -154,8 +154,6 @@ public class DataSerializableSessionSerializer extends AbstractDataSerializableS
 		}
 
 		session.getAttributes().from(this.<GemFireSessionAttributes>safeRead(in, this::deserializeObject));
-		session.getAttributes().clearDelta();
-		session.clearDelta();
 
 		return session;
 	}

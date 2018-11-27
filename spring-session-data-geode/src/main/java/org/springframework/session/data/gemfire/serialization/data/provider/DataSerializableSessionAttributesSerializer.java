@@ -37,10 +37,12 @@ import org.springframework.session.data.gemfire.serialization.data.AbstractDataS
  * framework.
  *
  * @author John Blum
+ * @see java.io.DataInput
+ * @see java.io.DataOutput
  * @see org.apache.geode.DataSerializer
  * @see org.springframework.session.Session
- * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSessionAttributes
  * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSessionAttributes
+ * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSessionAttributes
  * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
  * @see org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer
  * @since 2.0.0
@@ -85,7 +87,7 @@ public class DataSerializableSessionAttributesSerializer
 	@Override
 	public void serialize(GemFireSessionAttributes sessionAttributes, DataOutput out) {
 
-		synchronized (sessionAttributes) {
+		synchronized (sessionAttributes.getLock()) {
 
 			Set<String> attributeNames = nullSafeSet(sessionAttributes.getAttributeNames());
 
@@ -95,8 +97,6 @@ public class DataSerializableSessionAttributesSerializer
 				safeWrite(out, output -> output.writeUTF(attributeName));
 				safeWrite(out, output -> serializeObject(sessionAttributes.getAttribute(attributeName), output));
 			});
-
-			sessionAttributes.clearDelta();
 		}
 	}
 
@@ -108,8 +108,6 @@ public class DataSerializableSessionAttributesSerializer
 		for (int count = safeRead(in, DataInput::readInt); count > 0; count--) {
 			sessionAttributes.setAttribute(safeRead(in, DataInput::readUTF), safeRead(in, this::deserializeObject));
 		}
-
-		sessionAttributes.clearDelta();
 
 		return sessionAttributes;
 	}

@@ -43,7 +43,7 @@ import org.springframework.session.SessionRepository;
 public class GemFireOperationsSessionRepository extends AbstractGemFireOperationsSessionRepository {
 
 	// Pivotal GemFire OQL query used to lookup Sessions by arbitrary attributes.
-	protected static final String FIND_SESSIONS_BY_INDEX_NAME_INDEX_VALUE_QUERY =
+	protected static final String FIND_SESSIONS_BY_INDEX_NAME_AND_INDEX_VALUE_QUERY =
 		"SELECT s FROM %1$s s WHERE s.attributes['%2$s'] = $1";
 
 	// Pivotal GemFire OQL query used to look up Sessions by principal name.
@@ -61,6 +61,44 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 */
 	public GemFireOperationsSessionRepository(GemfireOperations template) {
 		super(template);
+	}
+
+	/**
+	 * Constructs a new {@link Session} instance backed by GemFire.
+	 *
+	 * @return an instance of {@link Session} backed by GemFire.
+	 * @see AbstractGemFireOperationsSessionRepository.GemFireSession#create(Duration)
+	 * @see org.springframework.session.Session
+	 * @see #getMaxInactiveIntervalInSeconds()
+	 */
+	@NonNull
+	public Session createSession() {
+		return GemFireSession.create(getMaxInactiveInterval());
+	}
+
+	/**
+	 * Gets a copy of an existing, non-expired {@link Session} by ID.
+	 *
+	 * If the {@link Session} is expired, then the {@link Session }is deleted.
+	 *
+	 * @param sessionId a String indicating the ID of the Session to get.
+	 * @return an existing {@link Session} by ID or null if no {@link Session} exists.
+	 * @see AbstractGemFireOperationsSessionRepository.GemFireSession#from(Session)
+	 * @see org.springframework.session.Session
+	 * @see #deleteById(String)
+	 */
+	@Nullable
+	public Session findById(String sessionId) {
+
+		Session storedSession = getTemplate().get(sessionId);
+
+		if (storedSession != null) {
+			storedSession = storedSession.isExpired()
+				? delete(storedSession)
+				: touch(commit(GemFireSession.from(storedSession)));
+		}
+
+		return storedSession;
 	}
 
 	/**
@@ -99,47 +137,9 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 */
 	protected String prepareQuery(String indexName) {
 
-		return (PRINCIPAL_NAME_INDEX_NAME.equals(indexName)
+		return PRINCIPAL_NAME_INDEX_NAME.equals(indexName)
 			? String.format(FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY, getFullyQualifiedRegionName())
-			: String.format(FIND_SESSIONS_BY_INDEX_NAME_INDEX_VALUE_QUERY, getFullyQualifiedRegionName(), indexName));
-	}
-
-	/**
-	 * Constructs a new {@link Session} instance backed by GemFire.
-	 *
-	 * @return an instance of {@link Session} backed by GemFire.
-	 * @see AbstractGemFireOperationsSessionRepository.GemFireSession#create(Duration)
-	 * @see org.springframework.session.Session
-	 * @see #getMaxInactiveIntervalInSeconds()
-	 */
-	@NonNull
-	public Session createSession() {
-		return GemFireSession.create(getMaxInactiveInterval());
-	}
-
-	/**
-	 * Gets a copy of an existing, non-expired {@link Session} by ID.
-	 *
-	 * If the {@link Session} is expired, then the {@link Session }is deleted.
-	 *
-	 * @param sessionId a String indicating the ID of the Session to get.
-	 * @return an existing {@link Session} by ID or null if no {@link Session} exists.
-	 * @see AbstractGemFireOperationsSessionRepository.GemFireSession#from(Session)
-	 * @see org.springframework.session.Session
-	 * @see #deleteById(String)
-	 */
-	@Nullable
-	public Session findById(String sessionId) {
-
-		Session storedSession = getTemplate().get(sessionId);
-
-		if (storedSession != null) {
-			storedSession = storedSession.isExpired()
-				? delete(storedSession)
-				: touch(GemFireSession.from(storedSession));
-		}
-
-		return storedSession;
+			: String.format(FIND_SESSIONS_BY_INDEX_NAME_AND_INDEX_VALUE_QUERY, getFullyQualifiedRegionName(), indexName);
 	}
 
 	/**
@@ -161,17 +161,16 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	}
 
 	private boolean isDirty(@NonNull Session session) {
-		return !(session instanceof GemFireSession) || ((GemFireSession) session).isDirty();
+		return !(session instanceof GemFireSession) || ((GemFireSession) session).hasDelta();
 	}
 
-	/*private*/ void doSave(@NonNull Session session) {
+	void doSave(@NonNull Session session) {
 
 		// Save Session As GemFireSession
 		getTemplate().put(session.getId(), GemFireSession.from(session));
 
-		if (session instanceof GemFireSession) {
-			((GemFireSession) session).commit();
-		}
+		// Commit Session
+		commit(session);
 	}
 
 	/**

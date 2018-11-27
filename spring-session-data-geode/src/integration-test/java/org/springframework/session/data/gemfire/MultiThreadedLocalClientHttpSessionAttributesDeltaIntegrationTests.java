@@ -18,10 +18,8 @@ package org.springframework.session.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -30,8 +28,6 @@ import edu.umd.cs.mtc.TestFramework;
 
 import org.apache.geode.cache.client.ClientRegionShortcut;
 
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
@@ -52,34 +48,27 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringRunner
- * @since 2.1.2
+ * @since 2.1.1
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(
-	classes = MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests.GemFireClientConfiguration.class
-)
-public class MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests
+@ContextConfiguration
+public class MultiThreadedLocalClientHttpSessionAttributesDeltaIntegrationTests
 		extends AbstractGemFireIntegrationTests {
 
-	@BeforeClass
-	public static void startGemFireServer() throws IOException {
-		startGemFireServer(GemFireServerConfiguration.class);
-	}
-
 	@Test
-	public void multiThreadedConcurrentSessionOperationsAreCorrect() throws Throwable {
-		TestFramework.runOnce(new MultiThreadedConcurrentSessionOperationsTestCase(this));
+	public void multiThreadedSessionOperationsAreCorrect() throws Throwable {
+		TestFramework.runOnce(new MultiThreadedSessionOperationsTestCase(this));
 	}
 
 	@SuppressWarnings("unused")
-	public static final class MultiThreadedConcurrentSessionOperationsTestCase extends MultithreadedTestCase {
+	public static class MultiThreadedSessionOperationsTestCase extends MultithreadedTestCase {
 
 		private final AtomicReference<String> sessionId = new AtomicReference<>(null);
 
-		private final MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests testInstance;
+		private final MultiThreadedLocalClientHttpSessionAttributesDeltaIntegrationTests testInstance;
 
-		public MultiThreadedConcurrentSessionOperationsTestCase(
-				MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests testInstance) {
+		public MultiThreadedSessionOperationsTestCase(
+				MultiThreadedLocalClientHttpSessionAttributesDeltaIntegrationTests testInstance) {
 
 			this.testInstance = testInstance;
 		}
@@ -109,21 +98,53 @@ public class MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests
 			assertThat(session.isExpired()).isFalse();
 			assertThat(session.getAttributeNames()).isEmpty();
 
+			session.setAttribute("attributeOne", "foo");
+
 			save(session);
 
-			this.sessionId.set(session.getId());
+			Session loadedSession = findById(session.getId());
+
+			assertThat(loadedSession).isNotNull();
+			assertThat(loadedSession).isNotSameAs(session);
+			assertThat(loadedSession.getId()).isEqualTo(session.getId());
+			assertThat(loadedSession.isExpired()).isFalse();
+			assertThat(loadedSession.getAttributeNames()).containsExactly("attributeOne");
+			assertThat(loadedSession.<String>getAttribute("attributeOne")).isEqualTo("foo");
+
+			loadedSession.setAttribute("attributeTwo", "bar");
+
+			save(loadedSession);
+
+			this.sessionId.set(loadedSession.getId());
 
 			waitForTick(2);
 			assertTick(2);
 
-			session.setAttribute("attributeOne", "foo");
-			session.setAttribute("attributeTwo", "bar");
+			Session reloadedSession = findById(loadedSession.getId());
 
-			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("foo");
-			assertThat(session.<String>getAttribute("attributeTwo")).isEqualTo("bar");
-			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo");
+			assertThat(reloadedSession).isNotNull();
+			assertThat(reloadedSession).isNotSameAs(loadedSession);
+			assertThat(reloadedSession.getId()).isEqualTo(loadedSession.getId());
+			assertThat(reloadedSession.isExpired()).isFalse();
+			assertThat(reloadedSession.getAttributeNames())
+				.containsOnly("attributeOne", "attributeTwo", "attributeThree");
+			assertThat(reloadedSession.<String>getAttribute("attributeOne")).isEqualTo("foo");
+			assertThat(reloadedSession.<String>getAttribute("attributeTwo")).isEqualTo("bar");
+			assertThat(reloadedSession.<String>getAttribute("attributeThree")).isEqualTo("baz");
 
-			save(session);
+			waitForTick(4);
+			assertTick(4);
+
+			Session endSession = findById(reloadedSession.getId());
+
+			assertThat(endSession).isNotNull();
+			assertThat(endSession.getId()).isEqualTo(reloadedSession.getId());
+			assertThat(endSession.isExpired()).isFalse();
+			assertThat(endSession.getAttributeNames()).containsOnly("attributeOne", "attributeThree");
+			assertThat(endSession.getAttributeNames()).doesNotContain("attributeTwo");
+			assertThat(endSession.<String>getAttribute("attributeOne")).isEqualTo("foo");
+			assertThat(endSession.<String>getAttribute("attributeTwo")).isNull();
+			assertThat(endSession.<String>getAttribute("attributeThree")).isEqualTo("baz");
 		}
 
 		public void thread2() {
@@ -138,35 +159,32 @@ public class MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(this.sessionId.get());
 			assertThat(session.isExpired()).isFalse();
-			assertThat(session.getAttributeNames()).isEmpty();
-
-			waitForTick(2);
-			assertTick(2);
+			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo");
+			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("foo");
+			assertThat(session.<String>getAttribute("attributeTwo")).isEqualTo("bar");
 
 			session.setAttribute("attributeThree", "baz");
-
-			assertThat(session.getAttributeNames()).containsOnly("attributeThree");
-			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("baz");
 
 			save(session);
 
 			waitForTick(4);
 			assertTick(4);
 
-			assertThat(session.getAttributeNames()).containsOnly("attributeThree");
+			Session endSession = findById(session.getId());
 
-			session.setAttribute("attributeFour", "qux");
-
-			assertThat(session.getAttributeNames()).containsOnly("attributeThree", "attributeFour");
-			assertThat(session.<String>getAttribute("attributeFour")).isEqualTo("qux");
-			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("baz");
-
-			save(session);
+			assertThat(endSession).isNotNull();
+			assertThat(endSession.getId()).isEqualTo(session.getId());
+			assertThat(endSession.isExpired()).isFalse();
+			assertThat(endSession.getAttributeNames()).containsOnly("attributeOne", "attributeThree");
+			assertThat(endSession.getAttributeNames()).doesNotContain("attributeTwo");
+			assertThat(endSession.<String>getAttribute("attributeOne")).isEqualTo("foo");
+			assertThat(endSession.<String>getAttribute("attributeTwo")).isNull();
+			assertThat(endSession.<String>getAttribute("attributeThree")).isEqualTo("baz");
 		}
 
 		public void thread3() {
 
-			Thread.currentThread().setName("User Session Four");
+			Thread.currentThread().setName("User Session Three");
 
 			waitForTick(3);
 			assertTick(3);
@@ -181,16 +199,7 @@ public class MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests
 			assertThat(session.<String>getAttribute("attributeTwo")).isEqualTo("bar");
 			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("baz");
 
-			waitForTick(4);
-			assertTick(4);
-
-			session.setAttribute("attributeThree", "bazatch");
-			session.removeAttribute("attributeTwo");
-
-			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeThree");
-			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("foo");
-			assertThat(session.<String>getAttribute("attributeTwo")).isNull();
-			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("bazatch");
+			session.setAttribute("attributeTwo", null);
 
 			save(session);
 		}
@@ -198,47 +207,25 @@ public class MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests
 		@Override
 		public void finish() {
 
-			super.finish();
-
 			Session session = findById(this.sessionId.get());
 
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(this.sessionId.get());
 			assertThat(session.isExpired()).isFalse();
-			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeThree", "attributeFour");
+			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeThree");
+			assertThat(session.getAttributeNames()).doesNotContain("attributeTwo");
 			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("foo");
 			assertThat(session.<String>getAttribute("attributeTwo")).isNull();
-			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("bazatch");
-			assertThat(session.<String>getAttribute("attributeFour")).isEqualTo("qux");
+			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("baz");
 		}
 	}
 
-	@ClientCacheApplication(logLevel = "error", subscriptionEnabled = true)
+	@ClientCacheApplication(logLevel = "error", copyOnRead = true)
 	@EnableGemFireHttpSession(
-		clientRegionShortcut = ClientRegionShortcut.PROXY,
+		clientRegionShortcut = ClientRegionShortcut.LOCAL,
 		poolName = "DEFAULT",
-		regionName = "Sessions",
 		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME
 	)
-	static class GemFireClientConfiguration { }
-
-	@CacheServerApplication(
-		name = "MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests",
-		logLevel = "error"
-	)
-	@EnableGemFireHttpSession(
-		regionName = "Sessions",
-		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME
-	)
-	static class GemFireServerConfiguration {
-
-		public static void main(String[] args) {
-
-			AnnotationConfigApplicationContext applicationContext =
-				new AnnotationConfigApplicationContext(GemFireServerConfiguration.class);
-
-			applicationContext.registerShutdownHook();
-		}
-	}
+	static class TestConfiguration { }
 
 }

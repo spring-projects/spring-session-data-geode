@@ -140,8 +140,8 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 			waitForTick(2);
 			assertTick(2);
 
-			// Save Session with no changes, no delta
-			assertThat(session instanceof GemFireSession && ((GemFireSession) session).isDirty()).isFalse();
+			// Save Session with no changes/no delta
+			assertThat(session instanceof GemFireSession && ((GemFireSession) session).hasDelta()).isFalse();
 
 			save(session);
 		}
@@ -166,6 +166,7 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo", "attributeThree");
 			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("three");
+			assertThat(session instanceof GemFireSession && ((GemFireSession) session).hasDelta()).isTrue();
 
 			save(session);
 		}
