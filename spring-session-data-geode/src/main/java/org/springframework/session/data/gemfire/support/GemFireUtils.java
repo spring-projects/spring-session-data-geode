@@ -31,7 +31,8 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 
 /**
- * {@link GemFireUtils} is an abstract, extensible utility class for working with Pivotal GemFire objects and types.
+ * {@link GemFireUtils} is an abstract, extensible utility class for working with Apache Geode and Pivotal GemFire
+ * objects and types.
  *
  * @author John Blum
  * @see org.apache.geode.cache.Cache
@@ -57,8 +58,7 @@ public abstract class GemFireUtils {
 				obj.close();
 				return true;
 			}
-			catch (IOException ignore) {
-			}
+			catch (IOException ignore) { }
 		}
 
 		return false;
@@ -74,7 +74,7 @@ public abstract class GemFireUtils {
 	 */
 	public static boolean isClient(GemFireCache gemfireCache) {
 
-		boolean client = (gemfireCache instanceof ClientCache);
+		boolean client = gemfireCache instanceof ClientCache;
 
 		client &= (!(gemfireCache instanceof GemFireCacheImpl) || ((GemFireCacheImpl) gemfireCache).isClient());
 
@@ -90,7 +90,7 @@ public abstract class GemFireUtils {
 	 * @see org.apache.geode.cache.GemFireCache
 	 */
 	public static boolean isPeer(GemFireCache gemFireCache) {
-		return (gemFireCache instanceof Cache && !isClient(gemFireCache));
+		return gemFireCache instanceof Cache && !isClient(gemFireCache);
 	}
 
 	/**
@@ -116,12 +116,12 @@ public abstract class GemFireUtils {
 	}
 
 	/**
-	 * Determines whether the client {@link ClientRegionShortcut} is a proxy-based
-	 * shortcut. NOTE: "proxy"-based Regions keep no local state.
+	 * Determines whether the given {@link ClientRegionShortcut} is a proxy-based shortcut.
 	 *
-	 * @param shortcut the client {@link ClientRegionShortcut} to evaluate.
-	 * @return a boolean value indicating whether the client {@link ClientRegionShortcut}
-	 * refers to a proxy-based shortcut.
+	 * "Proxy"-based {@link Region Regions} keep no local state.
+	 *
+	 * @param shortcut {@link ClientRegionShortcut} to evaluate.
+	 * @return a boolean value indicating whether the {@link ClientRegionShortcut} refers to a Proxy-based shortcut.
 	 * @see org.apache.geode.cache.client.ClientRegionShortcut
 	 */
 	public static boolean isProxy(ClientRegionShortcut shortcut) {
@@ -150,22 +150,23 @@ public abstract class GemFireUtils {
 
 		boolean proxy = DataPolicy.EMPTY.equals(regionDataPolicy);
 
-		proxy |= proxy || Optional.ofNullable(regionDataPolicy)
-			.filter(DataPolicy.PARTITION::equals)
-			.map(it -> regionAttributes.getPartitionAttributes())
-			.filter(partitionAttributes -> partitionAttributes.getLocalMaxMemory() <= 0)
-			.isPresent();
+		proxy |= proxy
+			|| Optional.ofNullable(regionDataPolicy)
+				.filter(DataPolicy.PARTITION::equals)
+				.map(it -> regionAttributes.getPartitionAttributes())
+				.filter(partitionAttributes -> partitionAttributes.getLocalMaxMemory() <= 0)
+				.isPresent();
 
 		return proxy;
 	}
 
 	/**
-	 * Determines whether the peer {@link RegionShortcut} is a proxy-based shortcut. NOTE:
-	 * "proxy"-based Regions keep no local state.
+	 * Determines whether the {@link RegionShortcut} is a Proxy-based shortcut.
 	 *
-	 * @param shortcut the peer {@link RegionShortcut} to evaluate.
-	 * @return a boolean value indicating whether the peer {@link RegionShortcut} refers
-	 * to a proxy-based shortcut.
+	 * "Proxy"-based {@link Region Regions} keep no local state.
+	 *
+	 * @param shortcut {@link RegionShortcut} to evaluate.
+	 * @return a boolean value indicating whether the {@link RegionShortcut} refers to a Proxy-based shortcut.
 	 * @see org.apache.geode.cache.RegionShortcut
 	 */
 	public static boolean isProxy(RegionShortcut shortcut) {
