@@ -82,7 +82,7 @@ public class PeerCacheGemFireOperationsSessionRepositoryIntegrationTests extends
 
 	private static final int MAX_INACTIVE_INTERVAL_IN_SECONDS = 300;
 
-	private static final String GEMFIRE_LOG_LEVEL = "warning";
+	private static final String GEMFIRE_LOG_LEVEL = "error";
 	private static final String SPRING_SECURITY_CONTEXT = "SPRING_SECURITY_CONTEXT";
 	private static final String SPRING_SESSION_GEMFIRE_REGION_NAME = "TestPartitionedSessions";
 
@@ -144,7 +144,7 @@ public class PeerCacheGemFireOperationsSessionRepositoryIntegrationTests extends
 			Query query = queryService.newQuery(queryString);
 
 			SelectResults<Session> results =
-				(SelectResults<Session>) query.execute(new Object[] { principalName });
+				(SelectResults<Session>) query.execute(principalName);
 
 			Map<String, Session> sessions = new HashMap<>(results.size());
 
