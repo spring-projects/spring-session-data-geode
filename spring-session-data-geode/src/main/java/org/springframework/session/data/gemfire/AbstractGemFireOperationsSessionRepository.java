@@ -841,14 +841,6 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			return this.id;
 		}
 
-		public T getAttributes() {
-			return this.sessionAttributes;
-		}
-
-		public Set<String> getAttributeNames() {
-			return getAttributes().getAttributeNames();
-		}
-
 		public void setAttribute(String attributeName, Object attributeValue) {
 			getAttributes().setAttribute(attributeName, attributeValue);
 		}
@@ -859,6 +851,14 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 		public <T> T getAttribute(String attributeName) {
 			return getAttributes().getAttribute(attributeName);
+		}
+
+		public Set<String> getAttributeNames() {
+			return getAttributes().getAttributeNames();
+		}
+
+		public T getAttributes() {
+			return this.sessionAttributes;
 		}
 
 		public synchronized Instant getCreationTime() {
@@ -883,11 +883,18 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			return !isExpirationDisabled(duration);
 		}
 
+		private boolean isLastAccessedTimeValid(Instant lastAccessedTime) {
+			return lastAccessedTime != null;
+		}
+
 		public synchronized void setLastAccessedTime(Instant lastAccessedTime) {
 
-			triggerDelta(!ObjectUtils.nullSafeEquals(this.lastAccessedTime, lastAccessedTime));
+			if (isLastAccessedTimeValid(lastAccessedTime)) {
 
-			this.lastAccessedTime = lastAccessedTime;
+				triggerDelta(!ObjectUtils.nullSafeEquals(this.lastAccessedTime, lastAccessedTime));
+
+				this.lastAccessedTime = lastAccessedTime;
+			}
 		}
 
 		public synchronized Instant getLastAccessedTime() {

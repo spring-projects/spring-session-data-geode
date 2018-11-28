@@ -1540,20 +1540,88 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	@Test
 	public void isExpiredWhenSessionIsInactiveReturnsTrue() {
 
-		int expectedMaxInactiveIntervalInSeconds = 60;
+		Duration maxInactiveInterval = Duration.ofMillis(1);
 
-		GemFireSession<?> session = GemFireSession.create(Duration.ofSeconds(expectedMaxInactiveIntervalInSeconds));
+		GemFireSession<?> session = GemFireSession.create(maxInactiveInterval);
 
 		assertThat(session).isNotNull();
-		assertThat(session.getMaxInactiveInterval())
-			.isEqualTo(Duration.ofSeconds(expectedMaxInactiveIntervalInSeconds));
+		assertThat(session.getMaxInactiveInterval()).isEqualTo(maxInactiveInterval);
 
-		Instant twoHoursAgo = Instant.ofEpochMilli(System.currentTimeMillis() - TimeUnit.HOURS.toMillis(2));
+		long diff;
 
-		session.setLastAccessedTime(twoHoursAgo);
+		do {
+			diff = System.currentTimeMillis() - session.getLastAccessedTime().toEpochMilli();
+		}
+		while (diff < maxInactiveInterval.toMillis() + 1);
 
-		assertThat(session.getLastAccessedTime()).isEqualTo(twoHoursAgo);
 		assertThat(session.isExpired()).isTrue();
+	}
+
+	@Test
+	public void setAndGetLastAccessedTime() {
+
+		Instant inTheBeginning = Instant.now();
+
+		GemFireSession<?> session = GemFireSession.create();
+
+		assertThat(session).isNotNull();
+		assertThat(session.getLastAccessedTime()).isAfterOrEqualTo(inTheBeginning);
+		assertThat(session.getLastAccessedTime()).isBeforeOrEqualTo(Instant.now());
+
+		Instant lastAccessedTime = session.getLastAccessedTime();
+
+		session.setLastAccessedTime(Instant.now());
+
+		assertThat(session.getLastAccessedTime()).isAfterOrEqualTo(lastAccessedTime);
+		assertThat(session.getLastAccessedTime()).isBeforeOrEqualTo(Instant.now());
+
+		lastAccessedTime = session.getLastAccessedTime();
+
+		session.setLastAccessedTime(lastAccessedTime.plusSeconds(5));
+
+		assertThat(session.getLastAccessedTime()).isAfter(lastAccessedTime);
+		assertThat(session.getLastAccessedTime()).isEqualTo(lastAccessedTime.plusSeconds(5));
+	}
+
+	@Test
+	public void setLastAccessedTimeInThePast() {
+
+		GemFireSession<?> session = GemFireSession.create();
+
+		assertThat(session).isNotNull();
+
+		Instant lastAccessedTime = session.getLastAccessedTime();
+
+		assertThat(lastAccessedTime).isNotNull();
+		assertThat(lastAccessedTime).isBeforeOrEqualTo(Instant.now());
+
+		session.setLastAccessedTime(lastAccessedTime.minusMillis(1));
+
+		assertThat(session.getLastAccessedTime()).isEqualTo(lastAccessedTime.minusMillis(1));
+		assertThat(session.getLastAccessedTime()).isBefore(Instant.now());
+
+		session.setLastAccessedTime(lastAccessedTime.minusSeconds(300));
+
+		assertThat(session.getLastAccessedTime()).isEqualTo(lastAccessedTime.minusSeconds(300));
+		assertThat(session.getLastAccessedTime()).isBefore(Instant.now());
+	}
+
+	@Test
+	public void setLastAccessedTimeCannotBeSetToNull() {
+
+		GemFireSession<?> session = GemFireSession.create();
+
+		assertThat(session).isNotNull();
+
+		Instant lastAccessedTime = session.getLastAccessedTime();
+
+		assertThat(lastAccessedTime).isNotNull();
+		assertThat(lastAccessedTime).isBeforeOrEqualTo(Instant.now());
+
+		session.setLastAccessedTime(null);
+
+		assertThat(session.getLastAccessedTime()).isEqualTo(lastAccessedTime);
+		assertThat(lastAccessedTime).isBeforeOrEqualTo(Instant.now());
 	}
 
 	@Test
@@ -1589,7 +1657,9 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		@SuppressWarnings("serial")
 		DeltaCapableGemFireSession session = new DeltaCapableGemFireSession();
 
-		session.setLastAccessedTime(Instant.ofEpochMilli(1L));
+		Instant lastAccessedTime = session.getLastAccessedTime().plusSeconds(1);
+
+		session.setLastAccessedTime(lastAccessedTime);
 		session.setMaxInactiveInterval(Duration.ofSeconds(300L));
 		session.setAttribute("attributeOne", "test");
 
@@ -1599,7 +1669,8 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 		assertThat(session.hasDelta()).isTrue();
 
-		verify(mockDataOutput, times(1)).writeLong(eq(1L));
+		verify(mockDataOutput, times(1)).writeUTF(eq(session.getId()));
+		verify(mockDataOutput, times(1)).writeLong(eq(lastAccessedTime.toEpochMilli()));
 		verify(mockDataOutput, times(1)).writeLong(eq(300L));
 		verify(mockDataOutput, times(1)).writeInt(eq(1));
 		verify(mockDataOutput, times(1)).writeUTF(eq("attributeOne"));
@@ -1610,9 +1681,11 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 		DataInput mockDataInput = mock(DataInput.class);
 
-		given(mockDataInput.readUTF()).willReturn("1");
-		given(mockDataInput.readLong()).willReturn(1L).willReturn(600L);
-		given(mockDataInput.readInt()).willReturn(0);
+		Instant lastAccessedTime = Instant.now().plusSeconds(5);
+
+		when(mockDataInput.readUTF()).thenReturn("1");
+		when(mockDataInput.readLong()).thenReturn(lastAccessedTime.toEpochMilli()).thenReturn(300L);
+		when(mockDataInput.readInt()).thenReturn(0);
 
 		DeltaCapableGemFireSession session = new DeltaCapableGemFireSession();
 
@@ -1622,9 +1695,9 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 		assertThat(session.getId()).isEqualTo("1");
 		assertThat(session.getCreationTime()).isEqualTo(creationTime);
-		assertThat(session.getLastAccessedTime()).isEqualTo(Instant.ofEpochMilli(1L));
+		assertThat(session.getLastAccessedTime()).isEqualTo(lastAccessedTime);
 		assertThat(session.hasDelta()).isTrue();
-		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(600L));
+		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(300L));
 		assertThat(session.getAttributeNames().isEmpty()).isTrue();
 
 		verify(mockDataInput, times(1)).readUTF();
@@ -2396,7 +2469,8 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 			assertThat(this.session).isNotNull();
 			assertThat(this.session.getId()).isEqualTo("1");
-			assertThat(this.session.getCreationTime().compareTo(beforeOrAtCreationTime)).isGreaterThanOrEqualTo(0);
+			assertThat(this.session.getCreationTime()).isAfterOrEqualTo(this.beforeOrAtCreationTime);
+			assertThat(this.session.getCreationTime()).isBeforeOrEqualTo(Instant.now());
 			assertThat(this.session.getLastAccessedTime()).isEqualTo(this.session.getCreationTime());
 			assertThat(this.session.getMaxInactiveInterval()).isEqualTo(Duration.ZERO);
 			assertThat(this.session.getPrincipalName()).isNull();
@@ -2404,7 +2478,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 			this.expectedCreationTime = this.session.getCreationTime();
 
-			this.session.setLastAccessedTime(Instant.MIN);
+			this.session.setLastAccessedTime(this.expectedCreationTime.plusSeconds(1));
 			this.session.setMaxInactiveInterval(Duration.ofSeconds(60L));
 			this.session.setPrincipalName("jxblum");
 		}
@@ -2418,15 +2492,16 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 			assertThat(this.session).isNotNull();
 			assertThat(this.session.getId()).isEqualTo("1");
 			assertThat(this.session.getCreationTime()).isEqualTo(this.expectedCreationTime);
-			assertThat(this.session.getLastAccessedTime()).isEqualTo(Instant.MIN);
+			assertThat(this.session.getLastAccessedTime()).isEqualTo(this.expectedCreationTime.plusSeconds(1));
 			assertThat(this.session.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(60L));
 			assertThat(this.session.getPrincipalName()).isEqualTo("jxblum");
 			assertThat(this.session.getAttributeNames()).hasSize(1);
-			assertThat(this.session.<String>getAttribute(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME)).isEqualTo("jxblum");
+			assertThat(this.session.<String>getAttribute(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME))
+				.isEqualTo("jxblum");
 
-			this.session.setAttribute("tennis", "ping");
 			this.session.setAttribute("junk", "test");
-			this.session.setLastAccessedTime(Instant.ofEpochSecond(1L));
+			this.session.setAttribute("tennis", "ping");
+			this.session.setLastAccessedTime(this.expectedCreationTime.plusSeconds(2));
 			this.session.setMaxInactiveInterval(Duration.ofSeconds(120L));
 			this.session.setPrincipalName("rwinch");
 
@@ -2435,7 +2510,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 			assertThat(this.session).isNotNull();
 			assertThat(this.session.getId()).isEqualTo("1");
 			assertThat(this.session.getCreationTime()).isEqualTo(this.expectedCreationTime);
-			assertThat(this.session.getLastAccessedTime()).isEqualTo(Instant.ofEpochSecond(2L));
+			assertThat(this.session.getLastAccessedTime()).isEqualTo(this.expectedCreationTime.plusSeconds(3));
 			assertThat(this.session.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(180L));
 			assertThat(this.session.getPrincipalName()).isEqualTo("rwinch");
 			assertThat(this.session.getAttributeNames()).hasSize(3);
@@ -2458,18 +2533,18 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 			assertThat(this.session).isNotNull();
 			assertThat(this.session.getId()).isEqualTo("1");
 			assertThat(this.session.getCreationTime()).isEqualTo(this.expectedCreationTime);
-			assertThat(this.session.getLastAccessedTime()).isEqualTo(Instant.ofEpochSecond(1L));
+			assertThat(this.session.getLastAccessedTime()).isEqualTo(this.expectedCreationTime.plusSeconds(2));
 			assertThat(this.session.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(120L));
 			assertThat(this.session.getPrincipalName()).isEqualTo("rwinch");
 			assertThat(this.session.getAttributeNames()).hasSize(3);
-			assertThat(this.session.getAttributeNames()).containsAll(asSet("tennis", "junk"));
+			assertThat(this.session.getAttributeNames()).containsAll(asSet("junk", "tennis"));
 			assertThat(this.session.<String>getAttribute("junk")).isEqualTo("test");
 			assertThat(this.session.<String>getAttribute("tennis")).isEqualTo("ping");
 
 			this.session.setAttribute("tennis", "pong");
 			this.session.setAttribute("greeting", "hello");
 			this.session.removeAttribute("junk");
-			this.session.setLastAccessedTime(Instant.ofEpochSecond(2L));
+			this.session.setLastAccessedTime(this.expectedCreationTime.plusSeconds(3));
 			this.session.setMaxInactiveInterval(Duration.ofSeconds(180L));
 			this.session.setPrincipalName("rwinch");
 		}
