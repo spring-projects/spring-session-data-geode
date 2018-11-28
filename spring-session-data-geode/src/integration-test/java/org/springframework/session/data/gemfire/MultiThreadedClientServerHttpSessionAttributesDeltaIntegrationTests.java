@@ -17,8 +17,11 @@
 package org.springframework.session.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
+import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.BeforeClass;
@@ -38,6 +41,7 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Integration tests containing test cases asserting the the proper behavior of concurrently accessing a {@link Session}
@@ -84,8 +88,27 @@ public class MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests
 			this.testInstance = testInstance;
 		}
 
+		private Session commit(Session session) {
+
+			return Optional.ofNullable(this.testInstance.getSessionRepository())
+				.filter(AbstractGemFireOperationsSessionRepository.class::isInstance)
+				.map(AbstractGemFireOperationsSessionRepository.class::cast)
+				.map(it -> it.commit(session))
+				.orElse(session);
+		}
+
 		private Session findById(String id) {
 			return this.testInstance.get(id);
+		}
+
+		private boolean hasDelta(Session session) {
+
+			return Optional.ofNullable(session)
+				.filter(GemFireSession.class::isInstance)
+				.map(GemFireSession.class::cast)
+				.map(GemFireSession::hasDelta)
+				.orElseThrow(() ->
+					newIllegalStateException("Incompatible Session Type [%s]", ObjectUtils.nullSafeClassName(session)));
 		}
 
 		private Session newSession() {
@@ -116,6 +139,8 @@ public class MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests
 			waitForTick(2);
 			assertTick(2);
 
+			assertThat(session.getAttributeNames()).isEmpty();
+
 			session.setAttribute("attributeOne", "foo");
 			session.setAttribute("attributeTwo", "bar");
 
@@ -142,6 +167,8 @@ public class MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests
 
 			waitForTick(2);
 			assertTick(2);
+
+			assertThat(session.getAttributeNames()).isEmpty();
 
 			session.setAttribute("attributeThree", "baz");
 
@@ -191,6 +218,37 @@ public class MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests
 			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("foo");
 			assertThat(session.<String>getAttribute("attributeTwo")).isNull();
 			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("bazatch");
+
+			save(session);
+		}
+
+		public void thread4() {
+
+			Thread.currentThread().setName("User Session Four");
+
+			waitForTick(1);
+			assertTick(1);
+
+			Session session = findById(this.sessionId.get());
+
+			assertThat(session).isNotNull();
+			assertThat(session.getId()).isEqualTo(this.sessionId.get());
+			assertThat(session.isExpired()).isFalse();
+			assertThat(session.getAttributeNames()).isEmpty();
+
+			waitForTick(2);
+			assertTick(2);
+
+			session.setLastAccessedTime(session.getLastAccessedTime().plusSeconds(1));
+
+			assertThat(hasDelta(session)).isTrue();
+
+			save(session);
+
+			waitForTick(3);
+			assertTick(3);
+
+			assertThat(hasDelta(session)).isFalse();
 
 			save(session);
 		}
