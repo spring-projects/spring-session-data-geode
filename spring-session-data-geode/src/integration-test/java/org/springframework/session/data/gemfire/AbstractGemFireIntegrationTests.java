@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
+
 import org.junit.Before;
 
 import org.apache.geode.cache.DataPolicy;
@@ -44,6 +46,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.data.gemfire.tests.integration.ForkingClientServerIntegrationTestsSupport;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
+import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.session.events.AbstractSessionEvent;
 import org.springframework.util.StringUtils;
@@ -91,6 +94,9 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 
 	@Autowired(required = false)
 	protected GemFireOperationsSessionRepository gemfireSessionRepository;
+
+	@Resource(name = GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME)
+	protected Region<Object, Session> sessions;
 
 	@Autowired(required = false)
 	protected SessionRepository<Session> sessionRepository;
