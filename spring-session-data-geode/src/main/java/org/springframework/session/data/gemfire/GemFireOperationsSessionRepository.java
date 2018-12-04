@@ -19,7 +19,6 @@ package org.springframework.session.data.gemfire;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.geode.cache.query.SelectResults;
 
@@ -155,13 +154,17 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 */
 	public void save(@Nullable Session session) {
 
-		Optional.ofNullable(session)
-			.filter(this::isDirty)
-			.ifPresent(this::doSave);
+		if (isNonNullAndDirty(session)) {
+			doSave(session);
+		}
 	}
 
 	private boolean isDirty(@NonNull Session session) {
 		return !(session instanceof GemFireSession) || ((GemFireSession) session).hasDelta();
+	}
+
+	private boolean isNonNullAndDirty(@Nullable Session session) {
+		return session != null && isDirty(session);
 	}
 
 	void doSave(@NonNull Session session) {
