@@ -45,6 +45,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class ConcurrentSessionOperationsUsingClientLocalRegionIntegrationTests
 		extends AbstractConcurrentSessionOperationsIntegrationTests {
 
+	private static final String GEMFIRE_LOG_LEVEL = "error";
+
 	@Test
 	public void concurrentLocalSessionAccessIsCorrect() throws Throwable {
 		TestFramework.runOnce(new ConcurrentLocalSessionAccessTestCase(this));
@@ -109,7 +111,7 @@ public class ConcurrentSessionOperationsUsingClientLocalRegionIntegrationTests
 		}
 	}
 
-	@ClientCacheApplication(logLevel = "error")
+	@ClientCacheApplication(logLevel = GEMFIRE_LOG_LEVEL)
 	@EnableGemFireHttpSession(
 		clientRegionShortcut = ClientRegionShortcut.LOCAL,
 		poolName = "DEFAULT",
