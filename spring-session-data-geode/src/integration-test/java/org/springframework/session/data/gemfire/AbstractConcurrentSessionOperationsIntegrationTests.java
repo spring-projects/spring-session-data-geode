@@ -39,14 +39,15 @@ import org.springframework.session.SessionRepository;
 import org.springframework.util.ObjectUtils;
 
 /**
- * The {@link AbstractConcurrentSessionOperationsIntegrationTests} class is an abstract base class encapsulating
- * functionality common to all concurrent {@link Session} operation and access based integration tests.
+ * Abstract base class encapsulating functionality common to all concurrent {@link Session} operation
+ * and access based integration tests.
  *
  * @author John Blum
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.springframework.session.Session
  * @see org.springframework.session.SessionRepository
+ * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
  * @see edu.umd.cs.mtc.MultithreadedTestCase
  * @see edu.umd.cs.mtc.TestFramework
  * @since 2.1.0
@@ -67,7 +68,7 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 		protected AbstractConcurrentSessionOperationsTestCase(
 				@NonNull AbstractConcurrentSessionOperationsIntegrationTests testInstance) {
 
-			assertThat(testInstance).as("Test class instance must not be null").isNotNull();
+			assertThat(testInstance).as("Test class instance is required").isNotNull();
 
 			this.testInstance = testInstance;
 
@@ -130,15 +131,17 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 			assertThat(session.isExpired()).isFalse();
 			assertThat(session.getAttributeNames()).isEmpty();
 
-			session.setAttribute("attributeOne", "one");
-			session.setAttribute("attributeTwo", "two");
+			session.setAttribute("attributeOne", "testOne");
+			session.setAttribute("attributeTwo", "testTwo");
+
+			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo");
 
 			save(session);
 
 			this.sessionId.set(session.getId());
 
-			waitForTick(2);
-			assertTick(2);
+			waitForTick(3);
+			assertTick(3);
 
 			// Save Session with no changes/no delta
 			assertThat(session instanceof GemFireSession && ((GemFireSession) session).hasDelta()).isFalse();
@@ -159,16 +162,41 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 			assertThat(session.getId()).isEqualTo(this.sessionId.get());
 			assertThat(session.isExpired()).isFalse();
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo");
-			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("one");
-			assertThat(session.<String>getAttribute("attributeTwo")).isEqualTo("two");
+			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("testOne");
+			assertThat(session.<String>getAttribute("attributeTwo")).isEqualTo("testTwo");
 
-			session.setAttribute("attributeThree", "three");
+			waitForTick(2);
+			assertTick(2);
+
+			session.setAttribute("attributeThree", "testThree");
 
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo", "attributeThree");
-			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("three");
+			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("testThree");
 			assertThat(session instanceof GemFireSession && ((GemFireSession) session).hasDelta()).isTrue();
 
 			save(session);
+		}
+
+		public void thread3() {
+
+			Thread.currentThread().setName("User Session Three");
+
+			waitForTick(1);
+			assertTick(1);
+
+			Session session = findById(this.sessionId.get());
+
+			assertThat(session).isNotNull();
+			assertThat(session.getId()).isEqualTo(this.sessionId.get());
+			assertThat(session.isExpired()).isFalse();
+			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo");
+			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("testOne");
+			assertThat(session.<String>getAttribute("attributeTwo")).isEqualTo("testTwo");
+
+			waitForTick(2);
+			assertTick(2);
+
+			save(getTestInstance().forcedTouch(session));
 		}
 
 		@Override
@@ -182,11 +210,11 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 			assertThat(session.getId()).isEqualTo(this.sessionId.get());
 			assertThat(session.isExpired()).isFalse();
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo", "attributeThree");
-			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("one");
-			assertThat(session.<String>getAttribute("attributeTwo")).isEqualTo("two");
-			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("three");
+			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("testOne");
+			assertThat(session.<String>getAttribute("attributeTwo")).isEqualTo("testTwo");
+			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("testThree");
 
-			verify(this.<GemFireOperationsSessionRepository>getSessionRepository(), times(2))
+			verify(this.<GemFireOperationsSessionRepository>getSessionRepository(), times(3))
 				.doSave(eq(session));
 		}
 	}
