@@ -42,8 +42,10 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Index;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.gemfire.tests.integration.ForkingClientServerIntegrationTestsSupport;
+import org.springframework.lang.Nullable;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
@@ -52,22 +54,24 @@ import org.springframework.session.events.AbstractSessionEvent;
 import org.springframework.util.StringUtils;
 
 /**
- * {@link AbstractGemFireIntegrationTests} is an abstract base class encapsulating common functionality
- * for writing Spring Session for Apache Geode & Pivotal GemFire integration tests.
+ * Abstract base class encapsulating functionality common to all Spring Session for Apache Geode & Pivotal GemFire
+ * integration tests.
  *
  * @author John Blum
  * @see java.io.File
  * @see java.net.URL
  * @see java.time.Instant
- * @see org.apache.geode.cache.DataPolicy
+ * @see org.junit.Test
  * @see org.apache.geode.cache.ExpirationAttributes
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.query.Index
- * @see org.junit.Test
+ * @see org.springframework.context.ApplicationContext
+ * @see org.springframework.context.ApplicationListener
  * @see org.springframework.data.gemfire.tests.integration.ForkingClientServerIntegrationTestsSupport
  * @see org.springframework.session.Session
  * @see org.springframework.session.SessionRepository
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.springframework.session.events.AbstractSessionEvent
  * @since 1.1.0
  */
@@ -81,13 +85,17 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 
 	protected static final File WORKING_DIRECTORY = new File(System.getProperty("user.dir"));
 
+	protected static final String DEFAULT_GEMFIRE_LOG_LEVEL = "error";
 	protected static final String DEFAULT_PROCESS_CONTROL_FILENAME = "process.ctl";
 
 	protected static final String GEMFIRE_LOG_FILE_NAME =
 		System.getProperty("spring.session.data.gemfire.log.file", "gemfire-server.log");
 
 	protected static final String GEMFIRE_LOG_LEVEL =
-		System.getProperty("spring.session.data.gemfire.log.level", "error");
+		System.getProperty("spring.session.data.gemfire.log.level", DEFAULT_GEMFIRE_LOG_LEVEL);
+
+	@Autowired(required = false)
+	private ApplicationContext applicationContext;
 
 	@Autowired(required = false)
 	protected GemFireCache gemfireCache;
@@ -267,6 +275,26 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 		return processControl;
 	}
 
+	@Nullable @SuppressWarnings("unchecked")
+	protected <T extends ApplicationContext> T getApplicationContext() {
+		return (T) this.applicationContext;
+	}
+
+	@Nullable @SuppressWarnings("unchecked")
+	protected <T extends GemFireCache> T getGemFireCache() {
+		return (T) this.gemfireCache;
+	}
+
+	@Nullable
+	protected Region<Object, Session> getSessionRegion() {
+		return this.sessions;
+	}
+
+	@Nullable
+	protected SessionRepository<Session> getSessionRepository() {
+		return this.sessionRepository;
+	}
+
 	protected void assertValidSession(Session session) {
 
 		assertThat(session).isNotNull();
@@ -304,10 +332,6 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 
 	protected boolean enableQueryDebugging() {
 		return DEFAULT_ENABLE_QUERY_DEBUGGING;
-	}
-
-	protected SessionRepository<Session> getSessionRepository() {
-		return this.sessionRepository;
 	}
 
 	@SuppressWarnings("unused")
@@ -351,6 +375,17 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 
 	protected <T extends Session> T expire(T session) {
 		session.setLastAccessedTime(Instant.ofEpochMilli(0L));
+		return session;
+	}
+
+	protected <T extends Session> T forcedTouch(T session) {
+
+		Instant lastAccessedTime = session.getLastAccessedTime();
+
+		session.setLastAccessedTime(lastAccessedTime.plusMillis(1));
+
+		assertThat(session.getLastAccessedTime()).isAfter(lastAccessedTime);
+
 		return session;
 	}
 
