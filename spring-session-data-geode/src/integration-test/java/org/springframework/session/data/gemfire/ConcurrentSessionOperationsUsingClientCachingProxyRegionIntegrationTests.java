@@ -26,7 +26,6 @@ import static org.springframework.session.data.gemfire.AbstractGemFireOperations
 
 import java.io.DataOutput;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -189,25 +188,10 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 
 		private DataSerializer reregisterDataSerializer(DataSerializer dataSerializer) {
 
-			try {
+			InternalDataSerializer.unregister(dataSerializer.getId());
+			InternalDataSerializer._register(dataSerializer, false);
 
-				if (dataSerializer != null) {
-
-					InternalDataSerializer.unregister(dataSerializer.getId());
-
-					Method registerDataSerializer = InternalDataSerializer.class
-						.getDeclaredMethod("_register", DataSerializer.class, Boolean.TYPE);
-
-					registerDataSerializer.setAccessible(true);
-
-					registerDataSerializer.invoke(null, dataSerializer, false);
-				}
-
-				return dataSerializer;
-			}
-			catch (Exception cause) {
-				throw new RuntimeException(cause);
-			}
+			return dataSerializer;
 		}
 
 		private Session get(String id) {
