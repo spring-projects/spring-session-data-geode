@@ -44,18 +44,24 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class ConcurrentSessionOperationsUsingClientProxyRegionIntegrationTests
 		extends AbstractConcurrentSessionOperationsIntegrationTests {
 
+	private static final String GEMFIRE_LOG_LEVEL = "error";
+
 	@BeforeClass
 	public static void startGemFireServer() throws IOException {
 		startGemFireServer(GemFireServerConfiguration.class);
 	}
 
-	@ClientCacheApplication(logLevel = "error", subscriptionEnabled = true)
-	@EnableGemFireHttpSession(clientRegionShortcut = ClientRegionShortcut.PROXY, poolName = "DEFAULT")
+	@ClientCacheApplication(logLevel = GEMFIRE_LOG_LEVEL, subscriptionEnabled = true)
+	@EnableGemFireHttpSession(
+		clientRegionShortcut = ClientRegionShortcut.PROXY,
+		poolName = "DEFAULT",
+		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME
+	)
 	static class GemFireClientConfiguration { }
 
 	@CacheServerApplication(
 		name = "ConcurrentSessionOperationsUsingClientProxyRegionIntegrationTests",
-		logLevel = "error"
+		logLevel = GEMFIRE_LOG_LEVEL
 	)
 	@EnableGemFireHttpSession(
 		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME
