@@ -22,7 +22,6 @@ import static org.mockito.Mockito.mock;
 import java.io.DataInput;
 import java.io.DataOutput;
 
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -73,11 +72,6 @@ public class DataSerializerSessionSerializerAdapterIntegrationTests extends Abst
 	@Autowired
 	@Qualifier(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_BEAN_ALIAS)
 	private SessionSerializer<Session, DataInput, DataOutput> sessionSerializer;
-
-	@AfterClass
-	public static void tearDown() {
-		unregisterAllDataSerializers();
-	}
 
 	@Test
 	public void constructsAndAutowiresDataSerializerSessionSerializerAdapter() {
