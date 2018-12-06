@@ -28,12 +28,16 @@ import org.junit.Test;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.internal.InternalDataSerializer;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
 import org.springframework.data.gemfire.tests.integration.SpringApplicationContextIntegrationTestsSupport;
 import org.springframework.data.gemfire.tests.mock.annotation.EnableGemFireMockObjects;
+import org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy;
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 import org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer;
 import org.springframework.session.data.gemfire.serialization.data.provider.DataSerializableSessionSerializer;
@@ -124,6 +128,106 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 			.orElse(null)).isNull();
 	}
 
+	@Test
+	public void exposedSpringSessionGemFireConfigurationIsAccessibleToOtherBeansViaTheAtValueAnnotation() {
+
+		newApplicationContext(ExposingSpringSessionGemFireConfigurationAsPropertiesConfiguration.class);
+
+		SpringSessionGemFireProperties properties =
+			getApplicationContext().getBean(SpringSessionGemFireProperties.class);
+
+		assertThat(properties).isNotNull();
+		assertThat(properties.clientRegionShortcut()).isEqualTo(ClientRegionShortcut.LOCAL);
+		assertThat(properties.indexableSessionAttributes()).containsExactly("AttributeOne", "AttributeTwo");
+		assertThat(properties.maxInactiveIntervalInSeconds()).isEqualTo(300);
+		assertThat(properties.poolName()).isEqualTo("DEFAULT");
+		assertThat(properties.regionName()).isEqualTo("Sessions");
+		assertThat(properties.serverRegionShortcut()).isEqualTo(RegionShortcut.REPLICATE);
+		assertThat(properties.sessionExpirationPolicyBeanName()).isEqualTo("MockSessionExpirationPolicy");
+		assertThat(properties.sessionSerializerBeanName()).isEqualTo("MockSessionSerializer");
+	}
+
+	@ClientCacheApplication
+	@EnableGemFireMockObjects
+	@EnableGemFireHttpSession(
+		clientRegionShortcut = ClientRegionShortcut.LOCAL,
+		exposeConfigurationAsProperties = true,
+		indexableSessionAttributes = { "AttributeOne", "AttributeTwo" },
+		maxInactiveIntervalInSeconds = 300,
+		poolName = "DEFAULT",
+		regionName = "Sessions",
+		serverRegionShortcut = RegionShortcut.REPLICATE,
+		sessionExpirationPolicyBeanName = "MockSessionExpirationPolicy",
+		sessionSerializerBeanName = "MockSessionSerializer"
+	)
+	static class ExposingSpringSessionGemFireConfigurationAsPropertiesConfiguration {
+
+		@Bean("MockSessionExpirationPolicy")
+		SessionExpirationPolicy mockSessionExpirationPolicy() {
+			return mock(SessionExpirationPolicy.class);
+		}
+
+		@Bean("MockSessionSerializer")
+		SessionSerializer mockSessionSerializer() {
+			return mock(SessionSerializer.class);
+		}
+
+		@Bean("SpringSessionGemFireProperties")
+		SpringSessionGemFireProperties springSessionGemFireProperties(
+			@Value("${spring.session.data.gemfire.cache.client.region.shortcut}") ClientRegionShortcut clientRegionShortcut,
+			@Value("${spring.session.data.gemfire.session.attributes.indexed}") String[] indexedSessionAttributes,
+			@Value("${spring.session.data.gemfire.session.expiration.max-inactive-interval-seconds}") int maxInactiveIntervalInSeconds,
+			@Value("${spring.session.data.gemfire.cache.client.pool.name}") String poolName,
+			@Value("${spring.session.data.gemfire.session.region.name}") String regionName,
+			@Value("${spring.session.data.gemfire.cache.server.region.shortcut}") RegionShortcut serverRegionShortcut,
+			@Value("${spring.session.data.gemfire.session.expiration.bean-name}") String sessionExpirationPolicyBeanName,
+			@Value("${spring.session.data.gemfire.session.serializer.bean-name}") String sessionSerializerBeanName) {
+
+			return new SpringSessionGemFireProperties() {
+
+				@Override
+				public ClientRegionShortcut clientRegionShortcut() {
+					return clientRegionShortcut;
+				}
+
+				@Override
+				public String[] indexableSessionAttributes() {
+					return indexedSessionAttributes;
+				}
+
+				@Override
+				public int maxInactiveIntervalInSeconds() {
+					return maxInactiveIntervalInSeconds;
+				}
+
+				@Override
+				public String poolName() {
+					return poolName;
+				}
+
+				@Override
+				public String regionName() {
+					return regionName;
+				}
+
+				@Override
+				public RegionShortcut serverRegionShortcut() {
+					return serverRegionShortcut;
+				}
+
+				@Override
+				public String sessionExpirationPolicyBeanName() {
+					return sessionExpirationPolicyBeanName;
+				}
+
+				@Override
+				public String sessionSerializerBeanName() {
+					return sessionSerializerBeanName;
+				}
+			};
+		}
+	}
+
 	@ClientCacheApplication
 	@EnableGemFireMockObjects
 	@EnableGemFireHttpSession(
@@ -152,6 +256,25 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 		SessionSerializer testSessionSerializer() {
 			return mock(SessionSerializer.class);
 		}
+	}
+
+	interface SpringSessionGemFireProperties {
+
+		ClientRegionShortcut clientRegionShortcut();
+
+		String[] indexableSessionAttributes();
+
+		int maxInactiveIntervalInSeconds();
+
+		String poolName();
+
+		String regionName();
+
+		RegionShortcut serverRegionShortcut();
+
+		String sessionExpirationPolicyBeanName();
+
+		String sessionSerializerBeanName();
 	}
 
 	static class TestDataSerializer extends AbstractDataSerializableSessionSerializer<Object> {
