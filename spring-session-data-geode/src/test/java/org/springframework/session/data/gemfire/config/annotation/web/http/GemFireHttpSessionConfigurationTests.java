@@ -17,9 +17,13 @@
 package org.springframework.session.data.gemfire.config.annotation.web.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -43,6 +47,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -50,6 +55,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
+import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.GemFireCacheTypeAwareRegionFactoryBean;
@@ -86,8 +92,11 @@ public class GemFireHttpSessionConfigurationTests {
 	protected <T> T getField(Object obj, String fieldName) {
 
 		try {
+
 			Field field = resolveField(obj, fieldName);
+
 			field.setAccessible(true);
+
 			return (T) field.get(obj);
 		}
 		catch (NoSuchFieldException cause) {
@@ -113,11 +122,6 @@ public class GemFireHttpSessionConfigurationTests {
 		}
 
 		return field;
-	}
-
-	@SafeVarargs
-	private static <T> T[] toArray(T... array) {
-		return array;
 	}
 
 	@Before
@@ -321,20 +325,23 @@ public class GemFireHttpSessionConfigurationTests {
 		Map<String, Object> annotationAttributes = new HashMap<>(4);
 
 		annotationAttributes.put("clientRegionShortcut", ClientRegionShortcut.CACHING_PROXY);
-		annotationAttributes.put("indexableSessionAttributes", toArray("one", "two", "three"));
+		annotationAttributes.put("exposeConfigurationAsProperties", Boolean.TRUE);
+		annotationAttributes.put("indexableSessionAttributes", ArrayUtils.asArray("one", "two", "three"));
 		annotationAttributes.put("maxInactiveIntervalInSeconds", 600);
 		annotationAttributes.put("poolName", "TestPool");
 		annotationAttributes.put("serverRegionShortcut", RegionShortcut.REPLICATE);
 		annotationAttributes.put("regionName", "TEST");
+		annotationAttributes.put("sessionExpirationPolicyBeanName", "testSessionExpirationPolicy");
 		annotationAttributes.put("sessionSerializerBeanName", "testSessionSerializer");
 
-		given(mockAnnotationMetadata.getAnnotationAttributes(eq(EnableGemFireHttpSession.class.getName())))
-			.willReturn(annotationAttributes);
+		when(mockAnnotationMetadata.getAnnotationAttributes(eq(EnableGemFireHttpSession.class.getName())))
+			.thenReturn(annotationAttributes);
 
 		this.gemfireConfiguration.setImportMetadata(mockAnnotationMetadata);
 
 		assertThat(this.gemfireConfiguration.getClientRegionShortcut()).isEqualTo(ClientRegionShortcut.CACHING_PROXY);
-		assertThat(this.gemfireConfiguration.getIndexableSessionAttributes()).isEqualTo(toArray("one", "two", "three"));
+		assertThat(this.gemfireConfiguration.getIndexableSessionAttributes())
+			.isEqualTo(ArrayUtils.asArray("one", "two", "three"));
 		assertThat(this.gemfireConfiguration.getMaxInactiveIntervalInSeconds()).isEqualTo(600);
 		assertThat(this.gemfireConfiguration.getPoolName()).isEqualTo("TestPool");
 		assertThat(this.gemfireConfiguration.getServerRegionShortcut()).isEqualTo(RegionShortcut.REPLICATE);
@@ -342,8 +349,51 @@ public class GemFireHttpSessionConfigurationTests {
 		assertThat(this.gemfireConfiguration.getSessionSerializerBeanName()).isEqualTo("testSessionSerializer");
 
 		verify(mockAnnotationMetadata, times(1))
-			.getAnnotationAttributes(eq(EnableGemFireHttpSession.class.getName()));
+			.getAnnotationAttributes(eq(EnableGemFireHttpSession.class.getName()));	}
 
+	@Test
+	public void applyConfigurationFromNonExistingSpringSessionGemFireConfigurer() {
+
+		this.gemfireConfiguration.applySpringSessionGemFireConfigurer();
+
+		verify(this.gemfireConfiguration, never()).setClientRegionShortcut(any(ClientRegionShortcut.class));
+		verify(this.gemfireConfiguration, never()).setIndexableSessionAttributes(any(String[].class));
+		verify(this.gemfireConfiguration, never()).setMaxInactiveIntervalInSeconds(anyInt());
+		verify(this.gemfireConfiguration, never()).setPoolName(anyString());
+		verify(this.gemfireConfiguration, never()).setServerRegionShortcut(any(RegionShortcut.class));
+		verify(this.gemfireConfiguration, never()).setSessionRegionName(anyString());
+		verify(this.gemfireConfiguration, never()).setSessionSerializerBeanName(anyString());
+	}
+
+	@Test(expected = NoUniqueBeanDefinitionException.class)
+	public void applyConfigurationFromMultipleSpringSessionGemFireConfigurersThrowsException() {
+
+		ApplicationContext mockApplicationContext = mock(ApplicationContext.class);
+
+		when(mockApplicationContext.getBean(eq(SpringSessionGemFireConfigurer.class)))
+			.thenThrow(new NoUniqueBeanDefinitionException(SpringSessionGemFireConfigurer.class, 2, "TEST"));
+
+		this.gemfireConfiguration.setApplicationContext(mockApplicationContext);
+
+		try {
+			this.gemfireConfiguration.applySpringSessionGemFireConfigurer();
+		}
+		catch (NoUniqueBeanDefinitionException expected) {
+
+			assertThat(expected).hasMessageContaining("TEST");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
+		finally {
+			verify(this.gemfireConfiguration, never()).setClientRegionShortcut(any(ClientRegionShortcut.class));
+			verify(this.gemfireConfiguration, never()).setIndexableSessionAttributes(any(String[].class));
+			verify(this.gemfireConfiguration, never()).setMaxInactiveIntervalInSeconds(anyInt());
+			verify(this.gemfireConfiguration, never()).setPoolName(anyString());
+			verify(this.gemfireConfiguration, never()).setServerRegionShortcut(any(RegionShortcut.class));
+			verify(this.gemfireConfiguration, never()).setSessionRegionName(anyString());
+			verify(this.gemfireConfiguration, never()).setSessionSerializerBeanName(anyString());
+		}
 	}
 
 	@Test

@@ -116,6 +116,12 @@ import org.springframework.util.StringUtils;
 public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionConfiguration implements ImportAware {
 
 	/**
+	 * Indicates whether to employ Apache Geode/Pivotal's DataSerialization framework
+	 * for {@link Session} de/serialization.
+	 */
+	public static final boolean DEFAULT_USE_DATA_SERIALIZATION = false;
+
+	/**
 	 * Default maximum interval in seconds in which a {@link Session} can remain inactive before it expires.
 	 */
 	public static final int DEFAULT_MAX_INACTIVE_INTERVAL_IN_SECONDS = (int) TimeUnit.MINUTES.toSeconds(30);
@@ -186,6 +192,8 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * Defaults names of all {@link Session} attributes that will be indexed by Apache Geode.
 	 */
 	public static final String[] DEFAULT_INDEXABLE_SESSION_ATTRIBUTES = {};
+
+	private boolean usingDataSerialization = DEFAULT_USE_DATA_SERIALIZATION;
 
 	private int maxInactiveIntervalInSeconds = DEFAULT_MAX_INACTIVE_INTERVAL_IN_SECONDS;
 
@@ -424,6 +432,17 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	}
 
 	/**
+	 * Set whether to use Apache Geode / Pivotal GemFire's DataSerialization framework
+	 * for {@link Session} de/serialization.
+	 *
+	 * @param useDataSerialization boolean value indicating whether to use Apache Geode
+	 * / Pivotal GemFire's DataSerialization framework for {@link Session} de/serialization.
+	 */
+	private void setUseDataSerialization(boolean useDataSerialization) {
+		this.usingDataSerialization = useDataSerialization;
+	}
+
+	/**
 	 * Determine whether the configured serialization strategy is using Apache Geode / Pivotal GemFire's
 	 * DataSerialization framework.
 	 *
@@ -432,7 +451,9 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @see #getSessionSerializerBeanName()
 	 */
 	protected boolean isUsingDataSerialization() {
-		return SESSION_DATA_SERIALIZER_BEAN_NAME.equals(getSessionSerializerBeanName());
+
+		return this.usingDataSerialization
+			|| SESSION_DATA_SERIALIZER_BEAN_NAME.equals(getSessionSerializerBeanName());
 	}
 
 	/**
@@ -442,6 +463,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @param importMetadata {@link AnnotationMetadata} of the application class importing
 	 * this {@link Configuration} class.
 	 * @see org.springframework.core.type.AnnotationMetadata
+	 * @see #applySpringSessionGemFireConfigurer()
 	 */
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
 
@@ -490,7 +512,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 		applySpringSessionGemFireConfigurer();
 	}
 
-	private void applySpringSessionGemFireConfigurer() {
+	void applySpringSessionGemFireConfigurer() {
 
 		resolveSpringSessionGemFireConfigurer()
 			.map(this::applyClientRegionShortcut)
@@ -620,12 +642,15 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	private void configureSerialization(CacheFactoryBean cacheFactoryBean, SessionSerializer sessionSerializer) {
 
 		if (sessionSerializer instanceof DataSerializer) {
+
 			if (sessionSerializer instanceof DataSerializableSessionSerializer) {
 				DataSerializableSessionSerializer.register();
 			}
 			else {
 				DataSerializer.register(sessionSerializer.getClass());
 			}
+
+			setUseDataSerialization(true);
 		}
 		else if (sessionSerializer instanceof PdxSerializer) {
 			cacheFactoryBean.setPdxSerializer(ComposablePdxSerializer.compose(
