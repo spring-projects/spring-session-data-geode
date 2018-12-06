@@ -99,8 +99,11 @@ public class GemFireHttpSessionConfigurationTests {
 	private <T> T getField(Object obj, String fieldName) {
 
 		try {
+
 			Field field = resolveField(obj, fieldName);
+
 			field.setAccessible(true);
+
 			return (T) field.get(obj);
 		}
 		catch (NoSuchFieldException cause) {
@@ -538,7 +541,7 @@ public class GemFireHttpSessionConfigurationTests {
 		this.gemfireConfiguration.setSessionRegionName("Sessions");
 		this.gemfireConfiguration.setSessionSerializerBeanName("TestSessionSerializer");
 		this.gemfireConfiguration.setExposeConfigurationAsProperties(true);
-		this.gemfireConfiguration.exposeSpringSessionGemFireConfigurationAsProperties();
+		this.gemfireConfiguration.exposeSpringSessionGemFireConfiguration();
 
 		PropertySource springSessionGemFirePropertySource = environment.getPropertySources()
 			.get(GemFireHttpSessionConfiguration.SPRING_SESSION_GEMFIRE_PROPERTY_SOURCE);
@@ -593,7 +596,7 @@ public class GemFireHttpSessionConfigurationTests {
 
 		this.gemfireConfiguration.setEnvironment(null);
 		this.gemfireConfiguration.setExposeConfigurationAsProperties(true);
-		this.gemfireConfiguration.exposeSpringSessionGemFireConfigurationAsProperties();
+		this.gemfireConfiguration.exposeSpringSessionGemFireConfiguration();
 
 		verify(this.gemfireConfiguration, never()).getClientRegionShortcut();
 		verify(this.gemfireConfiguration, times(1)).getEnvironment();
@@ -614,7 +617,7 @@ public class GemFireHttpSessionConfigurationTests {
 
 		this.gemfireConfiguration.setEnvironment(mockEnvironment);
 		this.gemfireConfiguration.setExposeConfigurationAsProperties(false);
-		this.gemfireConfiguration.exposeSpringSessionGemFireConfigurationAsProperties();
+		this.gemfireConfiguration.exposeSpringSessionGemFireConfiguration();
 
 		verify(this.gemfireConfiguration, never()).getClientRegionShortcut();
 		verify(this.gemfireConfiguration, never()).getEnvironment();
@@ -636,7 +639,7 @@ public class GemFireHttpSessionConfigurationTests {
 
 		this.gemfireConfiguration.setEnvironment(mockEnvironment);
 		this.gemfireConfiguration.setExposeConfigurationAsProperties(true);
-		this.gemfireConfiguration.exposeSpringSessionGemFireConfigurationAsProperties();
+		this.gemfireConfiguration.exposeSpringSessionGemFireConfiguration();
 
 		verify(this.gemfireConfiguration, never()).getClientRegionShortcut();
 		verify(this.gemfireConfiguration, times(1)).getEnvironment();
