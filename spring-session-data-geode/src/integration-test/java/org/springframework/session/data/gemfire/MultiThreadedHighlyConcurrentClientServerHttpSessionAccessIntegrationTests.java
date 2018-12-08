@@ -90,7 +90,7 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 	private static final boolean SESSION_REFERENCE_CHECKING_ENABLED = false;
 
 	private static final int THREAD_COUNT = 180;
-	private static final int WORKLOAD = 10000;
+	private static final int WORKLOAD_SIZE = 10000;
 
 	private static final String GEMFIRE_LOG_LEVEL = "error";
 
@@ -104,7 +104,7 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 
 	private final AtomicReference<String> sessionId = new AtomicReference<>(null);
 
-	private final List<String> sessionAttributeNames = Collections.synchronizedList(new ArrayList<>(WORKLOAD));
+	private final List<String> sessionAttributeNames = Collections.synchronizedList(new ArrayList<>(WORKLOAD_SIZE));
 
 	private final Random random = new Random(System.currentTimeMillis());
 
@@ -113,15 +113,20 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 
 	private final Set<Session> sessionReferences =
 		Collections.synchronizedSet(new TreeSet<>((sessionOne, sessionTwo) -> sessionOne == sessionTwo ? 0
-			: sessionReferenceComparisonCounter.incrementAndGet() % 2 == 0 ? -1 : 1));
+			: this.sessionReferenceComparisonCounter.incrementAndGet() % 2 == 0 ? -1 : 1));
 
 	@Before
 	public void assertGemFireConfiguration() {
+
+		assertThat(this.gemfireCache).isNotNull();
 
 		assertThat(this.gemfireCache.getPdxSerializer())
 			.describedAs("Expected the configured PdxSerializer to be null; but was [%s]",
 				ObjectUtils.nullSafeClassName(this.gemfireCache.getPdxSerializer()))
 			.isNull();
+
+		assertThat(this.sessions).isNotNull();
+		assertThat(this.sessions.getAttributes()).isNotNull();
 
 		assertThat(this.sessions.getAttributes().getDataPolicy())
 			.describedAs("Expected Region [%s] DataPolicy of EMPTY; but was %s",
@@ -147,7 +152,16 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 		this.sessionId.set(save(touch(session)).getId());
 	}
 
-	private ExecutorService newSessionAccessBatchWorkloadExecutor() {
+	private void assertUniqueSessionReference(Session session) {
+
+		if (SESSION_REFERENCE_CHECKING_ENABLED) {
+			assertThat(this.sessionReferences.add(session))
+				.describedAs("Session reference was not unique; size [%d]", this.sessionReferences.size())
+				.isTrue();
+		}
+	}
+
+	private ExecutorService newSessionWorkloadExecutor() {
 
 		return Executors.newFixedThreadPool(THREAD_COUNT, runnable -> {
 
@@ -161,24 +175,20 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 		});
 	}
 
-	private Collection<Callable<Integer>> newSessionAccessBatchWorkload() {
+	private Collection<Callable<Integer>> newSessionWorkloadTasks() {
 
-		Collection<Callable<Integer>> sessionAccessWorkload = new ArrayList<>(WORKLOAD);
+		Collection<Callable<Integer>> sessionWorkloadTasks = new ArrayList<>(WORKLOAD_SIZE);
 
-		for (int count = 0, readCount = 0; count < WORKLOAD; count++, readCount = 3 * count) {
+		for (int count = 0, readCount = 0; count < WORKLOAD_SIZE; count++, readCount = 3 * count) {
 
-			sessionAccessWorkload.add(count % 79 != 0
+			sessionWorkloadTasks.add(count % 79 != 0
 				? newAddSessionAttributeTask()
 				: readCount % 237 != 0
 				? newRemoveSessionAttributeTask()
 				: newSessionReaderTask());
-
-			//sessionAccessWorkload.add(count % 79 != 0 ? newAddSessionAttributeTask() : newRemoveSessionAttributeTask());
-			//sessionAccessWorkload.add(count % 79 != 0 ? newAddSessionAttributeTask() : newSessionReaderTask());
-			//sessionAccessWorkload.add(newAddSessionAttributeTask());
 		}
 
-		return sessionAccessWorkload;
+		return sessionWorkloadTasks;
 	}
 
 	private Callable<Integer> newAddSessionAttributeTask() {
@@ -192,13 +202,9 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(this.sessionId.get());
 			assertThat(session.getLastAccessedTime()).isAfterOrEqualTo(beforeLastAccessedTime);
+			assertThat(session.getLastAccessedTime()).isBeforeOrEqualTo(Instant.now());
 			assertThat(session.isExpired()).isFalse();
-
-			if (SESSION_REFERENCE_CHECKING_ENABLED) {
-				assertThat(this.sessionReferences.add(session))
-					.describedAs("Size [%d]", this.sessionReferences.size())
-					.isTrue();
-			}
+			assertUniqueSessionReference(session);
 
 			String attributeName = UUID.randomUUID().toString();
 			Object attributeValue = System.currentTimeMillis();
@@ -227,13 +233,9 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(this.sessionId.get());
 			assertThat(session.getLastAccessedTime()).isAfterOrEqualTo(beforeLastAccessedTime);
+			assertThat(session.getLastAccessedTime()).isBeforeOrEqualTo(Instant.now());
 			assertThat(session.isExpired()).isFalse();
-
-			if (SESSION_REFERENCE_CHECKING_ENABLED) {
-				assertThat(this.sessionReferences.add(session))
-					.describedAs("Size [%d]", this.sessionReferences.size())
-					.isTrue();
-			}
+			assertUniqueSessionReference(session);
 
 			String attributeName = null;
 
@@ -276,13 +278,9 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(this.sessionId.get());
 			assertThat(session.getLastAccessedTime()).isAfterOrEqualTo(beforeLastAccessedTime);
+			assertThat(session.getLastAccessedTime()).isBeforeOrEqualTo(Instant.now());
 			assertThat(session.isExpired()).isFalse();
-
-			if (SESSION_REFERENCE_CHECKING_ENABLED) {
-				assertThat(this.sessionReferences.add(session))
-					.describedAs("Size [%d]", this.sessionReferences.size())
-					.isTrue();
-			}
+			assertUniqueSessionReference(session);
 
 			save(session);
 
@@ -290,31 +288,31 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 		};
 	}
 
-	private <T> T safeFutureGet(Future<T> operation) {
+	private <T> T safeFutureGet(Future<T> future) {
 
 		try {
-			return operation.get();
+			return future.get();
 		}
 		catch (Exception cause) {
-			throw new RuntimeException("SESSION ACCESS TASK FAILURE", cause);
+			throw new RuntimeException("Session Access Task Failed", cause);
 		}
 	}
 
-	private int runSessionAccessBatchWorkload() throws InterruptedException {
+	private int runSessionWorkload() throws InterruptedException {
 
-		ExecutorService sessionAccessExecutor = newSessionAccessBatchWorkloadExecutor();
+		ExecutorService sessionWorkloadExecutor = newSessionWorkloadExecutor();
 
 		try {
 
-			List<Future<Integer>> sessionAccessFutures =
-				sessionAccessExecutor.invokeAll(newSessionAccessBatchWorkload());
+			List<Future<Integer>> sessionWorkloadTasksFutures =
+				sessionWorkloadExecutor.invokeAll(newSessionWorkloadTasks());
 
-			return sessionAccessFutures.stream()
+			return sessionWorkloadTasksFutures.stream()
 				.mapToInt(this::safeFutureGet)
 				.sum();
 		}
 		finally {
-			Optional.of(sessionAccessExecutor)
+			Optional.of(sessionWorkloadExecutor)
 				.ifPresent(ExecutorService::shutdownNow);
 		}
 	}
@@ -322,7 +320,7 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 	@Test
 	public void concurrentSessionAccessIsCorrect() throws InterruptedException {
 
-		int sessionAttributeCount = runSessionAccessBatchWorkload();
+		int sessionAttributeCount = runSessionWorkload();
 
 		assertThat(sessionAttributeCount).isEqualTo(this.sessionAttributeNames.size());
 		//assertThat(SpyingDataSerializableSessionSerializer.getSerializationCount()).isEqualTo(1);
@@ -334,7 +332,6 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 		assertThat(session.getAttributeNames()).hasSize(sessionAttributeCount);
 	}
 
-	//@ClientCacheApplication(logLevel = GEMFIRE_LOG_LEVEL, subscriptionEnabled = true)
 	@ClientCacheApplication(copyOnRead = true, logLevel = GEMFIRE_LOG_LEVEL, subscriptionEnabled = true)
 	@EnableGemFireHttpSession(
 		clientRegionShortcut = ClientRegionShortcut.PROXY,
@@ -401,7 +398,7 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 		public void serialize(GemFireSession session, DataOutput dataOutput) {
 
 			assertThat(session).isInstanceOf(DeltaCapableGemFireSession.class);
-			//assertThat(session.hasDelta()).isTrue();
+			assertThat(session.hasDelta()).isTrue();
 
 			this.sessionSerializer.serialize(session, dataOutput);
 
