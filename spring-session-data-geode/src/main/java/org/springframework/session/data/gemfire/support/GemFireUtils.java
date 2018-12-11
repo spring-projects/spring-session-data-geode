@@ -148,16 +148,12 @@ public abstract class GemFireUtils {
 
 		DataPolicy regionDataPolicy = regionAttributes.getDataPolicy();
 
-		boolean proxy = DataPolicy.EMPTY.equals(regionDataPolicy);
-
-		proxy |= proxy
+		return DataPolicy.EMPTY.equals(regionDataPolicy)
 			|| Optional.ofNullable(regionDataPolicy)
 				.filter(DataPolicy.PARTITION::equals)
 				.map(it -> regionAttributes.getPartitionAttributes())
 				.filter(partitionAttributes -> partitionAttributes.getLocalMaxMemory() <= 0)
 				.isPresent();
-
-		return proxy;
 	}
 
 	/**
