@@ -28,7 +28,11 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+
+import org.springframework.lang.Nullable;
+import org.springframework.util.StringUtils;
 
 /**
  * {@link GemFireUtils} is an abstract, extensible utility class for working with Apache Geode and Pivotal GemFire
@@ -72,7 +76,7 @@ public abstract class GemFireUtils {
 	 * @see org.apache.geode.cache.client.ClientCache
 	 * @see org.apache.geode.cache.GemFireCache
 	 */
-	public static boolean isClient(GemFireCache gemfireCache) {
+	public static boolean isClient(@Nullable GemFireCache gemfireCache) {
 
 		boolean client = gemfireCache instanceof ClientCache;
 
@@ -89,30 +93,57 @@ public abstract class GemFireUtils {
 	 * @see org.apache.geode.cache.Cache
 	 * @see org.apache.geode.cache.GemFireCache
 	 */
-	public static boolean isPeer(GemFireCache gemFireCache) {
+	public static boolean isPeer(@Nullable GemFireCache gemFireCache) {
 		return gemFireCache instanceof Cache && !isClient(gemFireCache);
 	}
 
 	/**
 	 * Determines whether the given {@link ClientRegionShortcut} is local only.
 	 *
-	 * @param shortcut the ClientRegionShortcut to evaluate.
-	 * @return a boolean value indicating if the {@link ClientRegionShortcut} is local or
-	 * not.
+	 * @param shortcut {@link ClientRegionShortcut} to evaluate.
+	 * @return a boolean value indicating whether the {@link ClientRegionShortcut} is local or not.
 	 * @see org.apache.geode.cache.client.ClientRegionShortcut
 	 */
-	public static boolean isLocal(ClientRegionShortcut shortcut) {
+	public static boolean isLocal(@Nullable ClientRegionShortcut shortcut) {
+		return shortcut != null && shortcut.name().toLowerCase().contains("local");
+	}
 
-		switch (shortcut) {
-			case LOCAL:
-			case LOCAL_HEAP_LRU:
-			case LOCAL_OVERFLOW:
-			case LOCAL_PERSISTENT:
-			case LOCAL_PERSISTENT_OVERFLOW:
-				return true;
-			default:
-				return false;
-		}
+	/**
+	 * Determines whether the given {@link Region} is a non-local, client {@link Region}, a {@link Region}
+	 * for which a corresponding server {@link Region} exists.
+	 *
+	 * @param region {@link Region} to evaluate.
+	 * @return a boolean value indicating whether the given {@link Region} is a non-local, client {@link Region},
+	 * a {@link Region} for which a corresponding server {@link Region} exists.
+	 * @see org.apache.geode.cache.Region
+	 * @see #isPoolConfiguredOrHasServerProxy(Region)
+	 */
+	public static boolean isNonLocalClientRegion(@Nullable Region<?, ?> region) {
+
+		return Optional.ofNullable(region)
+			.filter(GemFireUtils::isPoolConfiguredOrHasServerProxy)
+			.map(Region::getRegionService)
+			.filter(GemFireCache.class::isInstance)
+			.map(GemFireCache.class::cast)
+			.filter(GemFireUtils::isClient)
+			.isPresent();
+	}
+
+	private static boolean isPoolConfiguredOrHasServerProxy(@Nullable Region<?, ?> region) {
+		return isPoolConfigured(region) || hasServerProxy(region);
+	}
+
+	private static boolean isPoolConfigured(@Nullable Region<?, ?> region) {
+
+		return Optional.ofNullable(region)
+			.map(Region::getAttributes)
+			.map(RegionAttributes::getPoolName)
+			.filter(StringUtils::hasText)
+			.isPresent();
+	}
+
+	private static boolean hasServerProxy(@Nullable Region<?, ?> region) {
+		return region instanceof AbstractRegion && ((AbstractRegion) region).hasServerProxy();
 	}
 
 	/**
@@ -175,17 +206,5 @@ public abstract class GemFireUtils {
 			default:
 				return false;
 		}
-	}
-
-	/**
-	 * Converts a {@link Region} name to a {@link Region} path.
-	 *
-	 * @param regionName a String specifying the name of the {@link Region}.
-	 * @return a String path for the given {@link Region} by name.
-	 * @see org.apache.geode.cache.Region#getFullPath()
-	 * @see org.apache.geode.cache.Region#getName()
-	 */
-	public static String toRegionPath(String regionName) {
-		return String.format("%1$s%2$s", Region.SEPARATOR, regionName);
 	}
 }

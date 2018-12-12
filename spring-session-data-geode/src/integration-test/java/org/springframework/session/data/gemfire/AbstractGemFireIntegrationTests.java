@@ -44,11 +44,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.gemfire.tests.integration.ForkingClientServerIntegrationTestsSupport;
+import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
-import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.session.events.AbstractSessionEvent;
 import org.springframework.util.StringUtils;
 
@@ -306,7 +306,7 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 
 		assertThat(actualRegion).isNotNull();
 		assertThat(actualRegion.getName()).isEqualTo(expectedName);
-		assertThat(actualRegion.getFullPath()).isEqualTo(GemFireUtils.toRegionPath(expectedName));
+		assertThat(actualRegion.getFullPath()).isEqualTo(RegionUtils.toRegionPath(expectedName));
 		assertThat(actualRegion.getAttributes()).isNotNull();
 		assertThat(actualRegion.getAttributes().getDataPolicy()).isEqualTo(expectedDataPolicy);
 	}

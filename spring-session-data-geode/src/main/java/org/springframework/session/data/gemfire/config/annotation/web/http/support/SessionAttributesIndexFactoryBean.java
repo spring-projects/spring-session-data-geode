@@ -30,7 +30,7 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.gemfire.IndexFactoryBean;
-import org.springframework.session.data.gemfire.support.GemFireUtils;
+import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -97,7 +97,7 @@ public class SessionAttributesIndexFactoryBean
 		indexFactory.setName("sessionAttributesIndex");
 		indexFactory.setExpression(String.format("s.attributes[%1$s]",
 			getIndexableSessionAttributesAsGemFireIndexExpression()));
-		indexFactory.setFrom(String.format("%1$s s", GemFireUtils.toRegionPath(this.regionName)));
+		indexFactory.setFrom(String.format("%1$s s", RegionUtils.toRegionPath(this.regionName)));
 		indexFactory.setOverride(true);
 		indexFactory.afterPropertiesSet();
 

@@ -69,6 +69,7 @@ import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.util.ArrayUtils;
+import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.session.Session;
@@ -1131,7 +1132,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 		principalNameIndex.setCache(gemfireCache);
 		principalNameIndex.setName("principalNameIndex");
 		principalNameIndex.setExpression("principalName");
-		principalNameIndex.setFrom(GemFireUtils.toRegionPath(getSessionRegionName()));
+		principalNameIndex.setFrom(RegionUtils.toRegionPath(getSessionRegionName()));
 		principalNameIndex.setOverride(true);
 		principalNameIndex.setType(IndexType.HASH);
 

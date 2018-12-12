@@ -17,15 +17,16 @@
 package org.springframework.session.data.gemfire.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.junit.Test;
 
@@ -38,12 +39,12 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.internal.cache.AbstractRegion;
 
 /**
  * Unit tests for {@link GemFireUtils}.
  *
  * @author John Blum
- * @since 1.1.0
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.apache.geode.cache.Cache
@@ -51,6 +52,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.springframework.session.data.gemfire.support.GemFireUtils
+ * @since 1.1.0
  */
 public class GemFireUtilsTests {
 
@@ -92,6 +94,11 @@ public class GemFireUtilsTests {
 	}
 
 	@Test
+	public void nullIsNotClient() {
+		assertThat(GemFireUtils.isClient(null)).isFalse();
+	}
+
+	@Test
 	public void peerCacheIsNotClient() {
 		assertThat(GemFireUtils.isClient(mock(Cache.class))).isFalse();
 	}
@@ -99,6 +106,11 @@ public class GemFireUtilsTests {
 	@Test
 	public void peerCacheIsPeer() {
 		assertThat(GemFireUtils.isPeer(mock(Cache.class))).isTrue();
+	}
+
+	@Test
+	public void nullIsNotPeer() {
+		assertThat(GemFireUtils.isPeer(null)).isFalse();
 	}
 
 	@Test
@@ -114,20 +126,17 @@ public class GemFireUtilsTests {
 	@Test
 	public void clientRegionShortcutIsLocal() {
 
-		assertThat(GemFireUtils.isLocal(ClientRegionShortcut.LOCAL)).isTrue();
-		assertThat(GemFireUtils.isLocal(ClientRegionShortcut.LOCAL_HEAP_LRU)).isTrue();
-		assertThat(GemFireUtils.isLocal(ClientRegionShortcut.LOCAL_OVERFLOW)).isTrue();
-		assertThat(GemFireUtils.isLocal(ClientRegionShortcut.LOCAL_PERSISTENT)).isTrue();
-		assertThat(GemFireUtils.isLocal(ClientRegionShortcut.LOCAL_PERSISTENT_OVERFLOW)).isTrue();
+		Arrays.stream(ClientRegionShortcut.values())
+			.filter(it -> it.name().toLowerCase().contains("local"))
+			.forEach(it -> assertThat(GemFireUtils.isLocal(it)).isTrue());
 	}
 
 	@Test
 	public void clientRegionShortcutIsNotLocal() {
 
-		assertThat(GemFireUtils.isLocal(ClientRegionShortcut.CACHING_PROXY)).isFalse();
-		assertThat(GemFireUtils.isLocal(ClientRegionShortcut.CACHING_PROXY_HEAP_LRU)).isFalse();
-		assertThat(GemFireUtils.isLocal(ClientRegionShortcut.CACHING_PROXY_OVERFLOW)).isFalse();
-		assertThat(GemFireUtils.isLocal(ClientRegionShortcut.PROXY)).isFalse();
+		Arrays.stream(ClientRegionShortcut.values())
+			.filter(it -> !it.name().toLowerCase().contains("local"))
+			.forEach(it -> assertThat(GemFireUtils.isLocal(it)).isFalse());
 	}
 
 	@Test
@@ -138,14 +147,114 @@ public class GemFireUtilsTests {
 	@Test
 	public void clientRegionShortcutIsNotProxy() {
 
-		assertThat(GemFireUtils.isProxy(ClientRegionShortcut.CACHING_PROXY)).isFalse();
-		assertThat(GemFireUtils.isProxy(ClientRegionShortcut.CACHING_PROXY_HEAP_LRU)).isFalse();
-		assertThat(GemFireUtils.isProxy(ClientRegionShortcut.CACHING_PROXY_OVERFLOW)).isFalse();
-		assertThat(GemFireUtils.isProxy(ClientRegionShortcut.LOCAL)).isFalse();
-		assertThat(GemFireUtils.isProxy(ClientRegionShortcut.LOCAL_HEAP_LRU)).isFalse();
-		assertThat(GemFireUtils.isProxy(ClientRegionShortcut.LOCAL_OVERFLOW)).isFalse();
-		assertThat(GemFireUtils.isProxy(ClientRegionShortcut.LOCAL_PERSISTENT)).isFalse();
-		assertThat(GemFireUtils.isProxy(ClientRegionShortcut.LOCAL_PERSISTENT_OVERFLOW)).isFalse();
+		Arrays.stream(ClientRegionShortcut.values())
+			.filter(it -> !ClientRegionShortcut.PROXY.equals(it))
+			.forEach(it -> assertThat(GemFireUtils.isProxy(it)).isFalse());
+	}
+
+	@Test
+	public void clientRegionWithPoolIsNonLocalClientRegion() {
+
+		ClientCache mockClientCache = mock(ClientCache.class);
+
+		Region mockRegion = mock(Region.class);
+
+		RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
+
+		when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
+		when(mockRegion.getRegionService()).thenReturn(mockClientCache);
+		when(mockRegionAttributes.getPoolName()).thenReturn("Dead");
+
+		assertThat(GemFireUtils.isNonLocalClientRegion(mockRegion)).isTrue();
+
+		verify(mockRegion, times(1)).getAttributes();
+		verify(mockRegion, times(1)).getRegionService();
+		verify(mockRegionAttributes, times(1)).getPoolName();
+	}
+
+	@Test
+	public void clientRegionWithServerProxyIsNonLocalClientRegion() {
+
+		ClientCache mockClientCache = mock(ClientCache.class);
+
+		AbstractRegion mockRegion = mock(AbstractRegion.class);
+
+		RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
+
+		when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
+		when(mockRegion.getRegionService()).thenReturn(mockClientCache);
+		when(mockRegion.hasServerProxy()).thenReturn(true);
+		when(mockRegionAttributes.getPoolName()).thenReturn("  ");
+
+		assertThat(GemFireUtils.isNonLocalClientRegion(mockRegion)).isTrue();
+
+		verify(mockRegion, times(1)).getAttributes();
+		verify(mockRegion, times(1)).getRegionService();
+		verify(mockRegion, times(1)).hasServerProxy();
+		verify(mockRegionAttributes, times(1)).getPoolName();
+	}
+
+	@Test
+	public void clientRegionWithNoPoolAndNoServerProxyIsNotNonLocalClientRegion() {
+
+		ClientCache mockClientCache = mock(ClientCache.class);
+
+		AbstractRegion mockRegion = mock(AbstractRegion.class);
+
+		RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
+
+		when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
+		when(mockRegion.getRegionService()).thenReturn(mockClientCache);
+		when(mockRegion.hasServerProxy()).thenReturn(false);
+		when(mockRegionAttributes.getPoolName()).thenReturn(null);
+
+		assertThat(GemFireUtils.isNonLocalClientRegion(mockRegion)).isFalse();
+
+		verify(mockRegion, times(1)).getAttributes();
+		verify(mockRegion, never()).getRegionService();
+		verify(mockRegion, times(1)).hasServerProxy();
+		verify(mockRegionAttributes, times(1)).getPoolName();
+	}
+
+	@Test
+	public void nonClientRegionWithPoolIsNotNonLocalClientRegion() {
+
+		GemFireCache mockGemFireCache = mock(GemFireCache.class);
+
+		Region mockRegion = mock(Region.class);
+
+		RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
+
+		when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
+		when(mockRegion.getRegionService()).thenReturn(mockGemFireCache);
+		when(mockRegionAttributes.getPoolName()).thenReturn("Car");
+
+		assertThat(GemFireUtils.isNonLocalClientRegion(mockRegion)).isFalse();
+
+		verify(mockRegion, times(1)).getAttributes();
+		verify(mockRegion, times(1)).getRegionService();
+		verify(mockRegionAttributes, times(1)).getPoolName();
+	}
+
+	@Test
+	public void peerRegionWithServerProxyIsNotNonLocalClientRegion() {
+
+		Cache mockPeerCache = mock(Cache.class);
+
+		AbstractRegion mockRegion = mock(AbstractRegion.class);
+
+		RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
+
+		when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
+		when(mockRegion.getRegionService()).thenReturn(mockPeerCache);
+		when(mockRegion.hasServerProxy()).thenReturn(true);
+		when(mockRegionAttributes.getPoolName()).thenReturn("");
+
+		assertThat(GemFireUtils.isNonLocalClientRegion(mockRegion)).isFalse();
+
+		verify(mockRegion, times(1)).getAttributes();
+		verify(mockRegion, times(1)).getRegionService();
+		verify(mockRegionAttributes, times(1)).getPoolName();
 	}
 
 	@Test
@@ -215,8 +324,8 @@ public class GemFireUtilsTests {
 
 		RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
 
-		given(mockRegion.getAttributes()).willReturn(mockRegionAttributes);
-		given(mockRegionAttributes.getDataPolicy()).willReturn(DataPolicy.NORMAL);
+		when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
+		when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.NORMAL);
 
 		assertThat(GemFireUtils.isProxy(mockRegion)).isFalse();
 
@@ -271,8 +380,8 @@ public class GemFireUtilsTests {
 
 		RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
 
-		given(mockRegion.getAttributes()).willReturn(mockRegionAttributes);
-		given(mockRegionAttributes.getDataPolicy()).willReturn(DataPolicy.PRELOADED);
+		when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
+		when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.PRELOADED);
 
 		assertThat(GemFireUtils.isProxy(mockRegion)).isFalse();
 
@@ -287,8 +396,8 @@ public class GemFireUtilsTests {
 
 		RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
 
-		given(mockRegion.getAttributes()).willReturn(mockRegionAttributes);
-		given(mockRegionAttributes.getDataPolicy()).willReturn(DataPolicy.REPLICATE);
+		when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
+		when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
 
 		assertThat(GemFireUtils.isProxy(mockRegion)).isFalse();
 
@@ -299,43 +408,16 @@ public class GemFireUtilsTests {
 	@Test
 	public void regionShortcutIsProxy() {
 
-		assertThat(GemFireUtils.isProxy(RegionShortcut.PARTITION_PROXY)).isTrue();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.PARTITION_PROXY_REDUNDANT)).isTrue();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.REPLICATE_PROXY)).isTrue();
+		Arrays.stream(RegionShortcut.values())
+			.filter(it -> it.name().toLowerCase().contains("proxy"))
+			.forEach(it -> assertThat(GemFireUtils.isProxy(it)).isTrue());
 	}
 
 	@Test
 	public void regionShortcutIsNotProxy() {
 
-		assertThat(GemFireUtils.isProxy(RegionShortcut.LOCAL)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.LOCAL_HEAP_LRU)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.LOCAL_OVERFLOW)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.LOCAL_PERSISTENT)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.LOCAL_PERSISTENT_OVERFLOW)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.REPLICATE)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.REPLICATE_HEAP_LRU)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.REPLICATE_OVERFLOW)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.REPLICATE_PERSISTENT)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.PARTITION)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.PARTITION_HEAP_LRU)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.PARTITION_OVERFLOW)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.PARTITION_PERSISTENT)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.PARTITION_PERSISTENT_OVERFLOW)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.PARTITION_REDUNDANT)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.PARTITION_REDUNDANT_HEAP_LRU)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.PARTITION_REDUNDANT_OVERFLOW)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.PARTITION_REDUNDANT_PERSISTENT)).isFalse();
-		assertThat(GemFireUtils.isProxy(RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW)).isFalse();
-	}
-
-	@Test
-	public void toRegionPath() {
-
-		assertThat(GemFireUtils.toRegionPath("A")).isEqualTo("/A");
-		assertThat(GemFireUtils.toRegionPath("Example")).isEqualTo("/Example");
-		assertThat(GemFireUtils.toRegionPath("/Example")).isEqualTo("//Example");
-		assertThat(GemFireUtils.toRegionPath("/")).isEqualTo("//");
-		assertThat(GemFireUtils.toRegionPath("")).isEqualTo("/");
+		Arrays.stream(RegionShortcut.values())
+			.filter(it -> !it.name().toLowerCase().contains("proxy"))
+			.forEach(it -> assertThat(GemFireUtils.isProxy(it)).isFalse());
 	}
 }
