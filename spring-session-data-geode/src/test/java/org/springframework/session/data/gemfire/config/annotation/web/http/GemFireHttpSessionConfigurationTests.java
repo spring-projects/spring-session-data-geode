@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -58,7 +59,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.data.gemfire.util.ArrayUtils;
@@ -96,7 +96,7 @@ import org.springframework.util.ReflectionUtils;
 public class GemFireHttpSessionConfigurationTests {
 
 	@SuppressWarnings("unchecked")
-	private <T> T getField(Object obj, String fieldName) {
+	private static <T> T getField(Object obj, String fieldName) {
 
 		try {
 
@@ -678,9 +678,14 @@ public class GemFireHttpSessionConfigurationTests {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void createsAndInitializesSessionRepositoryBean() {
 
-		GemfireOperations mockGemfireOperations = mock(GemfireOperations.class);
+		Region<Object, Session> mockRegion = mock(Region.class);
+
+		GemfireTemplate mockGemfireOperations = mock(GemfireTemplate.class);
+
+		doReturn(mockRegion).when(mockGemfireOperations).getRegion();
 
 		this.gemfireConfiguration.setMaxInactiveIntervalInSeconds(120);
 
@@ -688,7 +693,7 @@ public class GemFireHttpSessionConfigurationTests {
 			this.gemfireConfiguration.sessionRepository(mockGemfireOperations);
 
 		assertThat(sessionRepository).isNotNull();
-		assertThat(sessionRepository.getTemplate()).isSameAs(mockGemfireOperations);
+		assertThat(sessionRepository.getSessionsTemplate()).isSameAs(mockGemfireOperations);
 		assertThat(sessionRepository.getMaxInactiveIntervalInSeconds()).isEqualTo(120);
 	}
 

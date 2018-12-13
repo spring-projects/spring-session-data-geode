@@ -76,52 +76,58 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	}
 
 	/**
-	 * Gets a copy of an existing, non-expired {@link Session} by ID.
+	 * Finds an existing, non-expired {@link Session} by ID.
 	 *
-	 * If the {@link Session} is expired, then the {@link Session }is deleted.
+	 * If the {@link Session} is expired, then the {@link Session} is deleted and {@literal null} is returned.
 	 *
-	 * @param sessionId a String indicating the ID of the Session to get.
-	 * @return an existing {@link Session} by ID or null if no {@link Session} exists.
+	 * @param sessionId {@link String} containing the {@link Session#getId() ID}} of the {@link Session} to get.
+	 * @return an existing {@link Session} by ID or {@literal null} if no {@link Session} exists
+	 * or the {@link Session} expired.
 	 * @see AbstractGemFireOperationsSessionRepository.GemFireSession#from(Session)
 	 * @see org.springframework.session.Session
+	 * @see #commit(Session)
 	 * @see #deleteById(String)
+	 * @see #registerInterest(Session)
+	 * @see #touch(Session)
 	 */
 	@Nullable
 	public Session findById(String sessionId) {
 
-		Session storedSession = getTemplate().get(sessionId);
+		Session storedSession = getSessionsTemplate().get(sessionId);
 
 		if (storedSession != null) {
 			storedSession = storedSession.isExpired()
 				? delete(storedSession)
-				: touch(commit(GemFireSession.from(storedSession)));
+				: registerInterest(touch(commit(GemFireSession.from(storedSession))));
 		}
 
 		return storedSession;
 	}
 
 	/**
-	 * Looks up all available Sessions with the particular attribute indexed by name
-	 * having the given value.
+	 * Finds all available {@link Session Sessions} with the particular attribute indexed by {@link String name}
+	 * having the given {@link Object value}.
 	 *
-	 * @param indexName name of the indexed Session attribute. (e.g.
-	 * {@link org.springframework.session.FindByIndexNameSessionRepository#PRINCIPAL_NAME_INDEX_NAME}
-	 * ).
-	 * @param indexValue value of the indexed Session attribute to search on (e.g.
-	 * username).
-	 * @return a mapping of Session ID to Session instances.
+	 * @param indexName {@link String name} of the indexed {@link Session} attribute.
+	 * (e.g. {@link org.springframework.session.FindByIndexNameSessionRepository#PRINCIPAL_NAME_INDEX_NAME}).
+	 * @param indexValue {@link Object value} of the indexed {@link Session} attribute to search on
+	 * (e.g. {@literal username}).
+	 * @return a mapping of {@link Session#getId()} Session IDs} to {@link Session} objects.
 	 * @see org.springframework.session.Session
-	 * @see java.util.Map
 	 * @see #prepareQuery(String)
+	 * @see java.util.Map
+	 * @see #commit(Session)
+	 * @see #registerInterest(Session)
+	 * @see #touch(Session)
 	 */
 	@Override
 	public Map<String, Session> findByIndexNameAndIndexValue(String indexName, String indexValue) {
 
-		SelectResults<Session> results = getTemplate().find(prepareQuery(indexName), indexValue);
+		SelectResults<Session> results = getSessionsTemplate().find(prepareQuery(indexName), indexValue);
 
 		Map<String, Session> sessions = new HashMap<>(results.size());
 
-		results.asList().forEach(session -> sessions.put(session.getId(), session));
+		results.asList().forEach(session -> sessions.put(session.getId(), registerInterest(touch(commit(session)))));
 
 		return sessions;
 	}
@@ -136,9 +142,11 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 */
 	protected String prepareQuery(String indexName) {
 
+		String fullyQualifiedRegionName = getFullyQualifiedRegionName();
+
 		return PRINCIPAL_NAME_INDEX_NAME.equals(indexName)
-			? String.format(FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY, getFullyQualifiedRegionName())
-			: String.format(FIND_SESSIONS_BY_INDEX_NAME_AND_INDEX_VALUE_QUERY, getFullyQualifiedRegionName(), indexName);
+			? String.format(FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY, fullyQualifiedRegionName)
+			: String.format(FIND_SESSIONS_BY_INDEX_NAME_AND_INDEX_VALUE_QUERY, fullyQualifiedRegionName, indexName);
 	}
 
 	/**
@@ -170,7 +178,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	void doSave(@NonNull Session session) {
 
 		// Save Session As GemFireSession
-		getTemplate().put(session.getId(), GemFireSession.from(session));
+		getSessionsTemplate().put(session.getId(), GemFireSession.from(session));
 
 		// Commit Session
 		commit(session);
@@ -185,6 +193,6 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see #handleDeleted(String, Session)
 	 */
 	public void deleteById(String sessionId) {
-		handleDeleted(sessionId, toSession(getTemplate().<Object, Session>remove(sessionId), sessionId));
+		handleDeleted(sessionId, getSessionsTemplate().<Object, Session>remove(sessionId));
 	}
 }

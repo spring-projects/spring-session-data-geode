@@ -38,15 +38,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
-import org.apache.geode.Instantiator;
 import org.apache.geode.InvalidDeltaException;
-import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -62,6 +60,8 @@ import org.springframework.session.SessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.session.data.gemfire.support.SessionIdHolder;
+import org.springframework.session.data.gemfire.support.SessionUtils;
+import org.springframework.session.events.AbstractSessionEvent;
 import org.springframework.session.events.SessionCreatedEvent;
 import org.springframework.session.events.SessionDeletedEvent;
 import org.springframework.session.events.SessionDestroyedEvent;
@@ -78,34 +78,44 @@ import org.apache.commons.logging.LogFactory;
  * common to all implementations that support {@link SessionRepository} operations backed by Apache Geode.
  *
  * @author John Blum
+ * @see java.time.Duration
+ * @see java.time.Instant
  * @see org.apache.geode.DataSerializable
  * @see org.apache.geode.DataSerializer
  * @see org.apache.geode.Delta
- * @see org.apache.geode.Instantiator
  * @see org.apache.geode.cache.EntryEvent
  * @see org.apache.geode.cache.Operation
  * @see org.apache.geode.cache.Region
- * @see org.springframework.beans.factory.InitializingBean
+ * @see org.apache.geode.cache.util.CacheListenerAdapter
  * @see org.springframework.context.ApplicationEvent
  * @see org.springframework.context.ApplicationEventPublisher
  * @see org.springframework.context.ApplicationEventPublisherAware
  * @see org.springframework.data.gemfire.GemfireOperations
- * @see org.springframework.expression.Expression
  * @see org.springframework.session.FindByIndexNameSessionRepository
  * @see org.springframework.session.Session
  * @see org.springframework.session.SessionRepository
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
+ * @see org.springframework.session.data.gemfire.support.SessionIdHolder
+ * @see org.springframework.session.events.AbstractSessionEvent
  * @see org.springframework.session.events.SessionCreatedEvent
  * @see org.springframework.session.events.SessionDeletedEvent
  * @see org.springframework.session.events.SessionDestroyedEvent
  * @see org.springframework.session.events.SessionExpiredEvent
  * @since 1.1.0
  */
-public abstract class AbstractGemFireOperationsSessionRepository extends CacheListenerAdapter<Object, Session>
-		implements ApplicationEventPublisherAware, FindByIndexNameSessionRepository<Session>, InitializingBean {
+public abstract class AbstractGemFireOperationsSessionRepository
+		implements ApplicationEventPublisherAware, FindByIndexNameSessionRepository<Session> {
+
+	private static final boolean DEFAULT_REGISTER_INTEREST_ENABLED = false;
+	private static final boolean DEFAULT_REGISTER_INTEREST_DURABILITY = false;
+	private static final boolean DEFAULT_REGISTER_INTEREST_RECEIVE_VALUES = false;
 
 	private static final AtomicBoolean usingDataSerialization = new AtomicBoolean(false);
+
+	private static final InterestResultPolicy DEFAULT_REGISTER_INTEREST_RESULT_POLICY = InterestResultPolicy.NONE;
+
+	private boolean registerInterestEnabled = DEFAULT_REGISTER_INTEREST_ENABLED;
 
 	private ApplicationEventPublisher applicationEventPublisher = event -> {};
 
@@ -116,32 +126,111 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 
 	private final Log logger = newLogger();
 
-	private final Set<Integer> cachedSessionIds = new ConcurrentSkipListSet<>();
+	private final Region<Object, Session> sessions;
 
-	private String fullyQualifiedRegionName;
+	private SessionEventHandlerCacheListenerAdapter sessionEventHandler;
+
+	private final Set<Integer> interestingSessionIds = new ConcurrentSkipListSet<>();
 
 	/**
 	 * Protected, default constructor used by extensions of {@link AbstractGemFireOperationsSessionRepository}
 	 * in order to affect and assess {@link SessionRepository} configuration and state.
 	 */
 	protected AbstractGemFireOperationsSessionRepository() {
+
+		this.sessions = null;
 		this.template = null;
 	}
 
 	/**
-	 * Constructs an instance of {@link AbstractGemFireOperationsSessionRepository}
-	 * with a required {@link GemfireOperations} instance used to perform Pivotal GemFire data access operations
-	 * and interactions supporting the SessionRepository operations.
+	 * Constructs a new instance of {@link AbstractGemFireOperationsSessionRepository} initialized with a required
+	 * {@link GemfireOperations} object, which is used to perform Apache Geode or Pivotal GemFire data access operations
+	 * on the cache {@link Region} storing and managing {@link Session} state to support this {@link SessionRepository}
+	 * and its operations.
 	 *
-	 * @param template {@link GemfireOperations} instance used to interact with GemFire; must not be {@literal null}.
+	 * @param template {@link GemfireOperations} object used to interact with the Apache Geode or Pivotal GemFire
+	 * cache {@link Region} storing and managing {@link Session} state; must not be {@literal null}.
 	 * @throws IllegalArgumentException if {@link GemfireOperations} is {@literal null}.
 	 * @see org.springframework.data.gemfire.GemfireOperations
+	 * @see #resolveSessionsRegion(GemfireOperations)
+	 * @see #initializeSessionsRegion(Region)
+	 * @see #newLogger()
 	 */
 	public AbstractGemFireOperationsSessionRepository(GemfireOperations template) {
 
 		Assert.notNull(template, "GemfireOperations is required");
 
 		this.template = template;
+		this.sessions = initializeSessionsRegion(resolveSessionsRegion(template));
+	}
+
+	/**
+	 * Resolves the cache {@link Region} used to store and manage {@link Session} state
+	 * from the given {@link GemfireOperations} object.
+	 *
+	 * @param gemfireOperations {@link GemfireOperations} object used to resolve the {@link Session} {@link Region}.
+	 * @return the resolve cache {@link Region} used to store and manage {@link Session} state.
+	 * @throws IllegalStateException if the {@link Session Sessions} {@link Region} could not be resolved.
+	 * @see org.springframework.data.gemfire.GemfireOperations
+	 * @see org.springframework.session.Session
+	 * @see org.apache.geode.cache.Region
+	 */
+	private Region<Object, Session> resolveSessionsRegion(@Nullable GemfireOperations gemfireOperations) {
+
+		return Optional.ofNullable(gemfireOperations)
+			.filter(GemfireAccessor.class::isInstance)
+			.map(GemfireAccessor.class::cast)
+			.<Region<Object, Session>>map(GemfireAccessor::getRegion)
+			.orElseThrow(() -> newIllegalStateException("The ClusteredSpringSessions Region could not be resolved"));
+	}
+
+	/**
+	 * Initializes the cache {@link Region} used to store and manage {@link Session} state and register this
+	 * {@link SessionRepository} as an Apache Geode / Pivotal GemFire {@link org.apache.geode.cache.CacheListener}.
+	 *
+	 * @param sessionsRegion {@link Region} to initialize.
+	 * @return the given {@link Region}.
+	 * @see org.apache.geode.cache.Region
+	 * @see #newSessionEventHandler()
+	 * @see #newSessionIdInterestRegistrar()
+	 */
+	private Region<Object, Session> initializeSessionsRegion(@Nullable Region<Object, Session> sessionsRegion) {
+
+		Optional.ofNullable(sessionsRegion)
+			.map(Region::getAttributesMutator)
+			.ifPresent(sessionsRegionAttributesMutator -> {
+
+				this.sessionEventHandler = newSessionEventHandler();
+
+				sessionsRegionAttributesMutator.addCacheListener(this.sessionEventHandler);
+
+				if (GemFireUtils.isNonLocalClientRegion(sessionsRegion)) {
+					this.registerInterestEnabled = true;
+					sessionsRegionAttributesMutator.addCacheListener(newSessionIdInterestRegistrar());
+				}
+			});
+
+		return sessionsRegion;
+	}
+
+	/**
+	 * Constructs a new instance of {@link SessionEventHandlerCacheListenerAdapter}.
+	 *
+	 * @return a new instance of {@link SessionEventHandlerCacheListenerAdapter}.
+	 * @see SessionEventHandlerCacheListenerAdapter
+	 */
+	protected SessionEventHandlerCacheListenerAdapter newSessionEventHandler() {
+		return new SessionEventHandlerCacheListenerAdapter(this);
+	}
+
+	/**
+	 * Constructs a new instance of {@link SessionIdInterestRegisteringCacheListener}.
+	 *
+	 * @return a new instance of {@link SessionIdInterestRegisteringCacheListener}.
+	 * @see SessionIdInterestRegisteringCacheListener
+	 */
+	protected SessionIdInterestRegisteringCacheListener newSessionIdInterestRegistrar() {
+		return new SessionIdInterestRegisteringCacheListener(this);
 	}
 
 	/**
@@ -156,15 +245,15 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	}
 
 	/**
-	 * Sets the ApplicationEventPublisher used to publish Session events corresponding to
-	 * Pivotal GemFire cache events.
+	 * Sets the configured {@link ApplicationEventPublisher} used to publish {@link Session}
+	 * {@link AbstractSessionEvent events} corresponding to Apache Geode/Pivotal GemFire cache events.
 	 *
-	 * @param applicationEventPublisher the Spring ApplicationEventPublisher used to
-	 * publish Session-based events; must not be {@literal null}.
+	 * @param applicationEventPublisher {@link ApplicationEventPublisher} used to publish {@link Session}-based events;
+	 * must not be {@literal null}.
 	 * @throws IllegalArgumentException if {@link ApplicationEventPublisher} is {@literal null}.
 	 * @see org.springframework.context.ApplicationEventPublisher
 	 */
-	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+	public void setApplicationEventPublisher(@NonNull ApplicationEventPublisher applicationEventPublisher) {
 
 		Assert.notNull(applicationEventPublisher, "ApplicationEventPublisher is required");
 
@@ -172,24 +261,37 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	}
 
 	/**
-	 * Returns a reference to the {@link ApplicationEventPublisher} used to publish {@link Session} events
-	 * corresponding to GemFire/Geode cache events.
+	 * Returns a reference to the configured {@link ApplicationEventPublisher} used to publish {@link Session}
+	 * {@link AbstractSessionEvent events} corresponding to Apache Geode/Pivotal GemFire cache events.
 	 *
-	 * @return the Spring {@link ApplicationEventPublisher} used to publish {@link Session} events.
+	 * @return the configured {@link ApplicationEventPublisher} used to publish {@link Session}
+	 * {@link AbstractSessionEvent events}.
 	 * @see org.springframework.context.ApplicationEventPublisher
 	 */
-	protected ApplicationEventPublisher getApplicationEventPublisher() {
+	protected @NonNull ApplicationEventPublisher getApplicationEventPublisher() {
 		return this.applicationEventPublisher;
 	}
 
 	/**
-	 * Returns the fully-qualified name of the cache {@link Region} used to store and manage {@link Session} state.
+	 * Returns the {@link String fully-qualified name} of the cache {@link Region} used to store
+	 * and manage {@link Session} state.
 	 *
 	 * @return a {@link String} containing the fully qualified name of the cache {@link Region}
 	 * used to store and manage {@link Session} data.
+	 * @see #getSessionsRegion()
 	 */
 	protected String getFullyQualifiedRegionName() {
-		return this.fullyQualifiedRegionName;
+		return getSessionsRegion().getFullPath();
+	}
+
+	/**
+	 * Determines whether {@link Region} {@literal register interest} is enabled
+	 * in the current Apache Geode / Pivotal GemFire configuration.
+	 *
+	 * @return a boolean value indicating whether interest registration is enabled.
+	 */
+	protected boolean isRegisterInterestEnabled() {
+		return this.registerInterestEnabled;
 	}
 
 	/**
@@ -254,15 +356,41 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			.orElse(0);
 	}
 
+	protected Optional<SessionEventHandlerCacheListenerAdapter> getSessionEventHandler() {
+		return Optional.ofNullable(this.sessionEventHandler);
+	}
+
 	/**
-	 * Gets a reference to the {@link GemfireOperations template} used to perform data access operations
-	 * and other interactions on the cache {@link Region} backing this {@link SessionRepository}.
+	 * Returns a reference to the configured Apache Geode / Pivotal GemFire cache {@link Region} used to
+	 * store and manage (HTTP) {@link Session} data.
 	 *
-	 * @return a reference to the {@link GemfireOperations template} used to interact with GemFire/Geode.
+	 * @return a reference to the configured {@link Session Sessions} {@link Region}.
+	 * @see org.springframework.session.Session
+	 * @see org.apache.geode.cache.Region
+	 */
+	protected @NonNull Region<Object, Session> getSessionsRegion() {
+		return this.sessions;
+	}
+
+	/**
+	 * Returns a reference to the {@link GemfireOperations template} used to perform data access operations
+	 * and other interactions on the cache {@link Region} storing and managing {@link Session} state
+	 * and backing this {@link SessionRepository}.
+	 *
+	 * @return a reference to the {@link GemfireOperations template} used to interact the {@link Region}
+	 * storing and managing {@link Session} state.
 	 * @see org.springframework.data.gemfire.GemfireOperations
 	 */
-	public GemfireOperations getTemplate() {
+	public @NonNull GemfireOperations getSessionsTemplate() {
 		return this.template;
+	}
+
+	/**
+	 * @deprecated use {@link #getSessionsTemplate()}.
+	 */
+	@Deprecated
+	public @NonNull GemfireOperations getTemplate() {
+		return getSessionsTemplate();
 	}
 
 	/**
@@ -284,174 +412,9 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	}
 
 	/**
-	 * Callback method during Spring bean initialization that will capture the fully-qualified name
-	 * of the cache {@link Region} used to manage {@link Session} state and register this {@link SessionRepository}
-	 * as a GemFire/Geode {@link org.apache.geode.cache.CacheListener}.
-	 *
-	 * Additionally, this method registers GemFire/Geode {@link Instantiator Instantiators}
-	 * for the {@link GemFireSession} and {@link GemFireSessionAttributes} types to optimize GemFire/Geode's
-	 * instantiation logic on deserialization using the data serialization framework when accessing the stored
-	 * {@link Session} state.
-	 *
-	 * @throws Exception if an error occurs during the initialization process.
-	 */
-	public void afterPropertiesSet() throws Exception {
-
-		GemfireOperations template = getTemplate();
-
-		Assert.isInstanceOf(GemfireAccessor.class, template);
-
-		Region<Object, Session> region = ((GemfireAccessor) template).getRegion();
-
-		this.fullyQualifiedRegionName = region.getFullPath();
-
-		AttributesMutator<Object, Session> attributesMutator = region.getAttributesMutator();
-
-		attributesMutator.addCacheListener(this);
-	}
-
-	boolean isCreate(EntryEvent<?, ?> event) {
-		return isCreate(event.getOperation()) && isNotUpdate(event) && isSession(event.getNewValue());
-	}
-
-	private boolean isCreate(Operation operation) {
-		return operation.isCreate() && !Operation.LOCAL_LOAD_CREATE.equals(operation);
-	}
-
-	private boolean isNotUpdate(EntryEvent event) {
-		return isNotProxyRegion() || !this.cachedSessionIds.contains(ObjectUtils.nullSafeHashCode(event.getKey()));
-	}
-
-	private boolean isNotProxyRegion() {
-		return !isProxyRegion();
-	}
-
-	private boolean isProxyRegion() {
-		return GemFireUtils.isProxy(((GemfireAccessor) getTemplate()).getRegion());
-	}
-
-	/**
-	 * Used to determine whether the application developer is storing (HTTP) Sessions with other, arbitrary
-	 * application domain objects in the same Pivotal GemFire cache {@link Region}; crazier things have happened!
-	 *
-	 * @param obj {@link Object} to evaluate.
-	 * @return a boolean value indicating whether the old/new {@link Object} from the {@link Region}
-	 * {@link EntryEvent} is indeed a {@link Session}.
-	 * @see org.springframework.session.Session
-	 */
-	private boolean isSession(Object obj) {
-		return obj instanceof Session;
-	}
-
-	/**
-	 * Forgets the given {@link Object session ID}.
-	 *
-	 * @param sessionId {@link Object} containing the session ID to forget.
-	 * @return a boolean value indicating whether the given session ID was even being remembered.
-	 * @see #remember(Object)
-	 */
-	boolean forget(Object sessionId) {
-		return this.cachedSessionIds.remove(ObjectUtils.nullSafeHashCode(sessionId));
-	}
-
-	/**
-	 * Remembers the given {@link Object session ID}.
-	 *
-	 * @param sessionId {@link Object} containing the session ID to remember.
-	 * @return a boolean value whether Spring Session is interested in and will remember
-	 * this given session ID.
-	 * @see #forget(Object)
-	 */
-	@SuppressWarnings("all")
-	boolean remember(Object sessionId) {
-		return isProxyRegion() && this.cachedSessionIds.add(ObjectUtils.nullSafeHashCode(sessionId));
-	}
-
-	/**
-	 * Casts the given {@link Object} into a {@link Session} iff the {@link Object} is a {@link Session}.
-	 *
-	 * Otherwise, this method attempts to use the supplied {@link String session ID} to create a {@link Session}
-	 * containing only the ID.
-	 *
-	 * @param obj {@link Object} to evaluate as a {@link Session}.
-	 * @param sessionId {@link String} containing the session ID.
-	 * @return a {@link Session} from the given {@link Object}
-	 * or a {@link Session} containing only the supplied {@link String session ID}.
-	 * @throws IllegalStateException if the given {@link Object} is not a {@link Session}
-	 * and {@link String session ID} was not supplied.
-	 */
-	Session toSession(Object obj, String sessionId) {
-
-		return obj instanceof Session
-			? (Session) obj
-			: Optional.ofNullable(sessionId)
-				.filter(StringUtils::hasText)
-				.map(SessionIdHolder::create)
-				.orElseThrow(() -> newIllegalStateException(
-					"Minimally, the session ID [%s] must be known to trigger a Session event", sessionId));
-	}
-	/**
-	 * Callback method triggered when an entry is created in the Pivotal GemFire cache {@link Region}.
-	 *
-	 * @param event {@link EntryEvent} containing the details of the cache operation.
-	 * @see org.apache.geode.cache.EntryEvent
-	 * @see #handleCreated(String, Session)
-	 */
-	@Override
-	public void afterCreate(EntryEvent<Object, Session> event) {
-
-		Optional.ofNullable(event)
-			.filter(this::isCreate)
-			.ifPresent(it -> {
-
-				String sessionId = it.getKey().toString();
-
-				handleCreated(sessionId, toSession(it.getNewValue(), sessionId));
-			});
-	}
-
-	/**
-	 * Callback method triggered when an entry is destroyed in the Pivotal GemFire cache {@link Region}.
-	 *
-	 * @param event {@link EntryEvent} containing the details of the cache operation.
-	 * @see org.apache.geode.cache.EntryEvent
-	 * @see #handleDestroyed(String, Session)
-	 */
-	@Override
-	public void afterDestroy(EntryEvent<Object, Session> event) {
-
-		Optional.ofNullable(event)
-			.ifPresent(it -> {
-
-				String sessionId = event.getKey().toString();
-
-				handleDestroyed(sessionId, toSession(event.getOldValue(), sessionId));
-			});
-	}
-
-	/**
-	 * Callback method triggered when an entry is invalidated in the Pivotal GemFire cache {@link Region}.
-	 *
-	 * @param event {@link EntryEvent} containing the details of the cache operation.
-	 * @see org.apache.geode.cache.EntryEvent
-	 * @see #handleExpired(String, Session)
-	 */
-	@Override
-	public void afterInvalidate(EntryEvent<Object, Session> event) {
-
-		Optional.ofNullable(event)
-			.ifPresent(it -> {
-
-				String sessionId = event.getKey().toString();
-
-				handleExpired(sessionId, toSession(event.getOldValue(), sessionId));
-			});
-	}
-
-	/**
 	 * Commits the given {@link Session}.
 	 *
-	 * @param session {@link Session} to commit, if committable.
+	 * @param session {@link Session} to commit, iff the {@link Session} is {@literal committable}.
 	 * @return the given {@link Session}
 	 * @see GemFireSession#commit()
 	 */
@@ -468,14 +431,15 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	}
 
 	/**
-	 * Deletes the given {@link Session} from GemFire.
+	 * Deletes the given {@link Session} from Apache Geode / Pivotal GemFire.
 	 *
 	 * @param session {@link Session} to delete.
 	 * @return {@literal null}.
 	 * @see org.springframework.session.Session#getId()
+	 * @see org.springframework.session.Session
 	 * @see #deleteById(String)
 	 */
-	protected Session delete(Session session) {
+	protected Session delete(@NonNull Session session) {
 
 		deleteById(session.getId());
 
@@ -483,88 +447,27 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	}
 
 	/**
-	 * Causes Session created events to be published to the Spring application context.
+	 * Handles the deletion of the given {@link Session}.
 	 *
-	 * @param sessionId a String indicating the ID of the Session.
-	 * @param session a reference to the Session triggering the event.
-	 * @see org.springframework.session.events.SessionCreatedEvent
+	 * @param sessionId {@link String} containing the {@link Session#getId()} of the given {@link Session}.
+	 * @param session deleted {@link Session}.
+	 * @see SessionEventHandlerCacheListenerAdapter#handleDeleted(String, Session)
 	 * @see org.springframework.session.Session
-	 * @see #newSessionCreatedEvent(Session)
-	 * @see #publishEvent(ApplicationEvent)
-	 */
-	protected void handleCreated(String sessionId, Session session) {
-		remember(sessionId);
-		publishEvent(newSessionCreatedEvent(session));
-	}
-
-	/**
-	 * Causes Session deleted events to be published to the Spring application context.
-	 *
-	 * @param sessionId a String indicating the ID of the Session.
-	 * @param session a reference to the Session triggering the event.
-	 * @see org.springframework.session.events.SessionDeletedEvent
-	 * @see org.springframework.session.Session
-	 * @see #newSessionDeletedEvent(Session)
-	 * @see #publishEvent(ApplicationEvent)
-	 * @see #forget(Object)
+	 * @see #unregisterInterest(Object)
 	 */
 	protected void handleDeleted(String sessionId, Session session) {
-		forget(sessionId);
-		publishEvent(newSessionDeletedEvent(session));
+
+		getSessionEventHandler()
+			.ifPresent(it -> it.handleDeleted(sessionId, session));
+
+		unregisterInterest(sessionId);
 	}
 
 	/**
-	 * Causes Session destroyed events to be published to the Spring application context.
+	 * Publishes the specified {@link ApplicationEvent} to the Spring container thereby notifying other (potentially)
+	 * interested application components/beans.
 	 *
-	 * @param sessionId a String indicating the ID of the Session.
-	 * @param session a reference to the Session triggering the event.
-	 * @see org.springframework.session.events.SessionDestroyedEvent
-	 * @see org.springframework.session.Session
-	 * @see #newSessionDestroyedEvent(Session)
-	 * @see #publishEvent(ApplicationEvent)
-	 * @see #forget(Object)
-	 */
-	protected void handleDestroyed(String sessionId, Session session) {
-		forget(sessionId);
-		publishEvent(newSessionDestroyedEvent(session));
-	}
-
-	/**
-	 * Causes Session expired events to be published to the Spring application context.
-	 *
-	 * @param sessionId a String indicating the ID of the Session.
-	 * @param session a reference to the Session triggering the event.
-	 * @see org.springframework.session.events.SessionExpiredEvent
-	 * @see org.springframework.session.Session
-	 * @see #newSessionExpiredEvent(Session)
-	 * @see #publishEvent(ApplicationEvent)
-	 * @see #forget(Object)
-	 */
-	protected void handleExpired(String sessionId, Session session) {
-		forget(sessionId);
-		publishEvent(newSessionExpiredEvent(session));
-	}
-
-	private SessionCreatedEvent newSessionCreatedEvent(Session session) {
-		return new SessionCreatedEvent(this, session);
-	}
-
-	private SessionDeletedEvent newSessionDeletedEvent(Session session) {
-		return new SessionDeletedEvent(this, session);
-	}
-
-	private SessionDestroyedEvent newSessionDestroyedEvent(Session session) {
-		return new SessionDestroyedEvent(this, session);
-	}
-
-	private SessionExpiredEvent newSessionExpiredEvent(Session session) {
-		return new SessionExpiredEvent(this, session);
-	}
-
-	/**
-	 * Publishes the specified ApplicationEvent to the Spring application context.
-	 *
-	 * @param event the ApplicationEvent to publish.
+	 * @param event {@link ApplicationEvent} to publish.
 	 * @see org.springframework.context.ApplicationEventPublisher#publishEvent(ApplicationEvent)
 	 * @see org.springframework.context.ApplicationEvent
 	 */
@@ -579,18 +482,97 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 	}
 
 	/**
-	 * Updates the {@link Session#setLastAccessedTime(Instant)} property of the {@link Session}.
+	 * Registers interest in the given {@link Session} in order to receive notifications and updates.
+	 *
+	 * @param session {@link Session} of interest to this application that will be registered.
+	 * @return the given {@link Session}.
+	 * @see org.springframework.session.Session#getId()
+	 * @see org.springframework.session.Session
+	 * @see #registerInterest(Object)
+	 */
+	protected Session registerInterest(@Nullable Session session) {
+
+		Optional.ofNullable(session)
+			.map(Session::getId)
+			.ifPresent(this::registerInterest);
+
+		return session;
+	}
+
+	/**
+	 * Registers interest on the {@link Session#getId()} ID} of a {@link Session}.
+	 *
+	 * And, only registers interest in the given Session ID iff we have not already registered interest
+	 * in this Session ID before.
+	 *
+	 * @param sessionId {@link Session#getId() ID} of the {@link Session} of interest to this application.
+	 * @see org.apache.geode.cache.Region#registerInterest(Object, InterestResultPolicy, boolean, boolean)
+	 * @see #isRegisterInterestEnabled()
+	 */
+	protected void registerInterest(Object sessionId) {
+
+		Optional.ofNullable(sessionId)
+			.filter(it -> this.isRegisterInterestEnabled())
+			.filter(SessionUtils::isValidSessionId)
+			.map(ObjectUtils::nullSafeHashCode)
+			.filter(this.interestingSessionIds::add)
+			.ifPresent(it ->
+				getSessionsRegion().registerInterest(sessionId, DEFAULT_REGISTER_INTEREST_RESULT_POLICY,
+					DEFAULT_REGISTER_INTEREST_DURABILITY, DEFAULT_REGISTER_INTEREST_RECEIVE_VALUES)
+			);
+	}
+
+	/**
+	 * Updates the {@link Session#setLastAccessedTime(Instant)} property of the {@link Session}
+	 * to the {@link Instant#now() current time}.
 	 *
 	 * @param session {@link Session} to touch.
 	 * @return the {@link Session}.
 	 * @see org.springframework.session.Session#setLastAccessedTime(Instant)
+	 * @see org.springframework.session.Session
 	 * @see java.time.Instant#now()
 	 */
-	protected Session touch(Session session) {
+	protected @NonNull Session touch(@NonNull Session session) {
 
 		session.setLastAccessedTime(Instant.now());
 
 		return session;
+	}
+
+	/**
+	 * Unregisters interest in the given {@link Session} in order to stop notifications and updates.
+	 *
+	 * @param session {@link Session} no longer of any interest to this application that will be unregistered.
+	 * @return the given {@link Session}.
+	 * @see org.springframework.session.Session#getId()
+	 * @see org.springframework.session.Session
+	 * @see #unregisterInterest(Object)
+	 */
+	@SuppressWarnings("unused")
+	protected Session unregisterInterest(@Nullable Session session) {
+
+		Optional.ofNullable(session)
+			.map(Session::getId)
+			.ifPresent(this::unregisterInterest);
+
+		return session;
+	}
+
+	/**
+	 * Unregisters interest on the {@link Session#getId()} ID} of a {@link Session}.
+	 *
+	 * @param sessionId {@link Session#getId() ID} of the {@link Session} no longer of any interest
+	 * to this application.
+	 * @see org.apache.geode.cache.Region#unregisterInterest(Object)
+	 * @see #isRegisterInterestEnabled()
+	 */
+	protected void unregisterInterest(@Nullable Object sessionId) {
+
+		Optional.ofNullable(sessionId)
+			.filter(it -> this.isRegisterInterestEnabled())
+			.map(ObjectUtils::nullSafeHashCode)
+			.filter(this.interestingSessionIds::remove)
+			.ifPresent(it -> getSessionsRegion().unregisterInterest(sessionId));
 	}
 
 	@SuppressWarnings("unused")
@@ -1271,6 +1253,277 @@ public abstract class AbstractGemFireOperationsSessionRepository extends CacheLi
 			synchronized (getLock()) {
 				return this.sessionAttributes.toString();
 			}
+		}
+	}
+
+	protected static class SessionEventHandlerCacheListenerAdapter extends CacheListenerAdapter<Object, Session> {
+
+		private final AbstractGemFireOperationsSessionRepository sessionRepository;
+
+		private final Set<Integer> cachedSessionIds = new ConcurrentSkipListSet<>();
+
+		protected SessionEventHandlerCacheListenerAdapter(AbstractGemFireOperationsSessionRepository sessionRepository) {
+
+			Assert.notNull(sessionRepository, "SessionRepository is required");
+
+			this.sessionRepository = sessionRepository;
+		}
+
+		protected AbstractGemFireOperationsSessionRepository getSessionRepository() {
+			return this.sessionRepository;
+		}
+
+		/**
+		 * Callback method triggered when an entry is created in the Pivotal GemFire cache {@link Region}.
+		 *
+		 * @param event {@link EntryEvent} containing the details of the cache operation.
+		 * @see org.apache.geode.cache.EntryEvent
+		 * @see #handleCreated(String, Session)
+		 */
+		@Override
+		public void afterCreate(EntryEvent<Object, Session> event) {
+
+			Optional.ofNullable(event)
+				.filter(this::isCreate)
+				.ifPresent(it -> {
+
+					String sessionId = it.getKey().toString();
+
+					handleCreated(sessionId, toSession(it.getNewValue(), sessionId));
+				});
+		}
+
+		/**
+		 * Causes Session created events to be published to the Spring application context.
+		 *
+		 * @param sessionId a String indicating the ID of the Session.
+		 * @param session a reference to the Session triggering the event.
+		 * @see org.springframework.session.events.SessionCreatedEvent
+		 * @see org.springframework.session.Session
+		 * @see #newSessionCreatedEvent(Session)
+		 * @see #publishEvent(ApplicationEvent)
+		 */
+		protected void handleCreated(String sessionId, Session session) {
+
+			remember(sessionId);
+			getSessionRepository().publishEvent(newSessionCreatedEvent(session));
+		}
+
+		private SessionCreatedEvent newSessionCreatedEvent(Session session) {
+			return new SessionCreatedEvent(getSessionRepository(), session);
+		}
+
+		/**
+		 * Callback method triggered when an entry is destroyed in the Pivotal GemFire cache {@link Region}.
+		 *
+		 * @param event {@link EntryEvent} containing the details of the cache operation.
+		 * @see org.apache.geode.cache.EntryEvent
+		 * @see #handleDestroyed(String, Session)
+		 */
+		@Override
+		public void afterDestroy(EntryEvent<Object, Session> event) {
+
+			Optional.ofNullable(event)
+				.ifPresent(it -> {
+
+					String sessionId = event.getKey().toString();
+
+					handleDestroyed(sessionId, toSession(event.getOldValue(), sessionId));
+				});
+		}
+
+		/**
+		 * Causes Session destroyed events to be published to the Spring application context.
+		 *
+		 * @param sessionId a String indicating the ID of the Session.
+		 * @param session a reference to the Session triggering the event.
+		 * @see org.springframework.session.events.SessionDestroyedEvent
+		 * @see org.springframework.session.Session
+		 * @see #newSessionDestroyedEvent(Session)
+		 * @see #publishEvent(ApplicationEvent)
+		 * @see #forget(Object)
+		 */
+		protected void handleDestroyed(String sessionId, Session session) {
+
+			forget(sessionId);
+			getSessionRepository().publishEvent(newSessionDestroyedEvent(session));
+		}
+
+		private SessionDestroyedEvent newSessionDestroyedEvent(Session session) {
+			return new SessionDestroyedEvent(getSessionRepository(), session);
+		}
+
+		/**
+		 * Callback method triggered when an entry is invalidated in the Pivotal GemFire cache {@link Region}.
+		 *
+		 * @param event {@link EntryEvent} containing the details of the cache operation.
+		 * @see org.apache.geode.cache.EntryEvent
+		 * @see #handleExpired(String, Session)
+		 */
+		@Override
+		public void afterInvalidate(EntryEvent<Object, Session> event) {
+
+			Optional.ofNullable(event)
+				.ifPresent(it -> {
+
+					String sessionId = event.getKey().toString();
+
+					handleExpired(sessionId, toSession(event.getOldValue(), sessionId));
+				});
+		}
+
+		/**
+		 * Causes Session expired events to be published to the Spring application context.
+		 *
+		 * @param sessionId a String indicating the ID of the Session.
+		 * @param session a reference to the Session triggering the event.
+		 * @see org.springframework.session.events.SessionExpiredEvent
+		 * @see org.springframework.session.Session
+		 * @see #newSessionExpiredEvent(Session)
+		 * @see #publishEvent(ApplicationEvent)
+		 * @see #forget(Object)
+		 */
+		protected void handleExpired(String sessionId, Session session) {
+
+			forget(sessionId);
+			getSessionRepository().publishEvent(newSessionExpiredEvent(session));
+		}
+
+		private SessionExpiredEvent newSessionExpiredEvent(Session session) {
+			return new SessionExpiredEvent(getSessionRepository(), session);
+		}
+
+		/**
+		 * Causes Session deleted events to be published to the Spring application context.
+		 *
+		 * @param sessionId a String indicating the ID of the Session.
+		 * @param session a reference to the Session triggering the event.
+		 * @see org.springframework.session.events.SessionDeletedEvent
+		 * @see org.springframework.session.Session
+		 * @see #newSessionDeletedEvent(Session)
+		 * @see #publishEvent(ApplicationEvent)
+		 * @see #forget(Object)
+		 */
+		protected void handleDeleted(String sessionId, Session session) {
+
+			forget(sessionId);
+			getSessionRepository().publishEvent(newSessionDeletedEvent(toSession(session, sessionId)));
+		}
+
+		private SessionDeletedEvent newSessionDeletedEvent(Session session) {
+			return new SessionDeletedEvent(getSessionRepository(), session);
+		}
+
+		boolean isCreate(EntryEvent<?, ?> event) {
+			return isCreate(event.getOperation()) && isNotUpdate(event) && isSession(event.getNewValue());
+		}
+
+		private boolean isCreate(Operation operation) {
+			return operation.isCreate() && !Operation.LOCAL_LOAD_CREATE.equals(operation);
+		}
+
+		private boolean isNotUpdate(EntryEvent event) {
+			return isNotProxyRegion() || !this.cachedSessionIds.contains(ObjectUtils.nullSafeHashCode(event.getKey()));
+		}
+
+		private boolean isNotProxyRegion() {
+			return !isProxyRegion();
+		}
+
+		private boolean isProxyRegion() {
+			return GemFireUtils.isProxy(getSessionRepository().getSessionsRegion());
+		}
+
+		/**
+		 * Used to determine whether the application developer is storing (HTTP) {@link Session Sessions} with other,
+		 * arbitrary application domain objects in the same Apache Geode / Pivotal GemFire cache {@link Region};
+		 * crazier things have happened!
+		 *
+		 * @param obj {@link Object} to evaluate.
+		 * @return a boolean value indicating whether the old/new {@link Object} from the {@link Region}
+		 * {@link EntryEvent} is indeed a {@link Session}.
+		 * @see org.springframework.session.Session
+		 */
+		private boolean isSession(Object obj) {
+			return obj instanceof Session;
+		}
+
+		/**
+		 * Forgets the given {@link Object Session ID}.
+		 *
+		 * @param sessionId {@link Object} containing the Session ID to forget.
+		 * @return a boolean value indicating whether the given Session ID was even being remembered.
+		 * @see #remember(Object)
+		 */
+		boolean forget(Object sessionId) {
+			return this.cachedSessionIds.remove(ObjectUtils.nullSafeHashCode(sessionId));
+		}
+
+		/**
+		 * Remembers the given {@link Object Session ID}.
+		 *
+		 * @param sessionId {@link Object} containing the Session ID to remember.
+		 * @return a boolean value indicating whether Spring Session is interested in
+		 * and will remember the given Session ID.
+		 * @see #forget(Object)
+		 */
+		boolean remember(Object sessionId) {
+			return isProxyRegion() && this.cachedSessionIds.add(ObjectUtils.nullSafeHashCode(sessionId));
+		}
+
+		/**
+		 * Casts the given {@link Object} into a {@link Session} iff the {@link Object} is a {@link Session}.
+		 *
+		 * Otherwise, this method attempts to use the supplied {@link String Session ID} to create a {@link Session}
+		 * representation containing only the ID.
+		 *
+		 * @param obj {@link Object} to evaluate as a {@link Session}.
+		 * @param sessionId {@link String} containing the Session ID.
+		 * @return a {@link Session} from the given {@link Object} or a {@link Session} representation
+		 * containing only the supplied {@link String Session ID}.
+		 * @throws IllegalStateException if the given {@link Object} is not a {@link Session}
+		 * and a {@link String Session ID} was not supplied.
+		 */
+		Session toSession(@Nullable Object obj, String sessionId) {
+
+			return obj instanceof Session
+				? (Session) obj
+				: Optional.ofNullable(sessionId)
+				.filter(StringUtils::hasText)
+				.map(SessionIdHolder::create)
+				.orElseThrow(() -> newIllegalStateException(
+					"Minimally, the Session ID [%s] must be known to trigger a Session event", sessionId));
+		}
+	}
+
+	protected static class SessionIdInterestRegisteringCacheListener extends CacheListenerAdapter<Object, Session> {
+
+		private final AbstractGemFireOperationsSessionRepository sessionRepository;
+
+		public SessionIdInterestRegisteringCacheListener(AbstractGemFireOperationsSessionRepository sessionRepository) {
+
+			Assert.notNull(sessionRepository, "SessionRepository is required");
+
+			this.sessionRepository = sessionRepository;
+		}
+
+		protected AbstractGemFireOperationsSessionRepository getSessionRepository() {
+			return this.sessionRepository;
+		}
+
+		@Override
+		public void afterCreate(EntryEvent<Object, Session> event) {
+			getSessionRepository().registerInterest(event.getKey());
+		}
+
+		@Override
+		public void afterDestroy(EntryEvent<Object, Session> event) {
+			getSessionRepository().unregisterInterest(event.getKey());
+		}
+
+		@Override
+		public void afterInvalidate(EntryEvent<Object, Session> event) {
+			getSessionRepository().unregisterInterest(event.getKey());
 		}
 	}
 }

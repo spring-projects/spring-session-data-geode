@@ -54,10 +54,10 @@ import org.springframework.test.context.web.WebAppConfiguration;
  * of the {@link GemFireOperationsSessionRepository} and GemFire's configuration.
  *
  * @author John Blum
- * @since 1.1.0
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.apache.geode.cache.Region
+ * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
  * @see org.springframework.session.Session
  * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
  * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
@@ -68,6 +68,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringRunner
  * @see org.springframework.test.context.web.WebAppConfiguration
+ * @since 1.1.0
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
@@ -164,6 +165,7 @@ public class EnableGemFireHttpSessionEventsIntegrationTests extends AbstractGemF
 		Session expectedSession = save(touch(createSession()));
 		Session savedSession = this.gemfireSessionRepository.findById(expectedSession.getId());
 
+		assertThat(savedSession).isNotNull();
 		assertThat(savedSession).isEqualTo(expectedSession);
 		assertThat(savedSession.isExpired()).isFalse();
 
