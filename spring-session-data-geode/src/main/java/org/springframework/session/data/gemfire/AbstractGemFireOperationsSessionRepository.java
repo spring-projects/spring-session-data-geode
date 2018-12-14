@@ -27,6 +27,7 @@ import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
@@ -968,7 +969,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	@SuppressWarnings("unused")
 	public static class DeltaCapableGemFireSessionAttributes extends GemFireSessionAttributes implements Delta {
 
-		private transient final Map<String, Object> sessionAttributeDeltas = new HashMap<>();
+		private transient final Set<String> sessionAttributeDeltas = new HashSet<>();
 
 		public DeltaCapableGemFireSessionAttributes() { }
 
@@ -976,7 +977,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 			super(lock);
 		}
 
-		protected Map<String, Object> getSessionAttributeDeltas() {
+		protected Set<String> getSessionAttributeDeltas() {
 
 			synchronized (getLock()) {
 				return this.sessionAttributeDeltas;
@@ -993,7 +994,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 					Object previousAttributeValue = super.setAttribute(attributeName, attributeValue);
 
 					if (!attributeValue.equals(previousAttributeValue)) {
-						getSessionAttributeDeltas().put(attributeName, attributeValue);
+						getSessionAttributeDeltas().add(attributeName);
 					}
 
 					return previousAttributeValue;
@@ -1011,7 +1012,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 
 				return Optional.ofNullable(super.removeAttribute(attributeName))
 					.map(previousAttributeValue -> {
-						getSessionAttributeDeltas().put(attributeName, null);
+						getSessionAttributeDeltas().add(attributeName);
 						return previousAttributeValue;
 					})
 					.orElse(null);
@@ -1022,13 +1023,13 @@ public abstract class AbstractGemFireOperationsSessionRepository
 
 			synchronized (getLock()) {
 
-				Map<String, Object> sessionAttributeDeltas = getSessionAttributeDeltas();
+				Set<String> sessionAttributeDeltas = getSessionAttributeDeltas();
 
 				out.writeInt(sessionAttributeDeltas.size());
 
-				for (Entry<String, Object> entry : sessionAttributeDeltas.entrySet()) {
-					out.writeUTF(entry.getKey());
-					writeObject(entry.getValue(), out);
+				for (String attributeName : sessionAttributeDeltas) {
+					out.writeUTF(attributeName);
+					writeObject(getAttribute(attributeName), out);
 				}
 			}
 		}
@@ -1058,7 +1059,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 						deltas.put(in.readUTF(), readObject(in));
 					}
 
-					Map<String, Object> sessionAttributeDeltas = getSessionAttributeDeltas();
+					Set<String> sessionAttributeDeltas = getSessionAttributeDeltas();
 
 					deltas.forEach((key, value) -> {
 						setAttribute(key, value);
