@@ -17,6 +17,7 @@
 package org.springframework.session.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -24,13 +25,16 @@ import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
 
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,8 +43,12 @@ import org.mockito.Mockito;
 import edu.umd.cs.mtc.TestFramework;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.internal.InternalDataSerializer;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -69,6 +77,29 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 
 	private static final String GEMFIRE_LOG_LEVEL = "error";
 
+	@Before
+	public void setup() {
+
+		GemFireCache cache = getGemFireCache();
+
+		assertThat(cache).isNotNull();
+		assertThat(cache.getCopyOnRead()).isFalse();
+		assertThat(cache.getPdxSerializer()).isNull();
+		assertThat(cache.getPdxReadSerialized()).isFalse();
+
+		Pool defaultPool = PoolManager.find("DEFAULT");
+
+		assertThat(defaultPool).isNotNull();
+		assertThat(defaultPool.getSubscriptionEnabled()).isTrue();
+
+		Region<Object, Session> sessions = cache.getRegion("Sessions");
+
+		assertThat(sessions).isNotNull();
+		assertThat(sessions.getName()).isEqualTo("Sessions");
+		assertThat(sessions.getAttributes()).isNotNull();
+		assertThat(sessions.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+	}
+
 	@Test
 	public void concurrentCachedSessionOperationsAreCorrect() throws Throwable {
 		TestFramework.runOnce(new ConcurrentCachedSessionOperationsTestCase(this));
@@ -90,22 +121,44 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 			super(testInstance);
 		}
 
-		public void thread1() {
+		@Override
+		public void initialize() {
 
-			Thread.currentThread().setName("User Session One");
-
-			assertTick(0);
+			Instant beforeCreationTime = Instant.now();
 
 			Session session = newSession();
 
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isNotEmpty();
+			assertThat(session.getCreationTime()).isAfterOrEqualTo(beforeCreationTime);
+			assertThat(session.getCreationTime()).isBeforeOrEqualTo(Instant.now());
+			assertThat(session.getLastAccessedTime()).isEqualTo(session.getCreationTime());
 			assertThat(session.isExpired()).isFalse();
 			assertThat(session.getAttributeNames()).isEmpty();
 
 			save(session);
 
 			this.sessionId.set(session.getId());
+		}
+
+		public void thread1() {
+
+			Thread.currentThread().setName("User Session One");
+
+			assertTick(0);
+
+			Instant beforeLastAccessedTime = Instant.now();
+
+			Session session = findById(this.sessionId.get());
+
+			assertThat(session).isNotNull();
+			assertThat(session.getId()).isEqualTo(this.sessionId.get());
+			assertThat(session.getLastAccessedTime()).isAfterOrEqualTo(beforeLastAccessedTime);
+			assertThat(session.getLastAccessedTime()).isBeforeOrEqualTo(Instant.now());
+			assertThat(session.isExpired()).isFalse();
+			assertThat(session.getAttributeNames()).isEmpty();
+
+			save(session);
 
 			waitForTick(2);
 			assertTick(2);
@@ -122,10 +175,14 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 			waitForTick(1);
 			assertTick(1);
 
+			Instant beforeLastAccessedTime = Instant.now();
+
 			Session session = findById(this.sessionId.get());
 
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(this.sessionId.get());
+			assertThat(session.getLastAccessedTime()).isAfterOrEqualTo(beforeLastAccessedTime);
+			assertThat(session.getLastAccessedTime()).isBeforeOrEqualTo(Instant.now());
 			assertThat(session.isExpired()).isFalse();
 			assertThat(session.getAttributeNames()).isEmpty();
 
@@ -139,7 +196,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 	}
 
 	// Tests that DataSerializer.toData(..) is called twice; once for when the Session is new
-	// and again when Region.put(..) is call with a Session having no delta/no changes.
+	// and again when Region.put(..) is called with a Session having no delta/no changes.
 	public static class RegionPutWithNonDirtySessionTestCase extends AbstractConcurrentSessionOperationsTestCase {
 
 		private static final String DATA_SERIALIZER_NOT_FOUND_EXCEPTION_MESSAGE =
@@ -230,6 +287,14 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 
 			assertThat(((GemFireSession) session).hasDelta()).isFalse();
 
+			// Reload to (fully) deserialize Session
+			Session loadedSession = get(session.getId());
+
+			assertThat(loadedSession).isInstanceOf(GemFireSession.class);
+			assertThat(loadedSession.getId()).isEqualTo(session.getId());
+
+			getSessionRepository().commit(loadedSession);
+
 			this.sessionId.set(session.getId());
 		}
 
@@ -266,10 +331,14 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 			assertThat(session.<String>getAttribute("attributeTwo")).isEqualTo("testTwo");
 
 			try {
+
+				// The first Region.get(key) causes a deserialization (???)
+				verify(this.sessionSerializer, times(1)).fromData(any(DataInput.class));
+
 				verify(this.sessionSerializer, times(2))
 					.toData(isA(GemFireSession.class), isA(DataOutput.class));
 			}
-			catch (IOException ignore) { }
+			catch (ClassNotFoundException | IOException ignore) { }
 		}
 	}
 
@@ -284,6 +353,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 	@EnableGemFireHttpSession(
 		clientRegionShortcut = ClientRegionShortcut.CACHING_PROXY,
 		poolName = "DEFAULT",
+		regionName = "Sessions",
 		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME
 	)
 	static class GemFireClientConfiguration { }
@@ -293,6 +363,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 		logLevel = GEMFIRE_LOG_LEVEL
 	)
 	@EnableGemFireHttpSession(
+		regionName = "Sessions",
 		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME
 	)
 	static class GemFireServerConfiguration {
