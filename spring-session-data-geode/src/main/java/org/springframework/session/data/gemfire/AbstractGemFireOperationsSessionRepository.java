@@ -107,7 +107,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 
 	private static final boolean DEFAULT_REGISTER_INTEREST_ENABLED = false;
 	private static final boolean DEFAULT_REGISTER_INTEREST_DURABILITY = false;
-	private static final boolean DEFAULT_REGISTER_INTEREST_RECEIVE_VALUES = false;
+	private static final boolean DEFAULT_REGISTER_INTEREST_RECEIVE_VALUES = true;
 
 	private static final AtomicBoolean usingDataSerialization = new AtomicBoolean(false);
 

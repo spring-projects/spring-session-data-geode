@@ -635,7 +635,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		verify(this.sessionRepository, times(1)).registerInterest(eq("1"));
 		verify(this.sessionRepository, times(1)).isRegisterInterestEnabled();
 		verify(this.mockRegion, times(1))
-			.registerInterest(eq("1"), eq(InterestResultPolicy.NONE), eq(false), eq(false));
+			.registerInterest(eq("1"), eq(InterestResultPolicy.NONE), eq(false), eq(true));
 	}
 
 	@Test
@@ -676,7 +676,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		verify(this.sessionRepository, times(2)).registerInterest(eq("1"));
 		verify(this.sessionRepository, times(2)).isRegisterInterestEnabled();
 		verify(this.mockRegion, times(1))
-			.registerInterest(eq("1"), eq(InterestResultPolicy.NONE), eq(false), eq(false));
+			.registerInterest(eq("1"), eq(InterestResultPolicy.NONE), eq(false), eq(true));
 	}
 
 	@Test
