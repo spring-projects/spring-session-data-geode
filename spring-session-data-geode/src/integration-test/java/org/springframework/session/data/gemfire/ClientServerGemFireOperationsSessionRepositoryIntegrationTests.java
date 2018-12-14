@@ -89,6 +89,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests exte
 
 	private static final int MAX_INACTIVE_INTERVAL_IN_SECONDS = 1;
 
+	private static final String GEMFIRE_LOG_LEVEL = "error";
 	private static final String TEST_SESSION_REGION_NAME = "TestClientServerSessions";
 
 	@Autowired
@@ -125,7 +126,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests exte
 	@Test
 	public void createSessionFiresSessionCreatedEvent() {
 
-		Instant beforeOrAtCreationTime = Instant.now();
+		Instant beforeCreationTime = Instant.now();
 
 		Session expectedSession = save(createSession());
 
@@ -135,14 +136,19 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests exte
 
 		Session createdSession = sessionEvent.getSession();
 
+		assertThat(createdSession).isNotNull();
 		assertThat(createdSession.getId()).isEqualTo(expectedSession.getId());
-		assertThat(createdSession.getCreationTime().compareTo(beforeOrAtCreationTime)).isGreaterThanOrEqualTo(0);
+		assertThat(createdSession.getCreationTime()).isAfterOrEqualTo(beforeCreationTime);
 		assertThat(createdSession.getLastAccessedTime()).isEqualTo(createdSession.getCreationTime());
 		assertThat(createdSession.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(MAX_INACTIVE_INTERVAL_IN_SECONDS));
+		assertThat(createdSession.getAttributeNames()).isEmpty();
 
-		createdSession.setAttribute("attrOne", 1);
+		createdSession.setAttribute("attributeOne", 1);
 
-		assertThat(save(touch(createdSession)).<Integer>getAttribute("attrOne")).isEqualTo(1);
+		assertThat(createdSession.getAttributeNames()).containsExactly("attributeOne");
+		assertThat(createdSession.<Integer>getAttribute("attributeOne")).isEqualTo(1);
+
+		save(touch(createdSession));
 
 		sessionEvent = this.sessionEventListener.waitForSessionEvent(500);
 
@@ -203,9 +209,9 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests exte
 	}
 
 	@ClientCacheApplication(
-		logLevel = "error",
+		logLevel = GEMFIRE_LOG_LEVEL,
 		pingInterval = 5000,
-		readTimeout = 2500,
+		readTimeout = 2000,
 		retryAttempts = 1,
 		subscriptionEnabled = true
 	)
@@ -226,7 +232,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests exte
 
 	@CacheServerApplication(
 		name = "ClientServerGemFireOperationsSessionRepositoryIntegrationTests",
-		logLevel = "error"
+		logLevel = GEMFIRE_LOG_LEVEL
 	)
 	@EnableGemFireHttpSession(
 		regionName = TEST_SESSION_REGION_NAME,
