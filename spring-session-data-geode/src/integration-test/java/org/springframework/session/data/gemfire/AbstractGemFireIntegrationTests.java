@@ -40,10 +40,13 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Index;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.gemfire.tests.integration.ForkingClientServerIntegrationTestsSupport;
+import org.springframework.lang.Nullable;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
+import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.session.events.AbstractSessionEvent;
 import org.springframework.util.StringUtils;
@@ -91,6 +94,10 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 
 	@Autowired(required = false)
 	protected GemFireOperationsSessionRepository gemfireSessionRepository;
+
+	@Autowired(required = false)
+	@Qualifier(GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME)
+	protected Region<Object, Session> sessions;
 
 	@Autowired(required = false)
 	protected SessionRepository<Session> sessionRepository;
@@ -300,6 +307,17 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 		return DEFAULT_ENABLE_QUERY_DEBUGGING;
 	}
 
+	@Nullable @SuppressWarnings("unchecked")
+	protected <T extends GemFireCache> T getGemFireCache() {
+		return (T) this.gemfireCache;
+	}
+
+	@Nullable
+	protected Region<Object, Session> getSessionRegion() {
+		return this.sessions;
+	}
+
+	@Nullable
 	protected SessionRepository<Session> getSessionRepository() {
 		return this.sessionRepository;
 	}
