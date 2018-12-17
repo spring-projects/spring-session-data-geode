@@ -1820,6 +1820,20 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		assertThat(session.getAttributes()).isEmpty();
 	}
 
+	private void testConstructGemFireSessionWithInvalidId(String id) {
+
+		try {
+			new GemFireSession(id);
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("ID is required");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
+	}
+
 	@Test(expected = IllegalArgumentException.class)
 	public void constructGemFireSessionWithEmptyId() {
 		testConstructGemFireSessionWithInvalidId("");
@@ -1833,20 +1847,6 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void constructGemFireSessionWithUnspecifiedId() {
 		testConstructGemFireSessionWithInvalidId("  ");
-	}
-
-	private void testConstructGemFireSessionWithInvalidId(String id) {
-
-		try {
-			new GemFireSession(id);
-		}
-		catch (IllegalArgumentException expected) {
-
-			assertThat(expected).hasMessage("ID is required");
-			assertThat(expected).hasNoCause();
-
-			throw expected;
-		}
 	}
 
 	@Test
@@ -1894,7 +1894,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		}
 		catch (IllegalArgumentException expected) {
 
-			assertThat(expected).hasMessage("The Session to copy must not be null");
+			assertThat(expected).hasMessage("Session is required");
 			assertThat(expected).hasNoCause();
 
 			throw expected;
@@ -1919,7 +1919,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void createNewGemFireSessionWithProvidedMaxInactiveInterval() {
+	public void createNewGemFireSessionWithSpecifiedMaxInactiveInterval() {
 
 		Instant testCreationTime = Instant.now();
 
@@ -1938,14 +1938,14 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void copyNullThrowsException() {
+	public void copyNullThrowsIllegalArgumentException() {
 
 		try {
 			GemFireSession.copy(null);
 		}
 		catch (IllegalArgumentException expected) {
 
-			assertThat(expected).hasMessage("The Session to copy must not be null");
+			assertThat(expected).hasMessage("Session is required");
 			assertThat(expected).hasNoCause();
 
 			throw expected;
@@ -2053,6 +2053,21 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		GemFireSession<?> fromGemFireSession = GemFireSession.from(gemfireSession);
 
 		assertThat(fromGemFireSession).isSameAs(gemfireSession);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void fromNullSessionThrowsIllegalArgumentException() {
+
+		try {
+			GemFireSession.from(null);
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("Session is required");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
 	@Test
@@ -3053,6 +3068,28 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 		assertThat(entry.getKey()).isEqualTo("keyThree");
 		assertThat(entry.getValue()).isEqualTo("valueThree");
+	}
+
+	@Test
+	public void gemfireSessionIsLockForGemFireSessionAttributes() {
+
+		GemFireSession session = new GemFireSession();
+
+		GemFireSessionAttributes sessionAttributes = session.newSessionAttributes(session);
+
+		assertThat(sessionAttributes).isNotNull();
+		assertThat(sessionAttributes.getLock()).isSameAs(session);
+	}
+
+	@Test
+	public void deltaCapableGemFireSessionIsLockForDeltaCapableGemFirSessionAttributes() {
+
+		DeltaCapableGemFireSession session = new DeltaCapableGemFireSession();
+
+		DeltaCapableGemFireSessionAttributes sessionAttributes = session.newSessionAttributes(session);
+
+		assertThat(sessionAttributes).isNotNull();
+		assertThat(sessionAttributes.getLock()).isSameAs(session);
 	}
 
 	@Test

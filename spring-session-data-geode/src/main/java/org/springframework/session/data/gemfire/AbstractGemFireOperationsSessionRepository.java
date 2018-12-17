@@ -106,10 +106,11 @@ import org.apache.commons.logging.LogFactory;
 public abstract class AbstractGemFireOperationsSessionRepository
 		implements ApplicationEventPublisherAware, FindByIndexNameSessionRepository<Session> {
 
-	private static final boolean DEFAULT_REGISTER_INTEREST_ENABLED = false;
 	private static final boolean DEFAULT_REGISTER_INTEREST_DURABILITY = false;
+	private static final boolean DEFAULT_REGISTER_INTEREST_ENABLED = false;
 	private static final boolean DEFAULT_REGISTER_INTEREST_RECEIVE_VALUES = true;
 
+	// TODO - refactor and use non-static variable
 	private static final AtomicBoolean usingDataSerialization = new AtomicBoolean(false);
 
 	private static final InterestResultPolicy DEFAULT_REGISTER_INTEREST_RESULT_POLICY = InterestResultPolicy.NONE;
@@ -279,6 +280,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	 * used to store and manage {@link Session} data.
 	 * @see #getSessionsRegion()
 	 */
+	// TODO - refactor and rename to SessionRegionName
 	protected String getFullyQualifiedRegionName() {
 		return getSessionsRegion().getFullPath();
 	}
@@ -590,7 +592,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 
 		@Override
 		protected DeltaCapableGemFireSessionAttributes newSessionAttributes(Object lock) {
-			return new DeltaCapableGemFireSessionAttributes();
+			return new DeltaCapableGemFireSessionAttributes(lock);
 		}
 
 		public synchronized void toDelta(DataOutput out) throws IOException {
@@ -631,10 +633,11 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * Factory method used to create a new instance of {@link GemFireSession} initialized with
 		 * the {@link #DEFAULT_MAX_INACTIVE_INTERVAL}.
 		 *
+		 * @param <T> {@link Class Sub-type} of {@link GemFireSessionAttributes}.
 		 * @return new {@link GemFireSession}.
 		 * @see #create(Duration)
 		 */
-		public static GemFireSession create() {
+		public static <T extends GemFireSessionAttributes> GemFireSession<T> create() {
 			return create(DEFAULT_MAX_INACTIVE_INTERVAL);
 		}
 
@@ -642,6 +645,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * Factory method used to create a new instance of {@link GemFireSession} initialized with
 		 * the given {@link Duration max inactive interval}.
 		 *
+		 * @param <T> {@link Class Sub-type} of {@link GemFireSessionAttributes}.
 		 * @param maxInactiveInterval {@link Duration} specifying the max inactive interval before
 		 * this {@link Session} will expire.
 		 * @return a new instance of {@link GemFireSession} initialized with
@@ -649,7 +653,9 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * @see #isUsingDataSerialization()
 		 * @see java.time.Duration
 		 */
-		public static GemFireSession create(Duration maxInactiveInterval) {
+		@SuppressWarnings("unchecked")
+		// TODO - remove
+		public static <T extends GemFireSessionAttributes> GemFireSession<T> create(Duration maxInactiveInterval) {
 
 			GemFireSession session = isUsingDataSerialization()
 				? new DeltaCapableGemFireSession()
@@ -679,15 +685,14 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * Returns the given {@link Session} if the {@link Session} is a {@link GemFireSession} or return a copy
 		 * of the given {@link Session} as a {@link GemFireSession}.
 		 *
-		 * @param <T> {@link Class sub-type} of {@link GemFireSession}.
 		 * @param session {@link Session} to evaluate and possibly copy.
 		 * @return the given {@link Session} if the {@link Session} is a {@link GemFireSession} or return a copy
 		 * of the given {@link Session} as a {@link GemFireSession}
 		 * @see #copy(Session)
 		 */
 		@SuppressWarnings("unchecked")
-		public static <T extends GemFireSession> T from(@NonNull Session session) {
-			return (T) (session instanceof GemFireSession ? session : copy(session));
+		public static GemFireSession from(@NonNull Session session) {
+			return session instanceof GemFireSession ? (GemFireSession) session : copy(session);
 		}
 
 		private transient boolean delta = true;
@@ -741,7 +746,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 */
 		protected GemFireSession(Session session) {
 
-			Assert.notNull(session, "The Session to copy must not be null");
+			Assert.notNull(session, "Session is required");
 
 			this.id = session.getId();
 			this.creationTime = session.getCreationTime();
