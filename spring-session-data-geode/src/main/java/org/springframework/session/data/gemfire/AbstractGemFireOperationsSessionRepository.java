@@ -282,19 +282,6 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	}
 
 	/**
-	 * Returns the {@link String fully-qualified name} of the cache {@link Region} used to store
-	 * and manage {@link Session} state.
-	 *
-	 * @return a {@link String} containing the fully qualified name of the cache {@link Region}
-	 * used to store and manage {@link Session} data.
-	 * @see #getSessionsRegion()
-	 */
-	// TODO - rename to SessionRegionName
-	protected String getFullyQualifiedRegionName() {
-		return getSessionsRegion().getFullPath();
-	}
-
-	/**
 	 * Configures the {@link IsDirtyPredicate} strategy interface used to determine whether the users' application
 	 * domain objects are dirty or not.
 	 *
@@ -409,6 +396,18 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	 */
 	protected @NonNull Region<Object, Session> getSessionsRegion() {
 		return this.sessions;
+	}
+
+	/**
+	 * Returns the {@link String fully-qualified name} of the cache {@link Region} used to store
+	 * and manage {@link Session} state.
+	 *
+	 * @return a {@link String} containing the fully qualified name of the cache {@link Region}
+	 * used to store and manage {@link Session} data.
+	 * @see #getSessionsRegion()
+	 */
+	protected String getSessionsRegionName() {
+		return getSessionsRegion().getFullPath();
 	}
 
 	/**

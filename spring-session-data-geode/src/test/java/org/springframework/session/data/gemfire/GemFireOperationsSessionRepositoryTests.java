@@ -123,10 +123,10 @@ public class GemFireOperationsSessionRepositoryTests {
 		this.sessionRepository.setUseDataSerialization(false);
 
 		assertThat(this.sessionRepository.getApplicationEventPublisher()).isSameAs(this.mockApplicationEventPublisher);
-		assertThat(this.sessionRepository.getFullyQualifiedRegionName()).isEqualTo(RegionUtils.toRegionPath("Example"));
 		assertThat(this.sessionRepository.getMaxInactiveIntervalInSeconds()).isEqualTo(MAX_INACTIVE_INTERVAL_IN_SECONDS);
 		assertThat(this.sessionRepository.getSessionEventHandler().orElse(null)).isInstanceOf(SessionEventHandlerCacheListenerAdapter.class);
 		assertThat(this.sessionRepository.getSessionsRegion()).isSameAs(mockRegion);
+		assertThat(this.sessionRepository.getSessionsRegionName()).isEqualTo(RegionUtils.toRegionPath("Example"));
 		assertThat(this.sessionRepository.getSessionsTemplate()).isSameAs(this.mockTemplate);
 		assertThat(GemFireOperationsSessionRepository.isUsingDataSerialization()).isFalse();
 
@@ -329,7 +329,7 @@ public class GemFireOperationsSessionRepositoryTests {
 
 		String expectedQql =
 			String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_INDEX_NAME_AND_INDEX_VALUE_QUERY,
-				this.sessionRepository.getFullyQualifiedRegionName(), indexName);
+				this.sessionRepository.getSessionsRegionName(), indexName);
 
 		when(this.mockTemplate.find(eq(expectedQql), eq(indexValue))).thenReturn(mockSelectResults);
 
@@ -374,7 +374,7 @@ public class GemFireOperationsSessionRepositoryTests {
 
 		String expectedOql =
 			String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY,
-				this.sessionRepository.getFullyQualifiedRegionName());
+				this.sessionRepository.getSessionsRegionName());
 
 		when(this.mockTemplate.find(eq(expectedOql), eq(principalName))).thenReturn(mockSelectResults);
 
@@ -423,7 +423,7 @@ public class GemFireOperationsSessionRepositoryTests {
 
 		String expectedOql =
 			String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY,
-				this.sessionRepository.getFullyQualifiedRegionName());
+				this.sessionRepository.getSessionsRegionName());
 
 		when(this.mockTemplate.find(eq(expectedOql), eq(principalName))).thenReturn(mockSelectResults);
 
@@ -451,7 +451,7 @@ public class GemFireOperationsSessionRepositoryTests {
 
 		String expectedOql =
 			String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_INDEX_NAME_AND_INDEX_VALUE_QUERY,
-				this.sessionRepository.getFullyQualifiedRegionName(), attributeName);
+				this.sessionRepository.getSessionsRegionName(), attributeName);
 
 		assertThat(actualOql).isEqualTo(expectedOql);
 	}
@@ -463,7 +463,7 @@ public class GemFireOperationsSessionRepositoryTests {
 
 		String expectedOql =
 			String.format(GemFireOperationsSessionRepository.FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY,
-				this.sessionRepository.getFullyQualifiedRegionName());
+				this.sessionRepository.getSessionsRegionName());
 
 		assertThat(actualQql).isEqualTo(expectedOql);
 	}

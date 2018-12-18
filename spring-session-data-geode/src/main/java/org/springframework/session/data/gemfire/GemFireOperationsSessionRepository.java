@@ -141,11 +141,11 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @param indexName a String indicating the name of the indexed Session attribute.
 	 * @return an appropriate Pivotal GemFire OQL statement for querying on a particular indexed
 	 * Session attribute.
-	 * @see #getFullyQualifiedRegionName()
+	 * @see #getSessionsRegionName()
 	 */
 	protected String prepareQuery(String indexName) {
 
-		String fullyQualifiedRegionName = getFullyQualifiedRegionName();
+		String fullyQualifiedRegionName = getSessionsRegionName();
 
 		return PRINCIPAL_NAME_INDEX_NAME.equals(indexName)
 			? String.format(FIND_SESSIONS_BY_PRINCIPAL_NAME_QUERY, fullyQualifiedRegionName)

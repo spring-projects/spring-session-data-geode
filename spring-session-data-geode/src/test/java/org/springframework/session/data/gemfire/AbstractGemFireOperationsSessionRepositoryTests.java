@@ -241,14 +241,13 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 		assertThat(sessionRepository.getApplicationEventPublisher()).isInstanceOf(ApplicationEventPublisher.class);
 		assertThat(sessionRepository.getApplicationEventPublisher()).isNotEqualTo(mockApplicationEventPublisher);
-		assertThat(sessionRepository.getFullyQualifiedRegionName())
-			.isEqualTo(RegionUtils.toRegionPath("Example"));
 		assertThat(sessionRepository.getMaxInactiveIntervalInSeconds())
 			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL_IN_SECONDS);
 		assertThat(sessionRepository.isRegisterInterestEnabled()).isTrue();
 		assertThat(sessionRepository.getSessionEventHandler().orElse(null))
 			.isInstanceOf(SessionEventHandlerCacheListenerAdapter.class);
 		assertThat(sessionRepository.getSessionsRegion()).isSameAs(mockRegion);
+		assertThat(sessionRepository.getSessionsRegionName()).isEqualTo(RegionUtils.toRegionPath("Example"));
 		assertThat(sessionRepository.getSessionsTemplate()).isSameAs(template);
 		assertThat(AbstractGemFireOperationsSessionRepository.isUsingDataSerialization()).isFalse();
 
@@ -332,9 +331,9 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	@Test
 	public void getFullyQualifiedRegionNameUsesRegionFullPath() {
 
-		when(this.mockRegion.getFullPath()).thenReturn("/Region/Full/Path");
+		when(this.mockRegion.getFullPath()).thenReturn("/Sessions/Region/Full/Path");
 
-		assertThat(this.sessionRepository.getFullyQualifiedRegionName()).isEqualTo("/Region/Full/Path");
+		assertThat(this.sessionRepository.getSessionsRegionName()).isEqualTo("/Sessions/Region/Full/Path");
 
 		verify(this.sessionRepository, times(1)).getSessionsRegion();
 		verify(this.mockRegion, times(1)).getFullPath();
