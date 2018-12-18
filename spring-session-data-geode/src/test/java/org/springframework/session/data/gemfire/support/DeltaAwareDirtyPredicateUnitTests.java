@@ -18,6 +18,7 @@ package org.springframework.session.data.gemfire.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -52,26 +53,56 @@ public class DeltaAwareDirtyPredicateUnitTests {
 	}
 
 	@Test
-	public void isDirtyWithDeltaObjectReturnsTrue() {
+	public void isDirtyWithSameDeltaObjectReturnsTrue() {
 
 		Delta mockDelta = mock(Delta.class);
 
 		when(mockDelta.hasDelta()).thenReturn(true);
 
-		assertThat(DeltaAwareDirtyPredicate.INSTANCE.isDirty(null, mockDelta)).isTrue();
+		assertThat(DeltaAwareDirtyPredicate.INSTANCE.isDirty(mockDelta, mockDelta)).isTrue();
 
 		verify(mockDelta, times(1)).hasDelta();
 	}
 
 	@Test
-	public void isDirtyWithDeltaObjectReturnsFalse() {
+	public void isDirtyWithSameDeltaObjectReturnsFalse() {
 
 		Delta mockDelta = mock(Delta.class);
 
 		when(mockDelta.hasDelta()).thenReturn(false);
 
-		assertThat(DeltaAwareDirtyPredicate.INSTANCE.isDirty("one", mockDelta)).isFalse();
+		assertThat(DeltaAwareDirtyPredicate.INSTANCE.isDirty(mockDelta, mockDelta)).isFalse();
 
 		verify(mockDelta, times(1)).hasDelta();
+	}
+
+	@Test
+	public void isDirtyWithStringAndDeltaObjectReturnsTrue() {
+
+		Delta mockDelta = mock(Delta.class);
+
+		assertThat(DeltaAwareDirtyPredicate.INSTANCE.isDirty("one", mockDelta)).isTrue();
+
+		verify(mockDelta, never()).hasDelta();
+	}
+
+	@Test
+	public void isDirtyWithNullAndDeltaObjectReturnsTrue() {
+
+		Delta mockDelta = mock(Delta.class);
+
+		assertThat(DeltaAwareDirtyPredicate.INSTANCE.isDirty(null, mockDelta)).isTrue();
+
+		verify(mockDelta, never()).hasDelta();
+	}
+
+	@Test
+	public void isDirtyWithDeltaObjectAndNullReturnsTrue() {
+
+		Delta mockDelta = mock(Delta.class);
+
+		assertThat(DeltaAwareDirtyPredicate.INSTANCE.isDirty(mockDelta, null)).isTrue();
+
+		verify(mockDelta, never()).hasDelta();
 	}
 }

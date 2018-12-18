@@ -30,8 +30,8 @@ import org.springframework.lang.Nullable;
 @SuppressWarnings("unused")
 public interface IsDirtyPredicate {
 
-	IsDirtyPredicate ALWAYS_DIRTY = (oldValue, newValue) -> false;
-	IsDirtyPredicate NEVER_DIRTY = (oldValue, newValue) -> true;
+	IsDirtyPredicate ALWAYS_DIRTY = (oldValue, newValue) -> true;
+	IsDirtyPredicate NEVER_DIRTY = (oldValue, newValue) -> false;
 
 	/**
 	 * Determines whether the {@link Object newValue} is dirty relative to the {@link Object oldValue}.

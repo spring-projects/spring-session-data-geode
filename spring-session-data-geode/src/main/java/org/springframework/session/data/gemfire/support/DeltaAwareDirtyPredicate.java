@@ -54,6 +54,9 @@ public class DeltaAwareDirtyPredicate implements IsDirtyPredicate {
 	 */
 	@Override
 	public boolean isDirty(@Nullable Object oldValue, @Nullable Object newValue) {
-		return !(newValue instanceof Delta) || ((Delta) newValue).hasDelta();
+
+		return newValue != oldValue
+			|| !(newValue instanceof Delta)
+			|| ((Delta) newValue).hasDelta();
 	}
 }

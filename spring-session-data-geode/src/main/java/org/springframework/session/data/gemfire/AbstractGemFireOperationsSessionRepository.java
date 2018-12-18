@@ -85,7 +85,6 @@ import org.apache.commons.logging.LogFactory;
  * @see org.apache.geode.DataSerializer
  * @see org.apache.geode.Delta
  * @see org.apache.geode.cache.EntryEvent
- * @see org.apache.geode.cache.Operation
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.util.CacheListenerAdapter
  * @see org.springframework.context.ApplicationEvent
@@ -97,6 +96,7 @@ import org.apache.commons.logging.LogFactory;
  * @see org.springframework.session.SessionRepository
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
+ * @see org.springframework.session.data.gemfire.support.IsDirtyPredicate
  * @see org.springframework.session.data.gemfire.support.SessionIdHolder
  * @see org.springframework.session.events.AbstractSessionEvent
  * @see org.springframework.session.events.SessionCreatedEvent
@@ -1066,7 +1066,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 			super(lock);
 		}
 
-		protected Set<String> getSessionAttributeDeltas() {
+		Set<String> getSessionAttributeDeltas() {
 
 			synchronized (getLock()) {
 				return this.sessionAttributeDeltas;
@@ -1199,6 +1199,16 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		}
 
 		/**
+		 * Returns a reference to the internal, {@link Session} attributes data structure.
+		 *
+		 * @return a reference to the internal, {@link Session} attributes data structure.
+		 * @see java.util.Map
+		 */
+		Map<String, Object> getMap() {
+			return this.sessionAttributes;
+		}
+
+		/**
 		 * Returns the {@link Object} used as the {@literal lock} guarding the methods of this object
 		 * from concurrent access by multiple {@link Thread Threads}.
 		 *
@@ -1236,7 +1246,9 @@ public abstract class AbstractGemFireOperationsSessionRepository
 
 		private Object doSetAttribute(String attributeName, Object attributeValue) {
 
-			Object previousAttributeValue = this.sessionAttributes.put(attributeName, attributeValue);
+			Map<String, Object> sessionAttributes = getMap();
+
+			Object previousAttributeValue = sessionAttributes.put(attributeName, attributeValue);
 
 			this.delta |= getIsDirtyPredicate().isDirty(previousAttributeValue, attributeValue)
 				&& sessionAttributesChangeInterceptor().apply(attributeName, attributeValue);
@@ -1248,10 +1260,12 @@ public abstract class AbstractGemFireOperationsSessionRepository
 
 			synchronized (getLock()) {
 
-				this.delta |= this.sessionAttributes.containsKey(attributeName)
+				Map<String, Object> sessionAttributes = getMap();
+
+				this.delta |= sessionAttributes.containsKey(attributeName)
 					&& sessionAttributesChangeInterceptor().apply(attributeName, null);
 
-				return this.sessionAttributes.remove(attributeName);
+				return sessionAttributes.remove(attributeName);
 			}
 		}
 
@@ -1259,14 +1273,14 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		public <T> T getAttribute(String attributeName) {
 
 			synchronized (getLock()) {
-				return (T) this.sessionAttributes.get(attributeName);
+				return (T) getMap().get(attributeName);
 			}
 		}
 
 		public Set<String> getAttributeNames() {
 
 			synchronized (getLock()) {
-				return Collections.unmodifiableSet(this.sessionAttributes.keySet());
+				return Collections.unmodifiableSet(getMap().keySet());
 			}
 		}
 
@@ -1280,13 +1294,13 @@ public abstract class AbstractGemFireOperationsSessionRepository
 
 					@Override
 					public Iterator<Entry<String, Object>> iterator() {
-						return Collections.unmodifiableMap(GemFireSessionAttributes.this.sessionAttributes)
+						return Collections.unmodifiableMap(GemFireSessionAttributes.this.getMap())
 							.entrySet().iterator();
 					}
 
 					@Override
 					public int size() {
-						return GemFireSessionAttributes.this.sessionAttributes.size();
+						return GemFireSessionAttributes.this.getMap().size();
 					}
 				};
 			}
@@ -1343,7 +1357,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		public String toString() {
 
 			synchronized (getLock()) {
-				return this.sessionAttributes.toString();
+				return getMap().toString();
 			}
 		}
 	}

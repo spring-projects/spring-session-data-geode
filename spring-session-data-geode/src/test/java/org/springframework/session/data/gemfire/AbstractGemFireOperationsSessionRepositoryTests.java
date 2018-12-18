@@ -70,6 +70,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
 
+import org.apache.geode.Delta;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -3197,6 +3198,217 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 		assertThat(sessionAttributes.getAttributeNames()).isEmpty();
 		assertThat(sessionAttributes.hasDelta()).isFalse();
+	}
+
+	@Test
+	public void deltaSessionAttributesHasDeltaWhenExistingDeltaObjectHasDeltaIsTrue() {
+
+		Delta mockDelta = mock(Delta.class);
+
+		when(mockDelta.hasDelta()).thenReturn(true);
+
+		DeltaCapableGemFireSessionAttributes sessionAttributes = new DeltaCapableGemFireSessionAttributes();
+
+		sessionAttributes.getMap().put("1", mockDelta);
+
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+		assertThat(sessionAttributes.<Delta>getAttribute("1")).isEqualTo(mockDelta);
+		assertThat(sessionAttributes.hasDelta()).isFalse();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).isEmpty();
+
+		sessionAttributes.setAttribute("1", mockDelta);
+
+		assertThat(sessionAttributes.<Delta>getAttribute("1")).isEqualTo(mockDelta);
+		assertThat(sessionAttributes.hasDelta()).isTrue();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).containsExactly("1");
+
+		verify(mockDelta, times(1)).hasDelta();
+	}
+
+	@Test
+	public void deltaSessionAttributesHasDeltaWhenExistingObjectIsReplacedByDeltaObject() {
+
+		Delta mockDelta = mock(Delta.class);
+
+		DeltaCapableGemFireSessionAttributes sessionAttributes = new DeltaCapableGemFireSessionAttributes();
+
+		sessionAttributes.getMap().put("1", new Tombstone());
+
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+		assertThat(sessionAttributes.<Tombstone>getAttribute("1")).isInstanceOf(Tombstone.class);
+		assertThat(sessionAttributes.hasDelta()).isFalse();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).isEmpty();
+
+		sessionAttributes.setAttribute("1", mockDelta);
+
+		assertThat(sessionAttributes.<Delta>getAttribute("1")).isEqualTo(mockDelta);
+		assertThat(sessionAttributes.hasDelta()).isTrue();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).containsExactly("1");
+
+		verify(mockDelta, never()).hasDelta();
+	}
+
+	@Test
+	public void deltaSessionAttributesHasDeltaEvenWhenNonExistingDeltaObjectHasDeltaIsFalse() {
+
+		Delta mockDelta = mock(Delta.class);
+
+		DeltaCapableGemFireSessionAttributes sessionAttributes = new DeltaCapableGemFireSessionAttributes();
+
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+		assertThat(sessionAttributes.<Object>getAttribute("1")).isNull();
+		assertThat(sessionAttributes.hasDelta()).isFalse();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).isEmpty();
+
+		sessionAttributes.setAttribute("1", mockDelta);
+
+		assertThat(sessionAttributes.<Delta>getAttribute("1")).isEqualTo(mockDelta);
+		assertThat(sessionAttributes.hasDelta()).isTrue();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).containsExactly("1");
+
+		verify(mockDelta, never()).hasDelta();
+	}
+
+	@Test
+	public void deltaSessionAttributesHasDeltaWhenExistingDeltaObjectIsRemoved() {
+
+		Delta mockDelta = mock(Delta.class);
+
+		DeltaCapableGemFireSessionAttributes sessionAttributes = new DeltaCapableGemFireSessionAttributes();
+
+		sessionAttributes.getMap().put("1", mockDelta);
+
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+		assertThat(sessionAttributes.<Delta>getAttribute("1")).isEqualTo(mockDelta);
+		assertThat(sessionAttributes.hasDelta()).isFalse();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).isEmpty();
+
+		sessionAttributes.removeAttribute("1");
+
+		assertThat(sessionAttributes.<Delta>getAttribute("1")).isNull();
+		assertThat(sessionAttributes.hasDelta()).isTrue();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).containsExactly("1");
+
+		verify(mockDelta, never()).hasDelta();
+	}
+
+	@Test
+	public void deltaSessionAttributesHasNoDeltaWhenExistingDeltaObjectHasDeltaIsFalse() {
+
+		Delta mockDelta = mock(Delta.class);
+
+		when(mockDelta.hasDelta()).thenReturn(false);
+
+		DeltaCapableGemFireSessionAttributes sessionAttributes = new DeltaCapableGemFireSessionAttributes();
+
+		sessionAttributes.getMap().put("1", mockDelta);
+
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+		assertThat(sessionAttributes.<Delta>getAttribute("1")).isEqualTo(mockDelta);
+		assertThat(sessionAttributes.hasDelta()).isFalse();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).isEmpty();
+
+		sessionAttributes.setAttribute("1", mockDelta);
+
+		assertThat(sessionAttributes.<Delta>getAttribute("1")).isEqualTo(mockDelta);
+		assertThat(sessionAttributes.hasDelta()).isFalse();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).isEmpty();
+
+		verify(mockDelta, times(1)).hasDelta();
+	}
+
+	@Test
+	public void deltaSessionAttributesOnlyHasDeltaWhenIsDirtyPredicateReturnsTrue() {
+
+		Delta mockDelta = mock(Delta.class, withSettings().lenient());
+
+		when(mockDelta.hasDelta()).thenReturn(true);
+
+		IsDirtyPredicate mockDirtyPredicate = mock(IsDirtyPredicate.class);
+
+		when(mockDirtyPredicate.isDirty(any(), any())).thenReturn(false).thenReturn(true);
+
+		DeltaCapableGemFireSessionAttributes sessionAttributes = new DeltaCapableGemFireSessionAttributes();
+
+		sessionAttributes.setIsDirtyPredicate(mockDirtyPredicate);
+
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(mockDirtyPredicate);
+		assertThat(sessionAttributes.getAttributeNames()).isEmpty();
+		assertThat(sessionAttributes.hasDelta()).isFalse();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).isEmpty();
+
+		sessionAttributes.setAttribute("1", mockDelta);
+
+		assertThat(sessionAttributes.getAttributeNames()).containsExactly("1");
+		assertThat(sessionAttributes.<Delta>getAttribute("1")).isEqualTo(mockDelta);
+		assertThat(sessionAttributes.hasDelta()).isFalse();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).isEmpty();
+
+		sessionAttributes.setAttribute("2", "TEST");
+
+		assertThat(sessionAttributes.getAttributeNames()).containsOnly("1", "2");
+		assertThat(sessionAttributes.<Delta>getAttribute("1")).isEqualTo(mockDelta);
+		assertThat(sessionAttributes.<String>getAttribute("2")).isEqualTo("TEST");
+		assertThat(sessionAttributes.hasDelta()).isTrue();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).containsExactly("2");
+
+		verify(mockDelta, never()).hasDelta();
+		verify(mockDirtyPredicate, times(1)).isDirty(eq(null), eq("TEST"));
+		verify(mockDirtyPredicate, times(1)).isDirty(eq(null), eq(mockDelta));
+	}
+
+	@Test
+	public void deltaSessionAttributesWillAlwaysHaveDeltaWhenIsDirtyPredicateAlwaysReturnsTrue() {
+
+		Delta mockDelta = mock(Delta.class, withSettings().lenient());
+
+		when(mockDelta.hasDelta()).thenReturn(false);
+
+		DeltaCapableGemFireSessionAttributes sessionAttributes = new DeltaCapableGemFireSessionAttributes();
+
+		sessionAttributes.setIsDirtyPredicate(IsDirtyPredicate.ALWAYS_DIRTY);
+
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(IsDirtyPredicate.ALWAYS_DIRTY);
+		assertThat(sessionAttributes.getAttributeNames()).isEmpty();
+		assertThat(sessionAttributes.hasDelta()).isFalse();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).isEmpty();
+
+		sessionAttributes.setAttribute("1", mockDelta);
+		sessionAttributes.setAttribute("1", mockDelta);
+		sessionAttributes.setAttribute("1", mockDelta);
+
+		assertThat(sessionAttributes.getAttributeNames()).containsExactly("1");
+		assertThat(sessionAttributes.hasDelta()).isTrue();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).containsExactly("1");
+
+		verify(mockDelta, never()).hasDelta();
+	}
+
+	@Test
+	public void deltaSessionAttributesWillNeverHaveDeltaWhenIsDirtyPredicateAlwaysReturnsFalse() {
+
+		Delta mockDelta = mock(Delta.class, withSettings().lenient());
+
+		when(mockDelta.hasDelta()).thenReturn(true);
+
+		DeltaCapableGemFireSessionAttributes sessionAttributes = new DeltaCapableGemFireSessionAttributes();
+
+		sessionAttributes.setIsDirtyPredicate(IsDirtyPredicate.NEVER_DIRTY);
+
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(IsDirtyPredicate.NEVER_DIRTY);
+		assertThat(sessionAttributes.getAttributeNames()).isEmpty();
+		assertThat(sessionAttributes.hasDelta()).isFalse();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).isEmpty();
+
+		sessionAttributes.setAttribute("1", "TEST");
+		sessionAttributes.setAttribute("2", mockDelta);
+		sessionAttributes.setAttribute("3", new Object());
+
+		assertThat(sessionAttributes.getAttributeNames()).containsOnly("1", "2", "3");
+		assertThat(sessionAttributes.hasDelta()).isFalse();
+		assertThat(sessionAttributes.getSessionAttributeDeltas()).isEmpty();
+
+		verify(mockDelta, never()).hasDelta();
 	}
 
 	@Test

@@ -37,31 +37,31 @@ public class IsDirtyPredicateUnitTests {
 	@Test
 	public void alwaysDirtyPredicateIsAlwaysTrue() {
 
-		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.isDirty("one", "one")).isFalse();
-		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.isDirty("one", "two")).isFalse();
+		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.isDirty("one", "one")).isTrue();
+		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.isDirty("one", "two")).isTrue();
 	}
 
 	@Test
 	public void alwaysDirtyPredicateIsNullSafe() {
 
-		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.isDirty("one", null)).isFalse();
-		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.isDirty(null, "one")).isFalse();
-		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.isDirty(null, null)).isFalse();
+		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.isDirty("one", null)).isTrue();
+		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.isDirty(null, "one")).isTrue();
+		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.isDirty(null, null)).isTrue();
 	}
 
 	@Test
 	public void neverDirtyPredicateIsAlwaysTrue() {
 
-		assertThat(IsDirtyPredicate.NEVER_DIRTY.isDirty("one", "one")).isTrue();
-		assertThat(IsDirtyPredicate.NEVER_DIRTY.isDirty("one", "two")).isTrue();
+		assertThat(IsDirtyPredicate.NEVER_DIRTY.isDirty("one", "one")).isFalse();
+		assertThat(IsDirtyPredicate.NEVER_DIRTY.isDirty("one", "two")).isFalse();
 	}
 
 	@Test
 	public void neverDirtyPredicateIsNullSafe() {
 
-		assertThat(IsDirtyPredicate.NEVER_DIRTY.isDirty("one", null)).isTrue();
-		assertThat(IsDirtyPredicate.NEVER_DIRTY.isDirty(null, "one")).isTrue();
-		assertThat(IsDirtyPredicate.NEVER_DIRTY.isDirty(null, null)).isTrue();
+		assertThat(IsDirtyPredicate.NEVER_DIRTY.isDirty(null, null)).isFalse();
+		assertThat(IsDirtyPredicate.NEVER_DIRTY.isDirty("one", null)).isFalse();
+		assertThat(IsDirtyPredicate.NEVER_DIRTY.isDirty(null, "one")).isFalse();
 	}
 
 	@Test
@@ -94,18 +94,18 @@ public class IsDirtyPredicateUnitTests {
 	@Test
 	public void andThenIsDirtyReturnsTrue() {
 
-		assertThat(IsDirtyPredicate.NEVER_DIRTY.andThen(IsDirtyPredicate.NEVER_DIRTY)
+		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.andThen(IsDirtyPredicate.ALWAYS_DIRTY)
 			.isDirty("one", "one")).isTrue();
 	}
 
 	@Test
 	public void andThenIsDirtyReturnsFalse() {
 
-		assertThat(IsDirtyPredicate.NEVER_DIRTY.andThen(IsDirtyPredicate.ALWAYS_DIRTY)
-			.isDirty("one", "two")).isFalse();
 		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.andThen(IsDirtyPredicate.NEVER_DIRTY)
 			.isDirty("one", "two")).isFalse();
-		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.andThen(IsDirtyPredicate.ALWAYS_DIRTY)
+		assertThat(IsDirtyPredicate.NEVER_DIRTY.andThen(IsDirtyPredicate.ALWAYS_DIRTY)
+			.isDirty("one", "two")).isFalse();
+		assertThat(IsDirtyPredicate.NEVER_DIRTY.andThen(IsDirtyPredicate.NEVER_DIRTY)
 			.isDirty("one", "two")).isFalse();
 	}
 
@@ -139,18 +139,18 @@ public class IsDirtyPredicateUnitTests {
 	@Test
 	public void orThenIsDirtyReturnsTrue() {
 
-		assertThat(IsDirtyPredicate.NEVER_DIRTY.orThen(IsDirtyPredicate.NEVER_DIRTY)
-			.isDirty("one", "one")).isTrue();
-		assertThat(IsDirtyPredicate.NEVER_DIRTY.orThen(IsDirtyPredicate.ALWAYS_DIRTY)
+		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.orThen(IsDirtyPredicate.ALWAYS_DIRTY)
 			.isDirty("one", "one")).isTrue();
 		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.orThen(IsDirtyPredicate.NEVER_DIRTY)
+			.isDirty("one", "one")).isTrue();
+		assertThat(IsDirtyPredicate.NEVER_DIRTY.orThen(IsDirtyPredicate.ALWAYS_DIRTY)
 			.isDirty("one", "one")).isTrue();
 	}
 
 	@Test
 	public void orThenIsDirtyReturnsFalse() {
 
-		assertThat(IsDirtyPredicate.ALWAYS_DIRTY.andThen(IsDirtyPredicate.ALWAYS_DIRTY)
+		assertThat(IsDirtyPredicate.NEVER_DIRTY.andThen(IsDirtyPredicate.NEVER_DIRTY)
 			.isDirty("one", "two")).isFalse();
 	}
 }
