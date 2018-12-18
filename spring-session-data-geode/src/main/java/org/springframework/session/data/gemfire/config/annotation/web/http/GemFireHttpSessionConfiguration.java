@@ -46,6 +46,7 @@ import org.apache.geode.pdx.PdxSerializer;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
@@ -88,7 +89,9 @@ import org.springframework.session.data.gemfire.serialization.data.support.DataS
 import org.springframework.session.data.gemfire.serialization.pdx.provider.PdxSerializableSessionSerializer;
 import org.springframework.session.data.gemfire.serialization.pdx.support.ComposablePdxSerializer;
 import org.springframework.session.data.gemfire.serialization.pdx.support.PdxSerializerSessionSerializerAdapter;
+import org.springframework.session.data.gemfire.support.DeltaAwareDirtyPredicate;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
+import org.springframework.session.data.gemfire.support.IsDirtyPredicate;
 import org.springframework.util.StringUtils;
 
 /**
@@ -171,6 +174,12 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	public static final ClientRegionShortcut DEFAULT_CLIENT_REGION_SHORTCUT = ClientRegionShortcut.PROXY;
 
 	/**
+	 * Default {@link IsDirtyPredicate} strategy interface used to determine whether the users' application
+	 * domain objects are dirty or not.
+	 */
+	public static final IsDirtyPredicate DEFAULT_IS_DIRTY_PREDICATE = DeltaAwareDirtyPredicate.INSTANCE;
+
+	/**
 	 * Default {@link RegionShortcut} used to configure the data management policy of the {@link Cache} {@link Region}
 	 * that will store {@link Session} state.
 	 */
@@ -246,6 +255,8 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 
 	private ClientRegionShortcut clientRegionShortcut = DEFAULT_CLIENT_REGION_SHORTCUT;
 
+	private IsDirtyPredicate dirtyPredicate = DEFAULT_IS_DIRTY_PREDICATE;
+
 	private RegionShortcut serverRegionShortcut = DEFAULT_SERVER_REGION_SHORTCUT;
 
 	private String poolName = DEFAULT_POOL_NAME;
@@ -313,8 +324,9 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 */
 	public ClientRegionShortcut getClientRegionShortcut() {
 
-		return Optional.ofNullable(this.clientRegionShortcut)
-			.orElse(DEFAULT_CLIENT_REGION_SHORTCUT);
+		return this.clientRegionShortcut != null
+			? this.clientRegionShortcut
+			: DEFAULT_CLIENT_REGION_SHORTCUT;
 	}
 
 	/**
@@ -378,8 +390,39 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 */
 	public String[] getIndexableSessionAttributes() {
 
-		return Optional.ofNullable(this.indexableSessionAttributes)
-			.orElse(DEFAULT_INDEXABLE_SESSION_ATTRIBUTES);
+		return this.indexableSessionAttributes != null
+			? this.indexableSessionAttributes
+			: DEFAULT_INDEXABLE_SESSION_ATTRIBUTES;
+	}
+
+	/**
+	 * Configures the {@link IsDirtyPredicate} strategy interface, as a bean from the Spring context, used to
+	 * determine whether the users' application domain objects are dirty or not.
+	 *
+	 * @param dirtyPredicate {@link IsDirtyPredicate} strategy interface bean used to determine whether
+	 * the users' application domain objects are dirty or not.
+	 * @see org.springframework.session.data.gemfire.support.IsDirtyPredicate
+	 */
+	@Autowired(required = false)
+	public void setIsDirtyPredicate(IsDirtyPredicate dirtyPredicate) {
+		this.dirtyPredicate = dirtyPredicate;
+	}
+
+	/**
+	 * Returns the configured {@link IsDirtyPredicate} strategy interface bean, declared in the Spring context,
+	 * used to determine whether the users' application domain objects are dirty or not.
+	 *
+	 * Defaults to {@link GemFireHttpSessionConfiguration#DEFAULT_IS_DIRTY_PREDICATE}.
+	 *
+	 * @return the configured {@link IsDirtyPredicate} strategy interface bean used to determine whether
+	 * the users' application domain objects are dirty or not.
+	 * @see org.springframework.session.data.gemfire.support.IsDirtyPredicate
+	 */
+	public IsDirtyPredicate getIsDirtyPredicate() {
+
+		return this.dirtyPredicate != null
+			? this.dirtyPredicate
+			: DEFAULT_IS_DIRTY_PREDICATE;
 	}
 
 	/**
@@ -423,9 +466,9 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 */
 	public String getPoolName() {
 
-		return Optional.ofNullable(this.poolName)
-			.filter(StringUtils::hasText)
-			.orElse(DEFAULT_POOL_NAME);
+		return StringUtils.hasText(this.poolName)
+			? this.poolName
+			: DEFAULT_POOL_NAME;
 	}
 
 	/**
@@ -455,8 +498,9 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 */
 	public RegionShortcut getServerRegionShortcut() {
 
-		return Optional.ofNullable(this.serverRegionShortcut)
-			.orElse(DEFAULT_SERVER_REGION_SHORTCUT);
+		return this.serverRegionShortcut != null
+			? this.serverRegionShortcut
+			: DEFAULT_SERVER_REGION_SHORTCUT;
 	}
 
 	/**
@@ -503,9 +547,9 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 */
 	public String getSessionRegionName() {
 
-		return Optional.ofNullable(this.sessionRegionName)
-			.filter(StringUtils::hasText)
-			.orElse(DEFAULT_SESSION_REGION_NAME);
+		return StringUtils.hasText(this.sessionRegionName)
+			? this.sessionRegionName
+			: DEFAULT_SESSION_REGION_NAME;
 	}
 
 	/**
@@ -541,9 +585,9 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 */
 	public String getSessionSerializerBeanName() {
 
-		return Optional.ofNullable(this.sessionSerializerBeanName)
-			.filter(StringUtils::hasText)
-			.orElse(DEFAULT_SESSION_SERIALIZER_BEAN_NAME);
+		return StringUtils.hasText(this.sessionSerializerBeanName)
+			? this.sessionSerializerBeanName
+			: DEFAULT_SESSION_SERIALIZER_BEAN_NAME;
 	}
 
 	/**
@@ -566,9 +610,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @see #getSessionSerializerBeanName()
 	 */
 	protected boolean isUsingDataSerialization() {
-
-		return this.usingDataSerialization
-			|| SESSION_DATA_SERIALIZER_BEAN_NAME.equals(getSessionSerializerBeanName());
+		return this.usingDataSerialization || SESSION_DATA_SERIALIZER_BEAN_NAME.equals(getSessionSerializerBeanName());
 	}
 
 	/**
@@ -1107,6 +1149,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 		GemFireOperationsSessionRepository sessionRepository =
 			new GemFireOperationsSessionRepository(gemfireOperations);
 
+		sessionRepository.setIsDirtyPredicate(getIsDirtyPredicate());
 		sessionRepository.setMaxInactiveIntervalInSeconds(getMaxInactiveIntervalInSeconds());
 		sessionRepository.setUseDataSerialization(isUsingDataSerialization());
 

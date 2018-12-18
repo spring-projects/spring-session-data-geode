@@ -66,6 +66,9 @@ import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionCacheTypeAwareRegionFactoryBean;
 import org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer;
+import org.springframework.session.data.gemfire.support.DeltaAwareDirtyPredicate;
+import org.springframework.session.data.gemfire.support.EqualsDirtyPredicate;
+import org.springframework.session.data.gemfire.support.IsDirtyPredicate;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -213,6 +216,26 @@ public class GemFireHttpSessionConfigurationTests {
 		this.gemfireConfiguration.setIndexableSessionAttributes(null);
 
 		assertThat(this.gemfireConfiguration.getIndexableSessionAttributes()).isEmpty();
+	}
+
+	@Test
+	public void setAndGetIsDirtyPredicate() {
+
+		assertThat(this.gemfireConfiguration.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+
+		IsDirtyPredicate mockDirtyPredicate = mock(IsDirtyPredicate.class);
+
+		this.gemfireConfiguration.setIsDirtyPredicate(mockDirtyPredicate);
+
+		assertThat(this.gemfireConfiguration.getIsDirtyPredicate()).isEqualTo(mockDirtyPredicate);
+
+		this.gemfireConfiguration.setIsDirtyPredicate(null);
+
+		assertThat(this.gemfireConfiguration.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+
+		this.gemfireConfiguration.setIsDirtyPredicate(EqualsDirtyPredicate.INSTANCE);
+
+		assertThat(this.gemfireConfiguration.getIsDirtyPredicate()).isEqualTo(EqualsDirtyPredicate.INSTANCE);
 	}
 
 	@Test
@@ -688,13 +711,15 @@ public class GemFireHttpSessionConfigurationTests {
 		doReturn(mockRegion).when(mockGemfireOperations).getRegion();
 
 		this.gemfireConfiguration.setMaxInactiveIntervalInSeconds(120);
+		this.gemfireConfiguration.setIsDirtyPredicate(EqualsDirtyPredicate.INSTANCE);
 
 		GemFireOperationsSessionRepository sessionRepository =
 			this.gemfireConfiguration.sessionRepository(mockGemfireOperations);
 
 		assertThat(sessionRepository).isNotNull();
-		assertThat(sessionRepository.getSessionsTemplate()).isSameAs(mockGemfireOperations);
+		assertThat(sessionRepository.getIsDirtyPredicate()).isEqualTo(EqualsDirtyPredicate.INSTANCE);
 		assertThat(sessionRepository.getMaxInactiveIntervalInSeconds()).isEqualTo(120);
+		assertThat(sessionRepository.getSessionsTemplate()).isSameAs(mockGemfireOperations);
 	}
 
 	@Test
