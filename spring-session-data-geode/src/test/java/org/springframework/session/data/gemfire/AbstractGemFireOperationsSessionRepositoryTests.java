@@ -100,7 +100,7 @@ import org.springframework.session.events.SessionDestroyedEvent;
 import org.springframework.session.events.SessionExpiredEvent;
 import org.springframework.util.ObjectUtils;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 
 /**
  * Unit tests for {@link AbstractGemFireOperationsSessionRepository}.
@@ -133,7 +133,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	private AbstractGemFireOperationsSessionRepository sessionRepository;
 
 	@Mock
-	private Log mockLog;
+	private Logger mockLog;
 
 	@Mock
 	private Region<Object, Session> mockRegion;

@@ -71,8 +71,8 @@ import org.springframework.session.events.SessionExpiredEvent;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link AbstractGemFireOperationsSessionRepository} is an abstract base class encapsulating functionality
@@ -133,7 +133,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 
 	private IsDirtyPredicate dirtyPredicate = DEFAULT_IS_DIRTY_PREDICATE;
 
-	private final Log logger = newLogger();
+	private final Logger logger = newLogger();
 
 	private final Region<Object, Session> sessions;
 
@@ -223,14 +223,14 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	}
 
 	/**
-	 * Constructs a new instance of {@link Log} using Apache Commons {@link LogFactory}.
+	 * Constructs a new instance of {@link Logger} using Apache Commons {@link LoggerFactory}.
 	 *
-	 * @return a new instance of {@link Log} constructed from Apache commons-logging {@link LogFactory}.
+	 * @return a new instance of {@link Logger} constructed from Apache commons-logging {@link LoggerFactory}.
 	 * @see org.apache.commons.logging.LogFactory#getLog(Class)
 	 * @see org.apache.commons.logging.Log
 	 */
-	private Log newLogger() {
-		return LogFactory.getLog(getClass());
+	private Logger newLogger() {
+		return LoggerFactory.getLogger(getClass());
 	}
 
 	/**
@@ -311,12 +311,12 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	}
 
 	/**
-	 * Return a reference to the {@link Log} used to log messages.
+	 * Return a reference to the {@link Logger} used to log messages.
 	 *
-	 * @return a reference to the {@link Log} used to log messages.
+	 * @return a reference to the {@link Logger} used to log messages.
 	 * @see org.apache.commons.logging.Log
 	 */
-	protected Log getLogger() {
+	protected Logger getLogger() {
 		return this.logger;
 	}
 
