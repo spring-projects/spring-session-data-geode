@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiFunction;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -59,6 +60,7 @@ import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
+import org.springframework.session.data.gemfire.support.IsDirtyPredicate;
 import org.springframework.session.data.gemfire.support.SessionIdHolder;
 import org.springframework.session.data.gemfire.support.SessionUtils;
 import org.springframework.session.events.AbstractSessionEvent;
@@ -110,19 +112,26 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	private static final boolean DEFAULT_REGISTER_INTEREST_ENABLED = false;
 	private static final boolean DEFAULT_REGISTER_INTEREST_RECEIVE_VALUES = true;
 
-	// TODO - refactor and use non-static variable
+	// TODO - use non-static variable
 	private static final AtomicBoolean usingDataSerialization = new AtomicBoolean(false);
 
+	private static final Duration DEFAULT_MAX_INACTIVE_INTERVAL =
+		Duration.ofSeconds(GemFireHttpSessionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL_IN_SECONDS);
+
 	private static final InterestResultPolicy DEFAULT_REGISTER_INTEREST_RESULT_POLICY = InterestResultPolicy.NONE;
+
+	private static final IsDirtyPredicate DEFAULT_IS_DIRTY_PREDICATE =
+		GemFireHttpSessionConfiguration.DEFAULT_IS_DIRTY_PREDICATE;
 
 	private boolean registerInterestEnabled = DEFAULT_REGISTER_INTEREST_ENABLED;
 
 	private ApplicationEventPublisher applicationEventPublisher = event -> {};
 
-	private Duration maxInactiveInterval =
-		Duration.ofSeconds(GemFireHttpSessionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL_IN_SECONDS);
+	private Duration maxInactiveInterval = DEFAULT_MAX_INACTIVE_INTERVAL;
 
 	private final GemfireOperations template;
+
+	private IsDirtyPredicate dirtyPredicate = DEFAULT_IS_DIRTY_PREDICATE;
 
 	private final Log logger = newLogger();
 
@@ -214,6 +223,17 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	}
 
 	/**
+	 * Constructs a new instance of {@link Log} using Apache Commons {@link LogFactory}.
+	 *
+	 * @return a new instance of {@link Log} constructed from Apache commons-logging {@link LogFactory}.
+	 * @see org.apache.commons.logging.LogFactory#getLog(Class)
+	 * @see org.apache.commons.logging.Log
+	 */
+	private Log newLogger() {
+		return LogFactory.getLog(getClass());
+	}
+
+	/**
 	 * Constructs a new instance of {@link SessionEventHandlerCacheListenerAdapter}.
 	 *
 	 * @return a new instance of {@link SessionEventHandlerCacheListenerAdapter}.
@@ -231,17 +251,6 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	 */
 	protected SessionIdInterestRegisteringCacheListener newSessionIdInterestRegistrar() {
 		return new SessionIdInterestRegisteringCacheListener(this);
-	}
-
-	/**
-	 * Constructs a new instance of {@link Log} using Apache Commons {@link LogFactory}.
-	 *
-	 * @return a new instance of {@link Log} constructed from Apache commons-logging {@link LogFactory}.
-	 * @see org.apache.commons.logging.LogFactory#getLog(Class)
-	 * @see org.apache.commons.logging.Log
-	 */
-	private Log newLogger() {
-		return LogFactory.getLog(getClass());
 	}
 
 	/**
@@ -280,9 +289,38 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	 * used to store and manage {@link Session} data.
 	 * @see #getSessionsRegion()
 	 */
-	// TODO - refactor and rename to SessionRegionName
+	// TODO - rename to SessionRegionName
 	protected String getFullyQualifiedRegionName() {
 		return getSessionsRegion().getFullPath();
+	}
+
+	/**
+	 * Configures the {@link IsDirtyPredicate} strategy interface used to determine whether the users' application
+	 * domain objects are dirty or not.
+	 *
+	 * @param dirtyPredicate {@link IsDirtyPredicate} strategy interface implementation used to determine whether
+	 * the users' application domain objects are dirty or not.
+	 * @see org.springframework.session.data.gemfire.support.IsDirtyPredicate
+	 */
+	public void setIsDirtyPredicate(IsDirtyPredicate dirtyPredicate) {
+		this.dirtyPredicate = dirtyPredicate;
+	}
+
+	/**
+	 * Returns the configured {@link IsDirtyPredicate} strategy interface implementation used to determine whether
+	 * the users' application domain objects are dirty or not.
+	 *
+	 * Defaults to {@link GemFireHttpSessionConfiguration#DEFAULT_IS_DIRTY_PREDICATE}.
+	 *
+	 * @return the configured {@link IsDirtyPredicate} strategy interface used to determine whether
+	 * the users' application domain objects are dirty or not.
+	 * @see org.springframework.session.data.gemfire.support.IsDirtyPredicate
+	 */
+	public IsDirtyPredicate getIsDirtyPredicate() {
+
+		return this.dirtyPredicate != null
+			? this.dirtyPredicate
+			: DEFAULT_IS_DIRTY_PREDICATE;
 	}
 
 	/**
@@ -431,6 +469,16 @@ public abstract class AbstractGemFireOperationsSessionRepository
 			.orElse(session);
 	}
 
+	protected @Nullable Session configure(@Nullable Session session) {
+
+		return Optional.ofNullable(session)
+			.filter(GemFireSession.class::isInstance)
+			.map(GemFireSession.class::cast)
+			.map(it -> it.configureWith(getMaxInactiveInterval()))
+			.<Session>map(it -> it.configureWith(getIsDirtyPredicate()))
+			.orElse(session);
+	}
+
 	/**
 	 * Deletes the given {@link Session} from Apache Geode / Pivotal GemFire.
 	 *
@@ -510,7 +558,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	 * @see org.apache.geode.cache.Region#registerInterest(Object, InterestResultPolicy, boolean, boolean)
 	 * @see #isRegisterInterestEnabled()
 	 */
-	protected void registerInterest(Object sessionId) {
+	protected void registerInterest(@Nullable Object sessionId) {
 
 		Optional.ofNullable(sessionId)
 			.filter(it -> this.isRegisterInterestEnabled())
@@ -592,7 +640,9 @@ public abstract class AbstractGemFireOperationsSessionRepository
 
 		@Override
 		protected DeltaCapableGemFireSessionAttributes newSessionAttributes(Object lock) {
-			return new DeltaCapableGemFireSessionAttributes(lock);
+
+			return new DeltaCapableGemFireSessionAttributes(lock)
+				.configureWith(getIsDirtyPredicate());
 		}
 
 		public synchronized void toDelta(DataOutput out) throws IOException {
@@ -618,11 +668,10 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	 *
 	 * @see java.lang.Comparable
 	 * @see org.springframework.session.Session
+	 * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSessionAttributes
 	 */
 	@SuppressWarnings("serial")
 	public static class GemFireSession<T extends GemFireSessionAttributes> implements Comparable<Session>, Session {
-
-		protected static final Duration DEFAULT_MAX_INACTIVE_INTERVAL = Duration.ZERO;
 
 		protected static final String GEMFIRE_SESSION_TO_STRING =
 			"{ @type = %1$s, id = %2$s, creationTime = %3$s, lastAccessedTime = %4$s, maxInactiveInterval = %5$s, principalName = %6$s }";
@@ -630,40 +679,18 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		protected static final String SPRING_SECURITY_CONTEXT = "SPRING_SECURITY_CONTEXT";
 
 		/**
-		 * Factory method used to create a new instance of {@link GemFireSession} initialized with
-		 * the {@link #DEFAULT_MAX_INACTIVE_INTERVAL}.
+		 * Factory method used to construct a new, default instance of {@link GemFireSession}.
 		 *
 		 * @param <T> {@link Class Sub-type} of {@link GemFireSessionAttributes}.
-		 * @return new {@link GemFireSession}.
-		 * @see #create(Duration)
-		 */
-		public static <T extends GemFireSessionAttributes> GemFireSession<T> create() {
-			return create(DEFAULT_MAX_INACTIVE_INTERVAL);
-		}
-
-		/**
-		 * Factory method used to create a new instance of {@link GemFireSession} initialized with
-		 * the given {@link Duration max inactive interval}.
-		 *
-		 * @param <T> {@link Class Sub-type} of {@link GemFireSessionAttributes}.
-		 * @param maxInactiveInterval {@link Duration} specifying the max inactive interval before
-		 * this {@link Session} will expire.
-		 * @return a new instance of {@link GemFireSession} initialized with
-		 * the given {@link Duration max inactive interval}.
+		 * @return a new {@link GemFireSession}.
 		 * @see #isUsingDataSerialization()
-		 * @see java.time.Duration
 		 */
 		@SuppressWarnings("unchecked")
-		// TODO - remove
-		public static <T extends GemFireSessionAttributes> GemFireSession<T> create(Duration maxInactiveInterval) {
+		public static <T extends GemFireSessionAttributes> GemFireSession<T> create() {
 
-			GemFireSession session = isUsingDataSerialization()
-				? new DeltaCapableGemFireSession()
+			return isUsingDataSerialization()
+				? (GemFireSession<T>) new DeltaCapableGemFireSession()
 				: new GemFireSession();
-
-			session.setMaxInactiveInterval(maxInactiveInterval);
-
-			return session;
 		}
 
 		/**
@@ -682,12 +709,12 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		}
 
 		/**
-		 * Returns the given {@link Session} if the {@link Session} is a {@link GemFireSession} or return a copy
-		 * of the given {@link Session} as a {@link GemFireSession}.
+		 * Returns the given {@link Session} if the {@link Session} is a {@link GemFireSession}
+		 * or return a copy of the given {@link Session} as a {@link GemFireSession}.
 		 *
 		 * @param session {@link Session} to evaluate and possibly copy.
-		 * @return the given {@link Session} if the {@link Session} is a {@link GemFireSession} or return a copy
-		 * of the given {@link Session} as a {@link GemFireSession}
+		 * @return the given {@link Session} if the {@link Session} is a {@link GemFireSession}
+		 * or return a copy of the given {@link Session} as a {@link GemFireSession}.
 		 * @see #copy(Session)
 		 */
 		@SuppressWarnings("unchecked")
@@ -700,7 +727,10 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		private Duration maxInactiveInterval;
 
 		private final Instant creationTime;
+
 		private Instant lastAccessedTime;
+
+		private transient IsDirtyPredicate dirtyPredicate = DEFAULT_IS_DIRTY_PREDICATE;
 
 		private transient final SpelExpressionParser parser = new SpelExpressionParser();
 
@@ -734,7 +764,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 			this.id = validateSessionId(id);
 			this.creationTime = Instant.now();
 			this.lastAccessedTime = this.creationTime;
-			this.maxInactiveInterval = DEFAULT_MAX_INACTIVE_INTERVAL;
+			this.maxInactiveInterval = Duration.ZERO;
 		}
 
 		/**
@@ -761,10 +791,13 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * @param lock {@link Object} used as the mutex for concurrent access and Thread-safety.
 		 * @return the new {@link GemFireSessionAttributes}.
 		 * @see GemFireSessionAttributes
+		 * @see #getIsDirtyPredicate()
 		 */
 		@SuppressWarnings("unchecked")
 		protected T newSessionAttributes(Object lock) {
-			return (T) new GemFireSessionAttributes(lock);
+
+			return (T) new GemFireSessionAttributes(lock)
+				.configureWith(getIsDirtyPredicate());
 		}
 
 		/**
@@ -815,6 +848,17 @@ public abstract class AbstractGemFireOperationsSessionRepository
 			getAttributes().commit();
 		}
 
+		/**
+		 * Determines whether this {@link GemFireSession} has any changes (i.e. a delta).
+		 *
+		 * Changes exist if this {@link GemFireSession GemFireSession's} {@link #getId() ID},
+		 * {@link #getLastAccessedTime() last accessed time}, {@link #getMaxInactiveInterval() max inactive interval}
+		 * or any of these {@link #getAttributeNames() attributes} have changed.
+		 *
+		 * @return a boolean value indicating whether this {@link GemFireSession} has any changes.
+		 * @see GemFireSessionAttributes#hasDelta()
+		 * @see #getAttributes()
+		 */
 		public synchronized boolean hasDelta() {
 			return this.delta || getAttributes().hasDelta();
 		}
@@ -877,6 +921,17 @@ public abstract class AbstractGemFireOperationsSessionRepository
 			return !isExpirationDisabled(duration);
 		}
 
+		protected synchronized void setIsDirtyPredicate(IsDirtyPredicate dirtyPredicate) {
+			this.dirtyPredicate = dirtyPredicate;
+		}
+
+		protected synchronized IsDirtyPredicate getIsDirtyPredicate() {
+
+			return this.dirtyPredicate != null
+				? this.dirtyPredicate
+				: DEFAULT_IS_DIRTY_PREDICATE;
+		}
+
 		private boolean isLastAccessedTimeValid(Instant lastAccessedTime) {
 			return lastAccessedTime != null;
 		}
@@ -904,8 +959,9 @@ public abstract class AbstractGemFireOperationsSessionRepository
 
 		public synchronized Duration getMaxInactiveInterval() {
 
-			return Optional.ofNullable(this.maxInactiveInterval)
-				.orElse(DEFAULT_MAX_INACTIVE_INTERVAL);
+			return this.maxInactiveInterval != null
+				? this.maxInactiveInterval
+				: Duration.ZERO;
 		}
 
 		public synchronized void setPrincipalName(String principalName) {
@@ -929,6 +985,36 @@ public abstract class AbstractGemFireOperationsSessionRepository
 			}
 
 			return principalName;
+		}
+
+		/**
+		 * Builder method to configure the {@link Duration max inactive interval} before this {@link GemFireSession}
+		 * will expire.
+		 *
+		 * @param maxInactiveInterval {@link Duration} specifying the maximum time this {@link GemFireSession}
+		 * can remain inactive before expiration.
+		 * @return this {@link GemFireSession}.
+		 * @see #setMaxInactiveInterval(Duration)
+		 * @see java.time.Duration
+		 */
+		public GemFireSession<T> configureWith(Duration maxInactiveInterval) {
+			setMaxInactiveInterval(maxInactiveInterval);
+			return this;
+		}
+
+		/**
+		 * Builder method to configure the {@link IsDirtyPredicate} strategy interface implementation to determine
+		 * whether users' {@link Object application domain objects} stored in this {@link GemFireSession} are dirty.
+		 *
+		 * @param dirtyPredicate {@link IsDirtyPredicate} strategy interface implementation that determines whether
+		 * the users' {@link Object application domain objects} stored in this {@link GemFireSession} are dirty.
+		 * @return this {@link GemFireSession}.
+		 * @see org.springframework.session.data.gemfire.support.IsDirtyPredicate
+		 * @see #setIsDirtyPredicate(IsDirtyPredicate)
+		 */
+		public GemFireSession<T> configureWith(IsDirtyPredicate dirtyPredicate) {
+			setIsDirtyPredicate(dirtyPredicate);
+			return this;
 		}
 
 		@SuppressWarnings("all")
@@ -971,7 +1057,6 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		}
 	}
 
-	@SuppressWarnings("unused")
 	public static class DeltaCapableGemFireSessionAttributes extends GemFireSessionAttributes implements Delta {
 
 		private transient final Set<String> sessionAttributeDeltas = new HashSet<>();
@@ -990,38 +1075,12 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		}
 
 		@Override
-		public Object setAttribute(String attributeName, Object attributeValue) {
+		protected BiFunction<String, Object, Boolean> sessionAttributesChangeInterceptor() {
 
-			synchronized (getLock()) {
-
-				if (attributeValue != null) {
-
-					Object previousAttributeValue = super.setAttribute(attributeName, attributeValue);
-
-					if (!attributeValue.equals(previousAttributeValue)) {
-						getSessionAttributeDeltas().add(attributeName);
-					}
-
-					return previousAttributeValue;
-				}
-				else {
-					return removeAttribute(attributeName);
-				}
-			}
-		}
-
-		@Override
-		public Object removeAttribute(String attributeName) {
-
-			synchronized (getLock()) {
-
-				return Optional.ofNullable(super.removeAttribute(attributeName))
-					.map(previousAttributeValue -> {
-						getSessionAttributeDeltas().add(attributeName);
-						return previousAttributeValue;
-					})
-					.orElse(null);
-			}
+			return (attributeName, attributeValue) -> {
+				getSessionAttributeDeltas().add(attributeName);
+				return true;
+			};
 		}
 
 		public void toDelta(DataOutput out) throws IOException {
@@ -1116,6 +1175,8 @@ public abstract class AbstractGemFireOperationsSessionRepository
 
 		private transient boolean delta = false;
 
+		private transient IsDirtyPredicate dirtyPredicate = DEFAULT_IS_DIRTY_PREDICATE;
+
 		private transient final Map<String, Object> sessionAttributes = new HashMap<>();
 
 		private transient final Object lock;
@@ -1149,6 +1210,22 @@ public abstract class AbstractGemFireOperationsSessionRepository
 			return this.lock;
 		}
 
+		protected void setIsDirtyPredicate(IsDirtyPredicate dirtyPredicate) {
+
+			synchronized (getLock()) {
+				this.dirtyPredicate = dirtyPredicate;
+			}
+		}
+
+		protected IsDirtyPredicate getIsDirtyPredicate() {
+
+			synchronized (getLock()) {
+				return this.dirtyPredicate != null
+					? this.dirtyPredicate
+					: DEFAULT_IS_DIRTY_PREDICATE;
+			}
+		}
+
 		public Object setAttribute(String attributeName, Object attributeValue) {
 
 			synchronized (getLock()) {
@@ -1162,7 +1239,8 @@ public abstract class AbstractGemFireOperationsSessionRepository
 
 			Object previousAttributeValue = this.sessionAttributes.put(attributeName, attributeValue);
 
-			this.delta |= !attributeValue.equals(previousAttributeValue);
+			this.delta |= getIsDirtyPredicate().isDirty(previousAttributeValue, attributeValue)
+				&& sessionAttributesChangeInterceptor().apply(attributeName, attributeValue);
 
 			return previousAttributeValue;
 		}
@@ -1171,7 +1249,8 @@ public abstract class AbstractGemFireOperationsSessionRepository
 
 			synchronized (getLock()) {
 
-				this.delta |= this.sessionAttributes.containsKey(attributeName);
+				this.delta |= this.sessionAttributes.containsKey(attributeName)
+					&& sessionAttributesChangeInterceptor().apply(attributeName, null);
 
 				return this.sessionAttributes.remove(attributeName);
 			}
@@ -1214,11 +1293,21 @@ public abstract class AbstractGemFireOperationsSessionRepository
 			}
 		}
 
+		protected BiFunction<String, Object, Boolean> sessionAttributesChangeInterceptor() {
+			return (attributeName, attributeValue) -> true;
+		}
+
 		protected void commit() {
 
 			synchronized (getLock()) {
 				this.delta = false;
 			}
+		}
+
+		@SuppressWarnings("unchecked")
+		public <T extends GemFireSessionAttributes> T configureWith(IsDirtyPredicate dirtyPredicate) {
+			setIsDirtyPredicate(dirtyPredicate);
+			return (T) this;
 		}
 
 		public void from(Session session) {

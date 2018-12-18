@@ -33,6 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
+import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSession;
 import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
 
 import java.time.Duration;
@@ -61,6 +62,8 @@ import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.SessionEventHandlerCacheListenerAdapter;
+import org.springframework.session.data.gemfire.support.EqualsDirtyPredicate;
+import org.springframework.session.data.gemfire.support.IdentityEqualsDirtyPredicate;
 import org.springframework.session.events.AbstractSessionEvent;
 import org.springframework.session.events.SessionDeletedEvent;
 
@@ -174,14 +177,17 @@ public class GemFireOperationsSessionRepositoryTests {
 
 		Instant beforeCreationTime = Instant.now();
 
+		this.sessionRepository.setIsDirtyPredicate(EqualsDirtyPredicate.INSTANCE);
+
 		Session session = this.sessionRepository.createSession();
 
-		assertThat(session).isInstanceOf(AbstractGemFireOperationsSessionRepository.GemFireSession.class);
+		assertThat(session).isInstanceOf(GemFireSession.class);
 		assertThat(session.getId()).isNotEmpty();
 		assertThat(session.getAttributeNames()).isEmpty();
 		assertThat(session.getCreationTime()).isAfterOrEqualTo(beforeCreationTime);
 		assertThat(session.getCreationTime()).isBeforeOrEqualTo(Instant.now());
 		assertThat(session.isExpired()).isFalse();
+		assertThat(((GemFireSession) session).getIsDirtyPredicate()).isEqualTo(EqualsDirtyPredicate.INSTANCE);
 		assertThat(session.getLastAccessedTime()).isEqualTo(session.getCreationTime());
 		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(MAX_INACTIVE_INTERVAL_IN_SECONDS));
 	}
@@ -191,18 +197,22 @@ public class GemFireOperationsSessionRepositoryTests {
 
 		Instant beforeCreationTime = Instant.now();
 
+		this.sessionRepository.setIsDirtyPredicate(IdentityEqualsDirtyPredicate.INSTANCE);
+		this.sessionRepository.setMaxInactiveIntervalInSeconds(300);
 		this.sessionRepository.setUseDataSerialization(true);
 
 		Session session = this.sessionRepository.createSession();
 
-		assertThat(session).isInstanceOf(AbstractGemFireOperationsSessionRepository.DeltaCapableGemFireSession.class);
+		assertThat(session).isInstanceOf(DeltaCapableGemFireSession.class);
 		assertThat(session.getId()).isNotEmpty();
 		assertThat(session.getAttributeNames()).isEmpty();
 		assertThat(session.getCreationTime()).isAfterOrEqualTo(beforeCreationTime);
 		assertThat(session.getCreationTime()).isBeforeOrEqualTo(Instant.now());
 		assertThat(session.isExpired()).isFalse();
+		assertThat(((DeltaCapableGemFireSession) session).getIsDirtyPredicate())
+			.isEqualTo(IdentityEqualsDirtyPredicate.INSTANCE);
 		assertThat(session.getLastAccessedTime()).isEqualTo(session.getCreationTime());
-		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(MAX_INACTIVE_INTERVAL_IN_SECONDS));
+		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(300));
 	}
 
 	@Test
@@ -245,9 +255,10 @@ public class GemFireOperationsSessionRepositoryTests {
 
 		InOrder inOrder = inOrder(sessionRepositorySpy);
 
+		inOrder.verify(sessionRepositorySpy, times(1)).configure(eq(actualSession));
+		inOrder.verify(sessionRepositorySpy, times(1)).registerInterest(eq(actualSession));
 		inOrder.verify(sessionRepositorySpy, times(1)).commit(eq(actualSession));
 		inOrder.verify(sessionRepositorySpy, times(1)).touch(eq(actualSession));
-		inOrder.verify(sessionRepositorySpy, times(1)).registerInterest(eq(actualSession));
 	}
 
 	@Test
@@ -337,9 +348,10 @@ public class GemFireOperationsSessionRepositoryTests {
 
 		InOrder inOrder = inOrder(sessionRepositorySpy);
 
+		inOrder.verify(sessionRepositorySpy, times(1)).configure(eq(mockSession));
+		inOrder.verify(sessionRepositorySpy, times(1)).registerInterest(eq(mockSession));
 		inOrder.verify(sessionRepositorySpy, times(1)).commit(eq(mockSession));
 		inOrder.verify(sessionRepositorySpy, times(1)).touch(eq(mockSession));
-		inOrder.verify(sessionRepositorySpy, times(1)).registerInterest(eq(mockSession));
 	}
 
 	@Test
@@ -385,15 +397,18 @@ public class GemFireOperationsSessionRepositoryTests {
 
 		InOrder inOrder = inOrder(sessionRepositorySpy);
 
+		inOrder.verify(sessionRepositorySpy, times(1)).configure(eq(mockSessionOne));
+		inOrder.verify(sessionRepositorySpy, times(1)).registerInterest(eq(mockSessionOne));
 		inOrder.verify(sessionRepositorySpy, times(1)).commit(eq(mockSessionOne));
 		inOrder.verify(sessionRepositorySpy, times(1)).touch(eq(mockSessionOne));
-		inOrder.verify(sessionRepositorySpy, times(1)).registerInterest(eq(mockSessionOne));
+		inOrder.verify(sessionRepositorySpy, times(1)).configure(eq(mockSessionTwo));
+		inOrder.verify(sessionRepositorySpy, times(1)).registerInterest(eq(mockSessionTwo));
 		inOrder.verify(sessionRepositorySpy, times(1)).commit(eq(mockSessionTwo));
 		inOrder.verify(sessionRepositorySpy, times(1)).touch(eq(mockSessionTwo));
-		inOrder.verify(sessionRepositorySpy, times(1)).registerInterest(eq(mockSessionTwo));
+		inOrder.verify(sessionRepositorySpy, times(1)).configure(eq(mockSessionThree));
+		inOrder.verify(sessionRepositorySpy, times(1)).registerInterest(eq(mockSessionThree));
 		inOrder.verify(sessionRepositorySpy, times(1)).commit(eq(mockSessionThree));
 		inOrder.verify(sessionRepositorySpy, times(1)).touch(eq(mockSessionThree));
-		inOrder.verify(sessionRepositorySpy, times(1)).registerInterest(eq(mockSessionThree));
 	}
 
 	@Test

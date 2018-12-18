@@ -16,7 +16,6 @@
 
 package org.springframework.session.data.gemfire;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,13 +65,13 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * Constructs a new {@link Session} instance backed by GemFire.
 	 *
 	 * @return an instance of {@link Session} backed by GemFire.
-	 * @see AbstractGemFireOperationsSessionRepository.GemFireSession#create(Duration)
+	 * @see AbstractGemFireOperationsSessionRepository.GemFireSession#create()
 	 * @see org.springframework.session.Session
-	 * @see #getMaxInactiveIntervalInSeconds()
+	 * @see #configure(Session)
 	 */
 	@NonNull
 	public Session createSession() {
-		return GemFireSession.create(getMaxInactiveInterval());
+		return configure(GemFireSession.create());
 	}
 
 	/**
@@ -86,7 +85,8 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see AbstractGemFireOperationsSessionRepository.GemFireSession#from(Session)
 	 * @see org.springframework.session.Session
 	 * @see #commit(Session)
-	 * @see #deleteById(String)
+	 * @see #configure(Session)
+	 * @see #delete(Session)
 	 * @see #registerInterest(Session)
 	 * @see #touch(Session)
 	 */
@@ -98,7 +98,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 		if (storedSession != null) {
 			storedSession = storedSession.isExpired()
 				? delete(storedSession)
-				: registerInterest(touch(commit(GemFireSession.from(storedSession))));
+				: touch(commit(registerInterest(configure(GemFireSession.from(storedSession)))));
 		}
 
 		return storedSession;
@@ -114,9 +114,10 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * (e.g. {@literal username}).
 	 * @return a mapping of {@link Session#getId()} Session IDs} to {@link Session} objects.
 	 * @see org.springframework.session.Session
-	 * @see #prepareQuery(String)
 	 * @see java.util.Map
+	 * @see #prepareQuery(String)
 	 * @see #commit(Session)
+	 * @see #configure(Session)
 	 * @see #registerInterest(Session)
 	 * @see #touch(Session)
 	 */
@@ -127,7 +128,8 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 
 		Map<String, Session> sessions = new HashMap<>(results.size());
 
-		results.asList().forEach(session -> sessions.put(session.getId(), registerInterest(touch(commit(session)))));
+		results.asList().forEach(session ->
+			sessions.put(session.getId(), touch(commit(registerInterest(configure(session))))));
 
 		return sessions;
 	}
@@ -139,6 +141,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @param indexName a String indicating the name of the indexed Session attribute.
 	 * @return an appropriate Pivotal GemFire OQL statement for querying on a particular indexed
 	 * Session attribute.
+	 * @see #getFullyQualifiedRegionName()
 	 */
 	protected String prepareQuery(String indexName) {
 
@@ -159,6 +162,8 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @param session the {@link Session} to save.
 	 * @see org.springframework.data.gemfire.GemfireOperations#put(Object, Object)
 	 * @see org.springframework.session.Session
+	 * @see #isNonNullAndDirty(Session)
+	 * @see #doSave(Session)
 	 */
 	public void save(@Nullable Session session) {
 

@@ -86,7 +86,11 @@ import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
+import org.springframework.session.data.gemfire.support.DeltaAwareDirtyPredicate;
+import org.springframework.session.data.gemfire.support.EqualsDirtyPredicate;
 import org.springframework.session.data.gemfire.support.GemFireOperationsSessionRepositorySupport;
+import org.springframework.session.data.gemfire.support.IdentityEqualsDirtyPredicate;
+import org.springframework.session.data.gemfire.support.IsDirtyPredicate;
 import org.springframework.session.data.gemfire.support.SessionIdHolder;
 import org.springframework.session.events.AbstractSessionEvent;
 import org.springframework.session.events.SessionCreatedEvent;
@@ -337,6 +341,26 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
+	public void setAndGetIsDirtyPredicate() {
+
+		assertThat(this.sessionRepository.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+
+		IsDirtyPredicate mockDirtyPredicate = mock(IsDirtyPredicate.class);
+
+		this.sessionRepository.setIsDirtyPredicate(mockDirtyPredicate);
+
+		assertThat(this.sessionRepository.getIsDirtyPredicate()).isEqualTo(mockDirtyPredicate);
+
+		this.sessionRepository.setIsDirtyPredicate(null);
+
+		assertThat(this.sessionRepository.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+
+		this.sessionRepository.setIsDirtyPredicate(EqualsDirtyPredicate.INSTANCE);
+
+		assertThat(this.sessionRepository.getIsDirtyPredicate()).isEqualTo(EqualsDirtyPredicate.INSTANCE);
+	}
+
+	@Test
 	public void setAndGetMaxInactiveInterval() {
 
 		assertThat(this.sessionRepository.getMaxInactiveInterval())
@@ -374,7 +398,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void maxInactiveIntervalInSecondsAllowsExtremelyLargeAndNegativeValues() {
+	public void setMaxInactiveIntervalInSecondsAllowsExtremelyLargeAndNegativeValues() {
 
 		assertThat(this.sessionRepository.getMaxInactiveIntervalInSeconds())
 			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL_IN_SECONDS);
@@ -470,6 +494,44 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	@Test
 	public void commitNullIsSafe() {
 		this.sessionRepository.commit(null);
+	}
+
+	@Test
+	public void configureWithGemFireSession() {
+
+		GemFireSession<?> session = GemFireSession.create();
+
+		assertThat(session).isNotNull();
+		assertThat(session.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ZERO);
+
+		this.sessionRepository.setIsDirtyPredicate(EqualsDirtyPredicate.INSTANCE);
+		this.sessionRepository.setMaxInactiveIntervalInSeconds(300);
+		this.sessionRepository.configure(session);
+
+		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(300));
+		assertThat(session.getIsDirtyPredicate()).isEqualTo(EqualsDirtyPredicate.INSTANCE);
+
+		verify(this.sessionRepository, times(1)).getIsDirtyPredicate();
+		verify(this.sessionRepository, times(1)).getMaxInactiveInterval();
+	}
+
+	@Test
+	public void configureWithNull() {
+
+		this.sessionRepository.configure(null);
+
+		verify(this.sessionRepository, never()).getIsDirtyPredicate();
+		verify(this.sessionRepository, never()).getMaxInactiveInterval();
+	}
+
+	@Test
+	public void configureWithSession() {
+
+		this.sessionRepository.configure(this.mockSession);
+
+		verify(this.sessionRepository, never()).getIsDirtyPredicate();
+		verify(this.sessionRepository, never()).getMaxInactiveInterval();
 	}
 
 	@Test
@@ -1902,37 +1964,46 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void createNewGemFireSessionWithDefaultMaxInactiveInterval() {
+	public void createNewGemFireSession() {
+
+		assertThat(AbstractGemFireOperationsSessionRepository.isUsingDataSerialization()).isFalse();
 
 		Instant testCreationTime = Instant.now();
 
 		GemFireSession<?> session = GemFireSession.create();
 
 		assertThat(session).isNotNull();
-		assertThat(session.getId()).isNotNull();
+		assertThat(session).isNotInstanceOf(DeltaCapableGemFireSession.class);
+		assertThat(session.getId()).isNotEmpty();
 		assertThat(session.getCreationTime()).isAfterOrEqualTo(testCreationTime);
+		assertThat(session.getCreationTime()).isBeforeOrEqualTo(Instant.now());
 		assertThat(session.hasDelta()).isTrue();
+		assertThat(session.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
 		assertThat(session.getLastAccessedTime()).isEqualTo(session.getCreationTime());
-		assertThat(session.getMaxInactiveInterval()).isEqualTo(GemFireSession.DEFAULT_MAX_INACTIVE_INTERVAL);
+		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ZERO);
 		assertThat(session.getAttributes()).isNotNull();
 		assertThat(session.getAttributes()).isEmpty();
 	}
 
 	@Test
-	public void createNewGemFireSessionWithSpecifiedMaxInactiveInterval() {
+	public void createNewDeltaCapableGemFireSession() {
+
+		this.sessionRepository.setUseDataSerialization(true);
+
+		assertThat(AbstractGemFireOperationsSessionRepository.isUsingDataSerialization()).isTrue();
 
 		Instant testCreationTime = Instant.now();
 
-		Duration maxInactiveInterval = Duration.ofSeconds(120L);
+		GemFireSession<?> session = GemFireSession.create();
 
-		GemFireSession<?> session = GemFireSession.create(maxInactiveInterval);
-
-		assertThat(session).isNotNull();
-		assertThat(session.getId()).isNotNull();
+		assertThat(session).isInstanceOf(DeltaCapableGemFireSession.class);
+		assertThat(session.getId()).isNotEmpty();
 		assertThat(session.getCreationTime()).isAfterOrEqualTo(testCreationTime);
+		assertThat(session.getCreationTime()).isBeforeOrEqualTo(Instant.now());
 		assertThat(session.hasDelta()).isTrue();
+		assertThat(session.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
 		assertThat(session.getLastAccessedTime()).isEqualTo(session.getCreationTime());
-		assertThat(session.getMaxInactiveInterval()).isEqualTo(maxInactiveInterval);
+		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ZERO);
 		assertThat(session.getAttributes()).isNotNull();
 		assertThat(session.getAttributes()).isEmpty();
 	}
@@ -2014,6 +2085,16 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
+	public void fromExistingGemFireSessionIsGemFireSession() {
+
+		GemFireSession<?> gemfireSession = GemFireSession.create();
+
+		GemFireSession<?> fromGemFireSession = GemFireSession.from(gemfireSession);
+
+		assertThat(fromGemFireSession).isSameAs(gemfireSession);
+	}
+
+	@Test
 	public void fromExistingSessionCopiesSession() {
 
 		Instant expectedCreationTime = Instant.ofEpochMilli(1L);
@@ -2045,16 +2126,6 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		verify(mockSession, never()).getAttribute(anyString());
 	}
 
-	@Test
-	public void fromExistingGemFireSessionIsGemFireSession() {
-
-		GemFireSession<?> gemfireSession = GemFireSession.create();
-
-		GemFireSession<?> fromGemFireSession = GemFireSession.from(gemfireSession);
-
-		assertThat(fromGemFireSession).isSameAs(gemfireSession);
-	}
-
 	@Test(expected = IllegalArgumentException.class)
 	public void fromNullSessionThrowsIllegalArgumentException() {
 
@@ -2068,6 +2139,50 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 			throw expected;
 		}
+	}
+
+	@Test
+	public void newSessionAttributesIsConfiguredCorrectly() {
+
+		GemFireSession<?> session = new GemFireSession<>();
+
+		session.setIsDirtyPredicate(EqualsDirtyPredicate.INSTANCE);
+
+		assertThat(session.getIsDirtyPredicate()).isEqualTo(EqualsDirtyPredicate.INSTANCE);
+
+		GemFireSessionAttributes sessionAttributes = session.newSessionAttributes(session);
+
+		assertThat(sessionAttributes).isNotNull();
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(EqualsDirtyPredicate.INSTANCE);
+		assertThat(sessionAttributes.getLock()).isSameAs(session);
+	}
+
+	@Test
+	public void newDeltaCapableSessionAttributesIsConfiguredCorrectly() {
+
+		DeltaCapableGemFireSession session = new DeltaCapableGemFireSession();
+
+		session.setIsDirtyPredicate(IdentityEqualsDirtyPredicate.INSTANCE);
+
+		assertThat(session.getIsDirtyPredicate()).isEqualTo(IdentityEqualsDirtyPredicate.INSTANCE);
+
+		DeltaCapableGemFireSessionAttributes sessionAttributes = session.newSessionAttributes(session);
+
+		assertThat(sessionAttributes).isNotNull();
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(IdentityEqualsDirtyPredicate.INSTANCE);
+		assertThat(sessionAttributes.getLock()).isEqualTo(session);
+	}
+
+	@Test
+	public void changeSessionIdIsCorrect() {
+
+		GemFireSession<?> session = new GemFireSession<>();
+
+		String sessionId = session.getId();
+
+		assertThat(sessionId).isNotEmpty();
+		assertThat(session.changeSessionId()).isNotEmpty();
+		assertThat(session.getId()).isNotEqualTo(sessionId);
 	}
 
 	@Test
@@ -2108,7 +2223,8 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 		Duration expectedMaxInactiveIntervalInSeconds = Duration.ofSeconds(-1);
 
-		GemFireSession<?> session = GemFireSession.create(expectedMaxInactiveIntervalInSeconds);
+		GemFireSession<?> session = GemFireSession.create()
+			.configureWith(expectedMaxInactiveIntervalInSeconds);
 
 		assertThat(session).isNotNull();
 		assertThat(session.getMaxInactiveInterval()).isEqualTo(expectedMaxInactiveIntervalInSeconds);
@@ -2118,25 +2234,23 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	@Test
 	public void isExpiredWhenMaxInactiveIntervalIsNullReturnsFalse() {
 
-		GemFireSession<?> session = GemFireSession.create(null);
+		GemFireSession<?> session = GemFireSession.create();
 
 		assertThat(session).isNotNull();
 
 		session.setMaxInactiveInterval(null);
 
-		assertThat(session.getMaxInactiveInterval()).isEqualTo(GemFireSession.DEFAULT_MAX_INACTIVE_INTERVAL);
+		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ZERO);
 		assertThat(session.isExpired()).isFalse();
 	}
 
 	@Test
 	public void isExpiredWhenMaxInactiveIntervalIsZeroReturnsFalse() {
 
-		Duration expectedMaxInactiveIntervalInSeconds = Duration.ZERO;
-
-		GemFireSession<?> session = GemFireSession.create(expectedMaxInactiveIntervalInSeconds);
+		GemFireSession<?> session = GemFireSession.create();
 
 		assertThat(session).isNotNull();
-		assertThat(session.getMaxInactiveInterval()).isEqualTo(expectedMaxInactiveIntervalInSeconds);
+		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ZERO);
 		assertThat(session.isExpired()).isFalse();
 	}
 
@@ -2145,7 +2259,8 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 		long expectedMaxInactiveIntervalInSeconds = TimeUnit.HOURS.toSeconds(2);
 
-		GemFireSession<?> session = GemFireSession.create(Duration.ofSeconds(expectedMaxInactiveIntervalInSeconds));
+		GemFireSession<?> session = GemFireSession.create()
+			.configureWith(Duration.ofSeconds(expectedMaxInactiveIntervalInSeconds));
 
 		assertThat(session).isNotNull();
 		assertThat(session.getMaxInactiveInterval())
@@ -2164,7 +2279,8 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 		Duration maxInactiveInterval = Duration.ofMillis(1);
 
-		GemFireSession<?> session = GemFireSession.create(maxInactiveInterval);
+		GemFireSession<?> session = GemFireSession.create()
+			.configureWith(maxInactiveInterval);
 
 		assertThat(session).isNotNull();
 		assertThat(session.getMaxInactiveInterval()).isEqualTo(maxInactiveInterval);
@@ -2177,6 +2293,29 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		while (diff < maxInactiveInterval.toMillis() + 1);
 
 		assertThat(session.isExpired()).isTrue();
+	}
+
+	@Test
+	public void setAndGetGemFireSessionIsDirtyPredicate() {
+
+		GemFireSession<?> session = GemFireSession.create();
+
+		assertThat(session).isNotNull();
+		assertThat(session.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+
+		IsDirtyPredicate mockDirtyPredicate = mock(IsDirtyPredicate.class);
+
+		session.setIsDirtyPredicate(mockDirtyPredicate);
+
+		assertThat(session.getIsDirtyPredicate()).isEqualTo(mockDirtyPredicate);
+
+		session.setIsDirtyPredicate(null);
+
+		assertThat(session.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+
+		session.setIsDirtyPredicate(EqualsDirtyPredicate.INSTANCE);
+
+		assertThat(session.getIsDirtyPredicate()).isEqualTo(EqualsDirtyPredicate.INSTANCE);
 	}
 
 	@Test
@@ -2269,6 +2408,26 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		session.removeAttribute(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME);
 
 		assertThat(session.getPrincipalName()).isNull();
+	}
+
+	@Test
+	public void configuresIsDirtyPredicateReturnsGemFireSession() {
+
+		GemFireSession<?> session = new GemFireSession<>();
+
+		assertThat(session.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+		assertThat(session.configureWith(EqualsDirtyPredicate.INSTANCE)).isSameAs(session);
+		assertThat(session.getIsDirtyPredicate()).isEqualTo(EqualsDirtyPredicate.INSTANCE);
+	}
+
+	@Test
+	public void configuresMaxInactiveIntervalReturnsGemFireSession() {
+
+		GemFireSession<?> session = new GemFireSession<>();
+
+		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ZERO);
+		assertThat(session.configureWith(Duration.ofSeconds(1))).isSameAs(session);
+		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(1));
 	}
 
 	@Test
@@ -2715,6 +2874,28 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
+	public void setAndGetGemFireSessionAttributesIsDirtyPredicate() {
+
+		GemFireSessionAttributes sessionAttributes = new GemFireSessionAttributes();
+
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+
+		IsDirtyPredicate mockDirtyPredicate = mock(IsDirtyPredicate.class);
+
+		sessionAttributes.setIsDirtyPredicate(mockDirtyPredicate);
+
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(mockDirtyPredicate);
+
+		sessionAttributes.setIsDirtyPredicate(null);
+
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+
+		sessionAttributes.setIsDirtyPredicate(EqualsDirtyPredicate.INSTANCE);
+
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(EqualsDirtyPredicate.INSTANCE);
+	}
+
+	@Test
 	public void sessionAttributesToDelta() throws Exception {
 
 		AtomicInteger count = new AtomicInteger(0);
@@ -2750,7 +2931,6 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		reset(mockDataOutput);
 
 		sessionAttributes.commit();
-		sessionAttributes.setAttribute("attributeOne", "testOne");
 
 		assertThat(sessionAttributes.hasDelta()).isFalse();
 
@@ -2893,7 +3073,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void sessionAttributesHasDeltaWhenSetDoesNotModifyAttributeReturnsFalse() {
+	public void sessionAttributesHasDeltaWhenSetDoesNotModifyAttributeReturnsTrue() {
 
 		GemFireSessionAttributes sessionAttributes = new GemFireSessionAttributes();
 
@@ -2908,7 +3088,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 		assertThat(sessionAttributes.getAttributeNames()).containsExactly("attributeOne");
 		assertThat(sessionAttributes.<String>getAttribute("attributeOne")).isEqualTo("testOne");
-		assertThat(sessionAttributes.hasDelta()).isFalse();
+		assertThat(sessionAttributes.hasDelta()).isTrue();
 
 		sessionAttributes.commit();
 
@@ -3071,25 +3251,14 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	public void gemfireSessionIsLockForGemFireSessionAttributes() {
+	public void configuresIsDirtyPredicateReturnsGemFireSessionAttributes() {
 
-		GemFireSession session = new GemFireSession();
+		GemFireSessionAttributes sessionAttributes = new GemFireSessionAttributes();
 
-		GemFireSessionAttributes sessionAttributes = session.newSessionAttributes(session);
-
-		assertThat(sessionAttributes).isNotNull();
-		assertThat(sessionAttributes.getLock()).isSameAs(session);
-	}
-
-	@Test
-	public void deltaCapableGemFireSessionIsLockForDeltaCapableGemFirSessionAttributes() {
-
-		DeltaCapableGemFireSession session = new DeltaCapableGemFireSession();
-
-		DeltaCapableGemFireSessionAttributes sessionAttributes = session.newSessionAttributes(session);
-
-		assertThat(sessionAttributes).isNotNull();
-		assertThat(sessionAttributes.getLock()).isSameAs(session);
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(DeltaAwareDirtyPredicate.INSTANCE);
+		assertThat(sessionAttributes.<GemFireSessionAttributes>configureWith(EqualsDirtyPredicate.INSTANCE))
+			.isSameAs(sessionAttributes);
+		assertThat(sessionAttributes.getIsDirtyPredicate()).isEqualTo(EqualsDirtyPredicate.INSTANCE);
 	}
 
 	@Test
