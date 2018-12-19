@@ -1071,10 +1071,10 @@ in {data-store-name}.
 [[httpsession-gemfire-serialization-framework-data-serialization-support]]
 ===== Additional Support for Data Serialization
 
-NOTE: Please feel free to skip this section if configuring and bootstraping {data-store-name} servers in your cluster
-using Spring (Boot) as generally, the information that follows will not apply.  Of course, it all depends on your
-declared dependencies and your Spring configuration.  However, if you are using *_Gfsh_* to start the servers
-in your cluster, then definitely read on.
+NOTE: Please feel free to skip this section if you are configuring and bootstraping {data-store-name} servers
+in your cluster using Spring (Boot) since generally, the information that follows will not apply.  Of course,
+it all depends on your declared dependencies and your Spring configuration.  However, if you are using *_Gfsh_*
+to start the servers in your cluster, then definitely read on.
 
 ====== Background
 
@@ -1183,6 +1183,161 @@ ${REPO_HOME}/org/springframework/spring-core/{spring-version}/spring-core-{sprin
 Keep in mind, you may need to add your application domain object JAR files to the server classpath as well.
 
 To get a complete picture of how this works, see the {gh-samples-url}boot/gemfire-with-gfsh-servers[sample].
+
+[[httpsession-gemfire-serialization-framework-session-deltas]]
+===== Customizing Change Detection
+
+By default, anytime the Session is modified (e.g. the `lastAccessedTime` is updated to the current time), the Session
+is considered dirty by Spring Session for {data-store-name} (SSDG). When using {data-store-name} _Data Serialization_
+framework, it is extremely useful and valuable to take advantage of {data-store-name}'s
+{data-store-docs}/developing/delta_propagation/chapter_overview.html[Delta Propagation] capabilities as well.
+
+When using _Data Serialization_, SSDG also uses _Delta Propagation_ to send only changes to the Session state between
+the client and server.  This includes any Session attributes that may have been added, removed or updated.
+
+By default, anytime `Session.setAttribute(name, value)` is called, the Session attribute is considered "dirty"
+and will be sent in the delta between the client and server.  This is true even if your application domain object
+has not been changed.
+
+Typically, there is never a reason to call `Session.setAttribute(..)` unless your object has been changed.  However,
+if this can occur, and your objects are relatively large (with a complex object hierarchy), then you may want to
+consider either:
+
+1. Implementing the {data-store-javadoc}/org/apache/geode/Delta.html[Delta] interface in your application domain object
+model, while useful, is very invasive, or...
+
+2. Provide a custom implementation of SSDG's `org.springframework.session.data.gemfire.support.IsDirtyPredicate`
+strategy interface.
+
+Out of the box, SSDG provides 5 implementations of the `IsDirtyPredicate` strategy interface:
+
+[cols="2,4,1", options="header"]
+.`IsDirtyPredicate` implementations
+|===
+| Class | Description | Default
+
+| `IsDirtyPredicate.ALWAYS_DIRTY` | New Session attribute values are always considered dirty. |
+
+| `IsDirtyPredicate.NEVER_DIRTY`  | New Session attribute values are never considered dirty. |
+
+| `DeltaAwareDirtyPredicate` | New Session attribute values are considered dirty when the old value and new value
+are different, if the new value's type does not implement `Delta` or the new value's `Delta.hasDelta()`
+method returns *true*. | Yes
+
+| `EqualsDirtyPredicate` | New Session attribute values are considered dirty iff the old value is not equal to
+the new value as determined by `Object.equals(:Object)` method. |
+
+| `IdentityEqualsPredicate` | New Session attributes values are considered dirty iff the old value is not the same as
+  the new value using the identity equals operator (i.e. `oldValue != newValue`). |
+
+|===
+
+As shown in the table above, the `DeltaAwareDirtyPredicate` is the *default* implementation used by SSDG.
+The `DeltaAwareDirtyPredicate` automatically takes into consideration application domain objects that implement
+the {data-store-name} `Delta` interface.  However, `DeltaAwareDirtyPredicate` works even when your application
+domain objects do not implement the `Delta` interface. SSDG will consider your application domain object to be dirty
+anytime the `Session.setAttribute(name, newValue)` is called providing the new value is not the same as old value,
+or the new value does not implement the `Delta` interface.
+
+You can change SSDG's dirty implementation, determination strategy simply by declaring a bean in the Spring container
+of the `IsDirtyPredicate` interface type:
+
+.Overriding SSDG's default `IsDirtyPredicate` strategy
+[source,java]
+----
+@EnableGemFireHttpSession
+class ApplicationConfiguration {
+
+  @Bean
+  IsDirtyPredicate equalsDirtyPredicate() {
+    return EqualsDirtyPredicate.INSTANCE;
+  }
+
+  ...
+}
+----
+
+====== Composition
+
+The `IsDirtyPredicate` interface also provides the `andThen(:IsDirtyPredicate)` and `orThen(:IsDirtyPredicate)` methods
+to compose 2 or more `IsDirtyPredicate` implementations in a composition in order to organize complex logic and rules
+for determining whether an application domain object is dirty or not.
+
+For instance, you could compose both `EqualsDirtyPredicate` and `DeltaAwareDirtyPredicate` using the OR operator:
+
+.Composing `EqualsDirtyPredicate` with `DeltaAwareDirtyPredicate` using the logical OR operator
+[source,java]
+----
+@EnableGemFireHttpSession
+class ApplicationConfiguration {
+
+  @Bean
+  IsDirtyPredicate equalsOrThenDeltaDirtyPredicate() {
+
+    return EqualsDirtyPredicate.INSTANCE
+      .orThen(DeltaAwareDirtyPredicate.INSTANCE);
+  }
+
+  ...
+}
+----
+
+You may even implement your own, custom `IsDirtyPredicates` based on specific application domain object types:
+
+.Application Domain Object Type-specific `IsDirtyPredicate` implementations
+[source,java]
+----
+
+class CustomerDirtyPredicate implements IsDirtyPredicate {
+
+  public boolean isDirty(Object oldCustomer, Object newCustomer) {
+
+      if (newCustomer instanceof Customer) {
+        // custom logic to determine if a new Customer is dirty
+      }
+
+      return true;
+  }
+}
+
+class AccountDirtyPredicate implements IsDirtyPredicate {
+
+  public boolean isDirty(Object oldAccount, Object newAccount) {
+
+      if (newAccount instanceof Account) {
+        // custom logic to determine if a new Account is dirty
+      }
+
+      return true;
+  }
+}
+----
+
+Then combine `CustomerDirtyPredicate` with the `AccountDirtyPredicate` and a default predicate for fallback, as follows:
+
+.Composed and configured type-specific `IsDirtyPredicates`
+[source,java]
+----
+@EnableGemFireHttpSession
+class ApplicationConfiguration {
+
+  @Bean
+  IsDirtyPredicate typeSpecificDirtyPredicate() {
+
+    return new CustomerDirtyPredicate()
+      .andThen(new AccountDirtyPredicate())
+      .andThen(IsDirtyPredicate.ALWAYS_DIRTY);
+  }
+
+  ...
+}
+----
+
+The combinations and possibilities are endless.
+
+WARNING: Use caution when implementing custom `IsDirtyPredicate` strategies.  If you incorrectly determine that your
+application domain object is not dirty when it actually is, then it will not be sent in the Session delta
+from the client to the server.
 
 [[httpsession-gemfire-serialization-framework-session-representation]]
 ===== Changing the Session Representation
