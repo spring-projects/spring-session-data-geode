@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
 import org.springframework.data.gemfire.tests.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.session.Session;
+import org.springframework.session.SessionRepository;
 import org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.session.data.gemfire.expiration.config.FixedDurationExpirationSessionRepositoryBeanPostProcessor;
@@ -57,8 +58,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class LazyTimeoutSessionExpirationIntegrationTests extends AbstractGemFireIntegrationTests {
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void sessionRepositoryIsAFixedDurationExpirationSessionRepository() {
-		assertThat(getSessionRepository()).isInstanceOf(FixedDurationExpirationSessionRepository.class);
+
+		assertThat(this.<Session, SessionRepository>getSessionRepository())
+			.isInstanceOf(FixedDurationExpirationSessionRepository.class);
 	}
 
 	@Test

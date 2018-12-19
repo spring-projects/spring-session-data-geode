@@ -291,8 +291,9 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 	}
 
 	@Nullable
-	protected SessionRepository<Session> getSessionRepository() {
-		return this.sessionRepository;
+	@SuppressWarnings("unchecked")
+	protected <S extends Session, T extends SessionRepository<S>> T getSessionRepository() {
+		return (T) this.sessionRepository;
 	}
 
 	protected void assertValidSession(Session session) {
@@ -345,6 +346,16 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 	@Override
 	protected boolean withQueryDebugging() {
 		return enableQueryDebugging();
+	}
+
+	@SuppressWarnings("unchecked")
+	protected <T extends Session> T commit(T session) {
+
+		return Optional.ofNullable(getSessionRepository())
+			.filter(AbstractGemFireOperationsSessionRepository.class::isInstance)
+			.map(AbstractGemFireOperationsSessionRepository.class::cast)
+			.map(it -> (T) it.commit(session))
+			.orElse(session);
 	}
 
 	@SuppressWarnings("unchecked")
