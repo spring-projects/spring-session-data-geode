@@ -4,18 +4,60 @@ image:https://travis-ci.org/spring-projects/spring-session.svg?branch=master["Bu
 
 = Spring Session for Apache Geode & Pivotal GemFire
 
-_Spring Session_ aims to provide a common infrastructure for managing Sessions.
+_Spring Session_ core provides an API along with several provider implementations to manage user sessions
+and simplify the support for clustered session state management without being tied to an application container
+specific solution.
 
-_Spring Session for Apache Geode_ positions either https://pivotal.io/pivotal-gemfire[Pivotal GemFire]
-or http://geode.apache.org/[Apache Geode] as a Session Repository provider.
+Out of the box _Spring Session_ provides integration with:
 
-This provides many benefits including:
+* `HttpSession` - replaces the `HttpSession` supplied by the application container (e.g. Apache Tomcat)
+in a neutral way along with providing HTTP Session IDs in the HTTP Header to work with REST APIs.
 
-* Accessing a Session from any environment (i.e. web, messaging infrastructure, etc)
-* In a web environment
-** Support for clustering in a vendor/technology neutral way
-** Pluggable strategy for determining the Session ID
-** Easily keep the HttpSession alive when a WebSocket is active
+* `WebSocket` - keeps the `HttpSession` active when receiving WebSocket messages.
+
+On top of these core _Spring Session_ features, _Spring Session for Apache Geode_ (SSDG) positions either
+http://geode.apache.org/[Apache Geode] or https://pivotal.io/pivotal-gemfire[Pivotal GemFire]
+as a session repository provider along with additional capabilities required by enterprise class solutions:
+
+* Custom `Expiration Policies` - in addition to the default 30 minute session _idle expiration timeout_ (TTI),
+SSDG also supports _fixed duration expiration timeout_ (e.g. expire the session after 1 hour regardless of
+whether the session is active or inactive).  User may also define custom expiration policies using the
+https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.1.1.RELEASE/api/org/springframework/session/data/gemfire/expiration/SessionExpirationPolicy.html[`SessionExpirationPolicy`] interface.
+See https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.1.1.RELEASE/reference/html5/#httpsession-gemfire-expiration[documentation] for more details.
+
+* Custom `Serialization` - in addition to the default Apache Geode https://geode.apache.org/docs/guide/18/developing/data_serialization/gemfire_pdx_serialization.html[PDX Serialization] format,
+users may configure Apache Geode https://geode.apache.org/docs/guide/18/developing/data_serialization/gemfire_data_serialization.html[Data Serialization]
+with full support for https://geode.apache.org/docs/guide/18/developing/delta_propagation/chapter_overview.html[Delta Propagation].
+While _race conditions_ between competing HTTP requests (accessing the same HTTP Session) cannot be completely avoided with
+any session provider, sending only the delta (or changes) minimizes the chances of lost update, especially in a highly clustered
+Web environment. By using PDX Serialization, your HTTP Session state is immediately transferable across environments, from non-managed,
+standalone to managed environments, like https://pivotal.io/platform[Pivotal Cloud Foundry (PCF)]
+using https://pivotal.io/platform/services-marketplace/data-management/pivotal-cloud-cache[Pivotal Cloud Cache (PCC)].
+
+* Custom `Change Detection` - while most session implementations consider the session to be dirty anytime anything is written
+to the session, even when your application domain objects stored in the session may not have changed, SSDG will intelligently
+determine whether there is anything to send before writing it to the wire.  OOTB, SSDG will look at any application domain objects
+that implement Apache Geode's https://geode.apache.org/releases/latest/javadoc/org/apache/geode/Delta.html[Delta] interface
+and use that to determine if your application domain objects are indeed dirty before sending the delta. If your objects do not
+implement the `Delta` interface, or the object is not the same, then it functions like all other Spring Session providers.
+If you prefer, you may specify your own rules composed with the `IsDirtyPredicate` strategy interface.
+
+* Powerful `Pub/Sub` - Apache Geode and Pivotal GemFire both provide a very powerful and robust client/server
+https://geode.apache.org/docs/guide/18/developing/events/chapter_overview.html[event distribution and handling sub-system]
+leveraged by SSDG in order to reliably manage session state, especially in a distributed/clustered environment.
+
+These and many more Apache Geode or Pivotal GemFire features may be leveraged in your application environment to
+achieve resilient, highly available (HA), durable and consistent, even multi-clustered (WAN) and persistent,
+session statement management.
+
+The best part, SSDG allows you to use either Apache Geode or Pivotal GemFire interchangeably without having to change
+a single line of code.  Simply change your dependency from `org.springframework.session:spring-session-data-geode`
+to `org.springframework.session:spring-session-data-gemfire`, or vice versa, and you can seemlessly move between
+either Apache Geode or Pivotal GemFire, and even PCC.
+
+No other Spring Session provider offers you this sort of flexibility and power in 1 solution, especially as your
+requirements change and needs grow (e.g. from simple caching to a full on _System of Record_ with distribute compute
+and stream capabilities).
 
 == Code of Conduct
 
