@@ -96,6 +96,7 @@ import org.slf4j.LoggerFactory;
  * @see org.springframework.session.SessionRepository
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
+ * @see org.springframework.session.data.gemfire.support.DeltaAwareDirtyPredicate
  * @see org.springframework.session.data.gemfire.support.IsDirtyPredicate
  * @see org.springframework.session.data.gemfire.support.SessionIdHolder
  * @see org.springframework.session.events.AbstractSessionEvent
@@ -921,7 +922,9 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		}
 
 		protected synchronized void setIsDirtyPredicate(IsDirtyPredicate dirtyPredicate) {
+
 			this.dirtyPredicate = dirtyPredicate;
+			getAttributes().configureWith(dirtyPredicate);
 		}
 
 		protected synchronized IsDirtyPredicate getIsDirtyPredicate() {
