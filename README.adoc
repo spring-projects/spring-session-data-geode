@@ -4,8 +4,8 @@ image:https://travis-ci.org/spring-projects/spring-session.svg?branch=master["Bu
 
 = Spring Session for Apache Geode & Pivotal GemFire
 
-_Spring Session_ core provides an API along with several provider implementations to manage user sessions
-and simplify the support for clustered session state management without being tied to an application container
+_Spring Session_ core provides an API along with several provider implementations to manage user sessions.  It also
+simplifies the support for clustered session state management without being tied to an application container
 specific solution.
 
 Out of the box _Spring Session_ provides integration with:
@@ -17,25 +17,25 @@ in a neutral way along with providing HTTP Session IDs in the HTTP Header to wor
 
 On top of these core _Spring Session_ features, _Spring Session for Apache Geode_ (SSDG) positions either
 http://geode.apache.org/[Apache Geode] or https://pivotal.io/pivotal-gemfire[Pivotal GemFire]
-as a session repository provider along with additional capabilities required by enterprise class solutions:
+as a session repository provider and adds additional capabilities required by enterprise class solutions:
 
-* Custom `Expiration Policies` - in addition to the default 30 minute session _idle expiration timeout_ (TTI),
-SSDG also supports _fixed duration expiration timeout_ (e.g. expire the session after 1 hour regardless of
-whether the session is active or inactive).  User may also define custom expiration policies using the
+* Custom `Expiration Policies` - in addition to the default, 30 minute session _idle expiration timeout_ (TTI),
+SSDG also supports _fixed-duration expiration timeout_ (e.g. expire the session after 1 hour regardless of
+whether the session is active or inactive).  Users may also define custom expiration policies using the
 https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.1.1.RELEASE/api/org/springframework/session/data/gemfire/expiration/SessionExpirationPolicy.html[`SessionExpirationPolicy`] interface.
-See https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.1.1.RELEASE/reference/html5/#httpsession-gemfire-expiration[documentation] for more details.
+See the https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.1.1.RELEASE/reference/html5/#httpsession-gemfire-expiration[documentation] for more details.
 
-* Custom `Serialization` - in addition to the default Apache Geode https://geode.apache.org/docs/guide/18/developing/data_serialization/gemfire_pdx_serialization.html[PDX Serialization] format,
+* Custom `Data Serialization` - in addition to the default Apache Geode https://geode.apache.org/docs/guide/18/developing/data_serialization/gemfire_pdx_serialization.html[PDX Serialization] format,
 users may configure Apache Geode https://geode.apache.org/docs/guide/18/developing/data_serialization/gemfire_data_serialization.html[Data Serialization]
 with full support for https://geode.apache.org/docs/guide/18/developing/delta_propagation/chapter_overview.html[Delta Propagation].
 While _race conditions_ between competing HTTP requests (accessing the same HTTP Session) cannot be completely avoided with
-any session provider, sending only the delta (or changes) minimizes the chances of lost update, especially in a highly clustered
+any session provider, sending only the delta (or changes) minimizes the chance of _lost updates_, especially in a highly clustered
 Web environment. By using PDX Serialization, your HTTP Session state is immediately transferable across environments, from non-managed,
-standalone to managed environments, like https://pivotal.io/platform[Pivotal Cloud Foundry (PCF)]
+standalone environments to managed environments, like https://pivotal.io/platform[Pivotal Cloud Foundry (PCF)]
 using https://pivotal.io/platform/services-marketplace/data-management/pivotal-cloud-cache[Pivotal Cloud Cache (PCC)].
 
 * Custom `Change Detection` - while most session implementations consider the session to be dirty anytime anything is written
-to the session, even when your application domain objects stored in the session may not have changed, SSDG will intelligently
+to the session, even when your application domain objects stored in the session have not changed, SSDG will intelligently
 determine whether there is anything to send before writing it to the wire.  OOTB, SSDG will look at any application domain objects
 that implement Apache Geode's https://geode.apache.org/releases/latest/javadoc/org/apache/geode/Delta.html[Delta] interface
 and use that to determine if your application domain objects are indeed dirty before sending the delta. If your objects do not
@@ -47,17 +47,17 @@ https://geode.apache.org/docs/guide/18/developing/events/chapter_overview.html[e
 leveraged by SSDG in order to reliably manage session state, especially in a distributed/clustered environment.
 
 These and many more Apache Geode or Pivotal GemFire features may be leveraged in your application environment to
-achieve resilient, highly available (HA), durable and consistent, even multi-clustered (WAN) and persistent,
+achieve resilient, highly available (HA), durable, consistent, and even multi-clustered (WAN), persistent
 session statement management.
 
 The best part, SSDG allows you to use either Apache Geode or Pivotal GemFire interchangeably without having to change
 a single line of code.  Simply change your dependency from `org.springframework.session:spring-session-data-geode`
 to `org.springframework.session:spring-session-data-gemfire`, or vice versa, and you can seemlessly move between
-either Apache Geode or Pivotal GemFire, and even PCC.
+either Apache Geode or Pivotal GemFire, or even PCC.
 
 No other Spring Session provider offers you this sort of flexibility and power in 1 solution, especially as your
-requirements change and needs grow (e.g. from simple caching to a full on _System of Record_ with distribute compute
-and stream capabilities).
+requirements and UC change (e.g. from simple caching to a full on _System of Record_ with _distributed compute_
+and _streaming capabilities_).
 
 == Code of Conduct
 
