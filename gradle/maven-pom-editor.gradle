@@ -1,0 +1,26 @@
+
+project.install {
+	repositories.mavenInstaller {
+		configurePom(project, pom)
+	}
+}
+project.uploadArchives {
+	repositories.mavenDeployer {
+		configurePom(project, pom)
+	}
+}
+
+def configurePom(project, pom) {
+
+	pom.whenConfigured { generatedPom ->
+		generatedPom.project {
+			developers {
+				developer {
+					id = 'jxblum'
+					name = "John Blum"
+					email = "jblum@pivotal.io"
+				}
+			}
+		}
+	}
+}
