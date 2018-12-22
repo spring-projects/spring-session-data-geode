@@ -1,5 +1,6 @@
 apply plugin: 'io.spring.convention.spring-module'
 apply from: IDE_GRADLE
+apply from: MAVEN_POM_EDITOR_GRADLE
 
 description = "Spring Session for Pivotal GemFire"
 
