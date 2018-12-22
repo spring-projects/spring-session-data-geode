@@ -1,16 +1,5 @@
 
-project.install {
-	repositories.mavenInstaller {
-		configurePom(project, pom)
-	}
-}
-project.uploadArchives {
-	repositories.mavenDeployer {
-		configurePom(project, pom)
-	}
-}
-
-def configurePom(project, pom) {
+def customizePom(gradleProject, pom) {
 
 	pom.whenConfigured { generatedPom ->
 		generatedPom.project {
@@ -22,5 +11,17 @@ def configurePom(project, pom) {
 				}
 			}
 		}
+	}
+}
+
+project.install {
+	repositories.mavenInstaller {
+		customizePom(project, pom)
+	}
+}
+
+project.uploadArchives {
+	repositories.mavenDeployer {
+		customizePom(project, pom)
 	}
 }
