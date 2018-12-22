@@ -15,13 +15,13 @@ in a neutral way along with providing HTTP Session IDs in the HTTP Header to wor
 
 * `WebSocket` - keeps the `HttpSession` active when receiving WebSocket messages.
 
-On top of these core _Spring Session_ features, _Spring Session for Apache Geode_ (SSDG) positions either
-http://geode.apache.org/[Apache Geode] or https://pivotal.io/pivotal-gemfire[Pivotal GemFire]
+On top of the core _Spring Session_ features, _Spring Session for Apache Geode and Pivotal GemFire_ (SSDG) positions
+either http://geode.apache.org/[Apache Geode] or https://pivotal.io/pivotal-gemfire[Pivotal GemFire]
 as a session repository provider and adds additional capabilities required by enterprise class solutions:
 
-* Custom `Expiration Policies` - in addition to the default, 30 minute session _idle expiration timeout_ (TTI),
-SSDG also supports _fixed-duration expiration timeout_ (e.g. expire the session after 1 hour regardless of
-whether the session is active or inactive).  Users may also define custom expiration policies using the
+* Custom `Expiration Policies` - in addition to the default, 30 minute session _idle expiration timeout_ (TTI), which
+is configurable, SSDG also supports _fixed-duration expiration timeout_ (e.g. expire the session after 1 hour
+regardless of whether the session is active or inactive).  Users may also define custom expiration policies using the
 https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.1.1.RELEASE/api/org/springframework/session/data/gemfire/expiration/SessionExpirationPolicy.html[`SessionExpirationPolicy`] interface.
 See the https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.1.1.RELEASE/reference/html5/#httpsession-gemfire-expiration[documentation] for more details.
 
@@ -55,9 +55,9 @@ a single line of code.  Simply change your dependency from `org.springframework.
 to `org.springframework.session:spring-session-data-gemfire`, or vice versa, and you can seemlessly move between
 either Apache Geode or Pivotal GemFire, or even PCC.
 
-No other Spring Session provider offers you this sort of flexibility and power in 1 solution, especially as your
-requirements and UC change (e.g. from simple caching to a full on _System of Record_ with _distributed compute_
-and _streaming capabilities_).
+No other Spring Session provider offers you the same type of flexibility and power in 1 solution, especially as
+your requirements and UC change (e.g. from simple session caching to a full on _System of Record_ with
+_distributed compute_ and _streaming capabilities_).
 
 == Code of Conduct
 
@@ -67,8 +67,8 @@ By participating, you  are expected to uphold this code. Please report unaccepta
 == Documentation
 
 Documentation for _Spring Session for Apache Geode and Pivotal GemFire_ can be found
-https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.1.1.RELEASE/reference/html5/[here]
-and Javadoc is available https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.1.1.RELEASE/api/[here].
+https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.1.2.RELEASE/reference/html5/[here]
+and Javadoc is available https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.1.2.RELEASE/api/[here].
 
 = Spring Session Project Site
 
