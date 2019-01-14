@@ -32,6 +32,7 @@ import org.springframework.session.config.annotation.web.http.SpringHttpSessionC
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import org.apache.shiro.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,11 +84,15 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 	 * Returns a reference to the Spring {@link ApplicationContext}.
 	 *
 	 * @return a reference to the Spring {@link ApplicationContext}.
+	 * @throws IllegalStateException if {@link ApplicationContext} is {@literal null}.
 	 * @see org.springframework.context.ApplicationContext
 	 */
 	protected ApplicationContext getApplicationContext() {
-		return Optional.ofNullable(this.applicationContext)
-			.orElseThrow(() -> newIllegalStateException("The ApplicationContext was not properly configured"));
+
+		Assert.state(this.applicationContext != null,
+			"The ApplicationContext was not properly configured");
+
+		return this.applicationContext;
 	}
 
 	/**
@@ -116,6 +121,7 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 	 * Returns a reference to the Spring container {@link ConfigurableBeanFactory}.
 	 *
 	 * @return a reference to the Spring container {@link ConfigurableBeanFactory}.
+	 * @throws IllegalStateException if {@link ApplicationContext} is {@literal null}.
 	 * @see org.springframework.beans.factory.config.ConfigurableBeanFactory
 	 * @see #getApplicationContext()
 	 */
