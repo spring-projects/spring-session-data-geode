@@ -18,6 +18,7 @@ package org.springframework.session.data.gemfire;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.geode.cache.query.SelectResults;
 
@@ -49,12 +50,11 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 		"SELECT s FROM %1$s s WHERE s.principalName = $1";
 
 	/**
-	 * Constructs an instance of GemFireOperationsSessionRepository initialized with the
-	 * required GemfireOperations object used to perform data access operations to manage
-	 * Session state.
+	 * Constructs a new instance of {@link GemFireOperationsSessionRepository} initialized with
+	 * the required {@link GemfireOperations} object used to perform data access operations
+	 * for managing (HTTP) {@link Session} state.
 	 *
-	 * @param template the GemfireOperations object used to access and manage Session
-	 * state in GemFire.
+	 * @param template {@link GemfireOperations} object used to access and manage {@link Session} state in GemFire.
 	 * @see org.springframework.data.gemfire.GemfireOperations
 	 */
 	public GemFireOperationsSessionRepository(GemfireOperations template) {
@@ -83,12 +83,11 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @return an existing {@link Session} by ID or {@literal null} if no {@link Session} exists
 	 * or the {@link Session} expired.
 	 * @see AbstractGemFireOperationsSessionRepository.GemFireSession#from(Session)
+	 * @see org.springframework.data.gemfire.GemfireTemplate#get(Object)
 	 * @see org.springframework.session.Session
-	 * @see #commit(Session)
-	 * @see #configure(Session)
+	 * @see #getSessionsTemplate()
+	 * @see #prepare(Session)
 	 * @see #delete(Session)
-	 * @see #registerInterest(Session)
-	 * @see #touch(Session)
 	 */
 	@Nullable
 	public Session findById(String sessionId) {
@@ -98,7 +97,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 		if (storedSession != null) {
 			storedSession = storedSession.isExpired()
 				? delete(storedSession)
-				: touch(commit(registerInterest(configure(GemFireSession.from(storedSession)))));
+				: prepare(GemFireSession.from(storedSession));
 		}
 
 		return storedSession;
@@ -113,13 +112,12 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @param indexValue {@link Object value} of the indexed {@link Session} attribute to search on
 	 * (e.g. {@literal username}).
 	 * @return a mapping of {@link Session#getId()} Session IDs} to {@link Session} objects.
+	 * @see org.springframework.data.gemfire.GemfireTemplate#find(String, Object...)
 	 * @see org.springframework.session.Session
 	 * @see java.util.Map
+	 * @see #getSessionsTemplate()
 	 * @see #prepareQuery(String)
-	 * @see #commit(Session)
-	 * @see #configure(Session)
-	 * @see #registerInterest(Session)
-	 * @see #touch(Session)
+	 * @see #prepare(Session)
 	 */
 	@Override
 	public Map<String, Session> findByIndexNameAndIndexValue(String indexName, String indexValue) {
@@ -129,7 +127,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 		Map<String, Session> sessions = new HashMap<>(results.size());
 
 		results.asList().forEach(session ->
-			sessions.put(session.getId(), touch(commit(registerInterest(configure(session))))));
+			sessions.put(session.getId(), prepare(session)));
 
 		return sessions;
 	}
@@ -153,6 +151,21 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	}
 
 	/**
+	 * Prepares the (loaded) {@link Session} for use.
+	 *
+	 * @param session {@link Session} to prepare.
+	 * @return the prepared {@link Session}.
+	 * @see org.springframework.session.Session
+	 * @see #configure(Session)
+	 * @see #registerInterest(Session)
+	 * @see #commit(Session)
+	 * @see #touch(Session)
+	 */
+	private Session prepare(Session session) {
+		return touch(commit(registerInterest(configure(session))));
+	}
+
+	/**
 	 * Saves the specified {@link Session} to Apache Geode or Pivotal GemFire.
 	 *
 	 * Warning, the save method should never be called asynchronously and concurrently, from a separate Thread,
@@ -172,14 +185,39 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 		}
 	}
 
+	/**
+	 * Determines whether the given {@link Session} is dirty (i.e. has any changes).
+	 *
+	 * @param session {@link Session} to evaluate.
+	 * @return a boolean value indicating whether the {@link Session} is dirty or not.
+	 * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession#hasDelta()
+	 * @see org.springframework.session.Session
+	 */
 	private boolean isDirty(@NonNull Session session) {
 		return !(session instanceof GemFireSession) || ((GemFireSession) session).hasDelta();
 	}
 
+	/**
+	 * Determines whether the given {@link Session} is {@literal non-null} and {@link #isDirty(Session) dirty}.
+	 *
+	 * @param session {@link Session} to evaluate.
+	 * @return a boolean value indicating whether the given {@link Session} is {@literal non-null}
+	 * and {@link #isDirty(Session) dirty}.
+	 * @see #isDirty(Session)
+	 */
 	private boolean isNonNullAndDirty(@Nullable Session session) {
-		return session != null && isDirty(session);
+		return Objects.nonNull(session) && isDirty(session);
 	}
 
+	/**
+	 * Performs the actual {@link Session} save operation, persisting the {@link Session} state to eitehr Apache Geode
+	 * or Pivotal GemFire!
+	 *
+	 * @param session {@link Session} to save.
+	 * @see org.springframework.data.gemfire.GemfireTemplate#put(Object, Object)
+	 * @see org.springframework.session.Session
+	 * @see #commit(Session)
+	 */
 	void doSave(@NonNull Session session) {
 
 		// Save Session As GemFireSession
