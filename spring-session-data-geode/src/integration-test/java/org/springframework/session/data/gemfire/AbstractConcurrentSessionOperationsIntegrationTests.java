@@ -78,7 +78,7 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 				.map(GemFireOperationsSessionRepository.class::cast)
 				.map(Mockito::spy)
 				.orElseThrow(() -> newIllegalArgumentException("Expected SessionRepository of type [%1$s]; but was [%2$s]",
-					ObjectUtils.nullSafeClassName(sessionRepository), GemFireOperationsSessionRepository.class.getName()));
+					GemFireOperationsSessionRepository.class.getName(), ObjectUtils.nullSafeClassName(sessionRepository)));
 		}
 
 		@NonNull @SuppressWarnings("unused")

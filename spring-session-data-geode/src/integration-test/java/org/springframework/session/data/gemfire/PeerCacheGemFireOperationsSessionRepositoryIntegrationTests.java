@@ -144,7 +144,7 @@ public class PeerCacheGemFireOperationsSessionRepositoryIntegrationTests extends
 			Query query = queryService.newQuery(queryString);
 
 			SelectResults<Session> results =
-				(SelectResults<Session>) query.execute(principalName);
+				(SelectResults<Session>) query.execute(new Object[] { principalName });
 
 			Map<String, Session> sessions = new HashMap<>(results.size());
 

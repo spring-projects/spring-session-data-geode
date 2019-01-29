@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -127,7 +128,7 @@ public class GemFireHttpSessionConfigurationTests {
 	@Before
 	public void setup() {
 
-		this.gemfireConfiguration = new GemFireHttpSessionConfiguration();
+		this.gemfireConfiguration = spy(new GemFireHttpSessionConfiguration());
 
 		ApplicationContext mockApplicationContext = mock(ApplicationContext.class);
 

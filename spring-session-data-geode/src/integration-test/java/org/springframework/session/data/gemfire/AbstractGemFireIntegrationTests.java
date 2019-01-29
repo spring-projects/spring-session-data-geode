@@ -19,6 +19,7 @@ package org.springframework.session.data.gemfire;
 import static java.util.Arrays.stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -37,6 +39,7 @@ import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.Index;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +83,13 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 		Boolean.getBoolean("spring.session.data.gemfire.query.debug");
 
 	protected static final File WORKING_DIRECTORY = new File(System.getProperty("user.dir"));
+
+	protected static final Predicate<Region<?, ?>> SESSION_REGION_PREDICATE =
+		region -> Optional.ofNullable(region)
+			.map(Region::getAttributes)
+			.map(RegionAttributes::getValueConstraint)
+			.filter(Session.class::isAssignableFrom)
+			.isPresent();
 
 	protected static final String DEFAULT_PROCESS_CONTROL_FILENAME = "process.ctl";
 
@@ -328,6 +338,19 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 		return gemfireCache.rootRegions().stream()
 			.map(Region::getFullPath)
 			.collect(Collectors.toList());
+	}
+
+	@SuppressWarnings("unchecked")
+	protected Region<Object, Session> resolveSessionRegion() {
+
+		return Optional.ofNullable(getSessionRegion())
+			.<Region<Object, Session>>orElseGet(() ->
+				(Region<Object, Session>) Optional.<GemFireCache>ofNullable(getGemFireCache())
+					.map(GemFireCache::rootRegions)
+					.flatMap(regions -> regions.stream()
+						.filter(SESSION_REGION_PREDICATE)
+						.findFirst())
+					.orElseThrow(() -> newIllegalStateException("No Region was found storing Session state")));
 	}
 
 	@Override
