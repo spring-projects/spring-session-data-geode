@@ -962,8 +962,11 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	}
 
 	private boolean isDataSerializerSessionSerializerAdapterPresent() {
-		return !ArrayUtils.isEmpty(getApplicationContext()
-			.getBeanNamesForType(DataSerializerSessionSerializerAdapter.class));
+
+		String[] beanNames =
+			getApplicationContext().getBeanNamesForType(DataSerializerSessionSerializerAdapter.class);
+
+		return !ArrayUtils.isEmpty(beanNames);
 	}
 
 	@SuppressWarnings("unchecked")
