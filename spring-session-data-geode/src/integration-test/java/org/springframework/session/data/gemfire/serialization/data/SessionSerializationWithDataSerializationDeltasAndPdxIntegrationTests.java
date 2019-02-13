@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.session.data.gemfire.serialization.pdx;
+package org.springframework.session.data.gemfire.serialization.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
