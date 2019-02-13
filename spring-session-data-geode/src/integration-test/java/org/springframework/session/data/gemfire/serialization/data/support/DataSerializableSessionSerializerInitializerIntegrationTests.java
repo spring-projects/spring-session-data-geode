@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -64,6 +65,11 @@ import org.springframework.session.data.gemfire.serialization.data.provider.Data
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DataSerializableSessionSerializerInitializerIntegrationTests extends AbstractGemFireIntegrationTests {
+
+	@BeforeClass
+	public static void clearUsingDataSerialization() {
+		InitializingGemFireOperationsSessionRepository.INSTANCE.setUseDataSerialization(false);
+	}
 
 	@Mock
 	private Cache mockCache;
