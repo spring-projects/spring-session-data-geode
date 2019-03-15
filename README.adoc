@@ -35,4 +35,4 @@ at http://projects.spring.io/spring-session/
 
 = License
 
-_Spring Session_ is Open Source Software released under the http://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].
+_Spring Session_ is Open Source Software released under the https://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].

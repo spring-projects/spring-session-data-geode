@@ -1157,7 +1157,7 @@ We appreciate https://help.github.com/articles/using-pull-requests/[Pull Request
 === License
 
 Spring Session for {data-store-name} and Spring Session for Pivotal GemFire are Open Source Software
-released under the http://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].
+released under the https://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].
 
 [[minimum-requirements]]
 == Minimum Requirements
