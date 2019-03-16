@@ -43,11 +43,11 @@ asciidoctor {
 javadoc {
 	configure(options) {
 		links = [
-			"http://docs.spring.io/spring/docs/current/javadoc-api/",
-			"http://docs.spring.io/spring-data/commons/docs/current/api/index.html?index-all.html",
-			"http://docs.spring.io/spring-data-geode/docs/current/api/",
-			"http://docs.spring.io/spring-session/docs/${springSessionVersion}/api/",
-			"http://geode.apache.org/releases/latest/javadoc/index.html",
+			"https://docs.spring.io/spring/docs/current/javadoc-api/",
+			"https://docs.spring.io/spring-data/commons/docs/current/api/index.html?index-all.html",
+			"https://docs.spring.io/spring-data/geode/docs/current/api/"
+			"https://docs.spring.io/spring-session/docs/${springSessionVersion}/api/",
+			"https://geode.apache.org/releases/latest/javadoc/index.html",
 		]
 	}
 }
