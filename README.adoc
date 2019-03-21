@@ -16,7 +16,7 @@ in a neutral way along with providing HTTP Session IDs in the HTTP Header to wor
 * `WebSocket` - keeps the `HttpSession` active when receiving WebSocket messages.
 
 On top of the core _Spring Session_ features, _Spring Session for Apache Geode and Pivotal GemFire_ (SSDG) positions
-either http://geode.apache.org/[Apache Geode] or https://pivotal.io/pivotal-gemfire[Pivotal GemFire]
+either https://geode.apache.org/[Apache Geode] or https://pivotal.io/pivotal-gemfire[Pivotal GemFire]
 as a session repository provider and adds additional capabilities required by enterprise class solutions:
 
 * Custom `Expiration Policies` - in addition to the default, 30 minute session _idle expiration timeout_ (TTI), which
@@ -73,7 +73,7 @@ and Javadoc is available https://docs.spring.io/autorepo/docs/spring-session-dat
 = Spring Session Project Site
 
 You can find the documentation, issue management, support, samples, and guides for using _Spring Session_
-at http://projects.spring.io/spring-session/
+at https://projects.spring.io/spring-session/
 
 = License
 

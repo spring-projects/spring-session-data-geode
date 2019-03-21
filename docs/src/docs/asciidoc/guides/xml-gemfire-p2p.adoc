@@ -113,7 +113,7 @@ include::{samples-dir}xml/gemfire-p2p/src/main/webapp/WEB-INF/web.xml[tags=conte
 include::{samples-dir}xml/gemfire-p2p/src/main/webapp/WEB-INF/web.xml[tags=listeners]
 ----
 
-The http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#context-create[ContextLoaderListener]
+The https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#context-create[ContextLoaderListener]
 reads the `contextConfigLocation` context parameter value and picks up our _session.xml_ configuration file.
 
 Finally, we need to ensure that our Servlet container (i.e. Tomcat) uses our `springSessionRepositoryFilter`
@@ -127,7 +127,7 @@ The following snippet performs this last step for us:
 include::{samples-dir}xml/gemfire-p2p/src/main/webapp/WEB-INF/web.xml[tags=springSessionRepositoryFilter]
 ----
 
-The http://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/filter/DelegatingFilterProxy.html[DelegatingFilterProxy]
+The https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/filter/DelegatingFilterProxy.html[DelegatingFilterProxy]
 will look up a bean by the name of `springSessionRepositoryFilter` and cast it to a `Filter`. For every HTTP request
 the `DelegatingFilterProxy` is invoked, delegating to the `springSessionRepositoryFilter`.
 // end::config[]
