@@ -93,13 +93,13 @@ the creation of a peer cache instance.
 service to allow JMX clients (e.g. Apache Geode's _Gfsh_ shell tool) to connect and inspect the server.
 
 NOTE: For more information on configuring _Spring Data Geode, refer to the
-http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[Reference Guide].
+https://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[Reference Guide].
 
 `@EnableGemFireHttpSession` enables a developer to configure certain aspects of both _Spring Session_ and Apache Geode
 out-of-the-box using the following attributes:
 
-* `clientRegionShortcut` - specifies Apache Geode http://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
-on the client with a Apache Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
+* `clientRegionShortcut` - specifies Apache Geode https://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
+on the client with a Apache Geode https://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
 (default is `PROXY`).  This attribute is only used when configuring a client `Region`.
 * `indexableSessionAttributes` - Identifies the Session attributes by name that should be indexed for querying operations.
 Only Session attributes identified by name will be indexed.
@@ -108,8 +108,8 @@ Only Session attributes identified by name will be indexed.
 is only used when the application is a cache client.  Defaults to `gemfirePool`.
 * `regionName` - specifies the name of the Apache Geode `Region` used to store and manage `HttpSession` state
 (default is "*ClusteredSpringSessions*").
-* `serverRegionShortcut` - specifies Apache Geode http://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
-on the server using a Apache Geode http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
+* `serverRegionShortcut` - specifies Apache Geode https://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
+on the server using a Apache Geode https://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
 (default is `PARTITION`).  This attribute is only used when configuring server `Regions`, or when a P2P topology is employed.
 
 == Java Servlet Container Initialization
@@ -180,7 +180,7 @@ Go ahead and view the cookies (click for help with https://developer.chrome.com/
 or https://getfirebug.com/wiki/index.php/Cookies_Panel#Cookies_List[Firefox]).
 
 NOTE: The following instructions assume you have a local Apache Geode installation.  For more information on installation,
-see http://geode.apache.org/docs/guide/12/prereq_and_install.html[Prerequisites and Installation Instructions].
+see https://geode.apache.org/docs/guide/12/prereq_and_install.html[Prerequisites and Installation Instructions].
 
 If you like, you can easily remove the Session using `gfsh`.
 
@@ -211,6 +211,6 @@ gfsh>remove --region=/ClusteredSpringSessions --key="70002719-3c54-4c20-82c3-e7f
 ....
 
 NOTE: The _Apache Geode User Guide_ contains more detailed instructions on using
-http://geode.apache.org/docs/guide/12/tools_modules/gfsh/chapter_overview.html[gfsh].
+https://geode.apache.org/docs/guide/12/tools_modules/gfsh/chapter_overview.html[gfsh].
 
 Now visit the application at `http://localhost:8080/` again and observe the attribute we added is no longer displayed.

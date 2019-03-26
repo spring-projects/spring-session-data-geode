@@ -87,7 +87,7 @@ include::{samples-dir}xml/gemfire-clientserver/src/main/webapp/WEB-INF/spring/se
 ----
 
 <1> (Optional) First, we can include a `Properties` bean to configure certain aspects of the Apache Geode `ClientCache`
-using http://geode.apache.org/docs/guide/12/reference/topics/gemfire_properties.html[Pivotal GemFire Properties].
+using https://geode.apache.org/docs/guide/12/reference/topics/gemfire_properties.html[Pivotal GemFire Properties].
 In this case, we are just setting Apache Geode's "`log-level`" from a application-specific System property,
 defaulting to "`warning`" if unspecified.
 <2> We must create an instance of an Apache Geode `ClientCache` initialized with our `gemfireProperties`.
@@ -101,11 +101,11 @@ of Apache Geode servers (data nodes), it is more common for clients to connect t
 in the cluster.  A Locator passes meta-data to clients about the servers available in the cluster, the server load
 and which servers have the client's data of interest, which is particularly important for direct, single-hop data access
 and latency-sensitive operations.  See more details about the
-http://geode.apache.org/docs/guide/12/topologies_and_comm/cs_configuration/standard_client_server_deployment.html[Client/Server Deployment]
+https://geode.apache.org/docs/guide/12/topologies_and_comm/cs_configuration/standard_client_server_deployment.html[Client/Server Deployment]
 in the Apache Geode User Guide.
 
 NOTE: For more information on configuring _Spring Data Geode, refer to the
-http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[Reference Guide].
+https://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[Reference Guide].
 
 === Server Configuration
 
@@ -120,7 +120,7 @@ include::{samples-dir}xml/gemfire-clientserver/src/main/resources/META-INF/sprin
 ----
 
 <1> (Optional) First, we can include a `Properties` bean to configure certain aspects of the Apache Geode peer `Cache`
-using http://geode.apache.org/docs/guide/12/reference/topics/gemfire_properties.html[Pivotal GemFire Properties].
+using https://geode.apache.org/docs/guide/12/reference/topics/gemfire_properties.html[Pivotal GemFire Properties].
 In this case, we are just setting Apache Geode's "`log-level`" from a application-specific System property,
 defaulting to "`warning`" if unspecified.
 <2> We must configure an Apache Geode peer `Cache` instance initialized with the Apache Geode properties.
@@ -160,7 +160,7 @@ include::{samples-dir}xml/gemfire-clientserver/src/main/webapp/WEB-INF/web.xml[t
 include::{samples-dir}xml/gemfire-clientserver/src/main/webapp/WEB-INF/web.xml[tags=listeners]
 ----
 
-The http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#context-create[ContextLoaderListener]
+The https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#context-create[ContextLoaderListener]
 reads the `contextConfigLocation` context parameter value and picks up our _session-client.xml_ configuration file.
 
 Finally, we need to ensure that our Servlet container (i.e. Tomcat) uses our `springSessionRepositoryFilter`
@@ -174,7 +174,7 @@ The following snippet performs this last step for us:
 include::{samples-dir}xml/gemfire-clientserver/src/main/webapp/WEB-INF/web.xml[tags=springSessionRepositoryFilter]
 ----
 
-The http://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/filter/DelegatingFilterProxy.html[DelegatingFilterProxy]
+The https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/filter/DelegatingFilterProxy.html[DelegatingFilterProxy]
 will look up a bean by the name of `springSessionRepositoryFilter` and cast it to a `Filter`. For every HTTP request,
 the `DelegatingFilterProxy` is invoked, which delegates to the `springSessionRepositoryFilter`.
 // end::config[]
@@ -230,7 +230,7 @@ Go ahead and view the cookies (click for help with https://developer.chrome.com/
 or https://getfirebug.com/wiki/index.php/Cookies_Panel#Cookies_List[Firefox]).
 
 NOTE: The following instructions assume you have a local Apache Geode installation.  For more information on installation,
-see http://geode.apache.org/docs/guide/12/prereq_and_install.html[Prerequisites and Installation Instructions].
+see https://geode.apache.org/docs/guide/12/prereq_and_install.html[Prerequisites and Installation Instructions].
 
 If you like, you can easily remove the session using `gfsh`.
 
@@ -261,7 +261,7 @@ gfsh>remove --region=/ClusteredSpringSessions --key="70002719-3c54-4c20-82c3-e7f
 ....
 
 NOTE: The _Apache Geode User Guide_ contains more detailed instructions on using
-http://geode.apache.org/docs/guide/12/tools_modules/gfsh/chapter_overview.html[gfsh].
+https://geode.apache.org/docs/guide/12/tools_modules/gfsh/chapter_overview.html[gfsh].
 
 Now visit the application at `http://localhost:8080/` again and observe the attribute we added is no longer displayed.
 
