@@ -166,19 +166,19 @@ of servers (a.k.a. data nodes), it is more common for clients to connect to 1 or
 in the same cluster. A Locator passes meta-data to clients about the servers available in the cluster, the individual
 server load and which servers have the client's data of interest, which is particularly important for direct,
 single-hop data access and latency-sensitive operations.  See more details about the
-http://geode.apache.org/docs/guide/12/topologies_and_comm/cs_configuration/standard_client_server_deployment.html[Client/Server Deployment]
+https://geode.apache.org/docs/guide/12/topologies_and_comm/cs_configuration/standard_client_server_deployment.html[Client/Server Deployment]
 in the Apache Geode User Guide.
 
 NOTE: For more information on configuring _Spring Data Geode_, refer to the
-http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[Reference Guide].
+https://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[Reference Guide].
 
 ==== Enabling Pivotal GemFire HttpSession Management
 
 `@EnableGemFireHttpSession` enables a developer to configure certain aspects of both _Spring Session_ and Apache Geode
 out-of-the-box using the following attributes:
 
-* `clientRegionShortcut` - specifies the Apache Geode http://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
-used on the client with http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
+* `clientRegionShortcut` - specifies the Apache Geode https://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
+used on the client with https://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientRegionShortcut.html[ClientRegionShortcut]
 (default is `PROXY`).  This attribute is only used when configuring the client `Region`.
 * `indexableSessionAttributes` - Identifies session attributes by name that should be indexed for querying purposes.
 Only session attributes explicitly identified by name will be indexed. This is useful in situations where your application
@@ -188,8 +188,8 @@ is looking up the `HttpSession` by the currently authenticated principal's name,
 "_gemfirePool_").
 * `regionName` - specifies the name of the Apache Geode Region used to store and manage `HttpSession` state
 (defaults to "_ClusteredSpringSessions_").
-* `serverRegionShortcut` - specifies the Apache Geode http://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
-used on the server with http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
+* `serverRegionShortcut` - specifies the Apache Geode https://geode.apache.org/docs/guide/12/developing/region_options/region_types.html[data management policy]
+used on the server with https://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/RegionShortcut.html[RegionShortcut]
 (default is `PARTITION`).  This attribute is only used when configuring server Regions, or when Apache Geode's P2P
 topology is employed.
 * `sessionSerializerBeanName` - refers to the name of the bean that handles serialization of the `HttpSession` state
