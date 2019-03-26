@@ -2,9 +2,9 @@
 John Blum
 :data-store-version: 16
 :data-store-name: Apache Geode
-:data-store-docs: http://geode.apache.org/docs/guide/{data-store-version}
-:data-store-javadoc: http://geode.apache.org/releases/latest/javadoc
-:data-store-website: http://geode.apache.org
+:data-store-docs: https://geode.apache.org/docs/guide/{data-store-version}
+:data-store-javadoc: https://geode.apache.org/releases/latest/javadoc
+:data-store-website: https://geode.apache.org
 :sdg-name: Spring Data for {data-store-name}
 :sdg-docs: https://docs.spring.io/spring-data/geode/docs/current/reference/html
 :sdg-javadoc: https://docs.spring.io/spring-data/geode/docs/current/api
@@ -1133,7 +1133,7 @@ First, create an {data-store-name} `cache.xml`, as follows:
 <?xml version="1.0" encoding="UTF-8"?>
 <cache xmlns="http://geode.apache.org/schema/cache"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	   xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+	   xsi:schemaLocation="http://geode.apache.org/schema/cache https://geode.apache.org/schema/cache/cache-1.0.xsd"
 	   version="1.0">
 
   <initializer>
@@ -1648,7 +1648,7 @@ Please find additional information below.
 [[community-support]]
 === Support
 
-You can get help by asking questions on http://stackoverflow.com/questions/tagged/spring-session[StackOverflow with the tag `spring-session`].
+You can get help by asking questions on https://stackoverflow.com/questions/tagged/spring-session[StackOverflow with the tag `spring-session`].
 Similarly we encourage helping others by answering questions on _StackOverflow_.
 
 [[community-source]]
