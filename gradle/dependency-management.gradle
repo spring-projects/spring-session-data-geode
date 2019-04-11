@@ -6,6 +6,8 @@ dependencyManagement {
 		dependency "antlr:antlr:$antlrVersion"
 		dependency "edu.umd.cs.mtc:multithreadedtc:$multithreadedtcVersion"
 		dependency "javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:$javaxServletJspJstlApiVersion"
+		dependency "net.bytebuddy:byte-buddy:$byteBuddyVersion"
+		dependency "net.bytebuddy:byte-buddy-agent:$byteBuddyVersion"
 		dependency "org.apache.taglibs:taglibs-standard-impl:$apacheTaglibsStandardVersion"
 		dependency "org.apache.taglibs:taglibs-standard-jstlel:$apacheTaglibsStandardVersion"
 		dependency "org.apache.taglibs:taglibs-standard-spec:$apacheTaglibsStandardVersion"
