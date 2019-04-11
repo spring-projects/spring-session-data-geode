@@ -25,8 +25,8 @@ By participating, you  are expected to uphold this code. Please report unaccepta
 == Documentation
 
 Documentation for _Spring Session for Apache Geode and Pivotal GemFire_ can be found
-https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.0.8.RELEASE/reference/html5/[here]
-and Javadoc is available https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.0.8.RELEASE/api/[here].
+https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.0.9.RELEASE/reference/html5/[here]
+and Javadoc is available https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.0.9.RELEASE/api/[here].
 
 = Spring Session Project Site
 
