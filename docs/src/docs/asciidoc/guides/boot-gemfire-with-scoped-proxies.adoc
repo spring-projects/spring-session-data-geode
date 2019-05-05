@@ -259,7 +259,7 @@ You should now be able to access the application at http://localhost:8080/counts
 
 When you access the Web application @ http://localhost:8080/counts, you will see a screen similar to...
 
-image::{samples-dir}/boot/gemfire-with-scoped-proxies/sample-boot-gemfire-with-scoped-proxies.png[]
+image::../images/sample-boot-gemfire-with-scoped-proxies.png[]
 
 The table shows 1 row with 3 columns of information.
 

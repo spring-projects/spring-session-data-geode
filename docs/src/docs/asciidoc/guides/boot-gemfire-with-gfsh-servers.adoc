@@ -347,7 +347,7 @@ and add session attributes.  The page will refresh with a count of the number of
 After 15 seconds, the HTTP session will expire and you will not longer see any session attributes. Additionally, your
 HTTP request count will reset to 0.
 
-image::{samples-dir}/boot/gemfire-with-gfsh-servers/sample-boot-gemfire-with-gfsh-servers.png[]
+image::../images/sample-boot-gemfire-with-gfsh-servers.png[]
 
 While the application is running and before the HTTP session times out (again, the TTI expiration timeout is set to
 15 seconds), you can issue queries in Gfsh to see the contents of the "_Sessions)" Region.
