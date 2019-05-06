@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,18 +39,17 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.client.ClientRegionShortcut;
-
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
+import org.springframework.data.gemfire.config.annotation.EnableLocator;
 import org.springframework.data.gemfire.tests.util.IdentityHashCodeComparator;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
@@ -351,7 +349,7 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 		name = "MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrationTests",
 		logLevel = GEMFIRE_LOG_LEVEL
 	)
-	//@EnableLogging(logFile = "gemfire.log", logLevel = "debug")
+	@EnableLocator
 	@EnableGemFireHttpSession(
 		regionName = "Sessions",
 		sessionSerializerBeanName = "spyingSessionSerializer"
