@@ -79,9 +79,15 @@ class GemFireServerPlugin implements Plugin<Project> {
 
 			String classpath = project.sourceSets.main.runtimeClasspath.collect { it }.join(File.pathSeparator)
 			String gemfireLogLevel = System.getProperty('spring.data.gemfire.cache.log-level', 'warning')
+			String javaHome = System.getProperty("java.home");
+
+			javaHome = javaHome == null || javaHome.isEmpty() ? System.getenv("JAVA_HOME") : javaHome;
+			javaHome = javaHome.endsWith(File.separator) ? javaHome : javaHome.concat(File.separator);
+
+			String javaCommand = javaHome + "bin" + File.separator + "java";
 
 			String[] commandLine = [
-				'java', '-server', '-ea', '-classpath', classpath,
+				javaCommand, '-server', '-ea', '-classpath', classpath,
 				//"-Dgemfire.log-file=gemfire-server.log",
 				"-Dgemfire.log-level=${gemfireLogLevel}",
 				"-Dspring.data.gemfire.cache.server.port=${port}",
