@@ -55,7 +55,7 @@ public class ClientServerReadyBeanPostProcessor implements BeanPostProcessor {
 		);
 	}
 
-	@Value("${spring.session.data.geode.cache.server.port:${application.geode.client-server.port:40404}}")
+	@Value("${spring.data.gemfire.cache.server.port:${application.geode.client-server.port:40404}}")
 	private int port;
 
 	@Value("${application.geode.client-server.host:localhost}")

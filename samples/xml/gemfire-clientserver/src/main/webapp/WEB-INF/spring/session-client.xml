@@ -21,7 +21,7 @@
 
 	<!--1-->
 	<util:properties id="gemfireProperties">
-		<prop key="log-level">${spring.session.data.geode.log-level:error}</prop>
+		<prop key="log-level">${spring.data.gemfire.cache.log-level:error}</prop>
 	</util:properties>
 
 	<!--2-->
@@ -30,7 +30,7 @@
 	<!--3-->
 	<gfe:pool ping-interval="5000" read-timeout="15000" retry-attempts="1" subscription-enabled="true">
 		<gfe:server host="${application.geode.client-server.host}"
-                    port="${spring.session.data.geode.cache.server.port:${application.geode.client-server.port:40404}}"/>
+                    port="${spring.data.gemfire.cache.server.port:${application.geode.client-server.port:40404}}"/>
 	</gfe:pool>
 
 	<!--4-->

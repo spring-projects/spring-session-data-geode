@@ -26,4 +26,13 @@ dependencies {
 
 }
 
-mainClassName = "sample.ServerConfig"
+mainClassName = 'sample.ServerConfig'
+
+project.tasks.findByName("prepareAppServerForIntegrationTests")?.configure { task ->
+	//println('Task gemfireServer' + project.tasks.findByName("gemfireServer"))
+	project.tasks.findByName("gemfireServer")?.configure { gemfireServerTask ->
+		//println "Task 'mainClassName' Property Value [$gemfireServerTask.mainClassName]"
+		gemfireServerTask.mainClassName = this.mainClassName
+		//println "Task 'mainClassName' Property Value [$gemfireServerTask.mainClassName]"
+	}
+}

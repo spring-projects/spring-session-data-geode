@@ -1,29 +1,28 @@
 apply plugin: 'io.spring.convention.spring-sample-boot'
+apply plugin: "gemfire-server"
 apply plugin: "application"
-apply from: IDE_GRADLE
-
-repositories {
-	mavenCentral()
-}
 
 dependencies {
 
 	compile project(':spring-session-data-geode')
+
 	compile("org.springframework.boot:spring-boot-starter-thymeleaf") {
-		exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+		exclude group: "org.apache.logging.log4j", module: "log4j-to-slf4j"
 	}
+
 	compile("org.springframework.boot:spring-boot-starter-web") {
-		exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+		exclude group: "org.apache.logging.log4j", module: "log4j-to-slf4j"
 	}
+
+	compile "org.springframework.data:spring-data-geode-test"
 	compile "org.webjars:bootstrap"
 	compile "org.webjars:webjars-locator"
 
 	runtime "org.springframework.shell:spring-shell"
 
 	testCompile("org.springframework.boot:spring-boot-starter-test") {
-		exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+		exclude group: "org.apache.logging.log4j", module: "log4j-to-slf4j"
 	}
-	testCompile seleniumDependencies
 
 	integrationTestCompile seleniumDependencies
 
@@ -41,60 +40,4 @@ run {
 	doFirst {
 		mainClassName = 'sample.server.GemFireServer'
 	}
-}
-
-task runGemFireServer() {
-	doLast {
-		ext.port = reservePort()
-
-		println "Starting Apache Geode Server on port [$port] ..."
-
-		def out = new StringBuilder()
-		def err = new StringBuilder()
-
-		String classpath = project.sourceSets.main.runtimeClasspath.collect { it }.join(File.pathSeparator)
-
-		String[] commandLine = [
-			'java', '-server', '-ea', '-classpath', classpath,
-			//"-Dgemfire.log-file=gemfire-server.log",
-			//"-Dgemfire.log-level=config",
-			"-Dspring.session.data.geode.cache.server.port=$port",
-			'sample.server.GemFireServer'
-		]
-
-		//println commandLine
-
-		ext.process = commandLine.execute()
-		//ext.process = new ProcessBuilder().command(commandLine).redirectErrorStream(true).start();
-
-		ext.process.consumeProcessOutput(out, err)
-
-		//println 'OUT: ' + out
-		//println 'ERR: ' + err
-	}
-}
-
-
-integrationTest {
-	dependsOn runGemFireServer
-	doFirst {
-		def port = reservePort()
-		systemProperties['management.port'] = 0
-		systemProperties['server.port'] = port
-		//systemProperties['gemfire.log-file'] = "gemfire-client.log"
-		//systemProperties['gemfire.log-level'] = "config"
-		systemProperties['spring.session.data.geode.cache.server.port'] = runGemFireServer.port
-	}
-	doLast {
-		println 'Stopping Apache Geode Server...'
-		runGemFireServer.process?.destroyForcibly()
-	}
-}
-
-
-def reservePort() {
-	def socket = new ServerSocket(0)
-	def result = socket.localPort
-	socket.close()
-	result
 }

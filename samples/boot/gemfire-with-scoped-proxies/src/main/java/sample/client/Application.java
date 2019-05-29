@@ -86,7 +86,7 @@ public class Application {
 
 		@Bean
 		ClientCacheConfigurer clientCacheServerPortConfigurer(
-				@Value("${spring.session.data.geode.cache.server.port:40404}") int port) {  // <5>
+				@Value("${spring.data.gemfire.cache.server.port:40404}") int port) {  // <5>
 
 			return (beanName, clientCacheFactoryBean) ->
 				clientCacheFactoryBean.setServers(Collections.singletonList(

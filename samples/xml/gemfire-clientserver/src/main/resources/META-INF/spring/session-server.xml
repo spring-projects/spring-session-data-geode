@@ -32,7 +32,7 @@
 	<gfe:cache-server auto-startup="true"
                       bind-address="${application.geode.client-server.host:localhost}"
                       host-name-for-clients="${application.geode.client-server.host:localhost}"
-                      port="${spring.session.data.geode.cache.server.port:${application.geode.client-server.port:40404}}"/>
+                      port="${spring.data.gemfire.cache.server.port:${application.geode.client-server.port:40404}}"/>
 
 	<!--4-->
 	<bean class="org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration"

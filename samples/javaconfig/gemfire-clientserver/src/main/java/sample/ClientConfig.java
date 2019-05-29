@@ -39,7 +39,7 @@ public class ClientConfig extends IntegrationTestConfig {
 
 	@Bean
 	ClientCacheConfigurer clientCacheServerPortConfigurer(
-			@Value("${spring.session.data.geode.cache.server.port:40404}") int port) { // <3>
+			@Value("${spring.data.gemfire.cache.server.port:40404}") int port) { // <3>
 
 		return (beanName, clientCacheFactoryBean) ->
 			clientCacheFactoryBean.setServers(Collections.singletonList(

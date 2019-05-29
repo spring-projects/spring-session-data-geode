@@ -16,8 +16,6 @@
 
 package sample;
 
-import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -34,7 +32,7 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
 public class ServerConfig {
 
 	@SuppressWarnings("resource")
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		new AnnotationConfigApplicationContext(ServerConfig.class).registerShutdownHook();
 	}
 
@@ -46,7 +44,7 @@ public class ServerConfig {
 
 	@Bean
 	CacheServerConfigurer cacheServerPortConfigurer(
-			@Value("${spring.session.data.geode.cache.server.port:40404}") int port) { // <4>
+			@Value("${spring.data.gemfire.cache.server.port:40404}") int port) { // <4>
 
 		return (beanName, cacheServerFactoryBean) -> {
 			cacheServerFactoryBean.setPort(port);
