@@ -787,7 +787,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 				SpringSessionGemFireConfigurer::getClientRegionShortcut, this::setClientRegionShortcut);
 	}
 
-	private <T> SpringSessionGemFireConfigurer applyExposeConfigurationAsProperties(SpringSessionGemFireConfigurer configurer) {
+	private SpringSessionGemFireConfigurer applyExposeConfigurationAsProperties(SpringSessionGemFireConfigurer configurer) {
 
 		return applySpringSessionGemFireConfigurerConfiguration(configurer,
 			CONFIGURER_GET_EXPOSE_CONFIGURATION_IN_PROPERTIES_METHOD_NAME,
@@ -898,6 +898,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 						.ifPresent(it -> properties.setProperty(sessionExpirationPolicyBeanNamePropertyName(), it));
 
 					properties.setProperty(sessionSerializerBeanNamePropertyName(), getSessionSerializerBeanName());
+
 				});
 		}
 	}

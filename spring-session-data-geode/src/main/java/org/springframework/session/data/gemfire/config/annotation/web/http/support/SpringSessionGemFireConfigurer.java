@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.config.annotation.web.http.support;
 
 import java.lang.annotation.Annotation;
@@ -37,12 +36,15 @@ import org.springframework.session.data.gemfire.serialization.SessionSerializer;
  * in Spring Session.
  *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
+ * @see java.util.Properties
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.RegionShortcut
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.client.ClientRegionShortcut
  * @see org.apache.geode.cache.client.Pool
+ * @see org.springframework.session.Session
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy

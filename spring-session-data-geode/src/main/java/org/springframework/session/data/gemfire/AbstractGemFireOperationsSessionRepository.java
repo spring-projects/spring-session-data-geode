@@ -44,6 +44,9 @@ import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 
 import org.springframework.context.ApplicationEvent;
@@ -109,6 +112,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractGemFireOperationsSessionRepository
 		implements ApplicationEventPublisherAware, FindByIndexNameSessionRepository<Session> {
 
+	private static final boolean DEFAULT_CLIENT_SUBSCRIPTIONS_ENABLED = false;
 	private static final boolean DEFAULT_REGISTER_INTEREST_DURABILITY = false;
 	private static final boolean DEFAULT_REGISTER_INTEREST_ENABLED = false;
 	private static final boolean DEFAULT_REGISTER_INTEREST_RECEIVE_VALUES = true;
@@ -214,13 +218,35 @@ public abstract class AbstractGemFireOperationsSessionRepository
 
 				sessionsRegionAttributesMutator.addCacheListener(this.sessionEventHandler);
 
-				if (GemFireUtils.isNonLocalClientRegion(sessionsRegion)) {
+				if (isRegionRegisterInterestAllowed(sessionsRegion)) {
 					this.registerInterestEnabled = true;
 					sessionsRegionAttributesMutator.addCacheListener(newSessionIdInterestRegistrar());
 				}
 			});
 
 		return sessionsRegion;
+	}
+
+	boolean isNonLocalClientRegion(Region<?, ?> region) {
+		return GemFireUtils.isNonLocalClientRegion(region);
+	}
+
+	boolean isRegionPoolSubscriptionsEnabled(Region<?, ?> region) {
+
+		return Boolean.TRUE.equals(Optional.ofNullable(region)
+			.map(Region::getAttributes)
+			.map(RegionAttributes::getPoolName)
+			.map(this::resolvePool)
+			.map(Pool::getSubscriptionEnabled)
+			.orElse(DEFAULT_CLIENT_SUBSCRIPTIONS_ENABLED));
+	}
+
+	boolean isRegionRegisterInterestAllowed(Region<?, ?> region) {
+		return isNonLocalClientRegion(region) && isRegionPoolSubscriptionsEnabled(region);
+	}
+
+	protected Pool resolvePool(String name) {
+		return PoolManager.find(name);
 	}
 
 	/**
@@ -263,6 +289,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	 * @throws IllegalArgumentException if {@link ApplicationEventPublisher} is {@literal null}.
 	 * @see org.springframework.context.ApplicationEventPublisher
 	 */
+	@Override
 	public void setApplicationEventPublisher(@NonNull ApplicationEventPublisher applicationEventPublisher) {
 
 		Assert.notNull(applicationEventPublisher, "ApplicationEventPublisher is required");
@@ -561,7 +588,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	protected void registerInterest(@Nullable Object sessionId) {
 
 		Optional.ofNullable(sessionId)
-			.filter(it -> this.isRegisterInterestEnabled())
+			.filter(it -> isRegisterInterestEnabled())
 			.filter(SessionUtils::isValidSessionId)
 			.map(ObjectUtils::nullSafeHashCode)
 			.filter(this.interestingSessionIds::add)
