@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -78,6 +77,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.Pool;
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -134,6 +134,9 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 	@Mock
 	private Logger mockLog;
+
+	@Mock
+	private Pool mockPool;
 
 	@Mock
 	private Region<Object, Session> mockRegion;
@@ -217,7 +220,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void constructGemFireOperationsSessionRepository() throws Exception {
+	public void constructGemFireOperationsSessionRepository() {
 
 		ApplicationEventPublisher mockApplicationEventPublisher = mock(ApplicationEventPublisher.class);
 
@@ -229,6 +232,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 		RegionAttributes<Object, Session> mockRegionAttributes = mock(RegionAttributes.class);
 
+		when(this.mockPool.getSubscriptionEnabled()).thenReturn(true);
 		when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
 		when(mockRegion.getAttributesMutator()).thenReturn(mockAttributesMutator);
 		when(mockRegion.getFullPath()).thenReturn(RegionUtils.toRegionPath("Example"));
@@ -258,11 +262,12 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		assertThat(sessionRepository.getApplicationEventPublisher()).isSameAs(mockApplicationEventPublisher);
 		assertThat(sessionRepository.getMaxInactiveIntervalInSeconds()).isEqualTo(300);
 
-		verify(mockRegion, times(1)).getAttributes();
+		verify(this.mockPool, times(1)).getSubscriptionEnabled();
+		verify(mockRegion, times(2)).getAttributes();
 		verify(mockRegion, times(1)).getAttributesMutator();
 		verify(mockRegion, times(1)).getFullPath();
 		verify(mockRegion, times(1)).getRegionService();
-		verify(mockRegionAttributes, times(1)).getPoolName();
+		verify(mockRegionAttributes, times(2)).getPoolName();
 		verify(mockAttributesMutator, times(1))
 			.addCacheListener(isA(SessionEventHandlerCacheListenerAdapter.class));
 		verify(mockAttributesMutator, times(1))
@@ -432,6 +437,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 		RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
 
+		when(this.mockPool.getSubscriptionEnabled()).thenReturn(true);
 		when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
 		when(mockRegion.getAttributesMutator()).thenReturn(mockAttributesMutator);
 		when(mockRegion.getRegionService()).thenReturn(mockClientCache);
@@ -3626,10 +3632,15 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		}
 	}
 
-	static class TestGemFireOperationsSessionRepository extends GemFireOperationsSessionRepositorySupport {
+	class TestGemFireOperationsSessionRepository extends GemFireOperationsSessionRepositorySupport {
 
 		TestGemFireOperationsSessionRepository(GemfireOperations gemfireOperations) {
 			super(gemfireOperations);
+		}
+
+		@Override
+		protected Pool resolvePool(String name) {
+			return mockPool;
 		}
 	}
 
