@@ -84,6 +84,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.util.RegionUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
@@ -106,13 +107,22 @@ import org.slf4j.Logger;
  * Unit tests for {@link AbstractGemFireOperationsSessionRepository}.
  *
  * @author John Blum
+ * @see java.time.Duration
+ * @see java.time.Instant
+ * @see java.util.UUID
+ * @see java.util.concurrent.TimeUnit
+ * @see java.util.function.Function
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
  * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.mockito.Spy
+ * @see org.apache.geode.Delta
  * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.RegionAttributes
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.client.Pool
  * @see org.springframework.data.gemfire.GemfireOperations
  * @see org.springframework.data.gemfire.GemfireTemplate
  * @see org.springframework.session.FindByIndexNameSessionRepository
@@ -304,6 +314,103 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 			throw expected;
 		}
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void isRegionPoolSubscriptionEnabledReturnsTrue() {
+
+		RegionAttributes<Object, Session> mockRegionAttributes = mock(RegionAttributes.class);
+
+		when(mockRegionAttributes.getPoolName()).thenReturn("Dead");
+		when(this.mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
+		when(this.mockPool.getSubscriptionEnabled()).thenReturn(true);
+		doReturn(this.mockPool).when(this.sessionRepository).resolvePool(anyString());
+
+		assertThat(this.sessionRepository.isRegionPoolSubscriptionEnabled(this.mockRegion)).isTrue();
+
+		verify(this.mockRegion, times(1)).getAttributes();
+		verify(mockRegionAttributes, times(1)).getPoolName();
+		verify(this.sessionRepository, times(1)).resolvePool(eq("Dead"));
+	}
+
+	@Test
+	public void isRegionPoolSubscriptionEnabledReturnsFalseForNullRegion() {
+
+		assertThat(this.sessionRepository.isRegionPoolSubscriptionEnabled(null)).isFalse();
+
+		verify(this.sessionRepository, never()).resolvePool(anyString());
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void isRegionPoolSubscriptionEnabledReturnsFalseForUnresolvablePool() {
+
+		RegionAttributes<Object, Session> mockRegionAttributes = mock(RegionAttributes.class);
+
+		when(mockRegionAttributes.getPoolName()).thenReturn("Swimming");
+		when(this.mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
+		doReturn(null).when(this.sessionRepository).resolvePool(anyString());
+
+		assertThat(this.sessionRepository.isRegionPoolSubscriptionEnabled(this.mockRegion)).isFalse();
+
+		verify(this.mockRegion, times(1)).getAttributes();
+		verify(mockRegionAttributes, times(1)).getPoolName();
+		verify(this.sessionRepository, times(1)).resolvePool(eq("Swimming"));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void isRegionPoolSubscriptionEnabledReturnsFalseWhenPoolSubscriptionIsDisabled() {
+
+		RegionAttributes<Object, Session> mockRegionAttributes = mock(RegionAttributes.class);
+
+		when(mockRegionAttributes.getPoolName()).thenReturn("Swimming");
+		when(this.mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
+		when(this.mockPool.getSubscriptionEnabled()).thenReturn(false);
+		doReturn(this.mockPool).when(this.sessionRepository).resolvePool(anyString());
+
+		assertThat(this.sessionRepository.isRegionPoolSubscriptionEnabled(this.mockRegion)).isFalse();
+
+		verify(this.mockRegion, times(1)).getAttributes();
+		verify(mockRegionAttributes, times(1)).getPoolName();
+		verify(this.sessionRepository, times(1)).resolvePool(eq("Swimming"));
+		verify(this.mockPool, times(1)).getSubscriptionEnabled();
+	}
+
+	@Test
+	public void isRegionRegisterInterestAllowedCallsIsNonLocalClientRegionAndIsRegionPoolSubscriptionEnabledReturnsTrue() {
+
+		doReturn(true).when(this.sessionRepository).isNonLocalClientRegion(any(Region.class));
+		doReturn(true).when(this.sessionRepository).isRegionPoolSubscriptionEnabled(any(Region.class));
+
+		assertThat(this.sessionRepository.isRegionRegisterInterestAllowed(this.mockRegion)).isTrue();
+
+		verify(this.sessionRepository, times(1)).isNonLocalClientRegion(eq(this.mockRegion));
+		verify(this.sessionRepository, times(1)).isRegionPoolSubscriptionEnabled(eq(this.mockRegion));
+	}
+
+	@Test
+	public void isRegionRegisterInterestAllowedCallsIsNonLocalClientRegionAndIsRegionPoolSubscriptionEnabledReturnsFalse() {
+
+		doReturn(true).when(this.sessionRepository).isNonLocalClientRegion(any(Region.class));
+		doReturn(false).when(this.sessionRepository).isRegionPoolSubscriptionEnabled(any(Region.class));
+
+		assertThat(this.sessionRepository.isRegionRegisterInterestAllowed(this.mockRegion)).isFalse();
+
+		verify(this.sessionRepository, times(1)).isNonLocalClientRegion(eq(this.mockRegion));
+		verify(this.sessionRepository, times(1)).isRegionPoolSubscriptionEnabled(eq(this.mockRegion));
+	}
+
+	@Test
+	public void isRegionRegisterInterestAllowedCallsIsNonLocalClientRegionAndIsRegionPoolSubscriptionEnabledReturnsFalseAgain() {
+
+		doReturn(false).when(this.sessionRepository).isNonLocalClientRegion(any(Region.class));
+
+		assertThat(this.sessionRepository.isRegionRegisterInterestAllowed(this.mockRegion)).isFalse();
+
+		verify(this.sessionRepository, times(1)).isNonLocalClientRegion(eq(this.mockRegion));
+		verify(this.sessionRepository, never()).isRegionPoolSubscriptionEnabled(eq(this.mockRegion));
 	}
 
 	@Test
@@ -3639,7 +3746,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		}
 
 		@Override
-		protected Pool resolvePool(String name) {
+		protected @Nullable Pool resolvePool(String name) {
 			return mockPool;
 		}
 	}
