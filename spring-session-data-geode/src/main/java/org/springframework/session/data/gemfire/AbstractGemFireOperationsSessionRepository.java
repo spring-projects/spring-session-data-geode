@@ -62,6 +62,7 @@ import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
+import org.springframework.session.data.gemfire.events.SessionChangedEvent;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.session.data.gemfire.support.IsDirtyPredicate;
 import org.springframework.session.data.gemfire.support.SessionIdHolder;
@@ -1542,6 +1543,25 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		}
 
 		/**
+		 * Callback method triggered when an entry is updated in the {@link Session} cache {@link Region}.
+		 *
+		 * @param event {@link EntryEvent} containing the details of the cache operation.
+		 * @see org.springframework.session.data.gemfire.events.SessionChangedEvent
+		 * @see org.springframework.session.Session
+		 * @see org.apache.geode.cache.EntryEvent
+		 * @see #newSessionChangedEvent(Session)
+		 * @see #publishEvent(ApplicationEvent)
+		 * @see #toSession(Object, Object)
+		 */
+		@Override
+		public void afterUpdate(EntryEvent<Object, Session> event) {
+
+			Optional.ofNullable(event)
+				.ifPresent(it -> getSessionRepository()
+					.publishEvent(newSessionChangedEvent(toSession(event.getNewValue(), it.getKey()))));
+		}
+
+		/**
 		 * Constructs a new {@link SessionCreatedEvent} initialized with the given {@link Session},
 		 * using the {@link #getSessionRepository() SessionRepository} as the event source.
 		 *
@@ -1553,6 +1573,20 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 */
 		protected SessionCreatedEvent newSessionCreatedEvent(Session session) {
 			return new SessionCreatedEvent(getSessionRepository(), session);
+		}
+
+		/**
+		 * Constructs a new {@link SessionChangedEvent} initialized with the given {@link Session},
+		 * using the {@link #getSessionRepository() SessionRepository} as the event source.
+		 *
+		 * @param session {@link Session} that is the subject of the {@link ApplicationEvent change event}.
+		 * @return a new {@link SessionChangedEvent}.
+		 * @see org.springframework.session.data.gemfire.events.SessionChangedEvent
+		 * @see org.springframework.session.Session
+		 * @see #getSessionRepository()
+		 */
+		protected SessionChangedEvent newSessionChangedEvent(Session session) {
+			return new SessionChangedEvent(getSessionRepository(), session);
 		}
 
 		/**

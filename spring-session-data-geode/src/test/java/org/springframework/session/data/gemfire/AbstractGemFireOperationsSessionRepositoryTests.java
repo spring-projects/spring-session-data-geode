@@ -88,6 +88,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
+import org.springframework.session.data.gemfire.events.SessionChangedEvent;
 import org.springframework.session.data.gemfire.support.DeltaAwareDirtyPredicate;
 import org.springframework.session.data.gemfire.support.EqualsDirtyPredicate;
 import org.springframework.session.data.gemfire.support.GemFireOperationsSessionRepositorySupport;
@@ -1397,6 +1398,41 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		verify(sessionEventHandler, times(1)).forget(eq("1"));
 		verify(sessionEventHandler, never()).getSessionRepository();
 		verify(sessionEventHandler, never()).newSessionExpiredEvent(any(Session.class));
+		verify(sessionEventHandler, never()).toSession(any(), any());
+		verify(this.sessionRepository, never()).publishEvent(any(ApplicationEvent.class));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void afterUpdateHandlesSessionPublishesSessionChangedEvent() {
+
+		SessionEventHandlerCacheListenerAdapter sessionEventHandler =
+			spy(this.sessionRepository.newSessionEventHandler());
+
+		EntryEvent mockEntryEvent = mock(EntryEvent.class);
+
+		when(mockEntryEvent.getKey()).thenReturn("1");
+		when(mockEntryEvent.getNewValue()).thenReturn(this.mockSession);
+
+		sessionEventHandler.afterUpdate(mockEntryEvent);
+
+		verify(mockEntryEvent, times(1)).getKey();
+		verify(mockEntryEvent, times(1)).getNewValue();
+		verify(mockEntryEvent, never()).getOldValue();
+		verify(sessionEventHandler, times(1)).newSessionChangedEvent(eq(this.mockSession));
+		verify(sessionEventHandler, times(1)).toSession(eq(this.mockSession), eq("1"));
+		verify(this.sessionRepository, times(1)).publishEvent(isA(SessionChangedEvent.class));
+	}
+
+	@Test
+	public void afterUpdateHandlesNullEntryEventDoesNotPublishSessionChangedEvent() {
+
+		SessionEventHandlerCacheListenerAdapter sessionEventHandler =
+			spy(this.sessionRepository.newSessionEventHandler());
+
+		sessionEventHandler.afterUpdate(null);
+
+		verify(sessionEventHandler, never()).newSessionChangedEvent(any(Session.class));
 		verify(sessionEventHandler, never()).toSession(any(), any());
 		verify(this.sessionRepository, never()).publishEvent(any(ApplicationEvent.class));
 	}

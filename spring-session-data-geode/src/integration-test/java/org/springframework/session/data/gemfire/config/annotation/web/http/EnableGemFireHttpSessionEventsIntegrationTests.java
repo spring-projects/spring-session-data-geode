@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.config.annotation.web.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,11 +33,13 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests;
 import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
+import org.springframework.session.data.gemfire.events.SessionChangedEvent;
 import org.springframework.session.data.gemfire.support.GemFireUtils;
 import org.springframework.session.events.AbstractSessionEvent;
 import org.springframework.session.events.SessionCreatedEvent;
@@ -123,6 +124,24 @@ public class EnableGemFireHttpSessionEventsIntegrationTests extends AbstractGemF
 		assertThat(createdSession.getLastAccessedTime()).isEqualTo(createdSession.getCreationTime());
 		assertThat(createdSession.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(MAX_INACTIVE_INTERVAL_IN_SECONDS));
 		assertThat(createdSession.isExpired()).isFalse();
+	}
+
+	@Test
+	public void sessionChangedEvent() {
+
+		Session expectedSession = save(createSession());
+
+		ApplicationEvent sessionEvent = this.sessionEventListener.getSessionEvent();
+
+		assertThat(sessionEvent).isInstanceOf(SessionCreatedEvent.class);
+
+		expectedSession.setAttribute("testKey", "testValue");
+		save(touch(expectedSession));
+
+		sessionEvent = this.sessionEventListener.waitForSessionEvent(500L);
+
+		assertThat(sessionEvent).isInstanceOf(SessionChangedEvent.class);
+		assertThat(((SessionChangedEvent) sessionEvent).<Session>getSession()).isEqualTo(expectedSession);
 	}
 
 	@Test
@@ -212,7 +231,7 @@ public class EnableGemFireHttpSessionEventsIntegrationTests extends AbstractGemF
 		assertThat(sessionEvent).isInstanceOf(SessionDeletedEvent.class);
 		assertThat(sessionEvent.<Session>getSession()).isEqualTo(expectedSession);
 		assertThat(sessionEvent.getSessionId()).isEqualTo(expiredSession.getId());
-		assertThat(this.gemfireSessionRepository.<Session>findById(sessionEvent.getSessionId())).isNull();
+		assertThat(this.gemfireSessionRepository.findById(sessionEvent.getSessionId())).isNull();
 	}
 
 	@Test
@@ -220,7 +239,7 @@ public class EnableGemFireHttpSessionEventsIntegrationTests extends AbstractGemF
 
 		String expectedSessionId = UUID.randomUUID().toString();
 
-		assertThat(this.gemfireSessionRepository.<Session>findById(expectedSessionId)).isNull();
+		assertThat(this.gemfireSessionRepository.findById(expectedSessionId)).isNull();
 
 		this.gemfireSessionRepository.deleteById(expectedSessionId);
 

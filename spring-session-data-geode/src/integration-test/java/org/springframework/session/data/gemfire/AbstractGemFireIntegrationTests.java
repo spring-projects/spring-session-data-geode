@@ -42,14 +42,15 @@ import org.apache.geode.cache.query.Index;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.gemfire.tests.integration.ForkingClientServerIntegrationTestsSupport;
 import org.springframework.data.gemfire.util.RegionUtils;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
-import org.springframework.session.events.AbstractSessionEvent;
 import org.springframework.util.StringUtils;
 
 /**
@@ -61,15 +62,16 @@ import org.springframework.util.StringUtils;
  * @see java.net.URL
  * @see java.time.Instant
  * @see org.junit.Test
+ * @see org.apache.geode.cache.DataPolicy
  * @see org.apache.geode.cache.ExpirationAttributes
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.query.Index
+ * @see org.springframework.context.ApplicationEvent
  * @see org.springframework.context.ApplicationContext
  * @see org.springframework.context.ApplicationListener
  * @see org.springframework.data.gemfire.tests.integration.ForkingClientServerIntegrationTestsSupport
  * @see org.springframework.session.Session
- * @see org.springframework.session.SessionRepository
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.springframework.session.events.AbstractSessionEvent
  * @since 1.1.0
@@ -422,12 +424,12 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 	 * @see org.springframework.context.ApplicationListener
 	 * @see org.springframework.session.events.AbstractSessionEvent
 	 */
-	public static class SessionEventListener implements ApplicationListener<AbstractSessionEvent> {
+	public static class SessionEventListener implements ApplicationListener<ApplicationEvent> {
 
-		private volatile AbstractSessionEvent sessionEvent;
+		private volatile ApplicationEvent sessionEvent;
 
 		@SuppressWarnings("unchecked")
-		public <T extends AbstractSessionEvent> T getSessionEvent() {
+		public <T extends ApplicationEvent> T getSessionEvent() {
 
 			T sessionEvent = (T) this.sessionEvent;
 
@@ -436,11 +438,12 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 			return sessionEvent;
 		}
 
-		public void onApplicationEvent(AbstractSessionEvent event) {
+		@Override
+		public void onApplicationEvent(@NonNull ApplicationEvent event) {
 			this.sessionEvent = event;
 		}
 
-		public <T extends AbstractSessionEvent> T waitForSessionEvent(long duration) {
+		public <T extends ApplicationEvent> T waitForSessionEvent(long duration) {
 
 			waitOn(() -> SessionEventListener.this.sessionEvent != null, duration);
 
