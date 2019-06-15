@@ -207,8 +207,10 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	 * @see org.apache.geode.cache.Region
 	 * @see #newSessionEventHandler()
 	 * @see #newSessionIdInterestRegistrar()
+	 * @see #isRegionRegisterInterestAllowed(Region)
 	 */
-	private Region<Object, Session> initializeSessionsRegion(@Nullable Region<Object, Session> sessionsRegion) {
+	private @Nullable Region<Object, Session> initializeSessionsRegion(
+			@Nullable Region<Object, Session> sessionsRegion) {
 
 		Optional.ofNullable(sessionsRegion)
 			.map(Region::getAttributesMutator)
@@ -227,11 +229,27 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		return sessionsRegion;
 	}
 
-	boolean isNonLocalClientRegion(Region<?, ?> region) {
+	/**
+	 * Determines whether the given {@link Region} is a client, non-local {@link Region}.
+	 *
+	 * @param region {@link Region} to evaluate.
+	 * @return a boolean indicating whether the given {@link Region} is a client, non-local {@link Region}.
+	 * @see org.apache.geode.cache.Region
+	 */
+	boolean isNonLocalClientRegion(@Nullable Region<?, ?> region) {
 		return GemFireUtils.isNonLocalClientRegion(region);
 	}
 
-	boolean isRegionPoolSubscriptionsEnabled(Region<?, ?> region) {
+	/**
+	 * Determines whether the given client {@link Region Region's} configured {@link Pool} has subscription enabled.
+	 *
+	 * @param region {@link Region} to evaluate.
+	 * @return a boolean value indicating whether the client {@link Region Region's} configured {@link Pool}
+	 * has subscription enabled.
+	 * @see org.apache.geode.cache.client.Pool#getSubscriptionEnabled()
+	 * @see org.apache.geode.cache.Region
+	 */
+	boolean isRegionPoolSubscriptionEnabled(@Nullable Region<?, ?> region) {
 
 		return Boolean.TRUE.equals(Optional.ofNullable(region)
 			.map(Region::getAttributes)
@@ -241,11 +259,29 @@ public abstract class AbstractGemFireOperationsSessionRepository
 			.orElse(DEFAULT_CLIENT_SUBSCRIPTIONS_ENABLED));
 	}
 
-	boolean isRegionRegisterInterestAllowed(Region<?, ?> region) {
-		return isNonLocalClientRegion(region) && isRegionPoolSubscriptionsEnabled(region);
+	/**
+	 * Determines whether the interest registration for the given {@link Region} is allowed.
+	 *
+	 * @param region {@link Region} to evaluate.
+	 * @return a boolean value indicating whether interest registration for the given {@link Region} is allowed.
+	 * @see org.apache.geode.cache.Region#registerInterest(Object)
+	 * @see org.apache.geode.cache.Region
+	 * @see #isNonLocalClientRegion(Region)
+	 * @see #isRegionPoolSubscriptionEnabled(Region)
+	 */
+	boolean isRegionRegisterInterestAllowed(@Nullable Region<?, ?> region) {
+		return isNonLocalClientRegion(region) && isRegionPoolSubscriptionEnabled(region);
 	}
 
-	protected Pool resolvePool(String name) {
+	/**
+	 * Resolves the {@link Pool} with the given {@link String name) from the {@link PoolManager}.
+	 *
+	 * @param name {@link String) containing the name of the {@link Pool} to resovle.
+	 * @return the resolved {@link Pool} for the given {@ling String name}.
+	 * @see org.apache.geode.cache.client.PoolManager#find(String)
+	 * @see org.apache.geode.cache.client.Pool
+	 */
+	protected @Nullable Pool resolvePool(String name) {
 		return PoolManager.find(name);
 	}
 
@@ -744,7 +780,6 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * or return a copy of the given {@link Session} as a {@link GemFireSession}.
 		 * @see #copy(Session)
 		 */
-		@SuppressWarnings("unchecked")
 		public static GemFireSession from(@NonNull Session session) {
 			return session instanceof GemFireSession ? (GemFireSession) session : copy(session);
 		}
