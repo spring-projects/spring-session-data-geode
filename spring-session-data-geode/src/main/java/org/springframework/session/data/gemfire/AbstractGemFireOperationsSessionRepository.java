@@ -275,10 +275,10 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	}
 
 	/**
-	 * Resolves the {@link Pool} with the given {@link String name) from the {@link PoolManager}.
+	 * Resolves the {@link Pool} with the given {@link String name} from the {@link PoolManager}.
 	 *
-	 * @param name {@link String) containing the name of the {@link Pool} to resovle.
-	 * @return the resolved {@link Pool} for the given {@ling String name}.
+	 * @param name {@link String} containing the name of the {@link Pool} to resolve.
+	 * @return the resolved {@link Pool} for the given {@link String name}.
 	 * @see org.apache.geode.cache.client.PoolManager#find(String)
 	 * @see org.apache.geode.cache.client.Pool
 	 */
