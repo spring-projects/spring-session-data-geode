@@ -10,6 +10,11 @@ def customizePom(gradleProject, pom) {
 					email = "jblum@pivotal.io"
 				}
 			}
+			scm {
+				connection = 'scm:git:git@github.com:spring-projects/spring-session-data-geode.git'
+				developerConnection = 'scm:git:git@github.com:spring-projects/spring-session-data-geode.git'
+				url = 'https://github.com/spring-projects/spring-session-data-geode'
+			}
 		}
 	}
 }
