@@ -111,6 +111,7 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 
 		assertThat(configuration).isNotNull();
 		assertThat(configuration.isUsingDataSerialization()).isFalse();
+		assertThat(configuration.getSessionSerializerBeanName()).isEqualTo("TestSessionSerializer");
 
 		GemFireCache gemfireCache = getApplicationContext().getBean(GemFireCache.class);
 
