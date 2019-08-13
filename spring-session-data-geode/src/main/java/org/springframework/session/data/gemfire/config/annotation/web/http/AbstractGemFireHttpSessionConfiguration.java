@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.config.annotation.web.http;
 
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
@@ -362,6 +361,7 @@ public abstract class AbstractGemFireHttpSessionConfiguration extends SpringHttp
 				String resolvedPropertyName = environment.resolveRequiredPlaceholders(propertyName);
 
 				return environment.getProperty(resolvedPropertyName, targetType, defaultValue);
+
 			})
 			.orElse(defaultValue);
 	}
