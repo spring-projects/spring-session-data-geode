@@ -4,7 +4,7 @@ os:
   - linux
 
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 script: ./gradlew --refresh-dependencies build
 
