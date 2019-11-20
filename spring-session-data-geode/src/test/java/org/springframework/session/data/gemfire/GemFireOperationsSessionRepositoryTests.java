@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -106,7 +105,7 @@ public class GemFireOperationsSessionRepositoryTests {
 
 	@Before
 	@SuppressWarnings("unchecked")
-	public void setup() throws Exception {
+	public void setup() {
 
 		AttributesMutator<Object, Session> mockAttributesMutator = mock(AttributesMutator.class);
 
@@ -356,7 +355,7 @@ public class GemFireOperationsSessionRepositoryTests {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void findByPrincipalNameReturnsMatchingSessions() throws Exception {
+	public void findByPrincipalNameReturnsMatchingSessions() {
 
 		Session mockSessionOne = mock(Session.class, "MockSessionOne");
 		Session mockSessionTwo = mock(Session.class, "MockSessionTwo");
@@ -638,6 +637,6 @@ public class GemFireOperationsSessionRepositoryTests {
 			.publishEvent(isA(SessionDeletedEvent.class));
 	}
 
-	protected abstract class GemfireOperationsAccessor extends GemfireAccessor implements GemfireOperations { }
+	protected static abstract class GemfireOperationsAccessor extends GemfireAccessor implements GemfireOperations { }
 
 }
