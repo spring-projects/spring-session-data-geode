@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire;
 
 import java.util.HashMap;
@@ -70,6 +69,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see #configure(Session)
 	 */
 	@NonNull
+	@SuppressWarnings("all")
 	public Session createSession() {
 		return configure(GemFireSession.create());
 	}
@@ -161,6 +161,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see #commit(Session)
 	 * @see #touch(Session)
 	 */
+	@SuppressWarnings("all")
 	private Session prepare(Session session) {
 		return touch(commit(registerInterest(configure(session))));
 	}
@@ -178,6 +179,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see #isNonNullAndDirty(Session)
 	 * @see #doSave(Session)
 	 */
+	@SuppressWarnings("all")
 	public void save(@Nullable Session session) {
 
 		if (isNonNullAndDirty(session)) {
