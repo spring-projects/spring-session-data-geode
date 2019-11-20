@@ -95,7 +95,7 @@ import org.springframework.util.ReflectionUtils;
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @since 1.1.0
  */
-public class GemFireHttpSessionConfigurationTests {
+public class GemFireHttpSessionConfigurationUnitTests {
 
 	@SuppressWarnings("unchecked")
 	private static <T> T getField(Object obj, String fieldName) {
@@ -761,9 +761,9 @@ public class GemFireHttpSessionConfigurationTests {
 		assertThat(sessionRegionFactoryBean).isNotNull();
 		assertThat(sessionRegionFactoryBean.getClientRegionShortcut()).isEqualTo(ClientRegionShortcut.CACHING_PROXY);
 		assertThat(sessionRegionFactoryBean.getCache()).isEqualTo(mockGemFireCache);
-		assertThat(GemFireHttpSessionConfigurationTests.<String>getField(sessionRegionFactoryBean, "poolName")).isEqualTo("TestPool");
-		assertThat(GemFireHttpSessionConfigurationTests.<RegionAttributes<Object, Session>>getField(sessionRegionFactoryBean, "regionAttributes")).isEqualTo(mockRegionAttributes);
-		assertThat(GemFireHttpSessionConfigurationTests.<String>getField(sessionRegionFactoryBean, "regionName")).isEqualTo("TestRegion");
+		assertThat(GemFireHttpSessionConfigurationUnitTests.<String>getField(sessionRegionFactoryBean, "poolName")).isEqualTo("TestPool");
+		assertThat(GemFireHttpSessionConfigurationUnitTests.<RegionAttributes<Object, Session>>getField(sessionRegionFactoryBean, "regionAttributes")).isEqualTo(mockRegionAttributes);
+		assertThat(GemFireHttpSessionConfigurationUnitTests.<String>getField(sessionRegionFactoryBean, "regionName")).isEqualTo("TestRegion");
 		assertThat(sessionRegionFactoryBean.getServerRegionShortcut()).isEqualTo(RegionShortcut.PARTITION_REDUNDANT);
 
 		verifyNoInteractions(mockGemFireCache);
