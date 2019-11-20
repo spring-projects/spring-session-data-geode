@@ -40,6 +40,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.query.Index;
 import org.apache.geode.pdx.PdxSerializer;
 
 import org.springframework.beans.BeansException;
@@ -65,7 +66,6 @@ import org.springframework.data.gemfire.GemfireOperations;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.IndexFactoryBean;
-import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.util.ArrayUtils;
@@ -1070,7 +1070,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @see #isExpirationAllowed(GemFireCache)
 	 */
 	@Bean
-	@SuppressWarnings({ "unchecked", "deprecation" })
+	@SuppressWarnings({ "unchecked" })
 	public RegionAttributesFactoryBean sessionRegionAttributes(GemFireCache gemfireCache) {
 
 		RegionAttributesFactoryBean regionAttributes = new RegionAttributesFactoryBean();
@@ -1160,12 +1160,13 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	}
 
 	/**
-	 * Defines a Pivotal GemFire Index bean on the Pivotal GemFire cache {@link Region} storing and managing Sessions,
-	 * specifically on the 'principalName' property for quick lookup of Sessions by 'principalName'.
+	 * Defines an OQL {@link Index} bean on the {@link GemFireCache} {@link Region} storing and managing
+	 * {@link Session Sessions}, specifically on the {@literal principalName} property for quick lookup
+	 * of {@link Session Sessions} by {@literal principalName}.
 	 *
-	 * @param gemfireCache a reference to the Pivotal GemFire cache.
-	 * @return a {@link IndexFactoryBean} to create an Pivotal GemFire Index on the 'principalName' property
-	 * for Sessions stored in the Pivotal GemFire cache {@link Region}.
+	 * @param gemfireCache reference to the {@link GemFireCache}.
+	 * @return a {@link IndexFactoryBean} to create an OQL {@link Index} on the {@literal principalName} property
+	 * for {@link Session Sessions} stored in the {@link GemFireCache} {@link Region}.
 	 * @see org.springframework.data.gemfire.IndexFactoryBean
 	 * @see org.apache.geode.cache.GemFireCache
 	 */
@@ -1180,19 +1181,18 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 		principalNameIndex.setExpression("principalName");
 		principalNameIndex.setFrom(RegionUtils.toRegionPath(getSessionRegionName()));
 		principalNameIndex.setOverride(true);
-		principalNameIndex.setType(IndexType.HASH);
 
 		return principalNameIndex;
 	}
 
 	/**
-	 * Defines a Pivotal GemFire Index bean on the Pivotal GemFire cache {@link Region} storing and managing Sessions,
-	 * specifically on all Session attributes for quick lookup and queries on Session attribute names
-	 * with a given value.
+	 * Defines an OQL {@link Index} bean on the {@link GemFireCache} {@link Region} storing and managing
+	 * {@link Session Sessions}, specifically on all {@link Session} attributes for quick lookup and queries
+	 * on {@link Session} attribute {@link String names} with a given {@link Object value}.
 	 *
-	 * @param gemfireCache a reference to the Pivotal GemFire cache.
-	 * @return a {@link IndexFactoryBean} to create an Pivotal GemFire Index on attributes of Sessions
-	 * stored in the Pivotal GemFire cache {@link Region}.
+	 * @param gemfireCache reference to the {@link GemFireCache}.
+	 * @return a {@link IndexFactoryBean} to create an OQL {@link Index} on attributes of {@link Session Sessions}
+	 * stored in the {@link GemFireCache} {@link Region}.
 	 * @see org.springframework.data.gemfire.IndexFactoryBean
 	 * @see org.apache.geode.cache.GemFireCache
 	 */

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.config.annotation.web.http.support;
 
 import java.util.Optional;
@@ -61,7 +60,9 @@ public class SessionAttributesIndexFactoryBean
 
 	private String[] indexableSessionAttributes;
 
-	/* (non-Javadoc) */
+	/**
+	 * @inheritDoc
+	 */
 	public void afterPropertiesSet() throws Exception {
 
 		if (isIndexableSessionAttributesConfigured()) {
@@ -124,56 +125,46 @@ public class SessionAttributesIndexFactoryBean
 
 		String indexExpression = builder.toString();
 
-		return (indexExpression.isEmpty() ? "*" : indexExpression);
+		return indexExpression.isEmpty() ? "*" : indexExpression;
 	}
 
-	/* (non-Javadoc) */
-	public Index getObject() throws Exception {
+	public Index getObject() {
 		return this.sessionAttributesIndex;
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	public Class<?> getObjectType() {
 		return Optional.ofNullable(this.sessionAttributesIndex).map(Object::getClass).orElse((Class) Index.class);
 	}
 
-	/* (non-Javadoc) */
 	public boolean isSingleton() {
 		return true;
 	}
 
-	/* (non-Javadoc) */
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
 	}
 
-	/* (non-Javadoc) */
 	public void setBeanName(String beanName) {
 		this.beanName = beanName;
 	}
 
-	/* (non-Javadoc) */
 	public void setGemFireCache(GemFireCache gemfireCache) {
 		this.gemfireCache = gemfireCache;
 	}
 
-	/* (non-Javadoc) */
 	public void setIndexableSessionAttributes(String[] indexableSessionAttributes) {
 		this.indexableSessionAttributes = indexableSessionAttributes;
 	}
 
-	/* (non-Javadoc) */
 	protected String[] getIndexableSessionAttributes() {
 		return Optional.ofNullable(this.indexableSessionAttributes).orElse(DEFAULT_INDEXABLE_SESSION_ATTRIBUTES);
 	}
 
-	/* (non-Javadoc) */
 	public void setRegionName(String regionName) {
 		this.regionName = regionName;
 	}
 
-	/* (non-Javadoc) */
 	protected String getRegionName() {
 		return this.regionName;
 	}
