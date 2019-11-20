@@ -33,7 +33,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 import static org.springframework.data.gemfire.util.CollectionUtils.asSet;
@@ -60,14 +60,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
+import edu.umd.cs.mtc.MultithreadedTestCase;
+import edu.umd.cs.mtc.TestFramework;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import edu.umd.cs.mtc.MultithreadedTestCase;
-import edu.umd.cs.mtc.TestFramework;
 
 import org.apache.geode.Delta;
 import org.apache.geode.cache.AttributesMutator;
@@ -78,6 +78,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
+
+import org.slf4j.Logger;
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -101,8 +103,6 @@ import org.springframework.session.events.SessionDeletedEvent;
 import org.springframework.session.events.SessionDestroyedEvent;
 import org.springframework.session.events.SessionExpiredEvent;
 import org.springframework.util.ObjectUtils;
-
-import org.slf4j.Logger;
 
 /**
  * Unit tests for {@link AbstractGemFireOperationsSessionRepository}.
@@ -717,7 +717,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		verify(this.sessionRepository, times(1)).getSessionEventHandler();
 		verify(this.sessionRepository, never()).publishEvent(any(ApplicationEvent.class));
 		verify(this.sessionRepository, times(1)).unregisterInterest(eq("1"));
-		verifyZeroInteractions(this.mockSession);
+		verifyNoInteractions(this.mockSession);
 	}
 
 	@Test
@@ -1036,7 +1036,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		verify(sessionEventHandler, never()).getSessionRepository();
 		verify(sessionEventHandler, never()).newSessionCreatedEvent(any(Session.class));
 		verify(sessionEventHandler, never()).toSession(any(), any());
-		verifyZeroInteractions(this.mockSession);
+		verifyNoInteractions(this.mockSession);
 		verify(this.sessionRepository, never()).publishEvent(any(ApplicationEvent.class));
 	}
 
@@ -1394,7 +1394,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 		verify(mockEntryEvent, times(1)).getKey();
 		verify(mockEntryEvent, never()).getOldValue();
-		verifyZeroInteractions(this.mockSession);
+		verifyNoInteractions(this.mockSession);
 		verify(sessionEventHandler, times(1)).forget(eq("1"));
 		verify(sessionEventHandler, never()).getSessionRepository();
 		verify(sessionEventHandler, never()).newSessionExpiredEvent(any(Session.class));
