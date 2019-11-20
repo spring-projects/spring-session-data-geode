@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.config.annotation.web.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,7 +28,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
@@ -72,10 +71,9 @@ import org.springframework.session.data.gemfire.support.IsDirtyPredicate;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Unit tests for {@link GemFireHttpSessionConfiguration} class.
+ * Unit Tests for {@link GemFireHttpSessionConfiguration} class.
  *
  * @author John Blum
- * @since 1.1.0
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.apache.geode.cache.Cache
@@ -95,6 +93,7 @@ import org.springframework.util.ReflectionUtils;
  * @see org.springframework.session.Session
  * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
+ * @since 1.1.0
  */
 public class GemFireHttpSessionConfigurationTests {
 
@@ -652,7 +651,7 @@ public class GemFireHttpSessionConfigurationTests {
 		verify(this.gemfireConfiguration, never()).getServerRegionShortcut();
 		verify(this.gemfireConfiguration, never()).getSessionExpirationPolicyBeanName();
 		verify(this.gemfireConfiguration, never()).getSessionSerializerBeanName();
-		verifyZeroInteractions(mockEnvironment);
+		verifyNoInteractions(mockEnvironment);
 	}
 
 	@Test
@@ -674,7 +673,7 @@ public class GemFireHttpSessionConfigurationTests {
 		verify(this.gemfireConfiguration, never()).getServerRegionShortcut();
 		verify(this.gemfireConfiguration, never()).getSessionExpirationPolicyBeanName();
 		verify(this.gemfireConfiguration, never()).getSessionSerializerBeanName();
-		verifyZeroInteractions(mockEnvironment);
+		verifyNoInteractions(mockEnvironment);
 	}
 
 	@Test
@@ -762,14 +761,13 @@ public class GemFireHttpSessionConfigurationTests {
 		assertThat(sessionRegionFactoryBean).isNotNull();
 		assertThat(sessionRegionFactoryBean.getClientRegionShortcut()).isEqualTo(ClientRegionShortcut.CACHING_PROXY);
 		assertThat(sessionRegionFactoryBean.getCache()).isEqualTo(mockGemFireCache);
-		assertThat(this.<String>getField(sessionRegionFactoryBean, "poolName")).isEqualTo("TestPool");
-		assertThat(this.<RegionAttributes<Object, Session>>getField(sessionRegionFactoryBean,
-			"regionAttributes")).isEqualTo(mockRegionAttributes);
-		assertThat(this.<String>getField(sessionRegionFactoryBean, "regionName")).isEqualTo("TestRegion");
+		assertThat(GemFireHttpSessionConfigurationTests.<String>getField(sessionRegionFactoryBean, "poolName")).isEqualTo("TestPool");
+		assertThat(GemFireHttpSessionConfigurationTests.<RegionAttributes<Object, Session>>getField(sessionRegionFactoryBean, "regionAttributes")).isEqualTo(mockRegionAttributes);
+		assertThat(GemFireHttpSessionConfigurationTests.<String>getField(sessionRegionFactoryBean, "regionName")).isEqualTo("TestRegion");
 		assertThat(sessionRegionFactoryBean.getServerRegionShortcut()).isEqualTo(RegionShortcut.PARTITION_REDUNDANT);
 
-		verifyZeroInteractions(mockGemFireCache);
-		verifyZeroInteractions(mockRegionAttributes);
+		verifyNoInteractions(mockGemFireCache);
+		verifyNoInteractions(mockRegionAttributes);
 	}
 
 	@Test

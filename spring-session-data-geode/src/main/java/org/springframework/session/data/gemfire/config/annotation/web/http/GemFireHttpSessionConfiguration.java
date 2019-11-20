@@ -55,6 +55,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportAware;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
@@ -1172,6 +1173,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 */
 	@Bean
 	@DependsOn(DEFAULT_SESSION_REGION_NAME)
+	@Profile("!disable-spring-session-data-gemfire-indexes")
 	public IndexFactoryBean principalNameIndex(GemFireCache gemfireCache) {
 
 		IndexFactoryBean principalNameIndex = new IndexFactoryBean();
@@ -1198,6 +1200,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 */
 	@Bean
 	@DependsOn(DEFAULT_SESSION_REGION_NAME)
+	@Profile("!disable-spring-session-data-gemfire-indexes")
 	public SessionAttributesIndexFactoryBean sessionAttributesIndex(GemFireCache gemfireCache) {
 
 		SessionAttributesIndexFactoryBean sessionAttributesIndex = new SessionAttributesIndexFactoryBean();

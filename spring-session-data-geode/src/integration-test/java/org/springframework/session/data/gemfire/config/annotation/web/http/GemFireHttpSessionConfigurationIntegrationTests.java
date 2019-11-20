@@ -27,15 +27,21 @@ import org.junit.Test;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.query.Index;
 import org.apache.geode.internal.InternalDataSerializer;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
 import org.springframework.data.gemfire.tests.integration.SpringApplicationContextIntegrationTestsSupport;
 import org.springframework.data.gemfire.tests.mock.annotation.EnableGemFireMockObjects;
+import org.springframework.session.SessionRepository;
+import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
 import org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy;
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 import org.springframework.session.data.gemfire.serialization.data.AbstractDataSerializableSessionSerializer;
@@ -43,10 +49,13 @@ import org.springframework.session.data.gemfire.serialization.data.provider.Data
 import org.springframework.session.data.gemfire.serialization.pdx.support.PdxSerializerSessionSerializerAdapter;
 
 /**
- * The GemFireHttpSessionConfigurationIntegrationTests class...
+ * Integration Tests for {@link GemFireHttpSessionConfiguration}.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.junit.Test
+ * @see org.mockito.Mockito
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
+ * @since 1.1.0
  */
 @SuppressWarnings("unused")
 public class GemFireHttpSessionConfigurationIntegrationTests extends SpringApplicationContextIntegrationTestsSupport {
@@ -62,6 +71,62 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 			.filter(dataSerializerType::isAssignableFrom)
 			.findFirst()
 			.orElse(null)).isNotNull();
+	}
+
+	@Test
+	public void basicSpringSessionGemFireConfigurationIsCorrect() {
+
+		newApplicationContext(BasicSpringSessionGemFireConfiguration.class);
+
+		Region<?, ?> sessionsRegion =
+			getApplicationContext().getBean(GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME, Region.class);
+
+		Index principleNameIndex = getApplicationContext().getBean("principalNameIndex", Index.class);
+
+		GemfireTemplate sessionsRegionTemplate =
+			getApplicationContext().getBean("sessionRegionTemplate", GemfireTemplate.class);
+
+		assertThat(sessionsRegion).isNotNull();
+		assertThat(sessionsRegion.getName()).isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
+		assertThat(principleNameIndex).isNotNull();
+		assertThat(principleNameIndex.getName()).isEqualTo("principalNameIndex");
+		assertThat(principleNameIndex.getRegion()).isEqualTo(sessionsRegion);
+		assertThat(getApplicationContext().getBean(SessionRepository.class)).isInstanceOf(GemFireOperationsSessionRepository.class);
+		assertThat(sessionsRegionTemplate).isNotNull();
+		assertThat(sessionsRegionTemplate.getRegion()).isEqualTo(sessionsRegion);
+	}
+
+	@Test
+	public void basicSpringSessionGemFireConfigurationWithIndexesDisableIsCorrect() {
+
+		try {
+
+			System.setProperty("spring.profiles.active", "disable-spring-session-data-gemfire-indexes");
+
+			assertThat(System.getProperty("spring.profiles.active")).contains("disable-spring-session-data-gemfire-indexes");
+
+			ConfigurableApplicationContext applicationContext =
+				newApplicationContext(BasicSpringSessionGemFireConfiguration.class);
+
+			assertThat(applicationContext).isNotNull();
+			assertThat(applicationContext.getEnvironment().getActiveProfiles()).contains("disable-spring-session-data-gemfire-indexes");
+
+			Region<?, ?> sessionsRegion =
+				getApplicationContext().getBean(GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME, Region.class);
+
+			GemfireTemplate sessionsRegionTemplate =
+				getApplicationContext().getBean("sessionRegionTemplate", GemfireTemplate.class);
+
+			assertThat(sessionsRegion).isNotNull();
+			assertThat(sessionsRegion.getName()).isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
+			assertThat(getApplicationContext().containsBean("principalNameIndex")).isFalse();
+			assertThat(getApplicationContext().getBean(SessionRepository.class)).isInstanceOf(GemFireOperationsSessionRepository.class);
+			assertThat(sessionsRegionTemplate).isNotNull();
+			assertThat(sessionsRegionTemplate.getRegion()).isEqualTo(sessionsRegion);
+		}
+		finally {
+			System.clearProperty("spring.profiles.active");
+		}
 	}
 
 	private void testUsesDataSerialization(Class<? extends DataSerializer> expectedDataSerializerType) {
@@ -146,6 +211,11 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 		assertThat(properties.sessionExpirationPolicyBeanName()).isEqualTo("MockSessionExpirationPolicy");
 		assertThat(properties.sessionSerializerBeanName()).isEqualTo("MockSessionSerializer");
 	}
+
+	@ClientCacheApplication
+	@EnableGemFireMockObjects
+	@EnableGemFireHttpSession(clientRegionShortcut = ClientRegionShortcut.LOCAL, poolName = "DEFAULT")
+	static class BasicSpringSessionGemFireConfiguration { }
 
 	@ClientCacheApplication
 	@EnableGemFireMockObjects
