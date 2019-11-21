@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.serialization.pdx;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,6 +41,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
 import org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests;
 import org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
@@ -125,8 +125,8 @@ public class SessionSerializationWithPdxRequiresNoServerConfigurationIntegration
 		System.setProperty("spring.session.data.gemfire.cache.server.port", String.valueOf(port));
 
 		String classpath = buildClassPathContainingJarFiles("javax.transaction-api", "antlr",
-			"commons-lang", "commons-io", "fastutil", "log4j-api", "log4j-core", "geode-common", "geode-core",
-			"geode-management", "jgroups", "micrometer-core", "shiro-core", "slf4j-api");
+			"commons-lang", "commons-io", "fastutil", "log4j-api", "log4j-to-slf4j", "logback-classic", "logback-core",
+			"geode-common", "geode-core", "geode-management", "jgroups", "micrometer-core", "shiro-core", "slf4j-api");
 
 		String processWorkingDirectoryPathname =
 			String.format("gemfire-server-pdx-serialization-tests-%1$s", TIMESTAMP.format(new Date()));
@@ -153,7 +153,10 @@ public class SessionSerializationWithPdxRequiresNoServerConfigurationIntegration
 				waitForProcessToStop(server, processWorkingDirectory));
 		});
 
-		if (Boolean.valueOf(System.getProperty("spring.session.data.gemfire.fork.clean", Boolean.TRUE.toString()))) {
+		boolean forkClean = !System.getProperties().containsKey("spring.session.data.gemfire.fork.clean")
+			|| Boolean.getBoolean("spring.session.data.gemfire.fork.clean");
+
+		if (forkClean) {
 			FileSystemUtils.deleteRecursively(processWorkingDirectory);
 		}
 	}
@@ -172,10 +175,10 @@ public class SessionSerializationWithPdxRequiresNoServerConfigurationIntegration
 		Session sessionById = get(session.getId());
 
 		assertThat(sessionById).isEqualTo(session);
+		assertThat(sessionById).isNotSameAs(session);
 		assertThat(sessionById.isExpired()).isFalse();
 
-		Map<String, Session> sessionsByPrincipalName = this.sessionRepository.findByIndexNameAndIndexValue(
-			GemFireOperationsSessionRepository.PRINCIPAL_NAME_INDEX_NAME, "jonDoe");
+		Map<String, Session> sessionsByPrincipalName = this.sessionRepository.findByPrincipalName("jonDoe");
 
 		assertThat(sessionsByPrincipalName).hasSize(1);
 
@@ -183,8 +186,51 @@ public class SessionSerializationWithPdxRequiresNoServerConfigurationIntegration
 
 		assertThat(sessionByPrincipalName).isInstanceOf(GemFireSession.class);
 		assertThat(sessionByPrincipalName).isEqualTo(session);
+		assertThat(sessionByPrincipalName).isNotSameAs(session);
 		assertThat(sessionByPrincipalName.isExpired()).isFalse();
 		assertThat(((GemFireSession) sessionByPrincipalName).getPrincipalName()).isEqualTo("jonDoe");
+	}
+
+	@Test
+	public void operationsOnSessionContainingApplicationDomainModelObjectIsSuccessful() {
+
+		UsernamePasswordAuthenticationToken jxblumToken =
+			new UsernamePasswordAuthenticationToken("jxblum", "p@55w0rd");
+
+		Session session = createSession("janeDoe");
+
+		assertThat(session).isInstanceOf(GemFireSession.class);
+
+		session.setAttribute("userToken", jxblumToken);
+
+		assertThat(session.getId()).isNotNull();
+		assertThat(session.getCreationTime()).isBeforeOrEqualTo(Instant.now());
+		assertThat(session.isExpired()).isFalse();
+		assertThat(session.<UsernamePasswordAuthenticationToken>getAttribute("userToken"))
+			.isEqualTo(jxblumToken);
+
+		Session savedSession = save(session);
+
+		assertThat(savedSession).isEqualTo(session);
+		assertThat(savedSession).isInstanceOf(GemFireSession.class);
+
+		// NOTE: You must update and save the Session again, after it has already been saved to cause Apache Geode to
+		// update the 'principalNameIndex' OQL Index on an Index Maintenance Operation!!!
+		((GemFireSession) savedSession).setPrincipalName("pieDoe");
+
+		savedSession = save(touch(savedSession));
+
+		assertThat(savedSession).isEqualTo(session);
+
+		Session loadedSession = get(savedSession.getId());
+
+		assertThat(loadedSession).isEqualTo(savedSession);
+		assertThat(loadedSession).isNotSameAs(savedSession);
+		assertThat(loadedSession.getCreationTime()).isEqualTo(savedSession.getCreationTime());
+		assertThat(loadedSession.getLastAccessedTime()).isAfterOrEqualTo(savedSession.getLastAccessedTime());
+		assertThat(loadedSession.isExpired()).isFalse();
+		assertThat(session.<UsernamePasswordAuthenticationToken>getAttribute("userToken"))
+			.isEqualTo(jxblumToken);
 	}
 
 	@ClientCacheApplication(logLevel = GEMFIRE_LOG_LEVEL, subscriptionEnabled = true)
