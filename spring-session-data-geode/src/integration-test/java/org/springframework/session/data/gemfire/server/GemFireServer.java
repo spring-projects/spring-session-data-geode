@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.server;
 
 import java.io.IOException;
@@ -28,6 +27,8 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.server.CacheServer;
 
 /**
@@ -74,7 +75,8 @@ public class GemFireServer implements Runnable {
 
 	@SuppressWarnings("unused")
 	protected void run(String[] args) {
-		createClusteredSpringSessionsRegion(addCacheServer(gemfireCache(gemfireProperties())));
+		createClusteredSpringSessionsRegionPrincipalNameIndex(createClusteredSpringSessionsRegion(
+			addCacheServer(gemfireCache(gemfireProperties()))));
 	}
 
 	protected Properties gemfireProperties() {
@@ -96,6 +98,7 @@ public class GemFireServer implements Runnable {
 	protected Cache addCacheServer(Cache gemfireCache) {
 
 		try {
+
 			CacheServer cacheServer = gemfireCache.addCacheServer();
 
 			cacheServer.setHostnameForClients("localhost");
@@ -109,7 +112,8 @@ public class GemFireServer implements Runnable {
 		}
 	}
 
-	protected Cache createClusteredSpringSessionsRegion(Cache gemfireCache) {
+	@SuppressWarnings("all")
+	protected Region createClusteredSpringSessionsRegion(Cache gemfireCache) {
 
 		RegionFactory<Object, Object> clusteredSpringSessionsRegion =
 			gemfireCache.createRegionFactory(RegionShortcut.PARTITION);
@@ -118,8 +122,27 @@ public class GemFireServer implements Runnable {
 			new ExpirationAttributes(Long.valueOf(TimeUnit.MINUTES.toSeconds(30)).intValue(),
 				ExpirationAction.INVALIDATE));
 
-		clusteredSpringSessionsRegion.create("ClusteredSpringSessions");
+		Region sessions = clusteredSpringSessionsRegion.create("ClusteredSpringSessions");
 
-		return gemfireCache;
+		return sessions;
+	}
+
+	protected Index createClusteredSpringSessionsRegionPrincipalNameIndex(Region sessionsRegion) {
+
+		String indexName = "principalNameIndex";
+
+		try {
+
+			QueryService queryService = sessionsRegion.getRegionService().getQueryService();
+
+			//queryService.createHashIndex(indexName, "principalName", sessionsRegion.getFullPath());
+			queryService.createIndex(indexName, "principalName", sessionsRegion.getFullPath());
+
+			return queryService.getIndex(sessionsRegion, "principalNameIndex");
+		}
+		catch (Exception cause) {
+			throw new RuntimeException(String.format("Failed to create the %s OQL Index on the %s Region",
+				indexName, sessionsRegion.getName()), cause);
+		}
 	}
 }
