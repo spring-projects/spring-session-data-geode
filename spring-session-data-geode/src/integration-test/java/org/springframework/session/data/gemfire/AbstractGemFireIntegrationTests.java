@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire;
 
 import static java.util.Arrays.stream;
@@ -263,7 +262,6 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 			.start();
 	}
 
-	@SuppressWarnings("all")
 	protected static File writeProcessControlFile(File path) throws IOException {
 
 		assertThat(path != null && path.isDirectory()).isTrue();
