@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.serialization.pdx.provider;
 
 import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
@@ -39,6 +38,8 @@ import org.springframework.session.data.gemfire.support.AbstractSession;
  * used to serialize a Spring {@link Session} using the GemFire/Geode's PDX Serialization framework.
  *
  * @author John Blum
+ * @see java.time.Duration
+ * @see java.time.Instant
  * @see org.apache.geode.pdx.PdxReader
  * @see org.apache.geode.pdx.PdxWriter
  * @see org.springframework.session.Session
@@ -60,6 +61,7 @@ public class PdxSerializableSessionSerializer extends AbstractPdxSerializableSes
 			writer.writeLong("maxInactiveIntervalInSeconds", session.getMaxInactiveInterval().getSeconds());
 			writer.writeString("principalName", session.getPrincipalName());
 			writer.writeObject("attributes", newMap(session.getAttributes()));
+			writer.markIdentityField("id");
 		}
 	}
 

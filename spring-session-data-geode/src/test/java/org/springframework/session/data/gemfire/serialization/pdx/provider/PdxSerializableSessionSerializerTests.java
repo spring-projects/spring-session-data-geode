@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.serialization.pdx.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -85,6 +84,8 @@ public class PdxSerializableSessionSerializerTests {
 
 		verify(this.mockPdxWriter, times(1))
 			.writeObject(eq("attributes"), eq(new HashMap<>(session.getAttributes())));
+
+		verify(this.mockPdxWriter, times(1)).markIdentityField(eq("id"));
 	}
 
 	@Test
