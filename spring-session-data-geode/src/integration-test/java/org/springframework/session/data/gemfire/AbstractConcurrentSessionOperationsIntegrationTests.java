@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,11 +25,11 @@ import static org.springframework.session.data.gemfire.AbstractGemFireOperations
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
+
+import org.junit.Test;
+import org.mockito.Mockito;
 
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -172,7 +171,8 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo", "attributeThree");
 			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("testThree");
-			assertThat(session instanceof GemFireSession && ((GemFireSession) session).hasDelta()).isTrue();
+			assertThat(session).isInstanceOf(GemFireSession.class);
+			assertThat(((GemFireSession) session).hasDelta()).isTrue();
 
 			save(session);
 		}
