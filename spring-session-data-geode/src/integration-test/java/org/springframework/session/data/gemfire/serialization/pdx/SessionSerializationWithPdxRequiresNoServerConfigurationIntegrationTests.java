@@ -126,7 +126,8 @@ public class SessionSerializationWithPdxRequiresNoServerConfigurationIntegration
 
 		String classpath = buildClassPathContainingJarFiles("javax.transaction-api", "antlr",
 			"commons-lang", "commons-io", "fastutil", "log4j-api", "log4j-to-slf4j", "logback-classic", "logback-core",
-			"geode-common", "geode-core", "geode-management", "jgroups", "micrometer-core", "shiro-core", "slf4j-api");
+			"geode-common", "geode-core", "geode-logging", "geode-management", "geode-serialization", "jgroups",
+			"micrometer-core", "shiro-core", "slf4j-api");
 
 		String processWorkingDirectoryPathname =
 			String.format("gemfire-server-pdx-serialization-tests-%1$s", TIMESTAMP.format(new Date()));
