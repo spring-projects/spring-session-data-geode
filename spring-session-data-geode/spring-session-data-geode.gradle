@@ -32,8 +32,8 @@ dependencies {
 	testCompile "org.springframework.data:spring-data-geode-test"
 	testCompile slf4jDependencies
 
-//	testRuntime "org.apache.logging.log4j:log4j-to-slf4j"
-//	testRuntime "ch.qos.logback:logback-classic"
+	testRuntime "ch.qos.logback:logback-classic"
+	testRuntime "org.apache.logging.log4j:log4j-to-slf4j"
 
 	integrationTestRuntime "org.springframework.shell:spring-shell"
 
