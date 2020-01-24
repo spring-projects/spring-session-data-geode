@@ -27,10 +27,6 @@
 		<appender-ref ref="testAppender"/>
 	</logger>
 
-	<logger name="org.springframework.data.gemfire.listener.adapter.ContinuousQueryListenerAdapter" level="off" additivity="false"/>
-
-	<logger name="org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer" level="off" additivity="false"/>
-
 	<root level="${logback.log.level:-ERROR}">
 		<appender-ref ref="console"/>
 	</root>
