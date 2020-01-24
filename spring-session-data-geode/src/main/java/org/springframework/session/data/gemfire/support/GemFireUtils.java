@@ -25,12 +25,11 @@ import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.internal.cache.AbstractRegion;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 
+import org.springframework.data.gemfire.util.CacheUtils;
 import org.springframework.lang.Nullable;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -76,12 +75,7 @@ public abstract class GemFireUtils {
 	 * @see org.apache.geode.cache.GemFireCache
 	 */
 	public static boolean isClient(@Nullable GemFireCache gemfireCache) {
-
-		boolean client = gemfireCache instanceof ClientCache;
-
-		client &= (!(gemfireCache instanceof GemFireCacheImpl) || ((GemFireCacheImpl) gemfireCache).isClient());
-
-		return client;
+		return CacheUtils.isClient(gemfireCache);
 	}
 
 	/**
@@ -142,7 +136,15 @@ public abstract class GemFireUtils {
 	}
 
 	private static boolean hasServerProxy(@Nullable Region<?, ?> region) {
-		return region instanceof AbstractRegion && ((AbstractRegion) region).hasServerProxy();
+
+		//return region instanceof AbstractRegion && ((AbstractRegion) region).hasServerProxy();
+
+		return Optional.ofNullable(region)
+			.map(Object::getClass)
+			.map(regionType -> ReflectionUtils.findMethod(regionType, "hasServerProxy"))
+			.map(hasServerProxyMethod -> ReflectionUtils.invokeMethod(hasServerProxyMethod, region))
+			.map(Boolean.TRUE::equals)
+			.orElse(false);
 	}
 
 	/**

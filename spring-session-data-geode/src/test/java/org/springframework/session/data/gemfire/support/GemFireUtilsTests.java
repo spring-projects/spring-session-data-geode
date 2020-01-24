@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,10 +41,11 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.internal.cache.AbstractRegion;
 
 /**
- * Unit tests for {@link GemFireUtils}.
+ * Unit Tests for {@link GemFireUtils}.
  *
  * @author John Blum
  * @see org.junit.Test
+ * @see org.mockito.Mock
  * @see org.mockito.Mockito
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.GemFireCache
@@ -153,6 +153,7 @@ public class GemFireUtilsTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void clientRegionWithPoolIsNonLocalClientRegion() {
 
 		ClientCache mockClientCache = mock(ClientCache.class);
@@ -173,6 +174,7 @@ public class GemFireUtilsTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void clientRegionWithServerProxyIsNonLocalClientRegion() {
 
 		ClientCache mockClientCache = mock(ClientCache.class);
@@ -195,6 +197,7 @@ public class GemFireUtilsTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void clientRegionWithNoPoolAndNoServerProxyIsNotNonLocalClientRegion() {
 
 		ClientCache mockClientCache = mock(ClientCache.class);
@@ -217,6 +220,7 @@ public class GemFireUtilsTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void nonClientRegionWithPoolIsNotNonLocalClientRegion() {
 
 		GemFireCache mockGemFireCache = mock(GemFireCache.class);
@@ -237,6 +241,7 @@ public class GemFireUtilsTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void peerRegionWithServerProxyIsNotNonLocalClientRegion() {
 
 		Cache mockPeerCache = mock(Cache.class);
@@ -258,6 +263,7 @@ public class GemFireUtilsTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void emptyRegionIsProxy() {
 
 		Region mockRegion = mock(Region.class);
@@ -274,6 +280,7 @@ public class GemFireUtilsTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void partitionRegionWithNoLocalMaxMemoryIsProxy() {
 
 		Region mockRegion = mock(Region.class);
@@ -296,6 +303,7 @@ public class GemFireUtilsTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void partitionRegionWithNegativeLocalMaxMemoryIsProxy() {
 
 		Region mockRegion = mock(Region.class);
@@ -318,6 +326,7 @@ public class GemFireUtilsTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void normalRegionIsNotProxy() {
 
 		Region mockRegion = mock(Region.class);
@@ -334,6 +343,7 @@ public class GemFireUtilsTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void partitionRegionWithLocalMaxMemoryIsNotProxy() {
 
 		Region mockRegion = mock(Region.class);
@@ -356,6 +366,7 @@ public class GemFireUtilsTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void partitionRegionWithNoPartitionAttributesIsNotProxy() {
 
 		Region mockRegion = mock(Region.class);
@@ -374,6 +385,7 @@ public class GemFireUtilsTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void preloadedRegionIsNotProxy() {
 
 		Region mockRegion = mock(Region.class);
@@ -390,6 +402,7 @@ public class GemFireUtilsTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void replicateRegionIsNotProxy() {
 
 		Region mockRegion = mock(Region.class);
