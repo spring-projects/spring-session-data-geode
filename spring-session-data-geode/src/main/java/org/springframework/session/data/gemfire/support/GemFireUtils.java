@@ -155,13 +155,7 @@ public abstract class GemFireUtils {
 	 * @see org.apache.geode.cache.client.ClientRegionShortcut
 	 */
 	public static boolean isProxy(ClientRegionShortcut shortcut) {
-
-		switch (shortcut) {
-			case PROXY:
-				return true;
-			default:
-				return false;
-		}
+		return ClientRegionShortcut.PROXY.equals(shortcut);
 	}
 
 	/**
@@ -172,6 +166,7 @@ public abstract class GemFireUtils {
 	 * @see org.apache.geode.cache.DataPolicy
 	 * @see org.apache.geode.cache.Region
 	 */
+	@SuppressWarnings("rawtypes")
 	public static boolean isProxy(Region<?, ?> region) {
 
 		RegionAttributes regionAttributes = region.getAttributes();
