@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,18 +33,19 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
+import edu.umd.cs.mtc.TestFramework;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
-import edu.umd.cs.mtc.TestFramework;
-
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
@@ -62,10 +62,25 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * The ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegrationTests class...
+ * Integration Tests testing the concurrent access of a {@link Session} stored in an Apache Geode
+ * {@link ClientCache client} {@link ClientRegionShortcut#LOCAL} {@link Region}.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see java.time.Instant
+ * @see org.junit.Test
+ * @see org.mockito.Mockito
+ * @see org.apache.geode.DataSerializer
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.client.Pool
+ * @see org.apache.geode.cache.client.PoolManager
+ * @see org.springframework.session.Session
+ * @see org.springframework.session.data.gemfire.AbstractConcurrentSessionOperationsIntegrationTests
+ * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
+ * @see org.springframework.test.context.ContextConfiguration
+ * @see org.springframework.test.context.junit4.SpringRunner
+ * @since 2.1.x
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(
@@ -260,7 +275,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 			this.sessions.put(session.getId(), session);
 
 			if (session instanceof GemFireSession) {
-				((GemFireSession) session).commit();
+				((GemFireSession<?>) session).commit();
 			}
 		}
 
@@ -281,11 +296,11 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 			session.setAttribute("attributeTwo", "testTwo");
 
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo");
-			assertThat(((GemFireSession) session).hasDelta()).isTrue();
+			assertThat(((GemFireSession<?>) session).hasDelta()).isTrue();
 
 			put(session);
 
-			assertThat(((GemFireSession) session).hasDelta()).isFalse();
+			assertThat(((GemFireSession<?>) session).hasDelta()).isFalse();
 
 			// Reload to (fully) deserialize Session
 			Session loadedSession = get(session.getId());
@@ -313,7 +328,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo");
 			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("testOne");
 			assertThat(session.<String>getAttribute("attributeTwo")).isEqualTo("testTwo");
-			assertThat(((GemFireSession) session).hasDelta()).isFalse();
+			assertThat(((GemFireSession<?>) session).hasDelta()).isFalse();
 
 			put(session);
 		}
