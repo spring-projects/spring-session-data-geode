@@ -69,7 +69,7 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 		protected AbstractConcurrentSessionOperationsTestCase(
 				@NonNull AbstractConcurrentSessionOperationsIntegrationTests testInstance) {
 
-			assertThat(testInstance).as("Test class instance is required").isNotNull();
+			assertThat(testInstance).describedAs("Test class instance is required").isNotNull();
 
 			this.testInstance = testInstance;
 
