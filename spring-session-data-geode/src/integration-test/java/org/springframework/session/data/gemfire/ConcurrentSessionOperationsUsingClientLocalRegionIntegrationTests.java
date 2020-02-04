@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import edu.umd.cs.mtc.TestFramework;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import edu.umd.cs.mtc.TestFramework;
-
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
@@ -35,10 +36,20 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * The ConcurrentSessionOperationsUsingClientLocalRegionIntegrationTests class...
+ * Integration Tests testing the concurrent access of a {@link Session} stored in an Apache Geode
+ * {@link ClientCache client} {@link ClientRegionShortcut#LOCAL} {@link Region}.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.junit.Test
+ * @see edu.umd.cs.mtc.TestFramework
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
+ * @see org.springframework.session.Session
+ * @see org.springframework.session.data.gemfire.AbstractConcurrentSessionOperationsIntegrationTests
+ * @see org.springframework.test.context.ContextConfiguration
+ * @see org.springframework.test.context.junit4.SpringRunner
+ * @since 2.1.x
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
@@ -117,6 +128,7 @@ public class ConcurrentSessionOperationsUsingClientLocalRegionIntegrationTests
 		poolName = "DEFAULT",
 		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME
 	)
+	@SuppressWarnings("unused")
 	static class TestConfiguration { }
 
 }
