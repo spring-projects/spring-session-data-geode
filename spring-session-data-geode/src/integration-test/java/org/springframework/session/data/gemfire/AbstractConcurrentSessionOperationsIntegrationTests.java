@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -42,6 +43,7 @@ import org.springframework.util.ObjectUtils;
  * and access based integration tests.
  *
  * @author John Blum
+ * @see java.time.Instant
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.springframework.session.Session
@@ -111,12 +113,15 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 	@SuppressWarnings("unused")
 	public static class ConcurrentSessionOperationsTestCase extends AbstractConcurrentSessionOperationsTestCase {
 
+		private final AtomicReference<Instant> lastAccessedTime = new AtomicReference<>(null);
 		private final AtomicReference<String> sessionId = new AtomicReference<>(null);
 
 		public ConcurrentSessionOperationsTestCase(AbstractConcurrentSessionOperationsIntegrationTests testInstance) {
 			super(testInstance);
 		}
 
+		// Creator Thread
+		@SuppressWarnings("rawtypes")
 		public void thread1() {
 
 			Thread.currentThread().setName("User Session One");
@@ -139,8 +144,8 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 
 			this.sessionId.set(session.getId());
 
-			waitForTick(3);
-			assertTick(3);
+			waitForTick(4);
+			assertTick(4);
 
 			// Save Session with no changes/no delta
 			assertThat(session instanceof GemFireSession && ((GemFireSession) session).hasDelta()).isFalse();
@@ -148,6 +153,7 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 			save(session);
 		}
 
+		// Modifier (Attribute) Thread
 		public void thread2() {
 
 			Thread.currentThread().setName("User Session Two");
@@ -172,11 +178,11 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo", "attributeThree");
 			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("testThree");
 			assertThat(session).isInstanceOf(GemFireSession.class);
-			assertThat(((GemFireSession) session).hasDelta()).isTrue();
 
 			save(session);
 		}
 
+		// Modifier (Timestamp) Thread
 		public void thread3() {
 
 			Thread.currentThread().setName("User Session Three");
@@ -193,10 +199,12 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("testOne");
 			assertThat(session.<String>getAttribute("attributeTwo")).isEqualTo("testTwo");
 
-			waitForTick(2);
-			assertTick(2);
+			waitForTick(3);
+			assertTick(3);
 
-			save(getTestInstance().forcedTouch(session));
+			this.lastAccessedTime.set(getTestInstance().forcedTouch(session).getLastAccessedTime());
+
+			save(session);
 		}
 
 		@Override
@@ -208,14 +216,14 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(this.sessionId.get());
-			assertThat(session.isExpired()).isFalse();
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo", "attributeThree");
 			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("testOne");
 			assertThat(session.<String>getAttribute("attributeTwo")).isEqualTo("testTwo");
 			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("testThree");
+			assertThat(session.isExpired()).isFalse();
+			assertThat(session.getLastAccessedTime()).isAfterOrEqualTo(this.lastAccessedTime.get());
 
-			verify(this.<GemFireOperationsSessionRepository>getSessionRepository(), times(3))
-				.doSave(eq(session));
+			verify(this.getSessionRepository(), times(3)).doSave(eq(session));
 		}
 	}
 }
