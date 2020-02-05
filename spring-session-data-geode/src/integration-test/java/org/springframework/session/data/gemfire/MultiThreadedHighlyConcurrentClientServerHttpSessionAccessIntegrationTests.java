@@ -39,12 +39,14 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
@@ -217,7 +219,6 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 		};
 	}
 
-	@SuppressWarnings("all")
 	private Callable<Integer> newRemoveSessionAttributeTask() {
 
 		return () -> {
@@ -371,7 +372,7 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 	}
 
 	static class SpyingDataSerializableSessionSerializer
-			extends AbstractDataSerializableSessionSerializer<GemFireSession> {
+			extends AbstractDataSerializableSessionSerializer<GemFireSession<?>> {
 
 		private static final AtomicInteger serializationCount = new AtomicInteger(0);
 
@@ -392,7 +393,7 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 		}
 
 		@Override
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public void serialize(GemFireSession session, DataOutput dataOutput) {
 
 			assertThat(session).isInstanceOf(DeltaCapableGemFireSession.class);
@@ -404,6 +405,7 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 		}
 
 		@Override
+		@SuppressWarnings("rawtypes")
 		public GemFireSession deserialize(DataInput dataInput) {
 			return this.sessionSerializer.deserialize(dataInput);
 		}
