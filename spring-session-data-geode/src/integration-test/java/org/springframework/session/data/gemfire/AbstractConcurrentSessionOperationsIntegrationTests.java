@@ -177,7 +177,6 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo", "attributeThree");
 			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("testThree");
-			assertThat(session).isInstanceOf(GemFireSession.class);
 
 			save(session);
 		}
