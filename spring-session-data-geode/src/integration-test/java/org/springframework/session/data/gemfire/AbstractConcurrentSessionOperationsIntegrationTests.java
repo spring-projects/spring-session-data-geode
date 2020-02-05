@@ -39,8 +39,8 @@ import org.springframework.session.SessionRepository;
 import org.springframework.util.ObjectUtils;
 
 /**
- * Abstract base class encapsulating functionality common to all concurrent {@link Session} operation
- * and access based integration tests.
+ * Abstract base class encapsulating functionality common to all concurrent {@link Session} data access operation
+ * based Integration Tests.
  *
  * @author John Blum
  * @see java.time.Instant
@@ -177,7 +177,6 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo", "attributeThree");
 			assertThat(session.<String>getAttribute("attributeThree")).isEqualTo("testThree");
-			assertThat(session).isInstanceOf(GemFireSession.class);
 
 			save(session);
 		}
