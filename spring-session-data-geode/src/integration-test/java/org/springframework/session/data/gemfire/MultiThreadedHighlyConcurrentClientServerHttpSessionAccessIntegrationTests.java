@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
@@ -64,7 +63,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Multi-Threaded, Highly-Concurrent, {@link Session} data access operations integration test.
+ * Multi-Threaded, Highly-Concurrent, {@link Session} Data Access Operations Integration Test.
  *
  * @author John Blum
  * @see java.util.concurrent.ExecutorService
@@ -89,16 +88,17 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 
 	private static final boolean SESSION_REFERENCE_CHECKING_ENABLED = false;
 
-	// TODO: Restore WORKLOAD_SIZE back to 10,000 once Apache Geode fixes its concurrency problems!
-	//  NOTE: This issue may be related to: https://issues.apache.org/jira/browse/GEODE-7663
+	// TODO: Set WORKLOAD_SIZE back to 10,000 once Apache Geode fixes its concurrency and resource problems!
+	//  NOTE: This issue may be related to (according to Anil Gingade): https://issues.apache.org/jira/browse/GEODE-7663
+	//  NOTE: https://issues.apache.org/jira/browse/GEODE-7763
 	private static final int THREAD_COUNT = 180;
-	private static final int WORKLOAD_SIZE = 2000;
+	private static final int WORKLOAD_SIZE = 4000;
 
 	private static final String GEMFIRE_LOG_LEVEL = "error";
 
 	@BeforeClass
 	public static void startGemFireServer() throws IOException {
-		startGemFireServer(GemFireServerConfiguration.class);
+		startGemFireServer(GemFireServerConfiguration.class, "-Xmx2g");
 	}
 
 	private final AtomicInteger sessionReferenceComparisonCounter = new AtomicInteger(0);
@@ -256,10 +256,8 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 				session.removeAttribute(attributeName);
 				returnValue = -1;
 			}
-			else {
-				Optional.ofNullable(attributeName)
-					.filter(StringUtils::hasText)
-					.ifPresent(this.sessionAttributeNames::add);
+			else if (StringUtils.hasText(attributeName)){
+				this.sessionAttributeNames.add(attributeName);
 			}
 
 			save(touch(session));
@@ -313,8 +311,7 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 				.sum();
 		}
 		finally {
-			Optional.of(sessionWorkloadExecutor)
-				.ifPresent(ExecutorService::shutdownNow);
+			sessionWorkloadExecutor.shutdownNow();
 		}
 	}
 
