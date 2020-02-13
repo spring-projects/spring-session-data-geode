@@ -1,0 +1,18 @@
+SPRING SESSION FOR APACHE GEODE & PIVOTAL GEMFIRE CHANGELOG
+-----------------------------------------------------------
+https://github.com/spring-projects/spring-session-data-geode
+============================================================
+
+
+Changes in version 2.3.0.M2 (2020-02-13)
+----------------------------------------
+Aligns Spring Session for Apache Geode & Pivotal GemFire (SSDG) with the latest Spring Framework, Spring Boot,
+Spring Data and Spring Session versions.
+
+* Upgrades to Spring Framework 5.2.3.RELEASE.
+* Upgrades to Spring Boot 2.3.0.M1.
+* Upgrades to Spring Data Commons 2.3.0.M3.
+* Upgrades to Spring Data for Apache Geode & Pivotal GemFire 2.3.0.M3.
+* Upgrades to Spring Data Release Train Neumann-M3.
+* Upgrades to Spring Session 2.3.0.M1.
+* Upgrades to Spring Session BOM Dragonfruit-M2.
