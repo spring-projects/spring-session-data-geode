@@ -1,0 +1,62 @@
+[[build-notes]]
+= Gradle Build Notes for Spring Session for Apache Geode & Pivotal GemFire (SSDG)
+
+This document contains notes on running specific Gradle (i.e. `gradlew`) build tasks.
+
+[[build-notes-test-run-single]]
+== Running a Single Unit Test
+
+Use the following `gradlew` command to run a single SSDG Unit Test in a specific module:
+
+.Example of running a single SSDG Unit Test class from the test suite
+[source,text]
+----
+$ gradlew :spring-session-data-geode:test
+    --tests=GemFireOperationsSessionRepositoryTests
+----
+
+[[build-notes-integrationTest-run-single]]
+== Running a Single Integration Test
+
+Use the following `gradlew` command to run a single SSDG Integration Test in the specified module:
+
+.Example of running a single SSDG Integration Test class from the test suite
+[source,text]
+----
+$ gradlew :spring-session-data-geode:integrationTest
+    --tests MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrationTests
+----
+
+[[build-notes-integrationTests-geode-logging]]
+== Setting Apache Geode's Log Level when running Integration Tests
+
+Set the Apache Geode Logger `org.apache.geode` Logger `log-level` using the JVM System Property, or alternatively,
+the Gradle Project Property `logback.log.level`.
+
+.Example setting Apache Geode Log Level using JVM System Property
+[source,txt]
+----
+$ gradlew :spring-session-data-geode:integrationTests -Dlogback.log.level=DEBUG
+----
+
+.Example setting Apache Geode Log Level using Gradlew Build Property
+[source,txt]
+----
+$ gradlew :spring-session-data-geode:integrationTests -Plogback.log.level=DEBUG
+----
+
+[[build-notes-test-jvm-heap-sizes]]
+== Setting (Unit | Integration) Test JVM Heap Memory Sizes
+
+Use the `-Ptest.jvm.heap.max-size` Gradle Project Property to set the test JVM Heap maximum memory size.
+
+Use the `-Ptest.jvm.heap.min-size` Gradle Project Property to set the test JVM Heap minimum memory size.
+
+.Setting the JVM Heap max and min memory size when running Unit and/or Integration Tests (or a single Unit or Integration Test)
+[source,text]
+----
+$ gradlew :spring-session-data-geode:integrationTest
+    --tests=MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrationTests
+    -Ptest.jvm.heap.max-size=4g
+    -Ptest.jvm.heap.min-size=512m
+----
