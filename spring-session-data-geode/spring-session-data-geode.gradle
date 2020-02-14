@@ -38,3 +38,33 @@ dependencies {
 	integrationTestRuntime "org.springframework.shell:spring-shell"
 
 }
+
+test {
+
+	maxHeapSize = project.hasProperty("test.jvm.heap.max-size")
+		? project.getProperty("test.jvm.heap.max-size")
+		: "512m"
+
+	minHeapSize = project.hasProperty("test.jvm.heap.min-size")
+		? project.getProperty("test.jvm.heap.min-size")
+		: "512m"
+
+}
+
+integrationTest {
+
+	maxHeapSize = project.hasProperty("test.jvm.heap.max-size")
+		? project.getProperty("test.jvm.heap.max-size")
+		: "2g"
+
+	minHeapSize = project.hasProperty("test.jvm.heap.min-size")
+		? project.getProperty("test.jvm.heap.min-size")
+		: "512m"
+
+	def gradleProjectPropertyLogbackLogLevel = project.hasProperty("logback.log.level")
+		? project.getProperty("logback.log.level")
+		: "ERROR";
+
+	systemProperty "logback.log.level", System.getProperty("logback.log.level", gradleProjectPropertyLogbackLogLevel)
+
+}
