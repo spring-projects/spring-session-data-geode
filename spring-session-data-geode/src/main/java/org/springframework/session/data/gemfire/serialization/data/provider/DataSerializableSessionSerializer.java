@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.serialization.data.provider;
 
 import static org.springframework.data.gemfire.util.ArrayUtils.asArray;
@@ -54,7 +53,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.session.data.gemfire.support.AbstractSession
  * @since 2.0.0
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({ "rawtypes", "unused" })
 public class DataSerializableSessionSerializer extends AbstractDataSerializableSessionSerializer<GemFireSession> {
 
 	/**
