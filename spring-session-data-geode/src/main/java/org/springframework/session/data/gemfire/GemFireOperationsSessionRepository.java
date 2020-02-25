@@ -29,7 +29,7 @@ import org.springframework.session.SessionRepository;
 
 /**
  * The {@link GemFireOperationsSessionRepository} class is a Spring {@link SessionRepository} implementation
- * that interfaces with and uses Pivotal GemFire to back and store Spring Sessions.
+ * that interfaces with and uses Apache Geode or Pivotal GemFire to back and store Spring Sessions.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.GemfireOperations
@@ -196,7 +196,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see org.springframework.session.Session
 	 */
 	private boolean isDirty(@NonNull Session session) {
-		return !(session instanceof GemFireSession) || ((GemFireSession) session).hasDelta();
+		return !(session instanceof GemFireSession) || ((GemFireSession<?>) session).hasDelta();
 	}
 
 	/**
