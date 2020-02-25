@@ -42,6 +42,7 @@ import org.apache.geode.Delta;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.Pool;
@@ -748,12 +749,12 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * @return a new {@link GemFireSession}.
 		 * @see #isUsingDataSerialization()
 		 */
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings("unchecked" )
 		public static <T extends GemFireSessionAttributes> GemFireSession<T> create() {
 
 			return isUsingDataSerialization()
 				? (GemFireSession<T>) new DeltaCapableGemFireSession()
-				: new GemFireSession();
+				: new GemFireSession<>();
 		}
 
 		/**
@@ -764,6 +765,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * @see org.springframework.session.Session
 		 * @see #isUsingDataSerialization()
 		 */
+		@SuppressWarnings("rawtypes")
 		public static GemFireSession copy(@NonNull Session session) {
 
 			return isUsingDataSerialization()
@@ -780,6 +782,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * or return a copy of the given {@link Session} as a {@link GemFireSession}.
 		 * @see #copy(Session)
 		 */
+		@SuppressWarnings("rawtypes")
 		public static GemFireSession from(@NonNull Session session) {
 			return session instanceof GemFireSession ? (GemFireSession) session : copy(session);
 		}
@@ -1475,6 +1478,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		public void afterCreate(EntryEvent<Object, Session> event) {
 
 			Optional.ofNullable(event)
+				.filter(this::isNotLocalLoadEvent)
 				.filter(this::remember)
 				.ifPresent(it -> getSessionRepository()
 					.publishEvent(newSessionCreatedEvent(toSession(it.getNewValue(), it.getKey()))));
@@ -1634,6 +1638,32 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		}
 
 		/**
+		 * Null-safe operation to determine whether the {@link Region} {@link EntryEvent} is
+		 * a {@link Operation#LOCAL_LOAD_CREATE} or a {@link Operation#LOCAL_LOAD_UPDATE}.
+		 *
+		 * @param event {@link Region} {@link EntryEvent} to evaluate.
+		 * @return a boolean value indicating whether the {@link Region} {@link EntryEvent} is a local load based event.
+		 * @see org.apache.geode.cache.EntryEvent
+		 * @see #isNotLocalLoadEvent(EntryEvent)
+		 */
+		protected boolean isLocalLoadEvent(@Nullable EntryEvent<?, ?> event) {
+			return event != null && event.getOperation() != null && event.getOperation().isLocalLoad();
+		}
+
+		/**
+		 * Null-safe operation to determine whether the {@link Region} {@link EntryEvent} is
+		 * a {@link Operation#LOCAL_LOAD_CREATE} or a {@link Operation#LOCAL_LOAD_UPDATE}.
+		 *
+		 * @param event {@link Region} {@link EntryEvent} to evaluate.
+		 * @return a boolean value indicating whether the {@link Region} {@link EntryEvent} is a local load based event.
+		 * @see org.apache.geode.cache.EntryEvent
+		 * @see #isLocalLoadEvent(EntryEvent)
+		 */
+		protected boolean isNotLocalLoadEvent(@Nullable EntryEvent<?, ?> event) {
+			return !isLocalLoadEvent(event);
+		}
+
+		/**
 		 * Determines whether the given {@link Session#getId() Session ID} has been remembered.
 		 *
 		 * @param sessionId {@link Object Session ID} to evaluate.
@@ -1760,13 +1790,14 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 */
 		protected Session toSession(@Nullable Object target, Object sessionId) {
 
-			return isSession(target) ? (Session) target
+			return isSession(target)
+				? (Session) target
 				: Optional.ofNullable(sessionId)
 					.filter(SessionUtils::isValidSessionId)
 					.map(Object::toString)
 					.map(SessionIdHolder::create)
 					.orElseThrow(() -> newIllegalStateException(
-						"Session or the Session ID [%s] must be known to trigger a Session event", sessionId));
+						"The Session or the Session ID [%s] must be known to trigger a Session event", sessionId));
 		}
 	}
 

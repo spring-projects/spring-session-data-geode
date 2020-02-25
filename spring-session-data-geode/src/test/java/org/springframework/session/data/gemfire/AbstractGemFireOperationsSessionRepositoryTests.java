@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
@@ -79,8 +80,6 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
 
-import org.slf4j.Logger;
-
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.gemfire.GemfireOperations;
@@ -104,8 +103,10 @@ import org.springframework.session.events.SessionDestroyedEvent;
 import org.springframework.session.events.SessionExpiredEvent;
 import org.springframework.util.ObjectUtils;
 
+import org.slf4j.Logger;
+
 /**
- * Unit tests for {@link AbstractGemFireOperationsSessionRepository}.
+ * Unit Tests for {@link AbstractGemFireOperationsSessionRepository}.
  *
  * @author John Blum
  * @see java.time.Duration
@@ -120,11 +121,13 @@ import org.springframework.util.ObjectUtils;
  * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.mockito.Spy
  * @see org.apache.geode.Delta
+ * @see org.apache.geode.cache.AttributesMutator
+ * @see org.apache.geode.cache.EntryEvent
+ * @see org.apache.geode.cache.Operation
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.RegionAttributes
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.client.Pool
- * @see org.springframework.data.gemfire.GemfireOperations
  * @see org.springframework.data.gemfire.GemfireTemplate
  * @see org.springframework.session.FindByIndexNameSessionRepository
  * @see org.springframework.session.Session
@@ -136,6 +139,7 @@ import org.springframework.util.ObjectUtils;
  * @since 1.1.0
  */
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("rawtypes")
 public class AbstractGemFireOperationsSessionRepositoryTests {
 
 	protected static final int MAX_INACTIVE_INTERVAL_IN_SECONDS = 300;
@@ -156,7 +160,6 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	private Session mockSession;
 
 	@Before
-	@SuppressWarnings("all")
 	public void setup() {
 
 		this.sessionRepository = new TestGemFireOperationsSessionRepository(new GemfireTemplate(this.mockRegion));
@@ -1042,6 +1045,23 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 	@Test
 	@SuppressWarnings("unchecked")
+	public void afterCreateHandlesLocalLoadCreateDoesNotPublishSessionCreatedEvent() {
+
+		SessionEventHandlerCacheListenerAdapter sessionEventHandler =
+			spy(this.sessionRepository.newSessionEventHandler());
+
+		EntryEvent mockEntryEvent = mock(EntryEvent.class);
+
+		when(mockEntryEvent.getOperation()).thenReturn(Operation.LOCAL_LOAD_CREATE);
+
+		sessionEventHandler.afterCreate(mockEntryEvent);
+
+		verify(mockEntryEvent, atLeastOnce()).getOperation();
+		verify(this.sessionRepository, never()).publishEvent(any());
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
 	public void afterCreateHandlesNullSessionWillNotPublishSessionCreatedEvent() {
 
 		SessionEventHandlerCacheListenerAdapter sessionEventHandler =
@@ -1137,7 +1157,9 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		}
 		catch (IllegalStateException expected) {
 
-			assertThat(expected).hasMessage("Session or the Session ID [null] must be known to trigger a Session event");
+			assertThat(expected)
+				.hasMessage("The Session or the Session ID [null] must be known to trigger a Session event");
+
 			assertThat(expected).hasNoCause();
 
 			throw expected;
@@ -1562,6 +1584,80 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
+	public void isLocalLoadEventWithNullEvent() {
+
+		SessionEventHandlerCacheListenerAdapter sessionEventHandler = this.sessionRepository.newSessionEventHandler();
+
+		assertThat(sessionEventHandler).isNotNull();
+		assertThat(sessionEventHandler.isLocalLoadEvent(null)).isFalse();
+		assertThat(sessionEventHandler.isNotLocalLoadEvent(null)).isTrue();
+	}
+
+	@Test
+	public void isLocalLoadEventWithNullOperation() {
+
+		SessionEventHandlerCacheListenerAdapter sessionEventHandler = this.sessionRepository.newSessionEventHandler();
+
+		EntryEvent mockEntryEvent = mock(EntryEvent.class);
+
+		when(mockEntryEvent.getOperation()).thenReturn(null);
+
+		assertThat(sessionEventHandler).isNotNull();
+		assertThat(sessionEventHandler.isLocalLoadEvent(mockEntryEvent)).isFalse();
+		assertThat(sessionEventHandler.isNotLocalLoadEvent(mockEntryEvent)).isTrue();
+
+		verify(mockEntryEvent, times(2)).getOperation();
+	}
+
+	@Test
+	public void isLocalLoadEventWithFunctionExecutionOperation() {
+
+		SessionEventHandlerCacheListenerAdapter sessionEventHandler = this.sessionRepository.newSessionEventHandler();
+
+		EntryEvent mockEntryEvent = mock(EntryEvent.class);
+
+		when(mockEntryEvent.getOperation()).thenReturn(Operation.FUNCTION_EXECUTION);
+
+		assertThat(sessionEventHandler).isNotNull();
+		assertThat(sessionEventHandler.isLocalLoadEvent(mockEntryEvent)).isFalse();
+		assertThat(sessionEventHandler.isNotLocalLoadEvent(mockEntryEvent)).isTrue();
+
+		verify(mockEntryEvent, times(4)).getOperation();
+	}
+
+	@Test
+	public void isLocalLoadEventWithLocalLoadCreateOperation() {
+
+		SessionEventHandlerCacheListenerAdapter sessionEventHandler = this.sessionRepository.newSessionEventHandler();
+
+		EntryEvent mockEntryEvent = mock(EntryEvent.class);
+
+		when(mockEntryEvent.getOperation()).thenReturn(Operation.LOCAL_LOAD_CREATE);
+
+		assertThat(sessionEventHandler).isNotNull();
+		assertThat(sessionEventHandler.isLocalLoadEvent(mockEntryEvent)).isTrue();
+		assertThat(sessionEventHandler.isNotLocalLoadEvent(mockEntryEvent)).isFalse();
+
+		verify(mockEntryEvent, times(4)).getOperation();
+	}
+
+	@Test
+	public void isLocalLoadEventWithLocalLoadUpdateOperation() {
+
+		SessionEventHandlerCacheListenerAdapter sessionEventHandler = this.sessionRepository.newSessionEventHandler();
+
+		EntryEvent mockEntryEvent = mock(EntryEvent.class);
+
+		when(mockEntryEvent.getOperation()).thenReturn(Operation.LOCAL_LOAD_UPDATE);
+
+		assertThat(sessionEventHandler).isNotNull();
+		assertThat(sessionEventHandler.isLocalLoadEvent(mockEntryEvent)).isTrue();
+		assertThat(sessionEventHandler.isNotLocalLoadEvent(mockEntryEvent)).isFalse();
+
+		verify(mockEntryEvent, times(4)).getOperation();
+	}
+
+	@Test
 	public void isRememberedWithKnownSessionId() {
 
 		SessionEventHandlerCacheListenerAdapter sessionEventHandler = this.sessionRepository.newSessionEventHandler();
@@ -1621,7 +1717,6 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void forgetNullEntryEvent() {
 
 		SessionEventHandlerCacheListenerAdapter sessionEventHandler = this.sessionRepository.newSessionEventHandler();
@@ -1887,7 +1982,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		catch (IllegalStateException expected) {
 
 			assertThat(expected)
-				.hasMessage("Session or the Session ID [%s] must be known to trigger a Session event",
+				.hasMessage("The Session or the Session ID [%s] must be known to trigger a Session event",
 					sessionId);
 
 			assertThat(expected).hasNoCause();
@@ -2157,6 +2252,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		assertThat(session.getAttributes()).isEmpty();
 	}
 
+	@SuppressWarnings("all")
 	@Test(expected = IllegalArgumentException.class)
 	public void copyNullThrowsIllegalArgumentException() {
 
@@ -2275,6 +2371,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		verify(mockSession, never()).getAttribute(anyString());
 	}
 
+	@SuppressWarnings("all")
 	@Test(expected = IllegalArgumentException.class)
 	public void fromNullSessionThrowsIllegalArgumentException() {
 
