@@ -89,12 +89,10 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 	private static final boolean SESSION_REFERENCE_CHECKING_ENABLED = false;
 
 	// TODO: Set WORKLOAD_SIZE back to 10,000 once Apache Geode fixes its concurrency and resource problems!
-	//  NOTE: This issue may be related to (according to Anil Gingade): https://issues.apache.org/jira/browse/GEODE-7663
-	//  NOTE: https://issues.apache.org/jira/browse/GEODE-7763
+	//  NOTE: This issue may be related to (from Anil Gingade): https://issues.apache.org/jira/browse/GEODE-7663
+	//  NOTE: See https://issues.apache.org/jira/browse/GEODE-7763
 	private static final int THREAD_COUNT = 180;
 	private static final int WORKLOAD_SIZE = 4000;
-
-	private static final String GEMFIRE_LOG_LEVEL = "error";
 
 	@BeforeClass
 	public static void startGemFireServer() throws IOException {
@@ -330,7 +328,7 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 		assertThat(session.getAttributeNames()).hasSize(sessionAttributeCount);
 	}
 
-	@ClientCacheApplication(copyOnRead = true, logLevel = GEMFIRE_LOG_LEVEL, subscriptionEnabled = true)
+	@ClientCacheApplication(subscriptionEnabled = true)
 	@EnableGemFireHttpSession(
 		clientRegionShortcut = ClientRegionShortcut.PROXY,
 		poolName = "DEFAULT",
@@ -345,10 +343,7 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 		}
 	}
 
-	@CacheServerApplication(
-		name = "MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrationTests",
-		logLevel = GEMFIRE_LOG_LEVEL
-	)
+	@CacheServerApplication(name = "MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrationTests")
 	@EnableLocator
 	@EnableGemFireHttpSession(
 		regionName = "Sessions",
