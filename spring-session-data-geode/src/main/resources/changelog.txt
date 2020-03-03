@@ -4,6 +4,27 @@ https://github.com/spring-projects/spring-session-data-geode
 ============================================================
 
 
+Changes in version 2.3.0.RC1 (2020-03-03)
+-----------------------------------------
+Aligns Spring Session for Apache Geode & Pivotal GemFire (SSDG) with the latest Spring Framework, Spring Boot,
+Spring Data and Spring Session versions.
+
+* Adds Gradle build notes for the project.  The build notes describe how to adjust build and test, min and max
+JVM Heap Memory, run individual Unit & Integration Tests in isolation, and adjust Apache Geode Logging.
+* Ignores unnecessary handling of LOCAL_LOAD_CREATED cache Region EntryEvents in
+the SessionEventHandlerCacheListenerAdapter.
+* Updates reference documentation style.
+* Upgrades to FreeFair Lombok Gradle Plugin 5.0.0-rc2.
+* Upgrades to Spring Framework 5.2.4.RELEASE.
+* Upgrades to Spring Boot 2.3.0.M2.
+* Upgrades to Spring Data Commons 2.3.0.M3.
+* Upgrades to Spring Data for Apache Geode & Pivotal GemFire 2.3.0.M3.
+* Upgrades to Spring Data Release Train Neumann-M3.
+* Upgrades to Spring Session 2.3.0.RC1.
+* Upgrades to Spring Session BOM Dragonfruit-M2.
+* Upgrades to Spring Test for Apache Geode & Pivotal GemFire 0.0.14.NEUMANN-BUILD-SNAPSHOT.
+
+
 Changes in version 2.3.0.M2 (2020-02-13)
 ----------------------------------------
 Aligns Spring Session for Apache Geode & Pivotal GemFire (SSDG) with the latest Spring Framework, Spring Boot,
