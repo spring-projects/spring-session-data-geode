@@ -16,3 +16,22 @@ Spring Data and Spring Session versions.
 * Upgrades to Spring Data Release Train Neumann-M3.
 * Upgrades to Spring Session 2.3.0.M1.
 * Upgrades to Spring Session BOM Dragonfruit-M2.
+
+
+Changes in version 2.3.0.M1 (2020-01-24)
+----------------------------------------
+Aligns Spring Session for Apache Geode & Pivotal GemFire (SSDG) with the latest Spring Framework, Spring Boot,
+Spring Data and Spring Session versions.
+
+* Removes (reduces) use of internal Apache Geode APIs;
+Resolves (partly) https://github.com/spring-projects/spring-session-data-geode/issues/48.
+* Upgrades to Spring Framework 5.2.3.RELEASE.
+* Upgrades to Spring Boot 2.3.0.M1.
+* Upgrades to Spring Data Commons 2.3.0.M2.
+* Upgrades to Spring Data for Apache Geode & Pivotal GemFire 2.3.0.M2.
+* Upgrades to Spring Data Release Train Neumann-M2.
+* Upgrades to Spring Test for Apache Geode & Pivotal GemFire 0.0.13.NEUMANN-BUILD-SNAPSHOT.
+* Upgrades to Apache Geode 1.11.0.
+* Upgrades to Pivotal GemFire 9.9.1.
+* Use Spring Session 2.2.0.RELEASE.
+* Use Spring Session BOM Corn-RELEASE.
