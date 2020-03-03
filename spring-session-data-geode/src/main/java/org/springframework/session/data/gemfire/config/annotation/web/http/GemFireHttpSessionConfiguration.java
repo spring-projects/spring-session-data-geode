@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.config.annotation.web.http;
 
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
@@ -141,7 +140,7 @@ import org.springframework.util.StringUtils;
  * @since 1.1.0
  */
 @Configuration
-@SuppressWarnings("unused")
+@SuppressWarnings({ "rawtypes", "unused" })
 public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionConfiguration implements ImportAware {
 
 	/**
@@ -625,6 +624,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @see #applySpringSessionGemFireConfigurer()
 	 * @see #exposeSpringSessionGemFireConfiguration()
 	 */
+	@SuppressWarnings("all")
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
 
 		AnnotationAttributes enableGemFireHttpSessionAttributes =
@@ -1071,7 +1071,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	 * @see #isExpirationAllowed(GemFireCache)
 	 */
 	@Bean
-	@SuppressWarnings({ "unchecked", "deprecation" })
+	@SuppressWarnings("unchecked")
 	public RegionAttributesFactoryBean sessionRegionAttributes(GemFireCache gemfireCache) {
 
 		RegionAttributesFactoryBean regionAttributes = new RegionAttributesFactoryBean();

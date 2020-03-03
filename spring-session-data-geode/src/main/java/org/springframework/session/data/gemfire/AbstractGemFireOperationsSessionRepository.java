@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire;
 
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
@@ -748,7 +747,8 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * @return a new {@link GemFireSession}.
 		 * @see #isUsingDataSerialization()
 		 */
-		@SuppressWarnings("unchecked")
+		@NonNull
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public static <T extends GemFireSessionAttributes> GemFireSession<T> create() {
 
 			return isUsingDataSerialization()
@@ -764,7 +764,8 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * @see org.springframework.session.Session
 		 * @see #isUsingDataSerialization()
 		 */
-		public static GemFireSession copy(@NonNull Session session) {
+		@SuppressWarnings("rawtypes")
+		public static @NonNull GemFireSession copy(@NonNull Session session) {
 
 			return isUsingDataSerialization()
 				? new DeltaCapableGemFireSession(session)
@@ -780,7 +781,8 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * or return a copy of the given {@link Session} as a {@link GemFireSession}.
 		 * @see #copy(Session)
 		 */
-		public static GemFireSession from(@NonNull Session session) {
+		@SuppressWarnings("rawtypes")
+		public static @NonNull GemFireSession from(@NonNull Session session) {
 			return session instanceof GemFireSession ? (GemFireSession) session : copy(session);
 		}
 
@@ -1081,7 +1083,6 @@ public abstract class AbstractGemFireOperationsSessionRepository
 			return this;
 		}
 
-		@SuppressWarnings("all")
 		@Override
 		public int compareTo(Session session) {
 			return getCreationTime().compareTo(session.getCreationTime());
@@ -1350,7 +1351,6 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		}
 
 		@Override
-		@SuppressWarnings("all")
 		public Set<Entry<String, Object>> entrySet() {
 
 			synchronized (getLock()) {

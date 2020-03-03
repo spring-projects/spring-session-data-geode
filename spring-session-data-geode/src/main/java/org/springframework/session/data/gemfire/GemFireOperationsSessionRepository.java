@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire;
 
 import java.util.HashMap;
@@ -193,6 +192,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession#hasDelta()
 	 * @see org.springframework.session.Session
 	 */
+	@SuppressWarnings("rawtypes")
 	private boolean isDirty(@NonNull Session session) {
 		return !(session instanceof GemFireSession) || ((GemFireSession) session).hasDelta();
 	}
