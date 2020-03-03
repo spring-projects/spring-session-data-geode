@@ -1,6 +1,9 @@
 = Spring Session - HttpSession with Apache Geode Client/Server using Spring Boot and Gfsh Started Servers
 John Blum
-:toc:
+:toc: left
+:stylesdir: ../
+:highlightjsdir: ../js/highlight
+:docinfodir: guides
 :data-store-name: Apache Geode
 :data-store-version: 16
 :data-store-docs: https://geode.apache.org/docs/guide/{data-store-version}

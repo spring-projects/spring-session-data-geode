@@ -1,6 +1,9 @@
 = Spring Session - HttpSession with Apache Geode P2P using Java Configuration
 John Blum
-:toc:
+:toc: left
+:stylesdir: ../
+:highlightjsdir: ../js/highlight
+:docinfodir: guides
 
 This guide describes how to configure Apache Geode as a provider in Spring Session to transparently manage
 a Web application's `javax.servlet.http.HttpSession` using Java configuration.

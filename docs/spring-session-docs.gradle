@@ -23,12 +23,11 @@ asciidoctor {
 	def ghTag = snapshotBuild ? 'master' : project.version
 	def ghUrl = "https://github.com/spring-projects/spring-session-data-geode/tree/$ghTag"
 
-	attributes 'version-snapshot': snapshotBuild,
-		'version-milestone': milestoneBuild,
-		'version-release': releaseBuild,
-		'gh-url': ghUrl,
+	attributes 'gh-url': ghUrl,
 		'gh-samples-url': "$ghUrl/samples/",
 		'download-url' : "https://github.com/spring-projects/spring-session-data-geode/archive/${ghTag}.zip",
+		'docinfodir@': ".",
+		'highlightjsdir@': "js/highlight",
 //		'spring-version' : "$springVersion",
 		'spring-version' : versions['org.springframework:spring-core'],
 		'spring-data-commons-version' : "$springDataCommonsVersion",
@@ -39,7 +38,10 @@ asciidoctor {
 		'docs-test-dir' : rootProject.projectDir.path + '/docs/src/test/java/',
 		'docs-test-resources-dir' : rootProject.projectDir.path + '/docs/src/test/resources/',
 		'samples-dir' : rootProject.projectDir.path + '/samples/',
-		'session-main-resources-dir' : rootProject.projectDir.path + '/spring-session/src/main/resources/'
+		'session-main-resources-dir' : rootProject.projectDir.path + '/spring-session/src/main/resources/',
+		'version-snapshot': snapshotBuild,
+		'version-milestone': milestoneBuild,
+		'version-release': releaseBuild
 }
 
 javadoc {

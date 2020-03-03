@@ -1,6 +1,9 @@
 = Spring Session - HttpSession with Apache Geode Client/Server using Spring Boot
 John Blum
-:toc:
+:toc: left
+:stylesdir: ../
+:highlightjsdir: ../js/highlight
+:docinfodir: guides
 
 This guide describes how to build a Spring Boot application configured with Spring Session to transparently leverage
 Apache Geode to manage a web application's `javax.servlet.http.HttpSession`.
