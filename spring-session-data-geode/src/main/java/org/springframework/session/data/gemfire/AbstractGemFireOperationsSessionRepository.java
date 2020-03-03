@@ -48,9 +48,6 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -76,6 +73,9 @@ import org.springframework.session.events.SessionDestroyedEvent;
 import org.springframework.session.events.SessionExpiredEvent;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link AbstractGemFireOperationsSessionRepository} is an abstract base class encapsulating functionality
@@ -748,7 +748,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * @return a new {@link GemFireSession}.
 		 * @see #isUsingDataSerialization()
 		 */
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public static <T extends GemFireSessionAttributes> GemFireSession<T> create() {
 
 			return isUsingDataSerialization()
@@ -764,6 +764,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * @see org.springframework.session.Session
 		 * @see #isUsingDataSerialization()
 		 */
+		@SuppressWarnings("rawtypes")
 		public static GemFireSession copy(@NonNull Session session) {
 
 			return isUsingDataSerialization()
@@ -780,6 +781,7 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * or return a copy of the given {@link Session} as a {@link GemFireSession}.
 		 * @see #copy(Session)
 		 */
+		@SuppressWarnings("rawtypes")
 		public static GemFireSession from(@NonNull Session session) {
 			return session instanceof GemFireSession ? (GemFireSession) session : copy(session);
 		}
@@ -1349,7 +1351,6 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		}
 
 		@Override
-		@SuppressWarnings("all")
 		public Set<Entry<String, Object>> entrySet() {
 
 			synchronized (getLock()) {

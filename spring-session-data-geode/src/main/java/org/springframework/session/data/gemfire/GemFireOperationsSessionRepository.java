@@ -69,7 +69,6 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see #configure(Session)
 	 */
 	@NonNull
-	@SuppressWarnings("all")
 	public Session createSession() {
 		return configure(GemFireSession.create());
 	}
@@ -161,7 +160,6 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see #commit(Session)
 	 * @see #touch(Session)
 	 */
-	@SuppressWarnings("all")
 	private Session prepare(Session session) {
 		return touch(commit(registerInterest(configure(session))));
 	}
@@ -179,7 +177,6 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see #isNonNullAndDirty(Session)
 	 * @see #doSave(Session)
 	 */
-	@SuppressWarnings("all")
 	public void save(@Nullable Session session) {
 
 		if (isNonNullAndDirty(session)) {
@@ -195,6 +192,7 @@ public class GemFireOperationsSessionRepository extends AbstractGemFireOperation
 	 * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession#hasDelta()
 	 * @see org.springframework.session.Session
 	 */
+	@SuppressWarnings("rawtypes")
 	private boolean isDirty(@NonNull Session session) {
 		return !(session instanceof GemFireSession) || ((GemFireSession) session).hasDelta();
 	}

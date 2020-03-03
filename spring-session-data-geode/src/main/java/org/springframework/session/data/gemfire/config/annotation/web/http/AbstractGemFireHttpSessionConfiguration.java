@@ -20,9 +20,6 @@ import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newI
 import java.util.Objects;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -34,6 +31,9 @@ import org.springframework.session.config.annotation.web.http.SpringHttpSessionC
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The {@link AbstractGemFireHttpSessionConfiguration} class is an abstract base class containing configuration logic
