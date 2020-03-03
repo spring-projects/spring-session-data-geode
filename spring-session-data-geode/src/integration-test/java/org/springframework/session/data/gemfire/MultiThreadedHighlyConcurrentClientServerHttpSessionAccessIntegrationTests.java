@@ -92,7 +92,7 @@ public class MultiThreadedHighlyConcurrentClientServerHttpSessionAccessIntegrati
 	//  NOTE: This issue may be related to (from Anil Gingade): https://issues.apache.org/jira/browse/GEODE-7663
 	//  NOTE: See https://issues.apache.org/jira/browse/GEODE-7763
 	private static final int THREAD_COUNT = 180;
-	private static final int WORKLOAD_SIZE = 4000;
+	private static final int WORKLOAD_SIZE = 3000;
 
 	@BeforeClass
 	public static void startGemFireServer() throws IOException {
