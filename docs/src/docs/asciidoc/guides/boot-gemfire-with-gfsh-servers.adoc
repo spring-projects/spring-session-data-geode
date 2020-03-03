@@ -28,6 +28,9 @@ to serialize the `HttpSession`.  Therefore, it is necessary to perform additiona
 {data-store-name}'s _DataSerialization_ capabilities on the servers so {data-store-name} properly recognizes
 the Spring Session types.
 
+[#index-link]
+link:../index.html[Index]
+
 == Updating Dependencies
 
 Before using Spring Session, you must ensure that the required dependencies are included.

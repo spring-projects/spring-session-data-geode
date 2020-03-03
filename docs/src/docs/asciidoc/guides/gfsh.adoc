@@ -1,3 +1,5 @@
+:stylesdir: ../
+
 NOTE: The following instructions assume you have installed a local Apache Geode installation.  For more information
 on installation, see {data-store-docs}/prereq_and_install.html[Prerequisites and Installation Instructions].
 

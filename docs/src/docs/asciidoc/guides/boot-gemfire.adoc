@@ -15,6 +15,9 @@ making use of the `HttpSession`.
 NOTE: The completed guide can be found in the
 <<spring-session-sample-boot-geode,Spring Boot Sample Web Application with an Apache Geode managed HttpSession>>.
 
+[#index-link]
+link:../index.html[Index]
+
 == Updating Dependencies
 
 Before using Spring Session, you must ensure that the required dependencies are included.

@@ -11,6 +11,9 @@ a Web application's `javax.servlet.http.HttpSession` using Java Configuration.
 NOTE: The completed guide can be found in the
 <<spring-session-sample-java-geode-clientserver,HttpSession managed by a Java configured, Apache Geode Client/Server Sample Application>>.
 
+[#index-link]
+link:../index.html[Index]
+
 == Updating Dependencies
 
 Before using Spring Session, you must ensure that the required dependencies are included.

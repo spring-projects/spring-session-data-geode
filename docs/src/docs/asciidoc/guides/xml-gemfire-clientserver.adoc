@@ -10,6 +10,9 @@ a Web application's `javax.servlet.http.HttpSession` using XML Configuration.
 
 NOTE: The completed guide can be found in the <<spring-session-sample-xml-geode-clientserver,Spring XML Configuation>>.
 
+[#index-link]
+link:../index.html[Index]
+
 == Updating Dependencies
 
 Before using Spring Session, you must ensure that the required dependencies are included.
