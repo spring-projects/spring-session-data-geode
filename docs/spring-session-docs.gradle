@@ -17,8 +17,6 @@ dependencies {
 }
 
 def versions = dependencyManagement.managedVersions
-def relativePathToSpringCss = "css/spring.css"
-def pathToSpringCss = new File(project.getBuildDir(), relativePathToSpringCss).getAbsolutePath()
 
 asciidoctor {
 
@@ -30,7 +28,6 @@ asciidoctor {
 		'download-url' : "https://github.com/spring-projects/spring-session-data-geode/archive/${ghTag}.zip",
 		'docinfodir@': ".",
 		'highlightjsdir@': "js/highlight",
-		'stylesheet' : pathToSpringCss,
 //		'spring-version' : "$springVersion",
 		'spring-version' : versions['org.springframework:spring-core'],
 		'spring-data-commons-version' : "$springDataCommonsVersion",

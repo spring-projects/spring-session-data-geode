@@ -11,6 +11,9 @@ a Web application's `javax.servlet.http.HttpSession` using XML configuration.
 NOTE: The completed guide can be found in the
 <<spring-session-sample-xml-gemfire-p2p,HttpSession with Apache Geode (P2P) using XML Sample Application>>.
 
+[#index-link]
+link:../index.html[Index]
+
 == Updating Dependencies
 
 Before using Spring Session, you must ensure that the required dependencies are included.

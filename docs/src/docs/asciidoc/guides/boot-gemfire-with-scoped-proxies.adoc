@@ -33,6 +33,9 @@ a Spring Web MVC application making use of an `HttpSession`.
 NOTE: The completed guide can be found below, in section
 <<spring-session-sample-boot-geode-with-scoped-proxies,Sample Spring Boot Web Application using Apache Geode-managed HttpSessions with Request and Session Scoped Proxy Beans>>.
 
+[#index-link]
+link:../index.html[Index]
+
 == Updating Dependencies
 
 Before using Spring Session, you must ensure that the required dependencies are included.
