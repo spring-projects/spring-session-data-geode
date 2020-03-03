@@ -141,7 +141,7 @@ import org.springframework.util.StringUtils;
  * @since 1.1.0
  */
 @Configuration
-@SuppressWarnings("unused")
+@SuppressWarnings({ "rawtypes", "unused" })
 public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionConfiguration implements ImportAware {
 
 	/**

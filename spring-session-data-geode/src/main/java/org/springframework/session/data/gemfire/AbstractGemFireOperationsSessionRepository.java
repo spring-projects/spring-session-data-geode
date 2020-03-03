@@ -1352,7 +1352,6 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		}
 
 		@Override
-		@SuppressWarnings("all")
 		public Set<Entry<String, Object>> entrySet() {
 
 			synchronized (getLock()) {
