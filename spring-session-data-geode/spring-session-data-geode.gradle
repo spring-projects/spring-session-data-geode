@@ -21,7 +21,9 @@ dependencies {
 
 	// TODO: Remove when all internal Apache Geode API usage is removed; Only required by tests!
 	provided "org.apache.geode:geode-logging:$apacheGeodeVersion"
-	provided "org.apache.geode:geode-serialization:$apacheGeodeVersion"
+	provided "org.apache.geode:geode-membership:$apacheGeodeVersion" // Need for Geode Serialization
+	provided "org.apache.geode:geode-serialization:$apacheGeodeVersion" // Need for Geode Serialization
+	provided "org.apache.geode:geode-tcp-server:$apacheGeodeVersion" // Need for Geode Serialization
 
 	testCompile "org.assertj:assertj-core"
 	testCompile "junit:junit"
