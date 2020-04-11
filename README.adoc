@@ -6,7 +6,7 @@ image:https://badges.gitter.im/spring-projects/spring-session.svg[link="https://
 image:https://travis-ci.org/spring-projects/spring-session.svg?branch=master["Build Status", link="https://travis-ci.org/spring-projects/spring-session-data-geode"]
 
 [[ssdg]]
-= Spring Session for Apache Geode & Pivotal GemFire
+== Spring Session for Apache Geode & Pivotal GemFire
 
 _Spring Session_ core provides an API along with several provider implementations to manage user sessions.  It also
 simplifies the support for clustered session state management without being tied to an application container
@@ -64,25 +64,25 @@ your requirements and UC change (e.g. from simple session caching to a full on _
 _distributed compute_ and _streaming capabilities_).
 
 [[code-of-conduct]]
-== Code of Conduct
+=== Code of Conduct
 
 This project adheres to the Contributor Covenant link:CODE_OF_CONDUCT.adoc[code of conduct].
 By participating, you  are expected to uphold this code. Please report unacceptable behavior to spring-code-of-conduct@pivotal.io.
 
 [[documentation]]
-== Documentation
+=== Documentation
 
 Documentation for _Spring Session for Apache Geode and Pivotal GemFire_ can be found
 https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/{version}/reference/html5/[here]
 and Javadoc is available https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/{version}/api/[here].
 
 [[website]]
-= Spring Session Project Site
+== Spring Session Project Site
 
 You can find the documentation, issue management, support, samples, and guides for using _Spring Session_
 at https://projects.spring.io/spring-session/
 
 [[license]]
-= License
+== License
 
 _Spring Session_ is Open Source Software released under the https://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].
