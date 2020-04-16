@@ -63,11 +63,14 @@ No other Spring Session provider offers you the same type of flexibility and pow
 your requirements and UC change (e.g. from simple session caching to a full on _System of Record_ with
 _distributed compute_ and _streaming capabilities_).
 
-[[code-of-conduct]]
-=== Code of Conduct
+[[website]]
+== Spring Session Project Site
 
-This project adheres to the Contributor Covenant link:CODE_OF_CONDUCT.adoc[code of conduct].
-By participating, you  are expected to uphold this code. Please report unacceptable behavior to spring-code-of-conduct@pivotal.io.
+You can find the documentation, issue management, support, samples, and guides for using _Spring Session_
+at https://projects.spring.io/spring-session/.
+
+Additionally, you can find documentation, issue management, support, samples and guides using _Spring Session
+for Apache Geode & Pivotal GemFire_ at https://spring.io/projects/spring-session-data-geode.
 
 [[documentation]]
 === Documentation
@@ -76,11 +79,15 @@ Documentation for _Spring Session for Apache Geode and Pivotal GemFire_ can be f
 https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/{version}/reference/html5/[here]
 and Javadoc is available https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/{version}/api/[here].
 
-[[website]]
-== Spring Session Project Site
+[[code-of-conduct]]
+== Code of Conduct
 
-You can find the documentation, issue management, support, samples, and guides for using _Spring Session_
-at https://projects.spring.io/spring-session/
+Please see our https://github.com/spring-projects/.github/blob/master/CODE_OF_CONDUCT.md[code of conduct]
+
+[[report-security-vulnerability]]
+== Reporting Security Vulnerabilities
+
+Please see our https://github.com/spring-projects/spring-session-data-geode/security/policy[Security policy].
 
 [[license]]
 == License
