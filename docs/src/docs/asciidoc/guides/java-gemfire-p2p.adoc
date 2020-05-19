@@ -4,15 +4,24 @@ John Blum
 :stylesdir: ../
 :highlightjsdir: ../js/highlight
 :docinfodir: guides
+:data-store-version: {master-data-store-version}
+:data-store-name: {master-data-store-name}
+:data-store-docs: https://geode.apache.org/docs/guide/{data-store-version}
+:data-store-javadoc: https://geode.apache.org/releases/latest/javadoc
+:data-store-website: https://geode.apache.org
+:sdg-name: Spring Data for {data-store-name}
+:sdg-docs: https://docs.spring.io/spring-data/geode/docs/current/reference/html
+:sdg-javadoc: https://docs.spring.io/spring-data/geode/docs/current/api
 
 This guide describes how to configure Apache Geode as a provider in Spring Session to transparently manage
 a Web application's `javax.servlet.http.HttpSession` using Java configuration.
 
-NOTE: The completed guide can be found in the <<spring-session-sample-java-gemfire-p2p,HttpSession with Apache Geode (P2P) Sample Application>>.
+NOTE: The completed guide can be found in the <<spring-session-sample-java-geode-p2p,HttpSession with Apache Geode (P2P) Sample Application>>.
 
 [#index-link]
 link:../index.html[Index]
 
+[[spring-session-dependencies]]
 == Updating Dependencies
 
 Before using Spring Session, you must ensure that the required dependencies are included.
@@ -76,7 +85,7 @@ If you are using _Maven_, include the following `repository` declaration in your
 endif::[]
 
 // tag::config[]
-[[httpsession-spring-java-configuration-gemfire-p2p]]
+[[httpsession-spring-java-configuration-p2p]]
 == Spring Java Configuration
 
 After adding the required dependencies and repository declarations, we can create the Spring configuration.
@@ -118,7 +127,7 @@ or when a P2P topology is employed.
 
 == Java Servlet Container Initialization
 
-Our <<[httpsession-spring-java-configuration-gemfire-p2p,Spring Java Configuration>> created a Spring bean named
+Our <<[httpsession-spring-java-configuration-p2p,Spring Java Configuration>> created a Spring bean named
 `springSessionRepositoryFilter` that implements `javax.servlet.Filter`. The `springSessionRepositoryFilter` bean
 is responsible for replacing the `javax.servlet.http.HttpSession` with a custom implementation backed by
 Spring Session and Apache Geode.
@@ -146,7 +155,7 @@ NOTE: The name of our class (`Initializer`) does not matter. What is important i
 our `Config` class.
 // end::config[]
 
-[[spring-session-sample-java-gemfire-p2p]]
+[[spring-session-sample-java-geode-p2p]]
 == HttpSession with Apache Geode (P2P) Sample Application
 
 === Running the Apache Geode P2P Java Sample Application

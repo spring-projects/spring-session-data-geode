@@ -1,15 +1,15 @@
 = Spring Session
 John Blum
-:data-store-version: 16
-:data-store-name: Apache Geode
+:doctype: book
+:toc: left
+:data-store-version: {master-data-store-version}
+:data-store-name: {master-data-store-name}
 :data-store-docs: https://geode.apache.org/docs/guide/{data-store-version}
 :data-store-javadoc: https://geode.apache.org/releases/latest/javadoc
 :data-store-website: https://geode.apache.org
 :sdg-name: Spring Data for {data-store-name}
 :sdg-docs: https://docs.spring.io/spring-data/geode/docs/current/reference/html
 :sdg-javadoc: https://docs.spring.io/spring-data/geode/docs/current/api
-:doctype: book
-:toc: left
 
 [[abstract]]
 
@@ -291,7 +291,7 @@ as your provider by using properties, as follows:
 @ClientCacheApplication
 @EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 900)
 class MySpringSessionApplication {
-  ...
+  // ...
 }
 ----
 
@@ -366,7 +366,7 @@ class MySpringSessionConfiguration {
       public int getMaxInactiveIntervalInSeconds() {
         return 3600;
       }
-    }
+    };
   }
 }
 ----
@@ -400,7 +400,7 @@ class MySpringSessionConfiguration {
       public int getMaxInactiveIntervalInSeconds() {
         return timeout;
       }
-    }
+    };
   }
 }
 ----
@@ -446,7 +446,7 @@ By way of example, consider the following configuration:
 @EnableGemFireHttpSession(
     maxInactiveIntervalInSeconds = 3600,
     poolName = "DEFAULT"
-}
+)
 class MySpringSessionConfiguration {
 
   @Bean
@@ -458,7 +458,7 @@ class MySpringSessionConfiguration {
       public int getMaxInactiveIntervalInSeconds() {
         return 300;
       }
-    }
+    };
   }
 }
 ----
@@ -563,8 +563,6 @@ Then, in your application class, simple declare the following:
     sessionExpirationPolicyBeanName = "expirationPolicy"
 )
 class MySpringSessionApplication {
-
-    ...
 
     @Bean
     SessionExpirationPolicy expirationPolicy() {
@@ -671,8 +669,6 @@ To configure the `FixedTimeoutSessionExpirationPolicy`, do the following:
 @SpringBootApplication
 @EnableGemFireHttpSession(sessionExpirationPolicyBeanName = "fixedTimeoutExpirationPolicy")
 class MySpringSessionApplication {
-
-    ...
 
     @Bean
     SessionExpirationPolicy fixedTimeoutExpirationPolicy() {
@@ -893,7 +889,7 @@ configuration class with:
 ----
 @SpringBootApplication
 @EnableGemFireHttpSession(sessionSerializerBeanName = "SessionPdxSerializer")
-class MySpringSessionApplication { .. }
+class MySpringSessionApplication {  }
 ----
 
 It is a simple matter to change the serialization strategy to _Data Serialization_ instead by setting the
@@ -903,7 +899,7 @@ It is a simple matter to change the serialization strategy to _Data Serializatio
 ----
 @SpringBootApplication
 @EnableGemFireHttpSession(sessionSerializerBeanName = "SessionDataSerializer")
-class MySpringSessionApplication { .. }
+class MySpringSessionApplication {  }
 ----
 
 Since these 2 values are so common, Spring Session for {data-store-name} provides constants for each value in the
@@ -917,7 +913,7 @@ import org.springframework.session.data.geode.config.annotation.web.http.GemFire
 
 @SpringBootApplication
 @EnableGemFireHttpSession(sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_PDX_SERIALIZER_BEAN_NAME)
-class MySpringSessionApplication { .. }
+class MySpringSessionApplication {  }
 ----
 
 With 1 attribute and 2 provided bean definitions out-of-the-box, you can specify which Serialization framework you wish
@@ -984,7 +980,7 @@ class MySpringSessionDataGemFireApplication {
 
   @Bean("MyCustomSessionSerializer")
   SessionSerializer<Session, ?, ?> myCustomSessionSerializer() {
-    ...
+    // ...
   }
 }
 ----
@@ -1059,7 +1055,7 @@ class Application {
 
 	@Bean
 	SessionSerializer<Session, ?, ?> customSessionSerializer() {
-		...
+		// ...
 	}
 }
 ----
@@ -1158,11 +1154,9 @@ Configuring the {data-store-name} server `classpath` with the appropriate depend
 but generally, the following should work:
 
 .CLASSPATH configuration
-[source,txt]
-[subs="verbatim,attributes"]
+[source,text]
 ----
-
-set variable --name=REPO_HOME --value=${USER_HOME}/.m2/repository
+gfsh> set variable --name=REPO_HOME --value=${USER_HOME}/.m2/repository
 
 gfsh> start server ... --classpath=\
 ${REPO_HOME}/org/springframework/spring-core/{spring-version}/spring-core-{spring-version}.jar\
@@ -1252,8 +1246,6 @@ class ApplicationConfiguration {
   IsDirtyPredicate equalsDirtyPredicate() {
     return EqualsDirtyPredicate.INSTANCE;
   }
-
-  ...
 }
 ----
 
@@ -1277,8 +1269,6 @@ class ApplicationConfiguration {
     return EqualsDirtyPredicate.INSTANCE
       .orThen(DeltaAwareDirtyPredicate.INSTANCE);
   }
-
-  ...
 }
 ----
 
@@ -1328,8 +1318,6 @@ class ApplicationConfiguration {
       .andThen(new AccountDirtyPredicate())
       .andThen(IsDirtyPredicate.ALWAYS_DIRTY);
   }
-
-  ...
 }
 ----
 
@@ -1369,7 +1357,7 @@ attributes without having to define a separate type.
 [source, java]
 ----
 class MySession implements org.springframework.session.Session {
-  ...
+  // ...
 }
 ----
 
@@ -1408,8 +1396,6 @@ class MySessionSerializer extends AbstractDataSerializableSessionSerializer {
   public Class<?>[] getSupportedClasses() {
     return new Class[] { MySession.class };
   }
-
-  ...
 }
 ----
 

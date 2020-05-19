@@ -4,6 +4,15 @@ John Blum
 :stylesdir: ../
 :highlightjsdir: ../js/highlight
 :docinfodir: guides
+:data-store-version: {master-data-store-version}
+:data-store-name: {master-data-store-name}
+:data-store-docs: https://geode.apache.org/docs/guide/{data-store-version}
+:data-store-javadoc: https://geode.apache.org/releases/latest/javadoc
+:data-store-website: https://geode.apache.org
+:images-dir: ./images
+:sdg-name: Spring Data for {data-store-name}
+:sdg-docs: https://docs.spring.io/spring-data/geode/docs/current/reference/html
+:sdg-javadoc: https://docs.spring.io/spring-data/geode/docs/current/api
 
 This guide describes how to build a Spring Boot Web application configured with Spring Session to transparently
 manage a Web application's `javax.servlet.http.HttpSession` using Apache Geode in a clustered (distributed)
@@ -265,7 +274,7 @@ You should now be able to access the application at http://localhost:8080/counts
 
 When you access the Web application @ http://localhost:8080/counts, you will see a screen similar to...
 
-image::../images/sample-boot-gemfire-with-scoped-proxies.png[]
+image::{images-dir}/sample-boot-gemfire-with-scoped-proxies.png[]
 
 The table shows 1 row with 3 columns of information.
 
@@ -287,9 +296,8 @@ annotation as we saw before (#3)...
 @SpringBootApplication
 @CacheServerApplication(name = "SpringSessionDataGeodeServerWithScopedProxiesBootSample")
 @EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 10) // <3>
-...
 public class GemFireServer {
-  ...
+  // ...
 }
 ----
 
@@ -306,14 +314,18 @@ Well, from our defined Web service endpoint in our Spring MVC `@Controller` clas
 .src/main/java/sample/client/Application.java
 [source, java]
 ----
-@RequestMapping(method = RequestMethod.GET, path = "/counts")
-public String requestAndSessionInstanceCount(HttpServletRequest request, HttpSession session, Model model) { // <7>
+@Controller
+class Controller {
 
-  model.addAttribute("sessionId", session.getId());
-  model.addAttribute("requestCount", this.requestBean.getCount());
-  model.addAttribute("sessionCount", this.sessionBean.getCount());
+  @RequestMapping(method = RequestMethod.GET, path = "/counts")
+  public String requestAndSessionInstanceCount(HttpServletRequest request, HttpSession session, Model model) { // <7>
 
-  return INDEX_TEMPLATE_VIEW_NAME;
+    model.addAttribute("sessionId", session.getId());
+    model.addAttribute("requestCount", this.requestBean.getCount());
+    model.addAttribute("sessionCount", this.sessionBean.getCount());
+
+    return INDEX_TEMPLATE_VIEW_NAME;
+  }
 }
 ----
 
@@ -360,7 +372,7 @@ is also `java.io.Serializable`...
 @Component
 @SessionScope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class SessionScopedProxyBean implements Serializable {
-  ...
+  // ...
 }
 ----
 

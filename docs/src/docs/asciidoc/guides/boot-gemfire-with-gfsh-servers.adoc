@@ -4,11 +4,12 @@ John Blum
 :stylesdir: ../
 :highlightjsdir: ../js/highlight
 :docinfodir: guides
-:data-store-name: Apache Geode
-:data-store-version: 16
+:data-store-version: {master-data-store-version}
+:data-store-name: {master-data-store-name}
 :data-store-docs: https://geode.apache.org/docs/guide/{data-store-version}
 :data-store-javadoc: https://geode.apache.org/releases/latest/javadoc
 :data-store-website: https://geode.apache.org
+:images-dir: ./images
 :sdg-name: Spring Data for {data-store-name}
 :sdg-docs: https://docs.spring.io/spring-data/geode/docs/current/reference/html
 :sdg-javadoc: https://docs.spring.io/spring-data/geode/docs/current/api
@@ -353,7 +354,7 @@ and add session attributes.  The page will refresh with a count of the number of
 After 15 seconds, the HTTP session will expire and you will not longer see any session attributes. Additionally, your
 HTTP request count will reset to 0.
 
-image::../images/sample-boot-gemfire-with-gfsh-servers.png[]
+image::{images-dir}/sample-boot-gemfire-with-gfsh-servers.png[]
 
 While the application is running and before the HTTP session times out (again, the TTI expiration timeout is set to
 15 seconds), you can issue queries in Gfsh to see the contents of the "_Sessions)" Region.

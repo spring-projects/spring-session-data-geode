@@ -1,3 +1,5 @@
+:data-store-version: {master-data-store-version}
+:data-store-docs: https://geode.apache.org/docs/guide/{data-store-version}
 :stylesdir: ../
 
 NOTE: The following instructions assume you have installed a local Apache Geode installation.  For more information
@@ -12,7 +14,8 @@ For example, on a Linux-based system type the following at the command-line:
 Then, enter the following commands in _Gfsh_, ensuring to replace `70002719-3c54-4c20-82c3-e7faa6b718f3` with the value
 from your SESSION cookie, or the session id returned by the Apache Geode OQL query (which should match):
 
-....
+[source,text]
+----
 gfsh>connect --jmx-manager=localhost[1099]
 
 gfsh>query --query='SELECT * FROM /ClusteredSpringSessions.keySet'
@@ -29,7 +32,7 @@ Result
 NEXT_STEP_NAME : END
 
 gfsh>remove --region=/ClusteredSpringSessions --key="70002719-3c54-4c20-82c3-e7faa6b718f3"
-....
+----
 
 NOTE: The Apache Geode User Guide contains more detailed instructions on using
 {data-store-docs}/tools_modules/gfsh/chapter_overview.html[gfsh].

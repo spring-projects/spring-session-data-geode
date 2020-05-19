@@ -4,6 +4,14 @@ John Blum
 :stylesdir: ../
 :highlightjsdir: ../js/highlight
 :docinfodir: guides
+:data-store-version: {master-data-store-version}
+:data-store-name: {master-data-store-name}
+:data-store-docs: https://geode.apache.org/docs/guide/{data-store-version}
+:data-store-javadoc: https://geode.apache.org/releases/latest/javadoc
+:data-store-website: https://geode.apache.org
+:sdg-name: Spring Data for {data-store-name}
+:sdg-docs: https://docs.spring.io/spring-data/geode/docs/current/reference/html
+:sdg-javadoc: https://docs.spring.io/spring-data/geode/docs/current/api
 
 This guide describes how to configure Apache Geode as a provider in Spring Session to transparently manage
 a Web application's `javax.servlet.http.HttpSession` using XML Configuration.
@@ -13,6 +21,7 @@ NOTE: The completed guide can be found in the <<spring-session-sample-xml-geode-
 [#index-link]
 link:../index.html[Index]
 
+[[spring-session-dependencies]]
 == Updating Dependencies
 
 Before using Spring Session, you must ensure that the required dependencies are included.
@@ -76,7 +85,7 @@ If you are using _Maven_, include the following `repository` declaration in your
 endif::[]
 
 // tag::config[]
-[[spring-session-sample-xml-geode-clientserver]]
+[[httpsession-spring-xml-configuration-clientserver]]
 == Spring XML Configuration
 
 After adding the required dependencies and repository declarations, we can create the Spring configuration.
@@ -150,7 +159,7 @@ TIP: Rather than defining a simple Java class with a `main` method, you might co
 
 == XML Servlet Container Initialization
 
-Our <<httpsession-spring-xml-configuration,Spring XML Configuration>> created a Spring bean named `springSessionRepositoryFilter`
+Our <<httpsession-spring-xml-configuration-clientserver,Spring XML Configuration>> created a Spring bean named `springSessionRepositoryFilter`
 that implements `javax.servlet.Filter` interface. The `springSessionRepositoryFilter` bean is responsible for replacing
 the `javax.servlet.http.HttpSession` with a custom implementation that is provided by Spring Session and Apache Geode.
 
@@ -185,7 +194,7 @@ will look up a bean by the name of `springSessionRepositoryFilter` and cast it t
 the `DelegatingFilterProxy` is invoked, which delegates to the `springSessionRepositoryFilter`.
 // end::config[]
 
-[[httpsession-gemfire-clientserver-xml-sample-app]]
+[[spring-session-sample-xml-geode-clientserver]]
 == HttpSession with Apache Geode (Client/Server) using XML Sample Application
 
 

@@ -4,6 +4,14 @@ John Blum
 :stylesdir: ../
 :highlightjsdir: ../js/highlight
 :docinfodir: guides
+:data-store-version: {master-data-store-version}
+:data-store-name: {master-data-store-name}
+:data-store-docs: https://geode.apache.org/docs/guide/{data-store-version}
+:data-store-javadoc: https://geode.apache.org/releases/latest/javadoc
+:data-store-website: https://geode.apache.org
+:sdg-name: Spring Data for {data-store-name}
+:sdg-docs: https://docs.spring.io/spring-data/geode/docs/current/reference/html
+:sdg-javadoc: https://docs.spring.io/spring-data/geode/docs/current/api
 
 This guide describes how to build a Spring Boot application configured with Spring Session to transparently leverage
 Apache Geode to manage a web application's `javax.servlet.http.HttpSession`.
@@ -213,15 +221,19 @@ shown here for convenience:
 .src/main/java/sample/client/Application.java
 [source,java]
 ----
-@RequestMapping(method = RequestMethod.POST, path = "/session")
-public String session(HttpSession session, ModelMap modelMap,
+@Controller
+class Controller {
+
+  @RequestMapping(method = RequestMethod.POST, path = "/session")
+  public String session(HttpSession session, ModelMap modelMap,
 		@RequestParam(name = "attributeName", required = false) String name,
 		@RequestParam(name = "attributeValue", required = false) String value) {
 
-	modelMap.addAttribute("sessionAttributes",
-		attributes(setAttribute(updateRequestCount(session), name, value)));
+    modelMap.addAttribute("sessionAttributes",
+        attributes(setAttribute(updateRequestCount(session), name, value)));
 
-	return INDEX_TEMPLATE_VIEW_NAME;
+    return INDEX_TEMPLATE_VIEW_NAME;
+  }
 }
 ----
 
