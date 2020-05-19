@@ -127,6 +127,7 @@ public class GemFireServer implements Runnable {
 		return sessions;
 	}
 
+	@SuppressWarnings("rawtypes")
 	protected Index createClusteredSpringSessionsRegionPrincipalNameIndex(Region sessionsRegion) {
 
 		String indexName = "principalNameIndex";
