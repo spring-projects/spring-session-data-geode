@@ -4,6 +4,19 @@ https://github.com/spring-projects/spring-session-data-geode
 ============================================================
 
 
+Changes in version 2.1.10.RELEASE (2020-05-18)
+----------------------------------------------
+Aligns Spring Session for Apache Geode & Pivotal GemFire (SSDG) with the latest Spring Framework, Spring Boot,
+Spring Data and Spring Session versions.
+
+* Upgrades to Apache Groovy 2.4.19.
+* Upgrades to Spring Framework 5.1.15.RELEASE.
+* Upgrades to Spring Boot 2.1.14.RELEASE.
+* Upgrades to Spring Data Lovelace-SR17.
+* Upgrades to Spring Session 2.1.12.RELEASE.
+* Upgrades to Spring Session BOM Bean-SR10.
+
+
 Changes in version 2.3.0.RELEASE (2020-05-13)
 ---------------------------------------------
 Aligns Spring Session for Apache Geode & Pivotal GemFire (SSDG) with the latest Spring Framework, Spring Boot,
