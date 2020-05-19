@@ -39,4 +39,4 @@ public class SessionServlet extends HttpServlet {
 		response.sendRedirect(request.getContextPath() + "/");
 	}
 }
-// tag::end[]
+// end::class[]

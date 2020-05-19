@@ -29,4 +29,4 @@ public class GemFireServer {
 		new AnnotationConfigApplicationContext(GemFireServer.class).registerShutdownHook();
 	}
 }
-// tag::end[]
+// end::class[]
