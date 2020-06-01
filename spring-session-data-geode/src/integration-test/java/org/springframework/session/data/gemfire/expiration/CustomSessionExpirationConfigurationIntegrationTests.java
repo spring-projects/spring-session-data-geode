@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.expiration;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,7 +46,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Integration tests for {@link EnableGemFireHttpSession} and {@link GemFireHttpSessionConfiguration}
+ * Integration Tests for {@link EnableGemFireHttpSession} and {@link GemFireHttpSessionConfiguration}
  * involving {@link Session} expiration configuration.
  *
  * @author John Blum

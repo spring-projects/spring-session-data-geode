@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.config.annotation.web.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,7 +40,7 @@ import org.springframework.session.data.gemfire.expiration.SessionExpirationPoli
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 
 /**
- * Integration tests testing property-based configuration of either Apache Geode or Pivotal GemFire
+ * Integration Tests testing property-based configuration of either Apache Geode or Pivotal GemFire
  * as the (HTTP) {@link Session} state management provider in Spring Session.
  *
  * @author John Blum
@@ -156,7 +155,6 @@ public class PropertyBasedGemFireHttpSessionConfigurationIntegrationTests extend
 	}
 
 	@ClientCacheApplication
-	@EnableGemFireMockObjects
 	@EnableGemFireHttpSession(
 		clientRegionShortcut = ClientRegionShortcut.LOCAL,
 		indexableSessionAttributes = { "one", "two" },
@@ -167,6 +165,7 @@ public class PropertyBasedGemFireHttpSessionConfigurationIntegrationTests extend
 		sessionExpirationPolicyBeanName = "TestSessionExpirationPolicy",
 		sessionSerializerBeanName = "TestSessionSerializer"
 	)
+	@EnableGemFireMockObjects
 	static class TestConfiguration {
 
 		@Bean("Dead")

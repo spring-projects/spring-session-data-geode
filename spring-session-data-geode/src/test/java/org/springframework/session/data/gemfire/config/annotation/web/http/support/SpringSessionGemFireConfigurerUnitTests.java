@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.config.annotation.web.http.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,7 +31,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
 
 /**
- * Unit tests for {@link SpringSessionGemFireConfigurer}.
+ * Unit Tests for {@link SpringSessionGemFireConfigurer}.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -126,8 +125,7 @@ public class SpringSessionGemFireConfigurerUnitTests {
 
 		return Arrays.stream(nullSafeArray(methods, Method.class))
 			.filter(method -> targetMethodNames.contains(method.getName()))
-			.collect(Collectors.toList())
-			.toArray(new Method[0]);
+			.toArray(Method[]::new);
 	}
 
 	@Test

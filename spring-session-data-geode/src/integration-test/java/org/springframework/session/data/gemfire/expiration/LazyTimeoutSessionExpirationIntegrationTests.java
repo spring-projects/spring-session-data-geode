@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.expiration;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,7 +35,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * Integration tests asserting lazy expiration timeouts on {@link Session} access
+ * Integration Tests asserting lazy expiration timeouts on {@link Session} access
  * using {@link FixedDurationExpirationSessionRepository}.
  *
  * @author John Blum
@@ -58,7 +57,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class LazyTimeoutSessionExpirationIntegrationTests extends AbstractGemFireIntegrationTests {
 
 	@Test
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void sessionRepositoryIsAFixedDurationExpirationSessionRepository() {
 
 		assertThat(this.<Session, SessionRepository>getSessionRepository())

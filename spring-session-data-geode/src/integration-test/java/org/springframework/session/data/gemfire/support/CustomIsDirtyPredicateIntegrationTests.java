@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,10 +33,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * The CustomIsDirtyPredicateIntegrationTests class...
+ * Integration Tests for custom {@link IsDirtyPredicate}.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.junit.Test
+ * @see org.springframework.session.data.gemfire.support.IsDirtyPredicate
+ * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
+ * @since 2.1.2
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration

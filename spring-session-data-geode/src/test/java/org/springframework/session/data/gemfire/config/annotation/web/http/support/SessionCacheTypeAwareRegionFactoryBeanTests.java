@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.config.annotation.web.http.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,7 +35,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.session.Session;
 
 /**
- * Unit tests for {@link SessionCacheTypeAwareRegionFactoryBean}.
+ * Unit Tests for {@link SessionCacheTypeAwareRegionFactoryBean}.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -79,13 +78,13 @@ public class SessionCacheTypeAwareRegionFactoryBeanTests {
 		this.regionFactoryBean = new SessionCacheTypeAwareRegionFactoryBean<Object, Session>() {
 
 			@Override
-			protected Region<Object, Session> newClientRegion(GemFireCache gemfireCache, String name) throws Exception {
+			protected Region<Object, Session> newClientRegion(GemFireCache gemfireCache, String name) {
 				assertThat(gemfireCache).isSameAs(expectedCache);
 				return SessionCacheTypeAwareRegionFactoryBeanTests.this.mockClientRegion;
 			}
 
 			@Override
-			protected Region<Object, Session> newServerRegion(GemFireCache gemfireCache, String name) throws Exception {
+			protected Region<Object, Session> newServerRegion(GemFireCache gemfireCache, String name) {
 				assertThat(gemfireCache).isSameAs(expectedCache);
 				return SessionCacheTypeAwareRegionFactoryBeanTests.this.mockServerRegion;
 			}

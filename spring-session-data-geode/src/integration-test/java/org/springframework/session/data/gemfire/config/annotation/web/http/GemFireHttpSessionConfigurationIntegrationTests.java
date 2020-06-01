@@ -168,6 +168,7 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void notUsingDataSerializationWhenPdxConfigured() {
 
 		newApplicationContext(TestSessionSerializerConfiguration.class);
@@ -240,6 +241,7 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 		}
 
 		@Bean("MockSessionSerializer")
+		@SuppressWarnings("rawtypes")
 		SessionSerializer mockSessionSerializer() {
 			return mock(SessionSerializer.class);
 		}
@@ -325,6 +327,7 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 	static class TestSessionSerializerConfiguration {
 
 		@Bean("TestSessionSerializer")
+		@SuppressWarnings("rawtypes")
 		SessionSerializer testSessionSerializer() {
 			return mock(SessionSerializer.class);
 		}
