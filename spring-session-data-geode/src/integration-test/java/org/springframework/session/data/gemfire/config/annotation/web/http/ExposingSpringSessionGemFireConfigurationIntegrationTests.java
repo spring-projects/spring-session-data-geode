@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.config.annotation.web.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,9 +43,19 @@ import org.springframework.session.data.gemfire.expiration.SessionExpirationPoli
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 
 /**
- * The ExposingSpringSessionGemFireConfigurationIntegrationTests class...
+ * Integration Tests asserting the correct behavior when exposing Spring Session configuration metadata at runtime.
  *
  * @author John Blum
+ * @see org.junit.Test
+ * @see org.springframework.context.ConfigurableApplicationContext
+ * @see org.springframework.context.annotation.Bean
+ * @see org.springframework.context.annotation.Configuration
+ * @see org.springframework.core.env.Environment
+ * @see org.springframework.core.env.PropertySource
+ * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
+ * @see org.springframework.data.gemfire.tests.mock.annotation.EnableGemFireMockObjects
+ * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer
  * @since 1.0.0
  */
 @SuppressWarnings("unused")
@@ -251,7 +260,6 @@ public class ExposingSpringSessionGemFireConfigurationIntegrationTests extends A
 	}
 
 	@ClientCacheApplication
-	@EnableGemFireMockObjects
 	@EnableGemFireHttpSession(
 		clientRegionShortcut = ClientRegionShortcut.LOCAL,
 		exposeConfigurationAsProperties = true,
@@ -263,7 +271,7 @@ public class ExposingSpringSessionGemFireConfigurationIntegrationTests extends A
 		sessionExpirationPolicyBeanName = "AttributeSessionExpirationPolicy",
 		sessionSerializerBeanName = "AttributeSessionSerializer"
 	)
-	@SuppressWarnings("unused")
+	@EnableGemFireMockObjects
 	static class TestGemFireHttpSessionConfiguration {
 
 		@Bean("Car")
@@ -292,11 +300,13 @@ public class ExposingSpringSessionGemFireConfigurationIntegrationTests extends A
 		}
 
 		@Bean("AttributeSessionSerializer")
+		@SuppressWarnings("rawtypes")
 		SessionSerializer attributeSessionSerializer() {
 			return mock(SessionSerializer.class);
 		}
 
 		@Bean("PropertySessionSerializer")
+		@SuppressWarnings("rawtypes")
 		SessionSerializer propertySessionSerializer() {
 			return mock(SessionSerializer.class);
 		}
@@ -316,6 +326,7 @@ public class ExposingSpringSessionGemFireConfigurationIntegrationTests extends A
 		}
 
 		@Bean("ConfigurerSessionSerializer")
+		@SuppressWarnings("rawtypes")
 		SessionSerializer configurerSessionSerializer() {
 			return mock(SessionSerializer.class);
 		}
@@ -378,6 +389,7 @@ public class ExposingSpringSessionGemFireConfigurationIntegrationTests extends A
 	static class MockSpringSessionGemFirerConfigurerConfiguration {
 
 		@Bean("ConfigurerSessionSerializer")
+		@SuppressWarnings("rawtypes")
 		SessionSerializer configurerSessionSerializer() {
 			return mock(SessionSerializer.class);
 		}
@@ -399,6 +411,7 @@ public class ExposingSpringSessionGemFireConfigurationIntegrationTests extends A
 				}
 
 				@Bean("ConfigurerSessionSerializer")
+				@SuppressWarnings("rawtypes")
 				SessionSerializer configurerSessionSerializer() {
 					return mock(SessionSerializer.class);
 				}

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.config.annotation.web.http.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,6 +37,7 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.GemFi
  */
 public class SessionAttributesIndexFactoryBeanTests {
 
+	@SuppressWarnings("unchecked")
 	static <T> T[] toArray(T... array) {
 		return array;
 	}
@@ -51,11 +51,13 @@ public class SessionAttributesIndexFactoryBeanTests {
 
 	@Test
 	public void indexIsNotInitializedWhenNoIndexableSessionAttributesAreConfigured() throws Exception {
+
 		final Index mockIndex = mock(Index.class);
 
 		SessionAttributesIndexFactoryBean indexFactoryBean = new SessionAttributesIndexFactoryBean() {
+
 			@Override
-			protected Index newIndex() throws Exception {
+			protected Index newIndex() {
 				return mockIndex;
 			}
 		};
@@ -68,11 +70,13 @@ public class SessionAttributesIndexFactoryBeanTests {
 
 	@Test
 	public void initializesIndexWhenIndexableSessionAttributesAreConfigured() throws Exception {
+
 		final Index mockIndex = mock(Index.class);
 
 		SessionAttributesIndexFactoryBean indexFactoryBean = new SessionAttributesIndexFactoryBean() {
+
 			@Override
-			protected Index newIndex() throws Exception {
+			protected Index newIndex() {
 				return mockIndex;
 			}
 		};

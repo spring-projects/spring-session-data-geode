@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -324,6 +323,7 @@ public class PeerCacheGemFireOperationsSessionRepositoryIntegrationTests extends
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void saveAndReadSessionWithAttributes() {
 
 		Session expectedSession = this.gemfireSessionRepository.createSession();
@@ -415,7 +415,6 @@ public class PeerCacheGemFireOperationsSessionRepositoryIntegrationTests extends
 			this.lastName = pdxReader.readString("lastName");
 		}
 
-		@SuppressWarnings("all")
 		public int compareTo(Person person) {
 
 			int compareValue = getLastName().compareTo(person.getLastName());

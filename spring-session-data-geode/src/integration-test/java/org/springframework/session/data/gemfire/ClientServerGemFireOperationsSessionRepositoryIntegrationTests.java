@@ -93,7 +93,6 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests exte
 	private static final String TEST_SESSION_REGION_NAME = "TestClientServerSessions";
 
 	@Autowired
-	@SuppressWarnings("all")
 	private SessionEventListener sessionEventListener;
 
 	@BeforeClass
@@ -242,7 +241,7 @@ public class ClientServerGemFireOperationsSessionRepositoryIntegrationTests exte
 	static class TestGemFireServerConfiguration {
 
 		@SuppressWarnings("resource")
-		public static void main(String[] args) throws IOException {
+		public static void main(String[] args) {
 
 			AnnotationConfigApplicationContext applicationContext =
 				new AnnotationConfigApplicationContext(TestGemFireServerConfiguration.class);

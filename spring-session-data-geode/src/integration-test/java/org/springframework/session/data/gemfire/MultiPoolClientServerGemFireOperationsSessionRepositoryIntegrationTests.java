@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -84,7 +83,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 
 	private static final String SPRING_SESSION_GEMFIRE_REGION_NAME = "TestMultiPoolClientServerSessions";
 
-	@Autowired @SuppressWarnings("all")
+	@Autowired
 	private SessionEventListener sessionEventListener;
 
 	@BeforeClass
@@ -208,7 +207,7 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 	static class SpringSessionDataGemFireServerConfiguration {
 
 		@SuppressWarnings("resource")
-		public static void main(final String[] args) throws IOException {
+		public static void main(final String[] args) {
 
 			AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				SpringSessionDataGemFireServerConfiguration.class);

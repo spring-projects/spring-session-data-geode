@@ -121,7 +121,7 @@ public class GemFireHttpSessionConfigurationUnitTests {
 		return resolveField(obj.getClass(), fieldName);
 	}
 
-	private static Field resolveField(Class type, String fieldName) throws NoSuchFieldException {
+	private static Field resolveField(Class<?> type, String fieldName) throws NoSuchFieldException {
 
 		Field field = ReflectionUtils.findField(type, fieldName);
 
@@ -149,7 +149,6 @@ public class GemFireHttpSessionConfigurationUnitTests {
 	}
 
 	@Test
-	@SuppressWarnings("all")
 	public void setAndGetBeanClassLoader() {
 
 		assertThat(this.gemfireConfiguration.getBeanClassLoader()).isNull();
@@ -548,6 +547,7 @@ public class GemFireHttpSessionConfigurationUnitTests {
 	}
 
 	@Test
+	@SuppressWarnings({ "rawtypes" })
 	public void exposeSpringSessionGemFireConfigurationAsPropertiesMutatesSpringEnvironment() {
 
 		ConfigurableEnvironment environment = new StandardEnvironment();
@@ -613,7 +613,6 @@ public class GemFireHttpSessionConfigurationUnitTests {
 	}
 
 	@Test
-	@SuppressWarnings("all")
 	public void exposeSpringSessionGemFireConfigurationAsPropertiesIsNullSafe() {
 
 		this.gemfireConfiguration.setEnvironment(null);
@@ -771,7 +770,7 @@ public class GemFireHttpSessionConfigurationUnitTests {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void createsAndInitializesSessionRegionAttributesWithExpiration() throws Exception {
 
 		Cache mockCache = mock(Cache.class);
@@ -802,7 +801,7 @@ public class GemFireHttpSessionConfigurationUnitTests {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void createsAndInitializesSessionRegionAttributesWithoutExpiration() throws Exception {
 
 		ClientCache mockClientCache = mock(ClientCache.class);

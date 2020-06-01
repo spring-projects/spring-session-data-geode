@@ -46,7 +46,7 @@ import org.springframework.session.data.gemfire.expiration.SessionExpirationPoli
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 
 /**
- * Integration tests testing {@link SpringSessionGemFireConfigurer} based configuration of either Apache Geode
+ * Integration Tests testing {@link SpringSessionGemFireConfigurer} based configuration of either Apache Geode
  * or Pivotal GemFire as the (HTTP) {@link Session} state management provider in Spring Session.
  *
  * @author John Blum
@@ -173,7 +173,6 @@ public class ConfigurerBasedGemFireHttpSessionConfigurationIntegrationTests exte
 	}
 
 	@ClientCacheApplication
-	@EnableGemFireMockObjects
 	@EnableGemFireHttpSession(
 		clientRegionShortcut = ClientRegionShortcut.LOCAL,
 		indexableSessionAttributes = { "one", "two" },
@@ -184,6 +183,7 @@ public class ConfigurerBasedGemFireHttpSessionConfigurationIntegrationTests exte
 		sessionExpirationPolicyBeanName = "TestSessionExpirationPolicy",
 		sessionSerializerBeanName = "TestSessionSerializer"
 	)
+	@EnableGemFireMockObjects
 	static class TestConfiguration {
 
 		@Bean("Car")
