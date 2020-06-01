@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.config.annotation.web.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,6 +33,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.PropertySource;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
@@ -183,7 +183,7 @@ public class ConfigurerBasedGemFireHttpSessionConfigurationIntegrationTests exte
 		sessionExpirationPolicyBeanName = "TestSessionExpirationPolicy",
 		sessionSerializerBeanName = "TestSessionSerializer"
 	)
-	@EnableGemFireMockObjects
+	@EnableGemFireMockObjects(destroyOnEvent = ContextClosedEvent.class)
 	static class TestConfiguration {
 
 		@Bean("Car")

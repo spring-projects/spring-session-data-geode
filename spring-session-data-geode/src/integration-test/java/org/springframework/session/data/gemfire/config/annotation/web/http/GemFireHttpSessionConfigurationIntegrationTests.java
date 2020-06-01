@@ -36,6 +36,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
@@ -53,8 +54,19 @@ import org.springframework.session.data.gemfire.serialization.pdx.support.PdxSer
  * Integration Tests for {@link GemFireHttpSessionConfiguration}.
  *
  * @author John Blum
+ * @see java.io.DataInput
+ * @see java.io.DataOutput
  * @see org.junit.Test
  * @see org.mockito.Mockito
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.query.Index
+ * @see org.springframework.context.ConfigurableApplicationContext
+ * @see org.springframework.context.annotation.Bean
+ * @see org.springframework.data.gemfire.GemfireTemplate
+ * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
+ * @see org.springframework.data.gemfire.tests.integration.SpringApplicationContextIntegrationTestsSupport
+ * @see org.springframework.data.gemfire.tests.mock.annotation.EnableGemFireMockObjects
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @since 1.1.0
  */
@@ -216,12 +228,11 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 	}
 
 	@ClientCacheApplication
-	@EnableGemFireMockObjects
 	@EnableGemFireHttpSession(clientRegionShortcut = ClientRegionShortcut.LOCAL, poolName = "DEFAULT")
+	@EnableGemFireMockObjects(destroyOnEvent = ContextClosedEvent.class)
 	static class BasicSpringSessionGemFireConfiguration { }
 
 	@ClientCacheApplication
-	@EnableGemFireMockObjects
 	@EnableGemFireHttpSession(
 		clientRegionShortcut = ClientRegionShortcut.LOCAL,
 		exposeConfigurationAsProperties = true,
@@ -233,6 +244,7 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 		sessionExpirationPolicyBeanName = "MockSessionExpirationPolicy",
 		sessionSerializerBeanName = "MockSessionSerializer"
 	)
+	@EnableGemFireMockObjects(destroyOnEvent = ContextClosedEvent.class)
 	static class ExposingSpringSessionGemFireConfigurationAsPropertiesConfiguration {
 
 		@Bean("MockSessionExpirationPolicy")
@@ -303,16 +315,16 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 	}
 
 	@ClientCacheApplication
-	@EnableGemFireMockObjects
 	@EnableGemFireHttpSession(
 		poolName = "DEFAULT",
 		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME
 	)
+	@EnableGemFireMockObjects(destroyOnEvent = ContextClosedEvent.class)
 	static class DataSerializableSessionSerializerConfiguration { }
 
 	@ClientCacheApplication
-	@EnableGemFireMockObjects
 	@EnableGemFireHttpSession(poolName = "DEFAULT", sessionSerializerBeanName = "TestDataSerializer")
+	@EnableGemFireMockObjects(destroyOnEvent = ContextClosedEvent.class)
 	static class TestDataSerializerConfiguration {
 
 		@Bean("TestDataSerializer")
@@ -322,8 +334,8 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 	}
 
 	@ClientCacheApplication
-	@EnableGemFireMockObjects
 	@EnableGemFireHttpSession(poolName = "DEFAULT", sessionSerializerBeanName = "TestSessionSerializer")
+	@EnableGemFireMockObjects(destroyOnEvent = ContextClosedEvent.class)
 	static class TestSessionSerializerConfiguration {
 
 		@Bean("TestSessionSerializer")
