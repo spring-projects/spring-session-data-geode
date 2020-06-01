@@ -32,6 +32,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertySource;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
@@ -271,7 +272,7 @@ public class ExposingSpringSessionGemFireConfigurationIntegrationTests extends A
 		sessionExpirationPolicyBeanName = "AttributeSessionExpirationPolicy",
 		sessionSerializerBeanName = "AttributeSessionSerializer"
 	)
-	@EnableGemFireMockObjects
+	@EnableGemFireMockObjects(destroyOnEvent = ContextClosedEvent.class)
 	static class TestGemFireHttpSessionConfiguration {
 
 		@Bean("Car")
