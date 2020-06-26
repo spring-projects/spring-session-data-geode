@@ -4,6 +4,23 @@ https://github.com/spring-projects/spring-session-data-geode
 ============================================================
 
 
+Changes in version 2.4.0-M1 (2020-06-26)
+----------------------------------------
+Aligns Spring Session for Apache Geode & VMware GemFire (SSDG) with the latest Spring Framework 5.3, Spring Boot 2.4,
+Spring Data Ockham/2.4 and Spring Session 2.4 versions.
+
+* Upgrades to VMware GemFire 9.10.1.
+* Upgrades to Spring Framework 5.3.0-M1.
+* Upgrades to Spring Boot 2.4.0-SNAPSHOT.
+* Upgrades to Spring Data Ockham-M1.
+* Upgrades to Spring Data for Apache Geode & VMware GemFire 2.4.0-M1.
+* Upgrades to Spring Session 2.4.0-M1
+* Upgrades to Spring Session BOM 2020.0.0-SNAPSHOT
+* Upgrades to Spring Test for Apache Geode & VMware GemFire 0.0.16.RELEASE.
+* Upgrades to Gradle 6.5.
+* Upgrades to Spring Build Conventions 0.0.33.RELEASE.
+
+
 Changes in version 2.2.4.RELEASE (2020-05-18)
 ----------------------------------------------
 Aligns Spring Session for Apache Geode & Pivotal GemFire (SSDG) with the latest Spring Framework, Spring Boot,
