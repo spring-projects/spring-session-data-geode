@@ -272,7 +272,7 @@ public class ExposingSpringSessionGemFireConfigurationIntegrationTests extends A
 		sessionExpirationPolicyBeanName = "AttributeSessionExpirationPolicy",
 		sessionSerializerBeanName = "AttributeSessionSerializer"
 	)
-	@EnableGemFireMockObjects(destroyOnEvent = ContextClosedEvent.class)
+	@EnableGemFireMockObjects(destroyOnEvents = ContextClosedEvent.class)
 	static class TestGemFireHttpSessionConfiguration {
 
 		@Bean("Car")

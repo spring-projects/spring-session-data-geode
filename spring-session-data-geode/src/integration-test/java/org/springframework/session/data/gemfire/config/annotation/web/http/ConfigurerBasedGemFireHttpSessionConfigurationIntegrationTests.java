@@ -183,7 +183,7 @@ public class ConfigurerBasedGemFireHttpSessionConfigurationIntegrationTests exte
 		sessionExpirationPolicyBeanName = "TestSessionExpirationPolicy",
 		sessionSerializerBeanName = "TestSessionSerializer"
 	)
-	@EnableGemFireMockObjects(destroyOnEvent = ContextClosedEvent.class)
+	@EnableGemFireMockObjects(destroyOnEvents = ContextClosedEvent.class)
 	static class TestConfiguration {
 
 		@Bean("Car")
