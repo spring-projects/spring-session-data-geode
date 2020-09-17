@@ -54,6 +54,20 @@ Spring Data and Spring Session versions.
 * Upgrades to Spring Session BOM Corn-SR3.
 
 
+Changes in version 2.1.11.RELEASE (2020-09-16)
+----------------------------------------------
+Aligns Spring Session for Apache Geode & Pivotal GemFire (SSDG) with the latest Spring Framework, Spring Boot,
+Spring Data and Spring Session versions.
+
+* Upgrades to Apache Groovy 2.4.20.
+* Upgrades to Spring Framework 5.1.18.RELEASE
+* Upgrades to Spring Boot 2.1.16.RELEASE.
+* Upgrades to Spring Data Lovelace-SR20.
+* Upgrades to Spring Data for Apache Geode & VMware Tanzu (Pivotal) GemFire 2.2.20.RELEASE.
+* Upgrades to Spring Session 2.1.13.RELEASE.
+* Upgrades to Spring Session BOM Bean-SR12.
+
+
 Changes in version 2.4.0-M1 (2020-06-26)
 ----------------------------------------
 Aligns Spring Session for Apache Geode & VMware GemFire (SSDG) with the latest Spring Framework 5.3, Spring Boot 2.4,
