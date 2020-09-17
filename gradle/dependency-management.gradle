@@ -13,7 +13,6 @@ dependencyManagement {
 		dependency "org.apache.taglibs:taglibs-standard-impl:$apacheTaglibsStandardVersion"
 		dependency "org.apache.taglibs:taglibs-standard-jstlel:$apacheTaglibsStandardVersion"
 		dependency "org.apache.taglibs:taglibs-standard-spec:$apacheTaglibsStandardVersion"
-		dependency "org.springframework.data:spring-data-gemfire:$springDataGemFireVersion"
 		dependency "org.springframework.data:spring-data-geode:$springDataGeodeVersion"
 		dependency "org.springframework.data:spring-data-geode-test:$springDataGeodeTestVersion"
 		dependency "org.springframework.session:spring-session-core:$springSessionVersion"
