@@ -229,7 +229,7 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 
 	@ClientCacheApplication
 	@EnableGemFireHttpSession(clientRegionShortcut = ClientRegionShortcut.LOCAL, poolName = "DEFAULT")
-	@EnableGemFireMockObjects(destroyOnEvent = ContextClosedEvent.class)
+	@EnableGemFireMockObjects(destroyOnEvents = ContextClosedEvent.class)
 	static class BasicSpringSessionGemFireConfiguration { }
 
 	@ClientCacheApplication
@@ -244,7 +244,7 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 		sessionExpirationPolicyBeanName = "MockSessionExpirationPolicy",
 		sessionSerializerBeanName = "MockSessionSerializer"
 	)
-	@EnableGemFireMockObjects(destroyOnEvent = ContextClosedEvent.class)
+	@EnableGemFireMockObjects(destroyOnEvents = ContextClosedEvent.class)
 	static class ExposingSpringSessionGemFireConfigurationAsPropertiesConfiguration {
 
 		@Bean("MockSessionExpirationPolicy")
@@ -319,12 +319,12 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 		poolName = "DEFAULT",
 		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME
 	)
-	@EnableGemFireMockObjects(destroyOnEvent = ContextClosedEvent.class)
+	@EnableGemFireMockObjects(destroyOnEvents = ContextClosedEvent.class)
 	static class DataSerializableSessionSerializerConfiguration { }
 
 	@ClientCacheApplication
 	@EnableGemFireHttpSession(poolName = "DEFAULT", sessionSerializerBeanName = "TestDataSerializer")
-	@EnableGemFireMockObjects(destroyOnEvent = ContextClosedEvent.class)
+	@EnableGemFireMockObjects(destroyOnEvents = ContextClosedEvent.class)
 	static class TestDataSerializerConfiguration {
 
 		@Bean("TestDataSerializer")
@@ -335,7 +335,7 @@ public class GemFireHttpSessionConfigurationIntegrationTests extends SpringAppli
 
 	@ClientCacheApplication
 	@EnableGemFireHttpSession(poolName = "DEFAULT", sessionSerializerBeanName = "TestSessionSerializer")
-	@EnableGemFireMockObjects(destroyOnEvent = ContextClosedEvent.class)
+	@EnableGemFireMockObjects(destroyOnEvents = ContextClosedEvent.class)
 	static class TestSessionSerializerConfiguration {
 
 		@Bean("TestSessionSerializer")
