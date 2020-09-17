@@ -22,6 +22,22 @@ Spring Data and Spring Session versions.
 * Upgrades to Spring Test for Apache Geode & VMware Tanzu (Pivotal) GemFire 0.0.19.RELEASE.
 * Upgrades to Spring Build Conventions Gradle Plugin 0.0.34.RELEASE.
 
+
+Changes in version 2.2.5.RELEASE (2020-09-16)
+---------------------------------------------
+Aligns Spring Session for Apache Geode & Pivotal GemFire (SSDG) with the latest Spring Framework, Spring Boot,
+Spring Data and Spring Session versions.
+
+* Upgrades to Apache Groovy 2.4.20.
+* Upgrades to VMware Tanzu (Pivotal) GemFire 9.8.9.
+* Upgrades to Spring Framework 5.2.9.RELEASE.
+* Upgrades to Spring Boot 2.2.9.RELEASE.
+* Upgrades to Spring Data Moore-SR10.
+* Upgrades to Spring Data for Apache Geode & VMware Tanzu (Pivotal) GemFire 2.2.10.RELEASE.
+* Upgrades to Spring Session 2.2.4.RELEASE.
+* Upgrades to Spring Session BOM Corn-SR3.
+
+
 Changes in version 2.2.4.RELEASE (2020-05-18)
 ---------------------------------------------
 Aligns Spring Session for Apache Geode & Pivotal GemFire (SSDG) with the latest Spring Framework, Spring Boot,
