@@ -1,3 +1,6 @@
+:version: 2.1.11.RELEASE
+:geode-version: 16
+
 image:https://badges.gitter.im/spring-projects/spring-session.svg[link="https://gitter.im/spring-projects/spring-session?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
 
 image:https://travis-ci.org/spring-projects/spring-session.svg?branch=master["Build Status", link="https://travis-ci.org/spring-projects/spring-session-data-geode"]
@@ -22,12 +25,12 @@ as a session repository provider and adds additional capabilities required by en
 * Custom `Expiration Policies` - in addition to the default, 30 minute session _idle expiration timeout_ (TTI), which
 is configurable, SSDG also supports _fixed-duration expiration timeout_ (e.g. expire the session after 1 hour
 regardless of whether the session is active or inactive).  Users may also define custom expiration policies using the
-https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.1.1.RELEASE/api/org/springframework/session/data/gemfire/expiration/SessionExpirationPolicy.html[`SessionExpirationPolicy`] interface.
-See the https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.1.1.RELEASE/reference/html5/#httpsession-gemfire-expiration[documentation] for more details.
+https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/{version}/api/org/springframework/session/data/gemfire/expiration/SessionExpirationPolicy.html[`SessionExpirationPolicy`] interface.
+See the https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/{version}/reference/html5/#httpsession-gemfire-expiration[documentation] for more details.
 
-* Custom `Data Serialization` - in addition to the default Apache Geode https://geode.apache.org/docs/guide/18/developing/data_serialization/gemfire_pdx_serialization.html[PDX Serialization] format,
-users may configure Apache Geode https://geode.apache.org/docs/guide/18/developing/data_serialization/gemfire_data_serialization.html[Data Serialization]
-with full support for https://geode.apache.org/docs/guide/18/developing/delta_propagation/chapter_overview.html[Delta Propagation].
+* Custom `Data Serialization` - in addition to the default Apache Geode https://geode.apache.org/docs/guide/{geode-version}/developing/data_serialization/gemfire_pdx_serialization.html[PDX Serialization] format,
+users may configure Apache Geode https://geode.apache.org/docs/guide/{geode-version}/developing/data_serialization/gemfire_data_serialization.html[Data Serialization]
+with full support for https://geode.apache.org/docs/guide/{geode-version}/developing/delta_propagation/chapter_overview.html[Delta Propagation].
 While _race conditions_ between competing HTTP requests (accessing the same HTTP Session) cannot be completely avoided with
 any session provider, sending only the delta (or changes) minimizes the chance of _lost updates_, especially in a highly clustered
 Web environment. By using PDX Serialization, your HTTP Session state is immediately transferable across environments, from non-managed,
@@ -43,7 +46,7 @@ implement the `Delta` interface, or the object is not the same, then it function
 If you prefer, you may specify your own rules composed with the `IsDirtyPredicate` strategy interface.
 
 * Powerful `Pub/Sub` - Apache Geode and Pivotal GemFire both provide a very powerful and robust client/server
-https://geode.apache.org/docs/guide/18/developing/events/chapter_overview.html[event distribution and handling sub-system]
+https://geode.apache.org/docs/guide/{geode-version}/developing/events/chapter_overview.html[event distribution and handling sub-system]
 leveraged by SSDG in order to reliably manage session state, especially in a distributed/clustered environment.
 
 These and many more Apache Geode or Pivotal GemFire features may be leveraged in your application environment to
@@ -67,8 +70,8 @@ By participating, you  are expected to uphold this code. Please report unaccepta
 == Documentation
 
 Documentation for _Spring Session for Apache Geode and Pivotal GemFire_ can be found
-https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.1.3.RELEASE/reference/html5/[here]
-and Javadoc is available https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/2.1.3.RELEASE/api/[here].
+https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/{version}/reference/html5/[here]
+and Javadoc is available https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/{version}/api/[here].
 
 = Spring Session Project Site
 
