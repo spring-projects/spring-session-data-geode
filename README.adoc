@@ -1,4 +1,4 @@
-:version: 2.4.0-RC1
+:version: 2.4.0
 :geode-version: 113
 
 image:https://badges.gitter.im/spring-projects/spring-session.svg[link="https://gitter.im/spring-projects/spring-session?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
@@ -6,7 +6,7 @@ image:https://badges.gitter.im/spring-projects/spring-session.svg[link="https://
 image:https://travis-ci.org/spring-projects/spring-session.svg?branch=master["Build Status", link="https://travis-ci.org/spring-projects/spring-session-data-geode"]
 
 [[ssdg]]
-== Spring Session for Apache Geode & Pivotal GemFire
+== Spring Session for Apache Geode & VMware Tanzu GemFire
 
 _Spring Session_ core provides an API along with several provider implementations to manage user sessions.  It also
 simplifies the support for clustered session state management without being tied to an application container
@@ -20,7 +20,7 @@ in a neutral way along with providing HTTP Session IDs in the HTTP Header to wor
 * `WebSocket` - keeps the `HttpSession` active when receiving WebSocket messages.
 
 On top of the core _Spring Session_ features, _Spring Session for Apache Geode and Pivotal GemFire_ (SSDG) positions
-either https://geode.apache.org/[Apache Geode] or https://pivotal.io/pivotal-gemfire[Pivotal GemFire]
+either https://geode.apache.org/[Apache Geode] or https://pivotal.io/pivotal-gemfire[VMware Tanzu GemFire]
 as a session repository provider and adds additional capabilities required by enterprise class solutions:
 
 * Custom `Expiration Policies` - in addition to the default, 30 minute session _idle expiration timeout_ (TTI), which
@@ -46,18 +46,18 @@ and use that to determine if your application domain objects are indeed dirty be
 implement the `Delta` interface, or the object is not the same, then it functions like all other Spring Session providers.
 If you prefer, you may specify your own rules composed with the `IsDirtyPredicate` strategy interface.
 
-* Powerful `Pub/Sub` - Apache Geode and Pivotal GemFire both provide a very powerful and robust client/server
+* Powerful `Pub/Sub` - Apache Geode and VMware Tanzu GemFire both provide a very powerful and robust client/server
 https://geode.apache.org/docs/guide/{geode-version}/developing/events/chapter_overview.html[event distribution and handling sub-system]
 leveraged by SSDG in order to reliably manage session state, especially in a distributed/clustered environment.
 
-These and many more Apache Geode or Pivotal GemFire features may be leveraged in your application environment to
+These and many more Apache Geode or VMware Tanzu GemFire features may be leveraged in your application environment to
 achieve resilient, highly available (HA), durable, consistent, and even multi-clustered (WAN), persistent
 session statement management.
 
-The best part, SSDG allows you to use either Apache Geode or Pivotal GemFire interchangeably without having to change
+The best part, SSDG allows you to use either Apache Geode or VMware Tanzu GemFire interchangeably without having to change
 a single line of code.  Simply change your dependency from `org.springframework.session:spring-session-data-geode`
 to `org.springframework.session:spring-session-data-gemfire`, or vice versa, and you can seemlessly move between
-either Apache Geode or Pivotal GemFire, or even PCC.
+either Apache Geode or VMware Tanzu GemFire, or even PCC.
 
 No other Spring Session provider offers you the same type of flexibility and power in 1 solution, especially as
 your requirements and UC change (e.g. from simple session caching to a full on _System of Record_ with
@@ -75,7 +75,7 @@ for Apache Geode & Pivotal GemFire_ at https://spring.io/projects/spring-session
 [[documentation]]
 === Documentation
 
-Documentation for _Spring Session for Apache Geode and Pivotal GemFire_ can be found
+Documentation for _Spring Session for Apache Geode and VMware Tazu GemFire_ can be found
 https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/{version}/reference/html5/[here]
 and Javadoc is available https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/{version}/api/[here].
 
