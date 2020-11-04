@@ -175,6 +175,7 @@ public class SessionCacheTypeAwareRegionFactoryBeanTests {
 	public void setAndGetGemFireCache() {
 
 		Cache mockCache = mock(Cache.class);
+
 		ClientCache mockClientCache = mock(ClientCache.class);
 
 		this.regionFactoryBean.setCache(mockCache);

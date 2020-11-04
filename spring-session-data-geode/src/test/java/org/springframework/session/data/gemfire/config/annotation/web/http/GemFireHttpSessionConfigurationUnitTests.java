@@ -77,22 +77,26 @@ import org.springframework.util.ReflectionUtils;
  * @see org.junit.Test
  * @see org.mockito.Mockito
  * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.ExpirationAttributes
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.RegionAttributes
  * @see org.apache.geode.cache.RegionShortcut
- * @see org.apache.geode.cache.ExpirationAttributes
- * @see org.apache.geode.cache.RegionAttributes
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.client.ClientRegionShortcut
  * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory
+ * @see org.springframework.context.ApplicationContext
  * @see org.springframework.context.ConfigurableApplicationContext
+ * @see org.springframework.core.env.ConfigurableEnvironment
+ * @see org.springframework.core.env.Environment
+ * @see org.springframework.core.env.PropertySource
  * @see org.springframework.core.type.AnnotationMetadata
- * @see org.springframework.data.gemfire.GemfireOperations
  * @see org.springframework.data.gemfire.GemfireTemplate
  * @see org.springframework.session.Session
  * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionCacheTypeAwareRegionFactoryBean
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer
  * @since 1.1.0
  */
 public class GemFireHttpSessionConfigurationUnitTests {
@@ -127,7 +131,7 @@ public class GemFireHttpSessionConfigurationUnitTests {
 
 		if (field == null) {
 			throw new NoSuchFieldException(String.format("Field with name [%1$s] was not found in class [%2$s]",
-				fieldName, type));
+				fieldName, type.getName()));
 		}
 
 		return field;
@@ -155,8 +159,8 @@ public class GemFireHttpSessionConfigurationUnitTests {
 
 		this.gemfireConfiguration.setBeanClassLoader(Thread.currentThread().getContextClassLoader());
 
-		assertThat(this.gemfireConfiguration.getBeanClassLoader()).isEqualTo(
-			Thread.currentThread().getContextClassLoader());
+		assertThat(this.gemfireConfiguration.getBeanClassLoader())
+			.isEqualTo(Thread.currentThread().getContextClassLoader());
 
 		this.gemfireConfiguration.setBeanClassLoader(null);
 
@@ -166,18 +170,18 @@ public class GemFireHttpSessionConfigurationUnitTests {
 	@Test
 	public void setAndGetClientRegionShortcut() {
 
-		assertThat(this.gemfireConfiguration.getClientRegionShortcut()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_CLIENT_REGION_SHORTCUT);
+		assertThat(this.gemfireConfiguration.getClientRegionShortcut())
+			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_CLIENT_REGION_SHORTCUT);
 
 		this.gemfireConfiguration.setClientRegionShortcut(ClientRegionShortcut.CACHING_PROXY);
 
-		assertThat(this.gemfireConfiguration.getClientRegionShortcut()).isEqualTo(
-			ClientRegionShortcut.CACHING_PROXY);
+		assertThat(this.gemfireConfiguration.getClientRegionShortcut())
+			.isEqualTo(ClientRegionShortcut.CACHING_PROXY);
 
 		this.gemfireConfiguration.setClientRegionShortcut(null);
 
-		assertThat(this.gemfireConfiguration.getClientRegionShortcut()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_CLIENT_REGION_SHORTCUT);
+		assertThat(this.gemfireConfiguration.getClientRegionShortcut())
+			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_CLIENT_REGION_SHORTCUT);
 	}
 
 	@Test
@@ -239,8 +243,8 @@ public class GemFireHttpSessionConfigurationUnitTests {
 	@Test
 	public void setAndGetMaxInactiveIntervalInSeconds() {
 
-		assertThat(this.gemfireConfiguration.getMaxInactiveIntervalInSeconds()).isEqualTo(
-				GemFireHttpSessionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL_IN_SECONDS);
+		assertThat(this.gemfireConfiguration.getMaxInactiveIntervalInSeconds())
+			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL_IN_SECONDS);
 
 		this.gemfireConfiguration.setMaxInactiveIntervalInSeconds(300);
 
@@ -262,8 +266,8 @@ public class GemFireHttpSessionConfigurationUnitTests {
 	@Test
 	public void setAndGetPoolName() {
 
-		assertThat(this.gemfireConfiguration.getPoolName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_POOL_NAME);
+		assertThat(this.gemfireConfiguration.getPoolName())
+			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_POOL_NAME);
 
 		this.gemfireConfiguration.setPoolName("TestPoolName");
 
@@ -271,35 +275,35 @@ public class GemFireHttpSessionConfigurationUnitTests {
 
 		this.gemfireConfiguration.setPoolName("  ");
 
-		assertThat(this.gemfireConfiguration.getPoolName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_POOL_NAME);
+		assertThat(this.gemfireConfiguration.getPoolName())
+			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_POOL_NAME);
 
 		this.gemfireConfiguration.setPoolName("");
 
-		assertThat(this.gemfireConfiguration.getPoolName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_POOL_NAME);
+		assertThat(this.gemfireConfiguration.getPoolName())
+			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_POOL_NAME);
 
 		this.gemfireConfiguration.setPoolName(null);
 
-		assertThat(this.gemfireConfiguration.getPoolName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_POOL_NAME);
+		assertThat(this.gemfireConfiguration.getPoolName())
+			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_POOL_NAME);
 	}
 
 	@Test
 	public void setAndGetServerRegionShortcut() {
 
-		assertThat(this.gemfireConfiguration.getServerRegionShortcut()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_SERVER_REGION_SHORTCUT);
+		assertThat(this.gemfireConfiguration.getServerRegionShortcut())
+			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SERVER_REGION_SHORTCUT);
 
 		this.gemfireConfiguration.setServerRegionShortcut(RegionShortcut.REPLICATE_PERSISTENT);
 
-		assertThat(this.gemfireConfiguration.getServerRegionShortcut()).isEqualTo(
-			RegionShortcut.REPLICATE_PERSISTENT);
+		assertThat(this.gemfireConfiguration.getServerRegionShortcut())
+			.isEqualTo(RegionShortcut.REPLICATE_PERSISTENT);
 
 		this.gemfireConfiguration.setServerRegionShortcut(null);
 
-		assertThat(this.gemfireConfiguration.getServerRegionShortcut()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_SERVER_REGION_SHORTCUT);
+		assertThat(this.gemfireConfiguration.getServerRegionShortcut())
+			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SERVER_REGION_SHORTCUT);
 	}
 
 	@Test
@@ -338,8 +342,8 @@ public class GemFireHttpSessionConfigurationUnitTests {
 	@Test
 	public void setAndGetSessionRegionName() {
 
-		assertThat(this.gemfireConfiguration.getSessionRegionName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
+		assertThat(this.gemfireConfiguration.getSessionRegionName())
+			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
 
 		this.gemfireConfiguration.setSessionRegionName("test");
 
@@ -347,18 +351,18 @@ public class GemFireHttpSessionConfigurationUnitTests {
 
 		this.gemfireConfiguration.setSessionRegionName("  ");
 
-		assertThat(this.gemfireConfiguration.getSessionRegionName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
+		assertThat(this.gemfireConfiguration.getSessionRegionName())
+			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
 
 		this.gemfireConfiguration.setSessionRegionName("");
 
-		assertThat(this.gemfireConfiguration.getSessionRegionName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
+		assertThat(this.gemfireConfiguration.getSessionRegionName())
+			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
 
 		this.gemfireConfiguration.setSessionRegionName(null);
 
-		assertThat(this.gemfireConfiguration.getSessionRegionName()).isEqualTo(
-			GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
+		assertThat(this.gemfireConfiguration.getSessionRegionName())
+			.isEqualTo(GemFireHttpSessionConfiguration.DEFAULT_SESSION_REGION_NAME);
 	}
 
 	@Test
@@ -407,12 +411,14 @@ public class GemFireHttpSessionConfigurationUnitTests {
 
 		assertThat(this.gemfireConfiguration.getSessionSerializerBeanName())
 			.isEqualTo(GemFireHttpSessionConfiguration.SESSION_PDX_SERIALIZER_BEAN_NAME);
+
 		assertThat(this.gemfireConfiguration.isUsingDataSerialization()).isFalse();
 
 		this.gemfireConfiguration.setSessionSerializerBeanName(null);
 
 		assertThat(this.gemfireConfiguration.getSessionSerializerBeanName())
 			.isEqualTo(GemFireHttpSessionConfiguration.SESSION_PDX_SERIALIZER_BEAN_NAME);
+
 		assertThat(this.gemfireConfiguration.isUsingDataSerialization()).isFalse();
 	}
 
@@ -694,8 +700,8 @@ public class GemFireHttpSessionConfigurationUnitTests {
 
 		verify(mockApplicationContext, times(1)).getBeanFactory();
 
-		verify(mockBeanFactory, times(1)).registerAlias(eq("testSessionSerializer"),
-			eq(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_BEAN_ALIAS));
+		verify(mockBeanFactory, times(1))
+			.registerAlias(eq("testSessionSerializer"), eq(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_BEAN_ALIAS));
 	}
 
 	@Test

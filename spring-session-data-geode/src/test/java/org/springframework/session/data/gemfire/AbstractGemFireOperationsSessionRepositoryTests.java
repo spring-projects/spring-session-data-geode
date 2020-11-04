@@ -429,7 +429,6 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		assertThat(this.sessionRepository.getApplicationEventPublisher()).isSameAs(mockApplicationEventPublisher);
 	}
 
-	@SuppressWarnings("all")
 	@Test(expected = IllegalArgumentException.class)
 	public void setApplicationEventPublisherToNull() {
 
@@ -2252,7 +2251,6 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		assertThat(session.getAttributes()).isEmpty();
 	}
 
-	@SuppressWarnings("all")
 	@Test(expected = IllegalArgumentException.class)
 	public void copyNullThrowsIllegalArgumentException() {
 
@@ -2371,7 +2369,6 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 		verify(mockSession, never()).getAttribute(anyString());
 	}
 
-	@SuppressWarnings("all")
 	@Test(expected = IllegalArgumentException.class)
 	public void fromNullSessionThrowsIllegalArgumentException() {
 

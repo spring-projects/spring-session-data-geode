@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.serialization;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,7 +29,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /**
- * Unit tests for the {@link SessionSerializer} interface.
+ * Unit Tests for the {@link SessionSerializer} interface.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -43,6 +42,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class SessionSerializerTests {
 
 	@Mock
+	@SuppressWarnings("rawtypes")
 	private SessionSerializer sessionSerializer;
 
 	@Test

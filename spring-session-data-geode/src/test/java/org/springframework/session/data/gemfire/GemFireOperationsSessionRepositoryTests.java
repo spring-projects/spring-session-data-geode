@@ -134,6 +134,7 @@ public class GemFireOperationsSessionRepositoryTests {
 		verify(this.mockTemplate, times(1)).getRegion();
 	}
 
+	@SuppressWarnings("rawtypes")
 	private GemFireSession newNonDirtyGemFireSession() {
 
 		GemFireSession session = GemFireSession.create();
@@ -186,7 +187,7 @@ public class GemFireOperationsSessionRepositoryTests {
 		assertThat(session.getCreationTime()).isAfterOrEqualTo(beforeCreationTime);
 		assertThat(session.getCreationTime()).isBeforeOrEqualTo(Instant.now());
 		assertThat(session.isExpired()).isFalse();
-		assertThat(((GemFireSession) session).getIsDirtyPredicate()).isEqualTo(EqualsDirtyPredicate.INSTANCE);
+		assertThat(((GemFireSession<?>) session).getIsDirtyPredicate()).isEqualTo(EqualsDirtyPredicate.INSTANCE);
 		assertThat(session.getLastAccessedTime()).isEqualTo(session.getCreationTime());
 		assertThat(session.getMaxInactiveInterval()).isEqualTo(Duration.ofSeconds(MAX_INACTIVE_INTERVAL_IN_SECONDS));
 	}
@@ -544,10 +545,9 @@ public class GemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void saveWillNotStoreNonDirtyGemFireSessions() {
 
-		GemFireSession session = newNonDirtyGemFireSession();
+		GemFireSession<?> session = newNonDirtyGemFireSession();
 
 		assertThat(session).isNotNull();
 		assertThat(session.hasDelta()).isFalse();
