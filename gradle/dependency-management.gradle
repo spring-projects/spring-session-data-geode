@@ -7,9 +7,17 @@ dependencyManagement {
 		mavenBom "org.springframework.boot:spring-boot-dependencies:$springBootVersion"
 	}
 	dependencies {
+		dependency "javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:$javaxServletJspJstlApiVersion"
 		dependency "antlr:antlr:$antlrVersion"
 		dependency "edu.umd.cs.mtc:multithreadedtc:$multithreadedtcVersion"
-		dependency "javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:$javaxServletJspJstlApiVersion"
+		dependency "io.pivotal.gemfire:geode-core:$pivotalGemFireVersion"
+		dependency "io.pivotal.gemfire:geode-cq:$pivotalGemFireVersion"
+		dependency "io.pivotal.gemfire:geode-lucene:$pivotalGemFireVersion"
+		dependency "io.pivotal.gemfire:geode-wan:$pivotalGemFireVersion"
+//		dependency "org.apache.geode:geode-core:$apacheGeodeVersion"
+//		dependency "org.apache.geode:geode-cq:$apacheGeodeVersion"
+//		dependency "org.apache.geode:geode-lucene:$apacheGeodeVersion"
+//		dependency "org.apache.geode:geode-wan:$apacheGeodeVersion"
 		dependency "org.apache.taglibs:taglibs-standard-impl:$apacheTaglibsStandardVersion"
 		dependency "org.apache.taglibs:taglibs-standard-jstlel:$apacheTaglibsStandardVersion"
 		dependency "org.apache.taglibs:taglibs-standard-spec:$apacheTaglibsStandardVersion"
