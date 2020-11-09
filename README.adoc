@@ -1,4 +1,4 @@
-:version: 2.3.1.RELEASE
+:version: 2.3.2.RELEASE
 :geode-version: 112
 
 image:https://badges.gitter.im/spring-projects/spring-session.svg[link="https://gitter.im/spring-projects/spring-session?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
@@ -6,7 +6,7 @@ image:https://badges.gitter.im/spring-projects/spring-session.svg[link="https://
 image:https://travis-ci.org/spring-projects/spring-session.svg?branch=master["Build Status", link="https://travis-ci.org/spring-projects/spring-session-data-geode"]
 
 [[ssdg]]
-== Spring Session for Apache Geode & Pivotal GemFire
+== Spring Session for Apache Geode & VMware Tanzu GemFire
 
 _Spring Session_ core provides an API along with several provider implementations to manage user sessions.  It also
 simplifies the support for clustered session state management without being tied to an application container
