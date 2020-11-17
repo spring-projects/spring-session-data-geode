@@ -1,6 +1,10 @@
 apply plugin: 'io.spring.convention.spring-sample-war'
 apply from: IDE_GRADLE
 
+repositories {
+	gradlePluginPortal()
+}
+
 dependencies {
 
 	compile project(':spring-session-data-geode')

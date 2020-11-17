@@ -3,6 +3,10 @@ apply plugin: "gemfire-server"
 apply plugin: "application"
 apply from: IDE_GRADLE
 
+repositories {
+	gradlePluginPortal()
+}
+
 dependencies {
 
 	compile project(':spring-session-data-geode')
