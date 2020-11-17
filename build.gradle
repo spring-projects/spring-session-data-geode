@@ -5,14 +5,34 @@ buildscript {
 	}
 	repositories {
 		gradlePluginPortal()
-		maven { url 'https://repo.spring.io/libs-release' }
+		maven { url 'https://repo.spring.io/release' }
 		maven { url 'https://repo.spring.io/plugins-snapshot' }
 	}
 }
 
 apply plugin: 'io.spring.convention.root'
 
-group = 'org.springframework.session'
+allprojects {
+
+	group = 'org.springframework.session'
+
+	repositories {
+
+		mavenCentral()
+
+		if (version.contains('-')) {
+			maven { url "https://repo.spring.io/milestone" }
+		}
+		if (version.endsWith('-SNAPSHOT')) {
+			maven { url "https://repo.spring.io/snapshot" }
+		}
+	}
+
+	configurations.all {
+		resolutionStrategy.cacheChangingModulesFor 0, "minutes"
+	}
+}
+
 description = 'Spring Session for Apache Geode'
 
 ext['groovy.version'] = "$groovyVersion"
