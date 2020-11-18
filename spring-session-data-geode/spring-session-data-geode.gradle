@@ -14,6 +14,8 @@ dependencies {
 	compile "org.springframework.data:spring-data-geode"
 	compile "org.springframework.session:spring-session-core:$springSessionVersion"
 
+	compileOnly "com.google.code.findbugs:jsr305:$findbugsVersion"
+
 	optional "org.springframework.security:spring-security-core"
 	optional "org.springframework.security:spring-security-web"
 
@@ -34,8 +36,12 @@ dependencies {
 	testCompile "org.springframework.data:spring-data-geode-test"
 	testCompile slf4jDependencies
 
+	testCompileOnly "com.google.code.findbugs:jsr305:$findbugsVersion"
+
 	testRuntime "ch.qos.logback:logback-classic"
 	testRuntime "org.apache.logging.log4j:log4j-to-slf4j"
+
+	integrationTestCompileOnly "com.google.code.findbugs:jsr305:$findbugsVersion"
 
 	integrationTestRuntime "org.springframework.shell:spring-shell"
 
