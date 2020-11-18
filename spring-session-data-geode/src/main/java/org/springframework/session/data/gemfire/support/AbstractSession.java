@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.support;
 
 import java.time.Duration;
@@ -23,11 +22,13 @@ import java.util.Set;
 import org.springframework.session.Session;
 
 /**
- * The {@link AbstractSession} abstract class is a base implementation of the {@link Session} interface
- * to simplify the implementation of various {@link Session} types and their capabilities.
+ * Abstract base class for implementations of the {@link Session} interface in order to simplify the implementation
+ * of various {@link Session} types and their capabilities.
  *
  * @author John Blum
- * @see org.springframework.session.data.gemfire.support.AbstractSession
+ * @see java.time.Duration
+ * @see java.time.Instant
+ * @see org.springframework.session.Session
  * @since 2.0.0
  */
 public class AbstractSession implements Session {
