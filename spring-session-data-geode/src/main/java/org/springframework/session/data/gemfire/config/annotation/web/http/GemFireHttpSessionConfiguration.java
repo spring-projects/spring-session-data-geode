@@ -904,7 +904,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 	}
 
 	@PostConstruct
-	public void init() {
+	public void initGemFire() {
 		getBeanFactory().registerAlias(getSessionSerializerBeanName(), SESSION_SERIALIZER_BEAN_ALIAS);
 	}
 
