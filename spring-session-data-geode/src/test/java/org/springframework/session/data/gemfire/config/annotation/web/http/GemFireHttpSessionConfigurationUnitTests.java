@@ -688,6 +688,7 @@ public class GemFireHttpSessionConfigurationUnitTests {
 
 		this.gemfireConfiguration.setApplicationContext(mockApplicationContext);
 		this.gemfireConfiguration.setSessionSerializerBeanName("testSessionSerializer");
+		this.gemfireConfiguration.initGemFire();
 		this.gemfireConfiguration.init();
 
 		assertThat(this.gemfireConfiguration.getApplicationContext()).isSameAs(mockApplicationContext);
