@@ -4,6 +4,24 @@ https://github.com/spring-projects/spring-session-data-geode
 ============================================================
 
 
+Changes in version 2.3.3.RELEASE (2021-01-12)
+---------------------------------------------
+Aligns Spring Session for Apache Geode (SSDG) with the latest GA versions of Spring Framework 5.2, Spring Boot 2.3,
+Spring Data Moore/2.3 and Spring Session 2.3.
+
+* Adds AbstractCookieSerializer and AbstractHttpSessionIdResolver base classes to simplify the implementation of
+the Spring Session core CookieSerializer and HttpSessionIdResolver interfaces.
+* Fixes bug in Spring Session (core) infrastructure component initialization.
+Resolves https://github.com/spring-projects/spring-session-data-geode/issues/51.
+* Upgrades to Gradle 6.8.
+* Upgrades to Spring Build Conventions Gradle Plugin 0.0.35.RELEASE.
+* Upgrades to Spring Framework 5.2.12.RELEASE.
+* Upgrades to Spring Boot 2.3.7.RELEASE.
+* Upgrades to Spring Data Commons 2.3.6.RELEASE.
+* Upgrades to Spring Data for Apache Geode & VMware Tanzu (Pivotal) GemFire 2.3.6.RELEASE.
+* Upgrades to Spring Data Release Train (BOM) Neumann-SR6.
+
+
 Changes in version 2.2.7.RELEASE (2021-01-12)
 ---------------------------------------------
 Aligns Spring Session for Apache Geode (SSDG) with the latest GA versions of Spring Framework 5.2, Spring Boot 2.2,
