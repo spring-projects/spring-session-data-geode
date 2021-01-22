@@ -1,6 +1,10 @@
 apply plugin: 'io.spring.convention.docs'
 apply plugin: 'io.spring.convention.spring-test'
 
+repositories {
+	maven { url "https://repo.spring.io/release" }
+}
+
 dependencies {
 
 	testCompile project(':spring-session-data-geode')
