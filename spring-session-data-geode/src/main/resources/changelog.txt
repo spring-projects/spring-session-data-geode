@@ -40,7 +40,7 @@ Spring Data Neumann/2.3 and Spring Session 2.3.
 Changes in version 2.5.0-M1 (2021-01-19)
 ----------------------------------------
 Aligns Spring Session for Apache Geode (SSDG) with the latest GA versions of Spring Framework 5.3, Spring Boot 2.4,
-Spring Data Ockham/2.4 and Spring Session 2.5.
+Spring Data Pascal/2.5 and Spring Session 2.5.
 
 * Adds AbstractCookieSerializer and AbstractHttpSessionIdResolver base classes to simplify the implementation of
 the Spring Session core CookieSerializer and HttpSessionIdResolver interfaces.
@@ -78,7 +78,7 @@ Resolves https://github.com/spring-projects/spring-session-data-geode/issues/51.
 Changes in version 2.3.3.RELEASE (2021-01-12)
 ---------------------------------------------
 Aligns Spring Session for Apache Geode (SSDG) with the latest GA versions of Spring Framework 5.2, Spring Boot 2.3,
-Spring Data Moore/2.3 and Spring Session 2.3.
+Spring Data Neumann/2.3 and Spring Session 2.3.
 
 * Adds AbstractCookieSerializer and AbstractHttpSessionIdResolver base classes to simplify the implementation of
 the Spring Session core CookieSerializer and HttpSessionIdResolver interfaces.
