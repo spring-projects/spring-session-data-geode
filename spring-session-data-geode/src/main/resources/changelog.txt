@@ -4,6 +4,19 @@ https://github.com/spring-projects/spring-session-data-geode
 ============================================================
 
 
+Changes in version 2.2.8.RELEASE (2021-04-14)
+---------------------------------------------
+Aligns Spring Session for Apache Geode (SSDG) with the latest GA versions of Spring Session 2.2.
+
+* Upgrades to Spring Framework 5.2.14.RELEASE.
+* Upgrades to Spring Boot 2.2.13.RELEASE.
+* Upgrades to Spring Data Commons 2.2.13.RELEASE.
+* Upgrades to Spring Data for Apache Geode & VMware Tanzu (Pivotal) GemFire 2.2.13.RELEASE.
+* Upgrades to Spring Data Release Train (BOM) Moore-SR13.
+* Upgrades to Spring Session core 2.2.6.RELEASE.
+* Upgrades to Spring Session BOM Corn-SR5.
+
+
 Changes in version 2.3.4.RELEASE (2021-02-12)
 ---------------------------------------------
 Aligns Spring Session for Apache Geode (SSDG) with the latest GA versions of Spring Framework 5.2, Spring Boot 2.3,
