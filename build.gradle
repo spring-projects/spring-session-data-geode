@@ -32,6 +32,22 @@ allprojects {
 	}
 }
 
+if (project.hasProperty('artifactoryUsername')) {
+	allprojects { project ->
+		project.repositories { repos ->
+			all { repo ->
+				if (!repo.url.toString().startsWith("https://repo.spring.io/")) {
+					return;
+				}
+				repo.credentials {
+					username = artifactoryUsername
+					password = artifactoryPassword
+				}
+			}
+		}
+	}
+}
+
 description = 'Spring Session for Apache Geode'
 
 ext['groovy.version'] = "$groovyVersion"
