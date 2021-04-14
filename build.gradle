@@ -45,8 +45,8 @@ allprojects {
 description = 'Spring Session for Apache Geode'
 
 //ext['groovy.version'] = "$groovyVersion"
-//ext['spring.version'] = "$springVersion"
-//ext['spring-framework.version'] = "$springVersion"
+ext['spring.version'] = "$springVersion"
+ext['spring-framework.version'] = "$springVersion"
 //ext['spring-data-bom.version'] = "$springDataBomVersion"
 //ext['spring-session-bom.version'] = "$springSessionBomVersion"
 
