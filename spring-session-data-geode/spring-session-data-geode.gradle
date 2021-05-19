@@ -12,7 +12,7 @@ dependencies {
 	compile "org.springframework:spring-context-support"
 	compile "org.springframework:spring-jcl"
 	compile "org.springframework.data:spring-data-geode"
-	compile "org.springframework.session:spring-session-core:$springSessionVersion"
+	compile "org.springframework.session:spring-session-core"
 
 	compileOnly "com.google.code.findbugs:jsr305:$findbugsVersion"
 
@@ -21,7 +21,7 @@ dependencies {
 
 	provided "javax.servlet:javax.servlet-api"
 
-	// TODO: Remove when all internal Apache Geode API usage is removed; Only required by tests!
+	// TODO: Remove dependency declarations when all internal Apache Geode API usage is removed; Only required by tests!
 	provided "org.apache.geode:geode-logging:$apacheGeodeVersion"
 	provided "org.apache.geode:geode-membership:$apacheGeodeVersion" // Need for Geode Serialization
 	provided "org.apache.geode:geode-serialization:$apacheGeodeVersion" // Need for Geode Serialization

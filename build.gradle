@@ -1,8 +1,4 @@
 buildscript {
-	dependencies {
-		classpath 'io.spring.gradle:spring-build-conventions:0.0.37'
-		classpath "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
-	}
 	repositories {
 		mavenCentral()
 		gradlePluginPortal()
@@ -16,6 +12,10 @@ buildscript {
 				}
 			}
 		}
+	}
+	dependencies {
+		classpath 'io.spring.gradle:spring-build-conventions:0.0.37'
+		classpath "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
 	}
 }
 

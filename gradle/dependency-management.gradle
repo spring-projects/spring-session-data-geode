@@ -1,3 +1,20 @@
+// Define dependency version properties
+ext['antlrVersion'] = '2.7.7'
+ext['apacheTaglibsVersion'] = '1.2.5'
+ext['assertjVersion'] = '3.19.0'
+ext['javaxServletApiVersion'] ='4.0.1'
+ext['javaxServletJspJstlApiVersion'] = '1.2.2'
+ext['log4jVersion'] = '2.14.1'
+ext['logbackVersion'] = '1.2.3'
+ext['junitVersion'] = '4.13.2'
+ext['mockitoVersion'] = '3.10.0'
+ext['multithreadedtcVersion'] = '1.01'
+ext['seleniumHtmlUnitVersion'] = '2.50.0'
+ext['slf4jVersion'] = '1.7.30'
+ext['springSecurityVersion'] = '5.5.0'
+ext['springShellVersion'] = '1.2.0.RELEASE'
+
+// Declare dependency management for the following dependencies.
 dependencyManagement {
 	imports {
 //		mavenBom "org.springframework.boot:spring-boot-dependencies:$springBootVersion"
@@ -17,9 +34,9 @@ dependencyManagement {
 //		dependency "org.apache.geode:geode-lucene:$apacheGeodeVersion"
 //		dependency "org.apache.geode:geode-wan:$apacheGeodeVersion"
 		dependency "org.apache.logging.log4j:log4j-to-slf4j:$log4jVersion"
-		dependency "org.apache.taglibs:taglibs-standard-impl:$apacheTaglibsStandardVersion"
-		dependency "org.apache.taglibs:taglibs-standard-jstlel:$apacheTaglibsStandardVersion"
-		dependency "org.apache.taglibs:taglibs-standard-spec:$apacheTaglibsStandardVersion"
+		dependency "org.apache.taglibs:taglibs-standard-impl:$apacheTaglibsVersion"
+		dependency "org.apache.taglibs:taglibs-standard-jstlel:$apacheTaglibsVersion"
+		dependency "org.apache.taglibs:taglibs-standard-spec:$apacheTaglibsVersion"
 		dependency "org.assertj:assertj-core:$assertjVersion"
 		dependency "org.mockito:mockito-core:$mockitoVersion"
 		dependency "org.seleniumhq.selenium:htmlunit-driver:$seleniumHtmlUnitVersion"
