@@ -46,11 +46,11 @@ import org.springframework.session.events.SessionCreatedEvent;
 import org.springframework.session.events.SessionExpiredEvent;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 /**
- * Integration test to test the functionality of a Pivotal GemFire cache client in a Spring Session application
+ * Integration Test to test the functionality of a Pivotal GemFire cache client in a Spring Session application
  * using a specifically named Pivotal GemFire {@link org.apache.geode.cache.client.Pool} configured with
  * the 'poolName' attribute in the Spring Session Data Pivotal GemFire {@link EnableGemFireHttpSession} annotation.
  *
@@ -62,7 +62,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.springframework.test.annotation.DirtiesContext
  * @see org.springframework.test.context.ContextConfiguration
- * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+ * @see org.springframework.test.context.junit4.SpringRunner
  * @see org.springframework.test.context.web.WebAppConfiguration
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.client.ClientCache
@@ -70,7 +70,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
  * @see org.apache.geode.cache.server.CacheServer
  * @since 1.3.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(
 	classes = MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationTests.SpringSessionDataGemFireClientConfiguration.class
 )
@@ -183,7 +183,6 @@ public class MultiPoolClientServerGemFireOperationsSessionRepositoryIntegrationT
 			poolFactory.setReadTimeout(2000); // 2 seconds
 			poolFactory.setRetryAttempts(1);
 			poolFactory.setSubscriptionEnabled(true);
-			poolFactory.setThreadLocalConnections(false);
 			poolFactory.addServers(newConnectionEndpoint("localhost", port));
 
 			return poolFactory;
