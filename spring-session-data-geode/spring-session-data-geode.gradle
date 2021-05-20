@@ -41,7 +41,7 @@ dependencies {
 	testRuntime "ch.qos.logback:logback-classic"
 	testRuntime "org.apache.logging.log4j:log4j-to-slf4j"
 
-	integrationTestCompileOnly "com.google.code.findbugs:jsr305:$findbugsVersion"
+	integrationTestCompile "com.google.code.findbugs:jsr305:$findbugsVersion"
 
 	integrationTestRuntime "org.springframework.shell:spring-shell"
 
