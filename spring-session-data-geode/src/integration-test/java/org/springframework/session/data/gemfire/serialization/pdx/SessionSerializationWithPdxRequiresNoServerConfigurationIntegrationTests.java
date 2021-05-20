@@ -126,15 +126,14 @@ public class SessionSerializationWithPdxRequiresNoServerConfigurationIntegration
 
 		int port = SocketUtils.findAvailableTcpPort();
 
-		System.err.printf("Starting a Pivotal GemFire Server on host [localhost], listening on port [%d]%n", port);
+		//System.err.printf("Starting a Pivotal GemFire Server on host [localhost], listening on port [%d]%n", port);
 
 		System.setProperty("spring.session.data.gemfire.cache.server.port", String.valueOf(port));
 
 		String classpath = buildClassPathContainingJarFiles("javax.transaction-api", "antlr",
 			"commons-lang", "commons-io", "commons-validator", "fastutil", "log4j-api", "log4j-to-slf4j",
-			"logback-classic", "logback-core", "geode-common", "geode-core", "geode-logging", "geode-management",
-			"geode-membership", "geode-serialization", "geode-tcp-server", "jgroups", "micrometer-core", "rmiio",
-			"shiro-core", "slf4j-api");
+			"geode-common", "geode-core", "geode-logging", "geode-management", "geode-membership", "geode-serialization",
+			"geode-tcp-server", "jgroups", "micrometer-core", "rmiio", "shiro-core", "slf4j-api");
 
 		String processWorkingDirectoryPathname =
 			String.format("gemfire-server-pdx-serialization-tests-%1$s", TIMESTAMP.format(new Date()));
@@ -143,11 +142,11 @@ public class SessionSerializationWithPdxRequiresNoServerConfigurationIntegration
 
 		gemfireServer = run(classpath, GemFireServer.class,
 			processWorkingDirectory, String.format("-Dspring.session.data.gemfire.cache.server.port=%d", port),
-			String.format("-Dgemfire.log-level=%s", GEMFIRE_LOG_LEVEL));
+				String.format("-Dgemfire.log-level=%s", GEMFIRE_LOG_LEVEL));
 
  		assertThat(waitForServerToStart("localhost", port)).isTrue();
 
-		System.err.printf("GemFire Server [startup time = %d ms]%n", System.currentTimeMillis() - t0);
+		//System.err.printf("GemFire Server [startup time = %d ms]%n", System.currentTimeMillis() - t0);
 	}
 
 	@AfterClass
