@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.expiration.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,8 +22,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
@@ -163,7 +162,8 @@ public class FixedDurationExpirationSessionRepositoryUnitTests {
 
 		verify(this.mockSessionRepository, times(1)).findById(eq("1"));
 		verifyNoMoreInteractions(this.mockSessionRepository);
-		verifyZeroInteractions(mockSession);
+
+		verifyNoInteractions(mockSession);
 	}
 
 	@Test

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.expiration.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,7 +22,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
@@ -117,7 +116,7 @@ public class SessionExpirationPolicyCustomExpiryAdapterUnitTests {
 
 		assertThat(adapter.getExpiry(null)).isNull();
 
-		verifyZeroInteractions(this.mockSessionExpirationPolicy);
+		verifyNoInteractions(this.mockSessionExpirationPolicy);
 	}
 
 	@Test
@@ -138,7 +137,8 @@ public class SessionExpirationPolicyCustomExpiryAdapterUnitTests {
 
 		verify(mockPdxInstance, times(1)).getObject();
 		verify(mockRegionEntry, times(1)).getValue();
-		verifyZeroInteractions(this.mockSessionExpirationPolicy);
+
+		verifyNoInteractions(this.mockSessionExpirationPolicy);
 	}
 
 	@Test
@@ -155,7 +155,8 @@ public class SessionExpirationPolicyCustomExpiryAdapterUnitTests {
 		assertThat(adapter.getExpiry(mockRegionEntry)).isNull();
 
 		verify(mockRegionEntry, times(1)).getValue();
-		verifyZeroInteractions(this.mockSessionExpirationPolicy);
+
+		verifyNoInteractions(this.mockSessionExpirationPolicy);
 	}
 
 	@Test
@@ -172,7 +173,8 @@ public class SessionExpirationPolicyCustomExpiryAdapterUnitTests {
 		assertThat(adapter.getExpiry(mockRegionEntry)).isNull();
 
 		verify(mockRegionEntry, times(1)).getValue();
-		verifyZeroInteractions(this.mockSessionExpirationPolicy);
+
+		verifyNoInteractions(this.mockSessionExpirationPolicy);
 	}
 
 	@Test
