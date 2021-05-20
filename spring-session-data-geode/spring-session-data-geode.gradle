@@ -13,6 +13,7 @@ dependencies {
 	compile "org.springframework:spring-jcl"
 	compile "org.springframework.data:spring-data-geode"
 	compile "org.springframework.session:spring-session-core"
+	compile slf4jDependencies
 
 	compileOnly "com.google.code.findbugs:jsr305:$findbugsVersion"
 
@@ -34,7 +35,6 @@ dependencies {
 	testCompile "org.springframework:spring-test"
 	testCompile "org.springframework:spring-web"
 	testCompile "org.springframework.data:spring-data-geode-test"
-	testCompile slf4jDependencies
 
 	testCompileOnly "com.google.code.findbugs:jsr305:$findbugsVersion"
 
@@ -71,7 +71,7 @@ integrationTest {
 
 	def gradleProjectPropertyLogbackLogLevel = project.hasProperty("logback.log.level")
 		? project.getProperty("logback.log.level")
-		: "ERROR";
+		: "ERROR"
 
 	systemProperty "logback.log.level", System.getProperty("logback.log.level", gradleProjectPropertyLogbackLogLevel)
 
