@@ -1954,6 +1954,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
+	@SuppressWarnings("all")
 	public void toSessionWithTombstoneAndSessionId() {
 
 		SessionEventHandlerCacheListenerAdapter sessionEventHandler = this.sessionRepository.newSessionEventHandler();
@@ -2678,7 +2679,6 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 		DataOutput mockDataOutput = mock(DataOutput.class);
 
-		@SuppressWarnings("serial")
 		DeltaCapableGemFireSession session = new DeltaCapableGemFireSession();
 
 		Instant lastAccessedTime = session.getLastAccessedTime().plusSeconds(1);
@@ -3145,7 +3145,6 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 
 		DataOutput mockDataOutput = mock(DataOutput.class);
 
-		@SuppressWarnings("serial")
 		DeltaCapableGemFireSessionAttributes sessionAttributes = spy(new DeltaCapableGemFireSessionAttributes());
 
 		doAnswer(invocation -> {
@@ -3444,6 +3443,7 @@ public class AbstractGemFireOperationsSessionRepositoryTests {
 	}
 
 	@Test
+	@SuppressWarnings("all")
 	public void deltaSessionAttributesHasDeltaAnytimeSetAttributeIsCalled() {
 
 		DeltaCapableGemFireSessionAttributes sessionAttributes = new DeltaCapableGemFireSessionAttributes();
