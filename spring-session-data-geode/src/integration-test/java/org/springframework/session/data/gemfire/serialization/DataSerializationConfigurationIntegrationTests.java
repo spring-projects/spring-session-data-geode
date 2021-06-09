@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.serialization;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -55,11 +54,11 @@ public class DataSerializationConfigurationIntegrationTests extends AbstractGemF
 
 	@Autowired
 	@Qualifier(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_BEAN_ALIAS)
-	private SessionSerializer configuredSessionSerializer;
+	private SessionSerializer<?, ?, ?> configuredSessionSerializer;
 
 	@Autowired
 	@Qualifier(GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME)
-	private SessionSerializer dataSerializableSessionSerialzer;
+	private SessionSerializer<?, ?, ?> dataSerializableSessionSerialzer;
 
 	@Autowired
 	private GemFireCache gemfireCache;
