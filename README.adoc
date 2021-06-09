@@ -75,9 +75,9 @@ for Apache Geode & Pivotal GemFire_ at https://spring.io/projects/spring-session
 [[documentation]]
 === Documentation
 
-Documentation for _Spring Session for Apache Geode and Pivotal GemFire_ can be found
-https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/{version}/reference/html5/[here]
-and Javadoc is available https://docs.spring.io/autorepo/docs/spring-session-data-geode-build/{version}/api/[here].
+Documentation for _Spring Session for Apache Geode and VMware Tanzu GemFire_ can be found
+https://docs.spring.io/spring-session-data-geode/docs/{version}/reference/html5/[here]
+and Javadoc is available https://docs.spring.io/spring-session-data-geode/docs/{version}/api/[here].
 
 [[code-of-conduct]]
 == Code of Conduct
