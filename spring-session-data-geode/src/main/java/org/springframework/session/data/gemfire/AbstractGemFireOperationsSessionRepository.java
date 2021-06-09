@@ -85,11 +85,16 @@ import org.slf4j.LoggerFactory;
  * @author John Blum
  * @see java.time.Duration
  * @see java.time.Instant
+ * @see java.util.UUID
  * @see org.apache.geode.DataSerializable
  * @see org.apache.geode.DataSerializer
  * @see org.apache.geode.Delta
  * @see org.apache.geode.cache.EntryEvent
+ * @see org.apache.geode.cache.Operation
  * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.RegionAttributes
+ * @see org.apache.geode.cache.client.Pool
+ * @see org.apache.geode.cache.client.PoolManager
  * @see org.apache.geode.cache.util.CacheListenerAdapter
  * @see org.springframework.context.ApplicationEvent
  * @see org.springframework.context.ApplicationEventPublisher
@@ -100,6 +105,7 @@ import org.slf4j.LoggerFactory;
  * @see org.springframework.session.SessionRepository
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
+ * @see org.springframework.session.data.gemfire.events.SessionChangedEvent
  * @see org.springframework.session.data.gemfire.support.DeltaAwareDirtyPredicate
  * @see org.springframework.session.data.gemfire.support.IsDirtyPredicate
  * @see org.springframework.session.data.gemfire.support.SessionIdHolder
@@ -734,7 +740,6 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	 * @see org.springframework.session.Session
 	 * @see org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSessionAttributes
 	 */
-	@SuppressWarnings("serial")
 	public static class GemFireSession<T extends GemFireSessionAttributes> implements Comparable<Session>, Session {
 
 		protected static final String GEMFIRE_SESSION_TO_STRING =
@@ -858,10 +863,9 @@ public abstract class AbstractGemFireOperationsSessionRepository
 		 * @see GemFireSessionAttributes
 		 * @see #getIsDirtyPredicate()
 		 */
-		@SuppressWarnings("unchecked")
 		protected T newSessionAttributes(Object lock) {
 
-			return (T) new GemFireSessionAttributes(lock)
+			return new GemFireSessionAttributes(lock)
 				.configureWith(getIsDirtyPredicate());
 		}
 
