@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.serialization.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,10 +47,25 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**
- * The SessionSerializationWithDataSerializationDeltasAndPdxIntegrationTests class...
+ * Integration test testing the serialization of a {@link Session} object containing application domain object types
+ * de/serialized using PDX.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.junit.Test
+ * @see org.springframework.context.annotation.AnnotationConfigApplicationContext
+ * @see org.springframework.context.annotation.Bean
+ * @see org.springframework.data.gemfire.config.annotation.CacheServerApplication
+ * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
+ * @see org.springframework.data.gemfire.config.annotation.EnablePdx
+ * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer
+ * @see org.springframework.data.gemfire.mapping.MappingPdxSerializer
+ * @see org.springframework.session.Session
+ * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
+ * @see org.springframework.test.context.ContextConfiguration
+ * @see org.springframework.test.context.junit4.SpringRunner
+ * @since 2.1.3
  */
 @SuppressWarnings("unused")
 @RunWith(SpringRunner.class)
