@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.serialization;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,18 +63,18 @@ public class SessionSerializerConfiguredAsPdxSerializerIntegrationTests extends 
 
 	@Autowired
 	@Qualifier(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_BEAN_ALIAS)
-	private SessionSerializer configuredSessionSerializer;
+	private SessionSerializer<?, ?, ?> configuredSessionSerializer;
 
 	@Autowired
 	@Qualifier("customSessionSerializer")
-	private SessionSerializer customSessionSerializer;
+	private SessionSerializer<?, ?, ?> customSessionSerializer;
 
 	@Test
 	public void gemfireCachePdxSerializerIsPdxSerializerSessionSerializerAdapter() {
 
 		assertThat(this.gemfireCache.getPdxSerializer()).isInstanceOf(PdxSerializerSessionSerializerAdapter.class);
 
-		assertThat(((PdxSerializerSessionSerializerAdapter) this.gemfireCache.getPdxSerializer()).getSessionSerializer())
+		assertThat(((PdxSerializerSessionSerializerAdapter<?>) this.gemfireCache.getPdxSerializer()).getSessionSerializer())
 			.isSameAs(this.customSessionSerializer);
 	}
 
@@ -96,7 +95,7 @@ public class SessionSerializerConfiguredAsPdxSerializerIntegrationTests extends 
 	static class TestConfiguration {
 
 		@Bean
-		SessionSerializer customSessionSerializer() {
+		SessionSerializer<?, ?, ?> customSessionSerializer() {
 			return mock(SessionSerializer.class);
 		}
 	}
