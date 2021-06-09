@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.serialization.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,6 +50,7 @@ import lombok.ToString;
  * de/serialized using Java Serialization.
  *
  * @author John Blum
+ * @see java.io.Serializable
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.springframework.context.annotation.AnnotationConfigApplicationContext
  * @see org.springframework.data.gemfire.config.annotation.CacheServerApplication
@@ -60,6 +60,7 @@ import lombok.ToString;
  * @see org.springframework.session.data.gemfire.AbstractGemFireIntegrationTests
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration
+ * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringRunner
  * @since 2.1.3
  */
@@ -69,7 +70,7 @@ import lombok.ToString;
 )
 @SuppressWarnings("unused")
 public class SessionSerializationWithDataSerializationDeltasAndJavaSerializationIntegrationTests
-		extends AbstractGemFireIntegrationTests{
+		extends AbstractGemFireIntegrationTests {
 
 	private static final String GEMFIRE_LOG_LEVEL = "error";
 	private static final String SESSIONS_REGION_NAME = "Sessions";
@@ -133,7 +134,7 @@ public class SessionSerializationWithDataSerializationDeltasAndJavaSerialization
 	@ClientCacheApplication(logLevel = GEMFIRE_LOG_LEVEL, subscriptionEnabled = true)
 	@EnableGemFireHttpSession(
 		poolName = "DEFAULT",
-		regionName =  SESSIONS_REGION_NAME,
+		regionName = SESSIONS_REGION_NAME,
 		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME
 	)
 	static class GemFireClientConfiguration { }
@@ -158,7 +159,6 @@ public class SessionSerializationWithDataSerializationDeltasAndJavaSerialization
 	@ToString
 	@EqualsAndHashCode
 	@RequiredArgsConstructor(staticName = "newCustomer")
-	//static class Customer {
 	static class Customer implements Serializable {
 
 		@NonNull
