@@ -15,11 +15,11 @@ John Blum
 Spring Session provides an API and implementations for managing a user's session information.
 
 ifdef::backend-html5[]
-NOTE: This documentation is also available as https://docs.spring.io/spring-session-data-geode/docs/{spring-session-version}/reference/pdf/spring-session-data-geode-reference.pdf[PDF].
+NOTE: This documentation is also available as https://docs.spring.io/spring-session-data-geode/docs/{spring-session-data-geode-version}/reference/pdf/spring-session-data-geode-reference.pdf[PDF].
 endif::[]
 
 ifdef::backend-pdf[]
-NOTE: This documentation is also available as https://docs.spring.io/spring-session-data-geode/docs/{spring-session-version}/reference/html5/index.html[HTML].
+NOTE: This documentation is also available as https://docs.spring.io/spring-session-data-geode/docs/{spring-session-data-geode-version}/reference/html5/index.html[HTML].
 endif::[]
 
 [[introduction]]
