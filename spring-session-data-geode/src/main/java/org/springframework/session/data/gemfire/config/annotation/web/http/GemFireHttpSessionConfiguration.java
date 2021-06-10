@@ -240,6 +240,9 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 
 	public static final String DEFAULT_SESSION_SERIALIZER_BEAN_NAME = SESSION_PDX_SERIALIZER_BEAN_NAME;
 
+	public static final String SPRING_SESSION_DATA_GEMFIRE_SESSION_SERIALIZER_BEAN_NAME_PROPERTY =
+		"spring.session.data.gemfire.session.serializer.bean-name";
+
 	protected static final String SPRING_SESSION_GEMFIRE_PROPERTY_SOURCE =
 		GemFireHttpSessionConfiguration.class.getName().concat(".PROPERTY_SOURCE");
 
