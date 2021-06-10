@@ -103,7 +103,7 @@ include::{samples-dir}xml/gemfire-p2p/src/main/webapp/WEB-INF/spring/session.xml
 ----
 
 <1> (Optional) First, we can include a `Properties` bean to configure certain aspects of the Apache Geode peer `Cache`
-using {data-store-docs}/reference/topics/gemfire_properties.html[Pivotal GemFire Properties]. In this case, we are just
+using {data-store-docs}/reference/topics/gemfire_properties.html[VMware Tanzu GemFire Properties]. In this case, we are just
 setting Apache Geode's "`log-level`" using an application-specific System property, defaulting to "`warning`"
 if unspecified.
 <2> We must configure an Apache Geode peer `Cache` instance. We initialize it with the Apache Geode properties.

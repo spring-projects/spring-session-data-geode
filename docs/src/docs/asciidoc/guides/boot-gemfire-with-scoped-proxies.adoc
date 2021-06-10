@@ -25,7 +25,7 @@ to process client HTTP requests.
 This sample is based on a https://stackoverflow.com/questions/45674137/can-session-scope-beans-be-used-with-spring-session-and-gemfire[_StackOverflow_ post],
 which posed the following question...
 
-> _Can session scope beans be used with Spring Session and Pivotal GemFire?_
+> _Can session scope beans be used with Spring Session and VMware Tanzu GemFire?_
 
 The poster of the question when on to state and ask...
 
@@ -70,7 +70,7 @@ If you are using _Maven_, include the following `dependencies` in your `pom.xml`
 </dependencies>
 ----
 
-NOTE: If you are using Pivotal GemFire instead of Apache Geode, you may substitute the `spring-session-data-gemfire`
+NOTE: If you are using VMware Tanzu GemFire instead of Apache Geode, you may substitute the `spring-session-data-gemfire`
 artifact for `spring-session-data-geode`.
 
 ifeval::["{version-snapshot}" == "true"]
@@ -174,7 +174,7 @@ in the Apache Geode User Guide.
 
 NOTE: For more information on configuring _Spring Data for Apache Geode_, refer to the {sdg-docs}[Reference Guide].
 
-==== Enabling Pivotal GemFire HttpSession Management
+==== Enabling VMware Tanzu GemFire HttpSession Management
 
 The `@EnableGemFireHttpSession` annotation enables developers to configure certain aspects of both Spring Session
 and Apache Geode out-of-the-box using the following attributes:
