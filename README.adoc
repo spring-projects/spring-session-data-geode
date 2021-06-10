@@ -19,7 +19,7 @@ in a neutral way along with providing HTTP Session IDs in the HTTP Header to wor
 
 * `WebSocket` - keeps the `HttpSession` active when receiving WebSocket messages.
 
-On top of the core _Spring Session_ features, _Spring Session for Apache Geode and Pivotal GemFire_ (SSDG) positions
+On top of the core _Spring Session_ features, _Spring Session for Apache Geode and VMware Tanzu GemFire_ (SSDG) positions
 either https://geode.apache.org/[Apache Geode] or https://pivotal.io/pivotal-gemfire[VMware Tanzu GemFire]
 as a session repository provider and adds additional capabilities required by enterprise class solutions:
 
@@ -70,12 +70,12 @@ You can find the documentation, issue management, support, samples, and guides f
 at https://projects.spring.io/spring-session/.
 
 Additionally, you can find documentation, issue management, support, samples and guides using _Spring Session
-for Apache Geode & Pivotal GemFire_ at https://spring.io/projects/spring-session-data-geode.
+for Apache Geode & VMware Tanzu GemFire_ at https://spring.io/projects/spring-session-data-geode.
 
 [[documentation]]
 === Documentation
 
-Documentation for _Spring Session for Apache Geode and VMware Tazu GemFire_ can be found
+Documentation for _Spring Session for Apache Geode and VMware Tanzu GemFire_ can be found
 https://docs.spring.io/spring-session-data-geode/docs/{version}/reference/html5/[here]
 and Javadoc is available https://docs.spring.io/spring-session-data-geode/docs/{version}/api/[here].
 
