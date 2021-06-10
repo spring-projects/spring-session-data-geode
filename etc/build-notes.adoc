@@ -1,5 +1,5 @@
 [[build-notes]]
-= Gradle Build Notes for Spring Session for Apache Geode & Pivotal GemFire (SSDG)
+= Gradle Build Notes for Spring Session for Apache Geode & VMware Tanzu GemFire (SSDG)
 
 This document contains notes on running specific Gradle (i.e. `gradlew`) build tasks.
 
