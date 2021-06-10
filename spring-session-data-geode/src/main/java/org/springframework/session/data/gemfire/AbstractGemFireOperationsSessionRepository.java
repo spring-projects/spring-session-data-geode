@@ -515,9 +515,24 @@ public abstract class AbstractGemFireOperationsSessionRepository
 	 * Determines whether the DataSerialization framework has been configured.
 	 *
 	 * @return a boolean indicating whether the DataSerialization framework has been configured.
+	 * @see #resolveSystemUsingDataSerialization()
 	 */
 	protected static boolean isUsingDataSerialization() {
-		return usingDataSerialization.get();
+		return usingDataSerialization.get() || resolveSystemUsingDataSerialization();
+	}
+
+	private static boolean resolveSystemUsingDataSerialization() {
+
+		String configuredSessionSerializerBeanName =
+			System.getProperty(GemFireHttpSessionConfiguration.SPRING_SESSION_DATA_GEMFIRE_SESSION_SERIALIZER_BEAN_NAME_PROPERTY,
+				GemFireHttpSessionConfiguration.DEFAULT_SESSION_SERIALIZER_BEAN_NAME);
+
+		boolean systemUsingDataSerialization = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME
+			.equals(configuredSessionSerializerBeanName);
+
+		usingDataSerialization.set(systemUsingDataSerialization);
+
+		return systemUsingDataSerialization;
 	}
 
 	/**
