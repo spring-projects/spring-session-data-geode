@@ -25,7 +25,7 @@ to process client HTTP requests.
 This sample is based on a https://stackoverflow.com/questions/45674137/can-session-scope-beans-be-used-with-spring-session-and-gemfire[_StackOverflow_ post],
 which posed the following question...
 
-> _Can session scope beans be used with Spring Session and Pivotal GemFire?_
+> _Can session scope beans be used with Spring Session and VMware Tanzu GemFire?_
 
 The poster of the question when on to state and ask...
 
