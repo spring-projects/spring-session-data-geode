@@ -111,6 +111,7 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.client.ClientRegionShortcut
  * @see org.apache.geode.cache.client.Pool
+ * @see org.apache.geode.cache.query.Index
  * @see org.apache.geode.pdx.PdxSerializer
  * @see org.springframework.beans.factory.config.BeanPostProcessor
  * @see org.springframework.context.annotation.Bean
@@ -118,7 +119,12 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.context.annotation.DependsOn
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.context.annotation.ImportAware
+ * @see org.springframework.context.annotation.Profile
  * @see org.springframework.core.annotation.AnnotationAttributes
+ * @see org.springframework.core.env.ConfigurableEnvironment
+ * @see org.springframework.core.env.Environment
+ * @see org.springframework.core.env.PropertiesPropertySource
+ * @see org.springframework.core.env.PropertySource
  * @see org.springframework.core.type.AnnotationMetadata
  * @see org.springframework.data.gemfire.CacheFactoryBean
  * @see org.springframework.data.gemfire.GemfireOperations
@@ -131,16 +137,22 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.session.data.gemfire.GemFireOperationsSessionRepository
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.AbstractGemFireHttpSessionConfiguration
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession
- * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionCacheTypeAwareRegionFactoryBean
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionAttributesIndexFactoryBean
+ * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SessionCacheTypeAwareRegionFactoryBean
  * @see org.springframework.session.data.gemfire.config.annotation.web.http.support.SpringSessionGemFireConfigurer
  * @see org.springframework.session.data.gemfire.expiration.SessionExpirationPolicy
  * @see org.springframework.session.data.gemfire.expiration.config.SessionExpirationTimeoutAwareBeanPostProcessor
  * @see org.springframework.session.data.gemfire.expiration.support.SessionExpirationPolicyCustomExpiryAdapter
  * @see org.springframework.session.data.gemfire.serialization.SessionSerializer
+ * @see org.springframework.session.data.gemfire.serialization.data.provider.DataSerializableSessionSerializer
+ * @see org.springframework.session.data.gemfire.serialization.data.support.DataSerializerSessionSerializerAdapter
+ * @see org.springframework.session.data.gemfire.serialization.pdx.provider.PdxSerializableSessionSerializer
+ * @see org.springframework.session.data.gemfire.serialization.pdx.support.PdxSerializerSessionSerializerAdapter
  * @since 1.1.0
  */
 @Configuration
+@org.springframework.context.annotation.PropertySource(name = "SpringSessionProperties",
+	value = "classpath:${spring-session-properties-location:spring-session.properties}", ignoreResourceNotFound = true)
 @SuppressWarnings({ "rawtypes", "unused" })
 public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionConfiguration implements ImportAware {
 
