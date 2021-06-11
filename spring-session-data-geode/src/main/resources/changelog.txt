@@ -4,6 +4,22 @@ https://github.com/spring-projects/spring-session-data-geode
 ============================================================
 
 
+Changes in version 2.3.6.RELEASE (2021-06-11)
+---------------------------------------------
+Improves Spring Session for Apache Geode's (SSDG) support on the server-side.
+
+* Eanbles SSDG to dynamically determine, at runtime, per invocation whether GemFire/Geode Data Serialization with Deltas
+is enabled to de/serialize (HTTP) Session state.
+Resolves https://github.com/spring-projects/spring-session-data-geode/issues/54.
+* Upgrades to Javax Servlet JSP JSTL 1.2.2.
+* Upgrades to Apache Geode 1.12.2.
+* Upgrades to Gradle 6.9.
+* Upgrades to VMware Tanzu (Pivotal) GemFire 9.10.7.
+* Upgrades to Spring Framework 5.2.15.RELEASE.
+* Upgrades to Spring Boot 2.3.12.RELEASE.
+* Upgrades to Spring Session BOM Dragonfruit SR-3.
+
+
 Changes in version 2.3.5.RELEASE (2021-04-14)
 ---------------------------------------------
 Aligns Spring Session for Apache Geode (SSDG) with the latest GA versions of Spring Session 2.3.
