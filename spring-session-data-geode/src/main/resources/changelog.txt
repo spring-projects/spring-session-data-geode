@@ -4,6 +4,21 @@ https://github.com/spring-projects/spring-session-data-geode
 ============================================================
 
 
+Changes in version 2.5.1 (2021-06-11)
+-------------------------------------
+Improves Spring Session for Apache Geode's (SSDG) support on the server-side. Additionally adds support to optionally
+configure SSDG via a Spring PropertySource using spring-session.properties on the application classpath.
+
+* Enables SSDG to dynamically determine, at runtime, per invocation whether GemFire/Geode Data Serialization with Deltas
+is enabled to de/serialize (HTTP) Session state.
+Resolves https://github.com/spring-projects/spring-session-data-geode/issues/54.
+* Upgrades to Gradle 6.9.
+* Upgrades to Mockito 3.11.1.
+* Upgrades to Spring Framework 5.3.8.
+* Upgrades to Spring Boot 2.5.1.
+* Upgrades to Spring Session BOM 2021.0.0.
+
+
 Changes in version 2.4.4 (2021-06-11)
 -------------------------------------
 Improves Spring Session for Apache Geode's (SSDG) support on the server-side.
@@ -11,6 +26,9 @@ Improves Spring Session for Apache Geode's (SSDG) support on the server-side.
 * Enables SSDG to dynamically determine, at runtime, per invocation whether GemFire/Geode Data Serialization with Deltas
 is enabled to de/serialize (HTTP) Session state.
 Resolves https://github.com/spring-projects/spring-session-data-geode/issues/54.
+* Enables SSDG to be optionally configured with a Spring PropertySource using spring-session.properties
+on the application classpath.
+Resolves https://github.com/spring-projects/spring-session-data-geode/issues/55.
 * Upgrades to Javax Servlet JSP JSTL 1.2.2.
 * Upgrades to Gradle 6.9
 * Upgrades to Spring Framework 5.3.8.
@@ -25,7 +43,7 @@ Changes in version 2.3.6.RELEASE (2021-06-11)
 ---------------------------------------------
 Improves Spring Session for Apache Geode's (SSDG) support on the server-side.
 
-* Eanbles SSDG to dynamically determine, at runtime, per invocation whether GemFire/Geode Data Serialization with Deltas
+* Enables SSDG to dynamically determine, at runtime, per invocation whether GemFire/Geode Data Serialization with Deltas
 is enabled to de/serialize (HTTP) Session state.
 Resolves https://github.com/spring-projects/spring-session-data-geode/issues/54.
 * Upgrades to Javax Servlet JSP JSTL 1.2.2.
