@@ -4,6 +4,16 @@ https://github.com/spring-projects/spring-session-data-geode
 ============================================================
 
 
+Changes in version 2.4.5 (2021-06-22)
+-------------------------------------
+Aligns Spring Session for Apache Geode (SSDG) with Spring Session (core) 2.4.4.
+
+* Upgrades to Spring Data BOM 2020.0.10 (Ockham-SR10).
+* Upgrades to Spring Data Commons 2.4.10.
+* Upgrades to Spring Data for Apache Geode 2.4.10.
+* Upgrades to Spring Session 2.4.4.
+
+
 Changes in version 2.5.1 (2021-06-11)
 -------------------------------------
 Improves Spring Session for Apache Geode's (SSDG) support on the server-side. Additionally adds support to optionally
