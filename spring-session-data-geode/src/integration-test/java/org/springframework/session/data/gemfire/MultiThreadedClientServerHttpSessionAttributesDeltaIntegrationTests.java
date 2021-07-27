@@ -23,12 +23,12 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import edu.umd.cs.mtc.MultithreadedTestCase;
-import edu.umd.cs.mtc.TestFramework;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import edu.umd.cs.mtc.MultithreadedTestCase;
+import edu.umd.cs.mtc.TestFramework;
 
 import org.apache.geode.cache.client.ClientRegionShortcut;
 
@@ -192,7 +192,7 @@ public class MultiThreadedClientServerHttpSessionAttributesDeltaIntegrationTests
 
 		public void thread3() {
 
-			Thread.currentThread().setName("User Session Four");
+			Thread.currentThread().setName("User Session Three");
 
 			waitForTick(3);
 			assertTick(3);
