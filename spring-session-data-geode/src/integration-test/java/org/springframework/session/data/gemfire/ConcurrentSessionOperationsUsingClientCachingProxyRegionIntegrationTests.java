@@ -33,13 +33,13 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
-import edu.umd.cs.mtc.TestFramework;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+
+import edu.umd.cs.mtc.TestFramework;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.DataPolicy;

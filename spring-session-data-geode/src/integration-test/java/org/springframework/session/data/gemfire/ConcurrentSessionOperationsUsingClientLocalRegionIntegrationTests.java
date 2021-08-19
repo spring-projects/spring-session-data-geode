@@ -19,10 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import edu.umd.cs.mtc.TestFramework;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import edu.umd.cs.mtc.TestFramework;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
