@@ -40,7 +40,6 @@ import org.apache.geode.cache.query.Index;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.gemfire.tests.integration.ForkingClientServerIntegrationTestsSupport;
@@ -93,9 +92,6 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 
 	protected static final String GEMFIRE_LOG_LEVEL =
 		System.getProperty("spring.session.data.gemfire.log.level", DEFAULT_GEMFIRE_LOG_LEVEL);
-
-	@Autowired(required = false)
-	private ApplicationContext applicationContext;
 
 	@Autowired(required = false)
 	protected GemFireCache gemfireCache;
@@ -276,11 +272,6 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 	}
 
 	@Nullable @SuppressWarnings("unchecked")
-	protected <T extends ApplicationContext> T getApplicationContext() {
-		return (T) this.applicationContext;
-	}
-
-	@Nullable @SuppressWarnings("unchecked")
 	protected <T extends GemFireCache> T getGemFireCache() {
 		return (T) this.gemfireCache;
 	}
@@ -368,7 +359,7 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 		return session;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected <T extends Session> T createSession(String principalName) {
 
 		GemFireOperationsSessionRepository.GemFireSession session = createSession();
