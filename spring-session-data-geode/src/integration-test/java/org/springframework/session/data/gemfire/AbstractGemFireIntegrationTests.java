@@ -276,11 +276,6 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 	}
 
 	@Nullable @SuppressWarnings("unchecked")
-	protected <T extends ApplicationContext> T getApplicationContext() {
-		return (T) this.applicationContext;
-	}
-
-	@Nullable @SuppressWarnings("unchecked")
 	protected <T extends GemFireCache> T getGemFireCache() {
 		return (T) this.gemfireCache;
 	}
@@ -371,7 +366,7 @@ public abstract class AbstractGemFireIntegrationTests extends ForkingClientServe
 	@SuppressWarnings("unchecked")
 	protected <T extends Session> T createSession(String principalName) {
 
-		GemFireOperationsSessionRepository.GemFireSession session = createSession();
+		GemFireOperationsSessionRepository.GemFireSession<?> session = createSession();
 
 		session.setPrincipalName(principalName);
 
