@@ -22,11 +22,10 @@ dependencies {
 
 	provided "javax.servlet:javax.servlet-api"
 
-	// TODO: Remove dependency declarations when all internal Apache Geode API usage is removed; Only required by tests!
+	// TODO: Remove dependency declarations when all internal Apache Geode API usage is removed; Only required by test,
+	//  and specifically, the GemFireUtilsTests! :P
 	provided "org.apache.geode:geode-logging:$apacheGeodeVersion"
-	provided "org.apache.geode:geode-membership:$apacheGeodeVersion" // Need for Geode Serialization
 	provided "org.apache.geode:geode-serialization:$apacheGeodeVersion" // Need for Geode Serialization
-	provided "org.apache.geode:geode-tcp-server:$apacheGeodeVersion" // Need for Geode Serialization
 
 	testCompile "org.assertj:assertj-core"
 	testCompile "junit:junit"

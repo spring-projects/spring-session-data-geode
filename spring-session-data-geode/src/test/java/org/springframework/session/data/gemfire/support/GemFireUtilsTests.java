@@ -175,6 +175,7 @@ public class GemFireUtilsTests {
 
 	@Test
 	@SuppressWarnings("rawtypes")
+	// TODO: Remove use of Apache Geode internal API (AbstractRegion).
 	public void clientRegionWithServerProxyIsNonLocalClientRegion() {
 
 		ClientCache mockClientCache = mock(ClientCache.class);
@@ -198,6 +199,7 @@ public class GemFireUtilsTests {
 
 	@Test
 	@SuppressWarnings("rawtypes")
+	// TODO: Remove use of Apache Geode internal API (AbstractRegion).
 	public void clientRegionWithNoPoolAndNoServerProxyIsNotNonLocalClientRegion() {
 
 		ClientCache mockClientCache = mock(ClientCache.class);
@@ -242,6 +244,7 @@ public class GemFireUtilsTests {
 
 	@Test
 	@SuppressWarnings("rawtypes")
+	// TODO: Remove use of Apache Geode internal API (AbstractRegion).
 	public void peerRegionWithServerProxyIsNotNonLocalClientRegion() {
 
 		Cache mockPeerCache = mock(Cache.class);
