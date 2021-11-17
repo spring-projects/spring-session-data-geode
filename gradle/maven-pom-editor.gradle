@@ -5,9 +5,10 @@ def customizePom(gradleProject, pom) {
 		generatedPom.project {
 			developers {
 				developer {
-					id = 'jxblum'
-					name = "John Blum"
-					email = "jblum@pivotal.io"
+					id = 'vmw'
+					name = "VMware"
+					organization = "VMware, Inc."
+					email = "support@vmware.com"
 				}
 			}
 			scm {
