@@ -9,6 +9,7 @@ description = "Spring Session for Apache Geode"
 
 dependencies {
 
+	implementation "jakarta.annotation:jakarta.annotation-api"
 	implementation "org.springframework:spring-context-support"
 	implementation "org.springframework:spring-jcl"
 	implementation "org.springframework.data:spring-data-geode"
