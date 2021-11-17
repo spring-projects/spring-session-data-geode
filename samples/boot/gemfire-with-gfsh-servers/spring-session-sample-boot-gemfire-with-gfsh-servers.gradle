@@ -4,23 +4,23 @@ apply plugin: 'io.spring.convention.spring-sample-boot'
 
 dependencies {
 
-	compile project(':spring-session-data-geode')
+	implementation project(':spring-session-data-geode')
 
-	compile("org.springframework.boot:spring-boot-starter-thymeleaf") {
+	implementation("org.springframework.boot:spring-boot-starter-thymeleaf") {
 		exclude group: "org.apache.logging.log4j", module: "log4j-to-slf4j"
 	}
 
-	compile("org.springframework.boot:spring-boot-starter-web") {
+	implementation("org.springframework.boot:spring-boot-starter-web") {
 		exclude group: "org.apache.logging.log4j", module: "log4j-to-slf4j"
 	}
 
-	compile "org.springframework.data:spring-data-geode-test"
-	compile "org.webjars:bootstrap"
-	compile "org.webjars:webjars-locator"
+	implementation "org.springframework.data:spring-data-geode-test"
+	implementation "org.webjars:bootstrap"
+	implementation "org.webjars:webjars-locator"
 
-	runtime "org.springframework.shell:spring-shell"
+	runtimeOnly "org.springframework.shell:spring-shell"
 
-	testCompile("org.springframework.boot:spring-boot-starter-test") {
+	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude group: "org.apache.logging.log4j", module: "log4j-to-slf4j"
 	}
 }

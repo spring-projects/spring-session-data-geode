@@ -7,16 +7,16 @@ repositories {
 
 dependencies {
 
-	testCompile project(':spring-session-data-geode')
-	testCompile "javax.servlet:javax.servlet-api"
-	testCompile "junit:junit"
-	testCompile "org.assertj:assertj-core"
-	testCompile "org.mockito:mockito-core"
-	testCompile "edu.umd.cs.mtc:multithreadedtc"
-	testCompile "org.springframework:spring-test"
-	testCompile "org.springframework.security:spring-security-core"
-	testCompile "org.springframework.security:spring-security-test"
-	testCompile "org.springframework.security:spring-security-web"
+	testImplementation project(':spring-session-data-geode')
+	testImplementation "javax.servlet:javax.servlet-api"
+	testImplementation "junit:junit"
+	testImplementation "org.assertj:assertj-core"
+	testImplementation "org.mockito:mockito-core"
+	testImplementation "edu.umd.cs.mtc:multithreadedtc"
+	testImplementation "org.springframework:spring-test"
+	testImplementation "org.springframework.security:spring-security-core"
+	testImplementation "org.springframework.security:spring-security-test"
+	testImplementation "org.springframework.security:spring-security-web"
 
 }
 

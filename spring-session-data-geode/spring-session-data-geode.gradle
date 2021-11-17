@@ -3,17 +3,17 @@ plugins {
 }
 
 apply plugin: 'io.spring.convention.spring-module'
-apply from: MAVEN_POM_EDITOR_GRADLE
+//apply from: MAVEN_POM_EDITOR_GRADLE
 
 description = "Spring Session for Apache Geode"
 
 dependencies {
 
-	compile "org.springframework:spring-context-support"
-	compile "org.springframework:spring-jcl"
-	compile "org.springframework.data:spring-data-geode"
-	compile "org.springframework.session:spring-session-core"
-	compile slf4jDependencies
+	implementation "org.springframework:spring-context-support"
+	implementation "org.springframework:spring-jcl"
+	implementation "org.springframework.data:spring-data-geode"
+	implementation "org.springframework.session:spring-session-core"
+	implementation slf4jDependencies
 
 	compileOnly "com.google.code.findbugs:jsr305:$findbugsVersion"
 
@@ -27,15 +27,13 @@ dependencies {
 	provided "org.apache.geode:geode-logging:$apacheGeodeVersion"
 	provided "org.apache.geode:geode-serialization:$apacheGeodeVersion" // Need for Geode Serialization
 
-	testCompile "org.assertj:assertj-core"
-	testCompile "junit:junit"
-	testCompile "org.mockito:mockito-core"
-	testCompile "edu.umd.cs.mtc:multithreadedtc"
-	testCompile "org.springframework:spring-test"
-	testCompile "org.springframework:spring-web"
-	testCompile "org.springframework.data:spring-data-geode-test"
-
-	testCompileOnly "com.google.code.findbugs:jsr305:$findbugsVersion"
+	testImplementation "org.assertj:assertj-core"
+	testImplementation "junit:junit"
+	testImplementation "org.mockito:mockito-core"
+	testImplementation "edu.umd.cs.mtc:multithreadedtc"
+	testImplementation "org.springframework:spring-test"
+	testImplementation "org.springframework:spring-web"
+	testImplementation "org.springframework.data:spring-data-geode-test"
 
 	testRuntime "ch.qos.logback:logback-classic"
 	testRuntime "org.apache.logging.log4j:log4j-to-slf4j"
