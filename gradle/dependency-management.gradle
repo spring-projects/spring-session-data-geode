@@ -27,7 +27,7 @@ dependencyManagement {
 	}
 	dependencies {
 		dependency "jakarta.annotation:jakarta.annotation-api:$jakartaAnnotationApiVersion"
-		dependency "jakarta.resource:jakarta.resource-api:jakartaResourceApiVersion"
+		dependency "jakarta.resource:jakarta.resource-api:$jakartaResourceApiVersion"
 		dependency "jakarta.servlet:jakarta.servlet-api:$jakartaxServletApiVersion"
 		dependency "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:$jakartaServletJspJstlApiVersion"
 		dependency "antlr:antlr:$antlrVersion"
