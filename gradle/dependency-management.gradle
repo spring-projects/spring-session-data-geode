@@ -6,6 +6,7 @@ ext['javaxServletApiVersion'] ='4.0.1'
 ext['javaxServletJspJstlApiVersion'] = '1.2.2'
 ext['log4jVersion'] = '2.14.1'
 ext['logbackVersion'] = '1.2.3'
+ext['lombokVersion'] = "1.18.22"
 ext['junitVersion'] = '4.13.2'
 ext['mockitoVersion'] = '4.0.0'
 ext['multithreadedtcVersion'] = '1.01'
@@ -39,6 +40,7 @@ dependencyManagement {
 		dependency "org.apache.taglibs:taglibs-standard-spec:$apacheTaglibsVersion"
 		dependency "org.assertj:assertj-core:$assertjVersion"
 		dependency "org.mockito:mockito-core:$mockitoVersion"
+		dependency "org.projectlombok:lombok:$lombokVersion"
 		dependency "org.seleniumhq.selenium:htmlunit-driver:$seleniumHtmlUnitVersion"
 		dependency "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 		dependency "org.slf4j:log4j-over-slf4j:$slf4jVersion"
