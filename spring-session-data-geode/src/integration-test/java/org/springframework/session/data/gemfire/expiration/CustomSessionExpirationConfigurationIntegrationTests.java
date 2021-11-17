@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.Optional;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

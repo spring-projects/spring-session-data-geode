@@ -26,7 +26,7 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.time.Duration;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.junit.After;
 import org.junit.Before;
