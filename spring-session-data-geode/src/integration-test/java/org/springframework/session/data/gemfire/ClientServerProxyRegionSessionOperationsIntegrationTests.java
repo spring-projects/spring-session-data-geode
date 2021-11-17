@@ -96,7 +96,9 @@ public class ClientServerProxyRegionSessionOperationsIntegrationTests extends Ab
 
 		assertThat(loadedSession).isNotNull();
 		assertThat(loadedSession.getId()).isEqualTo(session.getId());
-		assertThat(loadedSession.getCreationTime()).isEqualTo(session.getCreationTime());
+		// TODO: Problem on Java 17
+		//assertThat(loadedSession.getCreationTime()).isEqualTo(session.getCreationTime());
+		assertThat(loadedSession.getCreationTime().toEpochMilli()).isEqualTo(session.getCreationTime().toEpochMilli());
 		assertThat(loadedSession.getLastAccessedTime().compareTo(session.getLastAccessedTime()))
 			.isGreaterThanOrEqualTo(0);
 

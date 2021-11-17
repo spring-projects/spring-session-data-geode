@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.serialization.data.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 
 /**
- * Unit tests for {@link DataSerializableSessionAttributesSerializer}.
+ * Unit Tests for {@link DataSerializableSessionAttributesSerializer}.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -50,7 +49,7 @@ import org.junit.Test;
  */
 public class DataSerializableSessionAttributesSerializerTests {
 
-	private DataSerializableSessionAttributesSerializer sessionAttributesSerializer =
+	private final DataSerializableSessionAttributesSerializer sessionAttributesSerializer =
 		spy(new DataSerializableSessionAttributesSerializer());
 
 	@Test

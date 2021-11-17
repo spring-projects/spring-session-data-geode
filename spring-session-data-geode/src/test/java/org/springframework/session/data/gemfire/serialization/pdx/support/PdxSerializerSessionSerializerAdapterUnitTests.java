@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.serialization.pdx.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,7 +34,7 @@ import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.serialization.SessionSerializer;
 
 /**
- * Unit tests for {@link PdxSerializerSessionSerializerAdapter}.
+ * Unit Tests for {@link PdxSerializerSessionSerializerAdapter}.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -48,7 +47,7 @@ import org.springframework.session.data.gemfire.serialization.SessionSerializer;
  * @since 2.0.0
  */
 @RunWith(MockitoJUnitRunner.class)
-public class PdxSerializerSessionSerializerAdapterTests {
+public class PdxSerializerSessionSerializerAdapterUnitTests {
 
 	@Mock
 	private PdxReader mockPdxReader;

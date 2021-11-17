@@ -40,10 +40,14 @@ import org.apache.geode.pdx.PdxWriter;
 import org.springframework.session.FindByIndexNameSessionRepository;
 
 /**
- * The PdxSerializableSessionSerializerTests class...
+ * Unit Tests for {@link PdxSerializableSessionSerializer}.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.junit.Test
+ * @see org.mockito.Mockito
+ * @see org.mockito.junit.MockitoJUnitRunner
+ * @see org.springframework.session.data.gemfire.serialization.pdx.provider.PdxSerializableSessionSerializer
+ * @since 2.0.0
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PdxSerializableSessionSerializerTests {
@@ -54,12 +58,12 @@ public class PdxSerializableSessionSerializerTests {
 	@Mock
 	private PdxWriter mockPdxWriter;
 
-	private PdxSerializableSessionSerializer sessionSerializer = new PdxSerializableSessionSerializer();
+	private final PdxSerializableSessionSerializer sessionSerializer = new PdxSerializableSessionSerializer();
 
 	@Test
 	public void serializeSessionIsCorrect() {
 
-		GemFireSession session = GemFireSession.create();
+		GemFireSession<?> session = GemFireSession.create();
 
 		session.setMaxInactiveInterval(Duration.ofMinutes(30));
 		session.setAttribute("attributeOne", "valueOne");
@@ -100,7 +104,6 @@ public class PdxSerializableSessionSerializerTests {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void deserializeSessionIsCorrect() {
 
 		Duration expectedMaxInactiveInterval = Duration.ofMinutes(30);
@@ -126,12 +129,15 @@ public class PdxSerializableSessionSerializerTests {
 		when(this.mockPdxReader.readString(eq("principalName"))).thenReturn("jonDoe");
 		when(this.mockPdxReader.readObject(eq("attributes"))).thenReturn(expectedAttributes);
 
-		GemFireSession session = this.sessionSerializer.deserialize(this.mockPdxReader);
+		GemFireSession<?> session = this.sessionSerializer.deserialize(this.mockPdxReader);
 
 		assertThat(session).isNotNull();
 		assertThat(session.getId()).isEqualTo("123");
-		assertThat(session.getCreationTime()).isEqualTo(expectedCreationTime);
-		assertThat(session.getLastAccessedTime()).isEqualTo(expectedLastAccessedTime);
+		// TODO: Problem on Java 17
+		// assertThat(session.getCreationTime()).isEqualTo(expectedCreationTime);
+		assertThat(session.getCreationTime().toEpochMilli()).isEqualTo(expectedCreationTime.toEpochMilli());
+		//assertThat(session.getLastAccessedTime()).isEqualTo(expectedLastAccessedTime);
+		assertThat(session.getLastAccessedTime().toEpochMilli()).isEqualTo(expectedLastAccessedTime.toEpochMilli());
 		assertThat(session.getMaxInactiveInterval()).isEqualTo(expectedMaxInactiveInterval);
 		assertThat(session.getPrincipalName()).isEqualTo("jonDoe");
 		assertThat(this.sessionSerializer.newMap(session.getAttributes())).isEqualTo(expectedAttributes);

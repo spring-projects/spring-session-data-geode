@@ -36,7 +36,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * Integration tests to assert that any user-provided, custom {@link SessionSerializer} not bound to either
+ * Integration Tests to assert that any user-provided, custom {@link SessionSerializer} not bound to either
  * GemFire/Geode's Data Serialization of PDX Serialization framework is wrapped in
  * the {@link DataSerializerSessionSerializerAdapter} when the {@link DataSerializerSessionSerializerAdapter}
  * is present as a bean in the Spring context.

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.session.data.gemfire.serialization.data.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,7 +42,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * Integration tests for {@link DataSerializerSessionSerializerAdapter}.
+ * Integration Tests for {@link DataSerializerSessionSerializerAdapter}.
  *
  * @author John Blum
  * @see java.io.DataInput
@@ -94,6 +93,7 @@ public class DataSerializerSessionSerializerAdapterIntegrationTests extends Abst
 		}
 
 		@Bean
+		@SuppressWarnings("rawtypes")
 		DataSerializerSessionSerializerAdapter dataSerializer() {
 			return new DataSerializerSessionSerializerAdapter();
 		}
