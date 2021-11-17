@@ -46,6 +46,12 @@ allprojects {
 	}
 }
 
+subprojects {
+	plugins.withType(JavaPlugin) {
+		sourceCompatibility = JavaVersion.VERSION_17
+	}
+}
+
 description = 'Spring Session for Apache Geode'
 
 //ext['groovy.version'] = "$groovyVersion"
