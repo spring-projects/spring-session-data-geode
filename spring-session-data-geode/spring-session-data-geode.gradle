@@ -21,6 +21,7 @@ dependencies {
 	optional "org.springframework.security:spring-security-core"
 	optional "org.springframework.security:spring-security-web"
 
+	provided "jakarta.resource:jakarta.resource-api"
 	provided "jakarta.servlet:jakarta.servlet-api"
 
 	// TODO: Remove dependency declarations when all internal Apache Geode API usage is removed; Only required by test,
