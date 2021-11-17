@@ -29,13 +29,9 @@ dependencies {
 	provided "org.apache.geode:geode-logging:$apacheGeodeVersion"
 	provided "org.apache.geode:geode-serialization:$apacheGeodeVersion" // Need for Geode Serialization
 
-	testImplementation "org.assertj:assertj-core"
-	testImplementation "junit:junit"
-	testImplementation "org.mockito:mockito-core"
-	testImplementation "edu.umd.cs.mtc:multithreadedtc"
-	testImplementation "org.springframework:spring-test"
+	testCompileOnly "com.google.code.findbugs:jsr305:$findbugsVersion"
+
 	testImplementation "org.springframework:spring-web"
-	testImplementation "org.springframework.data:spring-data-geode-test"
 
 	testRuntime "ch.qos.logback:logback-classic"
 	testRuntime "org.apache.logging.log4j:log4j-to-slf4j"
