@@ -50,7 +50,7 @@ class IntegrationTestPlugin implements Plugin<Project> {
 	private applyJava(Project project) {
 
 		if (!project.file('src/integration-test/').exists()) {
-			// ensure we don't add if no tests to avoid adding Gretty
+			// Do not add any configuration if there are no (integration) tests to avoid adding Gretty.
 			return
 		}
 
