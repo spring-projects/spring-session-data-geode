@@ -18,6 +18,8 @@ package build
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
 class GemFireServerPlugin implements Plugin<Project> {
@@ -61,10 +63,16 @@ class GemFireServerPlugin implements Plugin<Project> {
 
 	static class GemFireServerTask extends DefaultTask {
 
+		@Internal
 		def mainClassName = "sample.server.GemFireServer"
+
+		@Internal
 		def port
+
+		@Internal
 		def process
 
+		@Input
 		boolean debug
 
 		@TaskAction
