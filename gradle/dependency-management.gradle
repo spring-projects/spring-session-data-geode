@@ -2,6 +2,7 @@
 ext['antlrVersion'] = '2.7.7'
 ext['apacheTaglibsVersion'] = '1.2.5'
 ext['assertjVersion'] = '3.21.0'
+ext['jakartaAnnotationApiVersion'] = '2.0.0'
 ext['javaxServletApiVersion'] ='4.0.1'
 ext['javaxServletJspJstlApiVersion'] = '1.2.2'
 ext['log4jVersion'] = '2.14.1'
@@ -24,6 +25,7 @@ dependencyManagement {
 //		mavenBom "org.springframework.session:spring-session-bom:${springSessionBomVersion}"
 	}
 	dependencies {
+		dependency "jakarta.annotation:jakarta.annotation-api:$jakartaAnnotationApiVersion"
 		dependency "javax.servlet:javax.servlet-api:$javaxServletApiVersion"
 		dependency "javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:$javaxServletJspJstlApiVersion"
 		dependency "antlr:antlr:$antlrVersion"
