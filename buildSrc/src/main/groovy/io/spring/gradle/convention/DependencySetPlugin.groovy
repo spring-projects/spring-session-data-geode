@@ -55,6 +55,8 @@ class DependencySetPlugin implements Plugin<Project> {
 
 		project.ext.testDependencies = [
 			"junit:junit",
+			"org.junit.jupiter:junit-jupiter-api",
+			"org.junit.vintage:junit-vintage-engine",
 			"org.assertj:assertj-core",
 			"org.mockito:mockito-core",
 			"org.projectlombok:lombok",
