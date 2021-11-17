@@ -13,7 +13,7 @@ dependencies {
 	implementation jstlDependencies
 	implementation slf4jDependencies
 
-	providedCompile "javax.servlet:javax.servlet-api"
+	providedCompile "jakarta.servlet:jakarta.servlet-api"
 
 	runtimeOnly "org.springframework.shell:spring-shell"
 
