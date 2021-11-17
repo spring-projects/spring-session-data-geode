@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package io.spring.gradle.convention
 
 import org.gradle.api.Plugin
@@ -29,12 +28,14 @@ class JacocoPlugin implements Plugin<Project> {
 
 	@Override
 	void apply(Project project) {
+
 		project.plugins.withType(JavaPlugin) {
+
 			project.getPluginManager().apply("jacoco")
 			project.tasks.check.dependsOn project.tasks.jacocoTestReport
 
 			project.jacoco {
-				toolVersion = '0.8.2'
+				toolVersion = '0.8.7'
 			}
 		}
 	}
