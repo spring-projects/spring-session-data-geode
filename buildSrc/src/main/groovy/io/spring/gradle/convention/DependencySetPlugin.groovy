@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.spring.gradle.convention;
+package io.spring.gradle.convention
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -59,6 +59,7 @@ class DependencySetPlugin implements Plugin<Project> {
 			"org.mockito:mockito-core",
 			"org.projectlombok:lombok",
 			"org.springframework:spring-test",
+			"org.springframework.data:spring-data-geode-test",
 			"edu.umd.cs.mtc:multithreadedtc"
 		]
 
