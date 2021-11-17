@@ -10,6 +10,7 @@ ext['log4jVersion'] = '2.14.1'
 ext['logbackVersion'] = '1.2.3'
 ext['lombokVersion'] = "1.18.22"
 ext['junitVersion'] = '4.13.2'
+ext['junitJupiterVersion'] = '5.8.1'
 ext['mockitoVersion'] = '4.0.0'
 ext['multithreadedtcVersion'] = '1.01'
 ext['seleniumHtmlUnitVersion'] = '2.50.0'
@@ -26,34 +27,42 @@ dependencyManagement {
 //		mavenBom "org.springframework.session:spring-session-bom:${springSessionBomVersion}"
 	}
 	dependencies {
+		// Java EE 9 dependencies
 		dependency "jakarta.annotation:jakarta.annotation-api:$jakartaAnnotationApiVersion"
 		dependency "jakarta.resource:jakarta.resource-api:$jakartaResourceApiVersion"
 		dependency "jakarta.servlet:jakarta.servlet-api:$jakartaxServletApiVersion"
 		dependency "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:$jakartaServletJspJstlApiVersion"
+		// Apache Geode dependencies
+		// dependency "org.apache.geode:geode-core:$apacheGeodeVersion"
+		// dependency "org.apache.geode:geode-cq:$apacheGeodeVersion"
+		// dependency "org.apache.geode:geode-lucene:$apacheGeodeVersion"
+		// dependency "org.apache.geode:geode-wan:$apacheGeodeVersion"
 		dependency "antlr:antlr:$antlrVersion"
-		dependency "ch.qos.logback:logback-classic:$logbackVersion"
-		dependency "edu.umd.cs.mtc:multithreadedtc:$multithreadedtcVersion"
+		// JUnit & Test dependencies
 		dependency "junit:junit:$junitVersion"
-//		dependency "org.apache.geode:geode-core:$apacheGeodeVersion"
-//		dependency "org.apache.geode:geode-cq:$apacheGeodeVersion"
-//		dependency "org.apache.geode:geode-lucene:$apacheGeodeVersion"
-//		dependency "org.apache.geode:geode-wan:$apacheGeodeVersion"
-		dependency "org.apache.logging.log4j:log4j-to-slf4j:$log4jVersion"
-		dependency "org.apache.taglibs:taglibs-standard-impl:$apacheTaglibsVersion"
-		dependency "org.apache.taglibs:taglibs-standard-jstlel:$apacheTaglibsVersion"
-		dependency "org.apache.taglibs:taglibs-standard-spec:$apacheTaglibsVersion"
+		dependency "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
+		dependency "org.junit.vintage:junit-vintage-engine:$junitJupiterVersion"
 		dependency "org.assertj:assertj-core:$assertjVersion"
 		dependency "org.mockito:mockito-core:$mockitoVersion"
 		dependency "org.projectlombok:lombok:$lombokVersion"
 		dependency "org.seleniumhq.selenium:htmlunit-driver:$seleniumHtmlUnitVersion"
+		dependency "edu.umd.cs.mtc:multithreadedtc:$multithreadedtcVersion"
+		// Logging dependencies
+		dependency "org.apache.logging.log4j:log4j-to-slf4j:$log4jVersion"
 		dependency "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 		dependency "org.slf4j:log4j-over-slf4j:$slf4jVersion"
+		dependency "ch.qos.logback:logback-classic:$logbackVersion"
+		// Spring dependencies
 		dependency "org.springframework.data:spring-data-geode:$springDataGeodeVersion"
 		dependency "org.springframework.data:spring-data-geode-test:$springDataGeodeTestVersion"
 		dependency "org.springframework.security:spring-security-test:$springSecurityVersion"
 		dependency "org.springframework.security:spring-security-web:$springSecurityVersion"
 		dependency "org.springframework.session:spring-session-core:$springSessionVersion"
 		dependency "org.springframework.shell:spring-shell:$springShellVersion"
+		// Web dependencies
+		dependency "org.apache.taglibs:taglibs-standard-impl:$apacheTaglibsVersion"
+		dependency "org.apache.taglibs:taglibs-standard-jstlel:$apacheTaglibsVersion"
+		dependency "org.apache.taglibs:taglibs-standard-spec:$apacheTaglibsVersion"
 		dependency 'org.webjars:bootstrap:2.3.2'
 		dependency 'org.webjars:jquery:1.12.4'
 		dependency 'org.webjars:webjars-locator-core:0.32'
