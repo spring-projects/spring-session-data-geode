@@ -13,23 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package io.spring.gradle.convention
 
-import org.gradle.api.plugins.JavaPlugin
-import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-public class DeployDocsPlugin implements Plugin<Project> {
+class DeployDocsPlugin implements Plugin<Project> {
 
 	@Override
-	public void apply(Project project) {
+	void apply(Project project) {
+
 		project.getPluginManager().apply('org.hidetake.ssh')
 
 		project.ssh.settings {
 			knownHosts = allowAnyHosts
 		}
+
 		project.remotes {
 			docs {
 				role 'docs'

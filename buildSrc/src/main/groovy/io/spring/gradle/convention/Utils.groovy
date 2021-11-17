@@ -2,33 +2,35 @@ package io.spring.gradle.convention;
 
 import org.gradle.api.Project;
 
-public class Utils {
+class Utils {
+
+	private Utils() {}
 
 	static String getProjectName(Project project) {
+
 		String projectName = project.getRootProject().getName();
+
 		if(projectName.endsWith("-build")) {
 			projectName = projectName.substring(0, projectName.length() - "-build".length());
 		}
+
 		return projectName;
 	}
 
-	static boolean isSnapshot(Project project) {
-		String projectVersion = projectVersion(project)
-		return projectVersion.matches('^.*([.-]BUILD)?-SNAPSHOT$')
-	}
-
 	static boolean isMilestone(Project project) {
-		String projectVersion = projectVersion(project)
-		return projectVersion.matches('^.*[.-]M\\d+$') || projectVersion.matches('^.*[.-]RC\\d+$')
+		return projectVersion(project).matches('^.*[.-]M\\d+$')
+			|| projectVersion(project).matches('^.*[.-]RC\\d+$')
 	}
 
 	static boolean isRelease(Project project) {
 		return !(isSnapshot(project) || isMilestone(project))
 	}
 
+	static boolean isSnapshot(Project project) {
+		return projectVersion(project).matches('^.*([.-]BUILD)?-SNAPSHOT$')
+	}
+
 	private static String projectVersion(Project project) {
 		return String.valueOf(project.getVersion());
 	}
-
-	private Utils() {}
 }

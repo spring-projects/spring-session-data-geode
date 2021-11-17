@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package io.spring.gradle.convention
 
 import org.gradle.api.Project
@@ -24,10 +23,11 @@ import org.gradle.api.tasks.testing.Test
 /**
  * @author Rob Winch
  */
-public class SpringSampleWarPlugin extends SpringSamplePlugin {
+class SpringSampleWarPlugin extends SpringSamplePlugin {
 
     @Override
-    public void additionalPlugins(Project project) {
+    void additionalPlugins(Project project) {
+
         super.additionalPlugins(project);
 
         PluginManager pluginManager = project.getPluginManager();
@@ -36,7 +36,7 @@ public class SpringSampleWarPlugin extends SpringSamplePlugin {
         pluginManager.apply("org.gretty");
 
         project.gretty {
-            servletContainer = 'tomcat85'
+            servletContainer = 'tomcat10'
             contextPath = '/'
             fileLogEnabled = false
         }
@@ -64,6 +64,7 @@ public class SpringSampleWarPlugin extends SpringSamplePlugin {
     }
 
     def applyForIntegrationTest(Project project, Task integrationTest) {
+
         project.gretty.integrationTestTask = integrationTest.name
 
         integrationTest.doFirst {
@@ -83,16 +84,15 @@ public class SpringSampleWarPlugin extends SpringSamplePlugin {
             integrationTest.systemProperty 'app.baseURI', baseUrl
             integrationTest.systemProperty 'app.httpBaseURI', httpBaseUrl
             integrationTest.systemProperty 'app.httpsBaseURI', httpsBaseUrl
-
             integrationTest.systemProperty 'geb.build.baseUrl', baseUrl
             integrationTest.systemProperty 'geb.build.reportsDir', 'build/geb-reports'
         }
     }
 
     def getRandomPort() {
-        ServerSocket ss = new ServerSocket(0)
-        int port = ss.localPort
-        ss.close()
+        ServerSocket serverSocket = new ServerSocket(0)
+        int port = serverSocket.localPort
+        serverSocket.close()
         return port
     }
 }

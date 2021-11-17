@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package io.spring.gradle.convention
 
 import org.gradle.api.Project
@@ -22,10 +21,11 @@ import org.gradle.api.plugins.PluginManager
 /**
  * @author Rob Winch
  */
-public class SpringSampleBootPlugin extends SpringSamplePlugin {
+class SpringSampleBootPlugin extends SpringSamplePlugin {
 
     @Override
-    public void additionalPlugins(Project project) {
+    void additionalPlugins(Project project) {
+
         super.additionalPlugins(project);
 
         PluginManager pluginManager = project.getPluginManager();

@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package io.spring.gradle.convention;
 
 import org.gradle.api.Plugin
@@ -30,15 +29,17 @@ import org.gradle.jvm.tasks.Jar
  *
  * @author Rob Winch
  */
-public class TestsConfigurationPlugin implements Plugin<Project> {
+class TestsConfigurationPlugin implements Plugin<Project> {
+
 	@Override
-	public void apply(Project project) {
+	void apply(Project project) {
 		project.plugins.withType(JavaPlugin) {
 			applyJavaProject(project)
 		}
 	}
 
 	private void applyJavaProject(Project project) {
+
 		project.configurations {
 			tests.extendsFrom testRuntime, testRuntimeClasspath
 		}

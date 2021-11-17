@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package io.spring.gradle.convention
 
 import io.spring.nohttp.gradle.NoHttpPlugin
@@ -27,7 +26,9 @@ class RootProjectPlugin implements Plugin<Project> {
 
 	@Override
 	void apply(Project project) {
+
 		PluginManager pluginManager = project.getPluginManager()
+
 		pluginManager.apply(BasePlugin)
 		pluginManager.apply(SchemaPlugin)
 		pluginManager.apply(NoHttpPlugin)
@@ -46,6 +47,7 @@ class RootProjectPlugin implements Plugin<Project> {
         }
 
 		String projectName = Utils.getProjectName(project)
+
 		project.sonarqube {
 			properties {
 				property "sonar.java.coveragePlugin", "jacoco"
@@ -62,9 +64,9 @@ class RootProjectPlugin implements Plugin<Project> {
         project.tasks.create("dependencyManagementExport", DependencyManagementExportTask)
 
         def finalizeDeployArtifacts = project.task("finalizeDeployArtifacts")
+
 		if (Utils.isRelease(project) && project.hasProperty("ossrhUsername")) {
 			finalizeDeployArtifacts.dependsOn project.tasks.closeAndReleaseOssrhStagingRepository
 		}
 	}
-
 }

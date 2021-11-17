@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package io.spring.gradle.convention
 
 import io.spring.gradle.dependencymanagement.DependencyManagementPlugin
@@ -32,18 +31,23 @@ class SpringDependencyManagementConventionPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
+
         project.getPluginManager().apply(ManagementConfigurationPlugin)
         project.getPluginManager().apply(DependencyManagementPlugin)
+
         project.dependencyManagement {
             resolutionStrategy {
                 cacheChangingModulesFor 0, "seconds"
             }
         }
+
         File rootDir = project.rootDir
         List<File> dependencyManagementFiles = [project.rootProject.file(DEPENDENCY_MANAGEMENT_RESOURCE)]
+
         for (File dir = project.projectDir; dir != rootDir; dir = dir.parentFile) {
             dependencyManagementFiles.add(new File(dir, DEPENDENCY_MANAGEMENT_RESOURCE))
         }
+
         dependencyManagementFiles.each { f ->
             if (f.exists()) {
                 project.apply from: f.absolutePath

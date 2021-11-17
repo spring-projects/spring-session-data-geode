@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package io.spring.gradle.convention;
 
 import org.gradle.api.Project;
@@ -21,10 +20,10 @@ import org.gradle.api.Project;
 /**
  * @author Rob Winch
  */
-public class SpringTestPlugin extends AbstractSpringJavaPlugin {
+class SpringTestPlugin extends AbstractSpringJavaPlugin {
 
 	@Override
-	public void additionalPlugins(Project project) {
+	void additionalPlugins(Project project) {
 		project.sonarqube.skipProject = true
 	}
 }

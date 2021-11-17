@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package io.spring.gradle.convention;
 
 import org.gradle.api.Plugin
@@ -23,23 +22,28 @@ class RepositoryConventionPlugin implements Plugin<Project> {
 
 	@Override
 	void apply(Project project) {
+
 		String[] forceMavenRepositories = ((String) project.findProperty("forceMavenRepositories"))?.split(',')
+
 		boolean isImplicitSnapshotRepository = forceMavenRepositories == null && Utils.isSnapshot(project)
 		boolean isImplicitMilestoneRepository = forceMavenRepositories == null && Utils.isMilestone(project)
-
 		boolean isSnapshot = isImplicitSnapshotRepository || forceMavenRepositories?.contains('snapshot')
 		boolean isMilestone = isImplicitMilestoneRepository || forceMavenRepositories?.contains('milestone')
 
 		project.repositories {
+
 			if (forceMavenRepositories?.contains('local')) {
 				mavenLocal()
 			}
+
 			mavenCentral()
+
 			jcenter() {
 				content {
 					includeGroup "org.gretty"
 				}
 			}
+
 			if (isSnapshot) {
 				maven {
 					name = 'artifactory-snapshot'
@@ -52,6 +56,7 @@ class RepositoryConventionPlugin implements Plugin<Project> {
 					url = 'https://repo.spring.io/snapshot/'
 				}
 			}
+
 			if (isSnapshot || isMilestone) {
 				maven {
 					name = 'artifactory-milestone'
@@ -64,6 +69,7 @@ class RepositoryConventionPlugin implements Plugin<Project> {
 					url = 'https://repo.spring.io/milestone/'
 				}
 			}
+
 			maven {
 				name = 'artifactory-release'
 				if (project.hasProperty('artifactoryUsername')) {
@@ -74,11 +80,11 @@ class RepositoryConventionPlugin implements Plugin<Project> {
 				}
 				url = 'https://repo.spring.io/release/'
 			}
+
 			maven {
 				name = 'shibboleth'
 				url = 'https://build.shibboleth.net/nexus/content/repositories/releases/'
 			}
 		}
 	}
-
 }

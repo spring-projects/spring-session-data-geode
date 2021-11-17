@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package io.spring.gradle.convention
 
 import org.gradle.api.Plugin
@@ -39,20 +38,22 @@ import org.springframework.gradle.propdeps.PropDepsPlugin
  *
  * @author Rob Winch
  */
-public class IntegrationTestPlugin implements Plugin<Project> {
+class IntegrationTestPlugin implements Plugin<Project> {
 
 	@Override
-	public void apply(Project project) {
+	void apply(Project project) {
 		project.plugins.withType(JavaPlugin.class) {
 			applyJava(project)
 		}
 	}
 
 	private applyJava(Project project) {
-		if(!project.file('src/integration-test/').exists()) {
+
+		if (!project.file('src/integration-test/').exists()) {
 			// ensure we don't add if no tests to avoid adding Gretty
 			return
 		}
+
 		project.configurations {
 			integrationTestCompile {
 				extendsFrom testImplementation
@@ -80,6 +81,7 @@ public class IntegrationTestPlugin implements Plugin<Project> {
 			shouldRunAfter project.tasks.test
 			useJUnitPlatform()
 		}
+
 		project.tasks.check.dependsOn integrationTestTask
 
 		project.plugins.withType(IdeaPlugin) {
