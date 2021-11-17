@@ -3,8 +3,8 @@ ext['antlrVersion'] = '2.7.7'
 ext['apacheTaglibsVersion'] = '1.2.5'
 ext['assertjVersion'] = '3.21.0'
 ext['jakartaAnnotationApiVersion'] = '2.0.0'
-ext['javaxServletApiVersion'] ='4.0.1'
-ext['javaxServletJspJstlApiVersion'] = '1.2.2'
+ext['jakartaxServletApiVersion'] ='5.0.0'
+ext['jakartaServletJspJstlApiVersion'] = '2.0.0'
 ext['log4jVersion'] = '2.14.1'
 ext['logbackVersion'] = '1.2.3'
 ext['lombokVersion'] = "1.18.22"
@@ -26,8 +26,8 @@ dependencyManagement {
 	}
 	dependencies {
 		dependency "jakarta.annotation:jakarta.annotation-api:$jakartaAnnotationApiVersion"
-		dependency "javax.servlet:javax.servlet-api:$javaxServletApiVersion"
-		dependency "javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:$javaxServletJspJstlApiVersion"
+		dependency "jakarta.servlet:jakarta.servlet-api:$jakartaxServletApiVersion"
+		dependency "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:$jakartaServletJspJstlApiVersion"
 		dependency "antlr:antlr:$antlrVersion"
 		dependency "ch.qos.logback:logback-classic:$logbackVersion"
 		dependency "edu.umd.cs.mtc:multithreadedtc:$multithreadedtcVersion"
