@@ -97,7 +97,7 @@ import org.springframework.util.StringUtils;
 /**
  * The {@link GemFireHttpSessionConfiguration} class is a Spring {@link Configuration @Configuration} class
  * used to configure and initialize Pivotal GemFire/Apache Geode as a clustered, distributed and replicated
- * {@link javax.servlet.http.HttpSession} provider implementation in Spring {@link Session}.
+ * {@link jakarta.servlet.http.HttpSession} provider implementation in Spring {@link Session}.
  *
  * @author John Blum
  * @see java.time.Duration

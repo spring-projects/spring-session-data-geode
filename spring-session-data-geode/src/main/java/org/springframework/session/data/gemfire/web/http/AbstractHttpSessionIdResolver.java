@@ -20,8 +20,8 @@ import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newU
 import java.util.Collections;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.session.web.http.HttpSessionIdResolver;
 
@@ -31,8 +31,8 @@ import org.springframework.session.web.http.HttpSessionIdResolver;
  * {@link HttpSessionIdResolver} interface.
  *
  * @author John Blum
- * @see javax.servlet.http.HttpServletRequest
- * @see javax.servlet.http.HttpServletResponse
+ * @see jakarta.servlet.http.HttpServletRequest
+ * @see jakarta.servlet.http.HttpServletResponse
  * @see org.springframework.session.web.http.HttpSessionIdResolver
  * @since 2.5.0
  */

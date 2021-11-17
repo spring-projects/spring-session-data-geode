@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The {@link AbstractGemFireHttpSessionConfiguration} class is an abstract base class containing configuration logic
- * common to Apache Geode and Pivotal GemFire in order to manage {@link javax.servlet.http.HttpSession} state.
+ * common to Apache Geode and Pivotal GemFire in order to manage {@link jakarta.servlet.http.HttpSession} state.
  *
  * @author John Blum
  * @see java.lang.ClassLoader

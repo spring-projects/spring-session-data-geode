@@ -17,7 +17,7 @@ package org.springframework.session.data.gemfire.config.annotation.web.http.supp
 
 import java.util.Optional;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.query.Index;

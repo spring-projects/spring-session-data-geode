@@ -20,7 +20,7 @@ import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newU
 import java.util.Collections;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.session.web.http.CookieSerializer;
 
@@ -30,7 +30,7 @@ import org.springframework.session.web.http.CookieSerializer;
  * {@link CookieSerializer} interface.
  *
  * @author John Blum
- * @see javax.servlet.http.HttpServletRequest
+ * @see jakarta.servlet.http.HttpServletRequest
  * @see org.springframework.session.web.http.CookieSerializer
  * @since 2.5.0
  */

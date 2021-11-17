@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Properties;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -87,7 +87,7 @@ import org.springframework.session.web.http.SessionRepositoryFilter;
  * @author John Blum
  * @see java.lang.annotation.Annotation
  * @see java.util.Properties
- * @see javax.servlet.http.HttpSession
+ * @see jakarta.servlet.http.HttpSession
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.client.ClientCache
