@@ -37,7 +37,7 @@ class DependencySetPlugin implements Plugin<Project> {
 	void apply(Project project) {
 
 		project.ext.jstlDependencies = [
-			"javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api",
+			"jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api",
 			"org.apache.taglibs:taglibs-standard-jstlel"
 		]
 
