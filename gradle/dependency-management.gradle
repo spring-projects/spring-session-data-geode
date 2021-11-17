@@ -3,6 +3,7 @@ ext['antlrVersion'] = '2.7.7'
 ext['apacheTaglibsVersion'] = '1.2.5'
 ext['assertjVersion'] = '3.21.0'
 ext['jakartaAnnotationApiVersion'] = '2.0.0'
+ext['jakartaResourceApiVersion'] = '2.0.0'
 ext['jakartaxServletApiVersion'] ='5.0.0'
 ext['jakartaServletJspJstlApiVersion'] = '2.0.0'
 ext['log4jVersion'] = '2.14.1'
@@ -26,6 +27,7 @@ dependencyManagement {
 	}
 	dependencies {
 		dependency "jakarta.annotation:jakarta.annotation-api:$jakartaAnnotationApiVersion"
+		dependency "jakarta.resource:jakarta.resource-api:jakartaResourceApiVersion"
 		dependency "jakarta.servlet:jakarta.servlet-api:$jakartaxServletApiVersion"
 		dependency "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:$jakartaServletJspJstlApiVersion"
 		dependency "antlr:antlr:$antlrVersion"
