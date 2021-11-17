@@ -42,7 +42,14 @@ dependencies {
 
 }
 
+def jvmArgList = [
+	"--add-opens", "java.base/java.nio=ALL-UNNAMED",
+	"--add-opens", "java.base/java.util=ALL-UNNAMED"
+]
+
 test {
+
+	jvmArgs jvmArgList
 
 	maxHeapSize = project.hasProperty("test.jvm.heap.max-size")
 		? project.getProperty("test.jvm.heap.max-size")
@@ -55,6 +62,8 @@ test {
 }
 
 integrationTest {
+
+	jvmArgs jvmArgList
 
 	maxHeapSize = project.hasProperty("test.jvm.heap.max-size")
 		? project.getProperty("test.jvm.heap.max-size")
