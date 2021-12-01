@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package docs.gemfire.indexing;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +24,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
+import org.springframework.data.gemfire.tests.integration.IntegrationTestsSupport;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.GemFireOperationsSessionRepository;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
@@ -38,7 +38,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
-public class HttpSessionGemFireCustomIndexingIntegrationTests {
+public class HttpSessionGemFireCustomIndexingIntegrationTests extends IntegrationTestsSupport {
 
 	@Autowired
 	private GemFireOperationsSessionRepository sessionRepository;
@@ -68,9 +68,9 @@ public class HttpSessionGemFireCustomIndexingIntegrationTests {
 		this.sessionRepository.deleteById(session.getId());
 	}
 
-	@PeerCacheApplication(name = "HttpSessionGemFireCustomIndexingIntegrationTests", logLevel = "error")
+	@PeerCacheApplication(name = "HttpSessionGemFireCustomIndexingIntegrationTests")
 	@EnableGemFireHttpSession(indexableSessionAttributes = { "name1", "name2", "name3" },
 		regionName = "HttpSessionGemFireIndexingCustomTestRegion")
-	static class TestConfiguration {
-	}
+	static class TestConfiguration { }
+
 }

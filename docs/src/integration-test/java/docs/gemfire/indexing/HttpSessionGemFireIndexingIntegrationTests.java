@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package docs.gemfire.indexing;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +24,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
+import org.springframework.data.gemfire.tests.integration.IntegrationTestsSupport;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,7 +44,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
-public class HttpSessionGemFireIndexingIntegrationTests {
+public class HttpSessionGemFireIndexingIntegrationTests extends IntegrationTestsSupport {
 
 	@Autowired
 	private GemFireOperationsSessionRepository sessionRepository;
@@ -101,8 +101,8 @@ public class HttpSessionGemFireIndexingIntegrationTests {
 		this.sessionRepository.deleteById(session.getId());
 	}
 
-	@PeerCacheApplication(name = "HttpSessionGemFireIndexingIntegrationTests", logLevel = "error")
+	@PeerCacheApplication(name = "HttpSessionGemFireIndexingIntegrationTests")
 	@EnableGemFireHttpSession(regionName = "HttpSessionGemFireIndexingTestRegion")
-	static class TestConfiguration {
-	}
+	static class TestConfiguration { }
+
 }
