@@ -29,23 +29,26 @@ import org.slf4j.LoggerFactory
 
 /**
  * @author Rob Winch
+ * @author John Blum
  */
 class JavadocApiPlugin implements Plugin<Project> {
 
-	Logger logger = LoggerFactory.getLogger(getClass());
+	Logger logger = LoggerFactory.getLogger(getClass())
 
-	Set<Pattern> excludes = Collections.singleton(Pattern.compile("test"));
+	Set<Pattern> excludes = Collections.singleton(Pattern.compile("test"))
 
 	@Override
 	void apply(Project project) {
 
 		Project rootProject = project.getRootProject()
 
-		//Task docs = project.getTasks().findByPath("docs") ?: project.getTasks().create("docs");
 		Javadoc api = project.tasks.create("api", Javadoc)
 
-		api.setGroup("Documentation");
-		api.setDescription("Generates aggregated Javadoc API documentation.");
+		api.setGroup("Documentation")
+		api.setDescription("Generates aggregated Javadoc API documentation.")
+		api.setDestinationDir(new File(project.getBuildDir(), "api"))
+		api.setMaxMemory("1024m")
+
 		api.doLast {
 			if (JavaVersion.current().isJava11Compatible()) {
 				project.copy({ copy -> copy
@@ -53,67 +56,67 @@ class JavadocApiPlugin implements Plugin<Project> {
 					.into(api.destinationDir)
 					.include("element-list")
 					.rename("element-list", "package-list")
-				});
+				})
 			}
 		}
 
-		Set<Project> subprojects = rootProject.getSubprojects();
-
-		for (Project subproject : subprojects) {
-			addProject(api, subproject);
-		}
+		Set<Project> subprojects = rootProject.getSubprojects()
 
 		if (subprojects.isEmpty()) {
-			addProject(api, project);
+			addProject(api, project)
 		}
 
-		api.setMaxMemory("1024m");
-		api.setDestinationDir(new File(project.getBuildDir(), "api"));
+		for (Project subproject : subprojects) {
+			addProject(api, subproject)
+		}
 
-		project.getPluginManager().apply("io.spring.convention.javadoc-options");
+		project.getPluginManager().apply("io.spring.convention.javadoc-options")
 	}
 
+	@SuppressWarnings("unused")
 	void setExcludes(String... excludes) {
-		if(excludes == null) {
-			this.excludes = Collections.emptySet();
-		}
-		this.excludes = new HashSet<Pattern>(excludes.length);
-		for(String exclude : excludes) {
-			this.excludes.add(Pattern.compile(exclude));
-		}
+		excludes ?= new String[0]
+		this.excludes = new HashSet<>(excludes.length)
+		excludes.each {this.excludes.add(Pattern.compile(it)) }
 	}
 
-	private void addProject(final Javadoc api, final Project project) {
+	private void addProject(Javadoc api, Project project) {
 
-		for(Pattern exclude : excludes) {
-			if(exclude.matcher(project.getName()).matches()) {
-				logger.info("Skipping {} because it is excluded by {}", project, exclude);
-				return;
-			}
-		}
+		if (isProjectIncluded(project)) {
 
-		logger.info("Try add sources for {}", project);
+			logInfo("Add sources for project {}", project)
 
-		project.getPlugins().withType(SpringModulePlugin.class).all(new Action<SpringModulePlugin>() {
+			project.getPlugins().withType(SpringModulePlugin.class).all { plugin ->
 
-			@Override
-			void execute(SpringModulePlugin plugin) {
+				JavaPluginConvention java = project.getConvention().getPlugin(JavaPluginConvention.class)
+				SourceSet mainSourceSet = java.getSourceSets().getByName("main")
 
-				logger.info("Added sources for {}", project);
-
-				JavaPluginConvention java = project.getConvention().getPlugin(JavaPluginConvention.class);
-				SourceSet mainSourceSet = java.getSourceSets().getByName("main");
-
-				api.setSource(api.getSource().plus(mainSourceSet.getAllJava()));
+				api.setSource(api.getSource().plus(mainSourceSet.getAllJava()))
 
 				project.getTasks().withType(Javadoc.class).all(new Action<Javadoc>() {
 
 					@Override
 					void execute(Javadoc projectJavadoc) {
-						api.setClasspath(api.getClasspath().plus(projectJavadoc.getClasspath()));
+						api.setClasspath(api.getClasspath().plus(projectJavadoc.getClasspath()))
 					}
-				});
+				})
 			}
-		});
+		}
+	}
+
+	private boolean isProjectIncluded(Project project) {
+
+		for (Pattern exclude : this.excludes) {
+			if (exclude.matcher(project.getName()).matches()) {
+				logInfo("Skipping project {} because it was excluded by {}", project, exclude)
+				return false
+			}
+		}
+
+		return true
+	}
+
+	private void logInfo(String message, Object... arguments) {
+		this.logger.info(message, arguments)
 	}
 }
