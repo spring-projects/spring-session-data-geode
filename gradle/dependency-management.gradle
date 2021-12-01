@@ -67,6 +67,5 @@ dependencyManagement {
 		dependency 'org.webjars:jquery:1.12.4'
 		dependency 'org.webjars:webjars-locator-core:0.32'
 		dependency 'org.webjars:webjars-locator:0.32-1'
-		dependency 'org.webjars:webjars-taglib:0.3'
 	}
 }
