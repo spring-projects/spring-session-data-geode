@@ -31,23 +31,26 @@ class DeployDocsPlugin implements Plugin<Project> {
 
 		project.remotes {
 			docs {
-				role 'docs'
-				if (project.hasProperty('deployDocsHost')) {
-					host = project.findProperty('deployDocsHost')
-				} else {
-					host = 'docs.af.pivotal.io'
-				}
+
 				retryCount = 5 // retry 5 times (default is 0)
 				retryWaitSec = 10 // wait 10 seconds between retries (default is 0)
+				role 'docs'
+
+				host = project.hasProperty('deployDocsHost')
+					? project.findProperty('deployDocsHost')
+					: 'docs-ip.spring.io'
+
 				user = project.findProperty('deployDocsSshUsername')
-				if (project.hasProperty('deployDocsSshKeyPath')) {
-					identity = project.file(project.findProperty('deployDocsSshKeyPath'))
-				} else if (project.hasProperty('deployDocsSshKey')) {
-					identity = project.findProperty('deployDocsSshKey')
-				}
-				if(project.hasProperty('deployDocsSshPassphrase')) {
-					passphrase = project.findProperty('deployDocsSshPassphrase')
-				}
+
+				identity = project.hasProperty('deployDocsSshKeyPath')
+					? project.file(project.findProperty('deployDocsSshKeyPath'))
+					: project.hasProperty('deployDocsSshKey')
+					? project.findProperty('deployDocsSshKey')
+					: identity
+
+				passphrase = project.hasProperty('deployDocsSshPassphrase')
+					? project.findProperty('deployDocsSshPassphrase')
+					: passphrase
 			}
 		}
 
@@ -56,10 +59,12 @@ class DeployDocsPlugin implements Plugin<Project> {
 			doFirst {
 				project.ssh.run {
 					session(project.remotes.docs) {
+
 						def now = System.currentTimeMillis()
 						def name = project.rootProject.name
 						def version = project.rootProject.version
 						def tempPath = "/tmp/${name}-${now}-docs/".replaceAll(' ', '_')
+
 						execute "mkdir -p $tempPath"
 
 						project.tasks.docsZip.outputs.each { o ->

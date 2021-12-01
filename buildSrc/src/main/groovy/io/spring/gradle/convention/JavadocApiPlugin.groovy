@@ -13,40 +13,36 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package io.spring.gradle.convention
 
-package io.spring.gradle.convention;
+import java.util.regex.Pattern
 
-import java.io.File;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import org.gradle.api.Action;
+import org.gradle.api.Action
 import org.gradle.api.JavaVersion
-import org.gradle.api.Plugin;
-import org.gradle.api.Project;
-import org.gradle.api.plugins.JavaPluginConvention;
-import org.gradle.api.tasks.SourceSet;
-import org.gradle.api.tasks.javadoc.Javadoc;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.plugins.JavaPluginConvention
+import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.javadoc.Javadoc
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * @author Rob Winch
  */
-public class JavadocApiPlugin implements Plugin<Project> {
+class JavadocApiPlugin implements Plugin<Project> {
+
 	Logger logger = LoggerFactory.getLogger(getClass());
+
 	Set<Pattern> excludes = Collections.singleton(Pattern.compile("test"));
 
 	@Override
-	public void apply(Project project) {
-		logger.info("Applied");
-		Project rootProject = project.getRootProject();
+	void apply(Project project) {
 
+		Project rootProject = project.getRootProject()
 
 		//Task docs = project.getTasks().findByPath("docs") ?: project.getTasks().create("docs");
-		Javadoc api = project.getTasks().create("api", Javadoc);
+		Javadoc api = project.tasks.create("api", Javadoc)
 
 		api.setGroup("Documentation");
 		api.setDescription("Generates aggregated Javadoc API documentation.");
@@ -62,6 +58,7 @@ public class JavadocApiPlugin implements Plugin<Project> {
 		}
 
 		Set<Project> subprojects = rootProject.getSubprojects();
+
 		for (Project subproject : subprojects) {
 			addProject(api, subproject);
 		}
@@ -76,7 +73,7 @@ public class JavadocApiPlugin implements Plugin<Project> {
 		project.getPluginManager().apply("io.spring.convention.javadoc-options");
 	}
 
-	public void setExcludes(String... excludes) {
+	void setExcludes(String... excludes) {
 		if(excludes == null) {
 			this.excludes = Collections.emptySet();
 		}
@@ -87,25 +84,32 @@ public class JavadocApiPlugin implements Plugin<Project> {
 	}
 
 	private void addProject(final Javadoc api, final Project project) {
+
 		for(Pattern exclude : excludes) {
 			if(exclude.matcher(project.getName()).matches()) {
 				logger.info("Skipping {} because it is excluded by {}", project, exclude);
 				return;
 			}
 		}
+
 		logger.info("Try add sources for {}", project);
+
 		project.getPlugins().withType(SpringModulePlugin.class).all(new Action<SpringModulePlugin>() {
+
 			@Override
-			public void execute(SpringModulePlugin plugin) {
+			void execute(SpringModulePlugin plugin) {
+
 				logger.info("Added sources for {}", project);
 
 				JavaPluginConvention java = project.getConvention().getPlugin(JavaPluginConvention.class);
 				SourceSet mainSourceSet = java.getSourceSets().getByName("main");
 
 				api.setSource(api.getSource().plus(mainSourceSet.getAllJava()));
+
 				project.getTasks().withType(Javadoc.class).all(new Action<Javadoc>() {
+
 					@Override
-					public void execute(Javadoc projectJavadoc) {
+					void execute(Javadoc projectJavadoc) {
 						api.setClasspath(api.getClasspath().plus(projectJavadoc.getClasspath()));
 					}
 				});
@@ -113,4 +117,3 @@ public class JavadocApiPlugin implements Plugin<Project> {
 		});
 	}
 }
-
