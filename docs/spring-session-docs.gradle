@@ -1,3 +1,8 @@
+plugins {
+	// id 'org.asciidoctor.jvm.convert' version '3.2.0'
+	// id 'org.asciidoctor.jvm.pdf' version '3.2.0'
+}
+
 apply plugin: 'io.spring.convention.docs'
 apply plugin: 'io.spring.convention.spring-test'
 
@@ -9,11 +14,6 @@ dependencies {
 
 	testImplementation project(':spring-session-data-geode')
 	testImplementation "jakarta.servlet:jakarta.servlet-api"
-	testImplementation "junit:junit"
-	testImplementation "org.assertj:assertj-core"
-	testImplementation "org.mockito:mockito-core"
-	testImplementation "edu.umd.cs.mtc:multithreadedtc"
-	testImplementation "org.springframework:spring-test"
 	testImplementation "org.springframework.security:spring-security-core"
 	testImplementation "org.springframework.security:spring-security-test"
 	testImplementation "org.springframework.security:spring-security-web"
@@ -21,14 +21,16 @@ dependencies {
 }
 
 def versions = dependencyManagement.managedVersions
-//def relativePathToSpringCss = "css/spring.css"
-//def pathToSpringCss = new File(project.getBuildDir(), relativePathToSpringCss).getAbsolutePath()
 
 asciidoctor {
 	clearSources()
+	clearSecondarySources()
 	sources {
 		include "index.adoc"
 		include "guides/*.adoc"
+	}
+	resources {
+		duplicatesStrategy DuplicatesStrategy.EXCLUDE
 	}
 }
 
@@ -59,13 +61,18 @@ asciidoctorj {
 		'version-snapshot': snapshotBuild,
 		'version-milestone': milestoneBuild,
 		'version-release': releaseBuild
+
 }
 
 asciidoctorPdf {
 	clearSources()
+	clearSecondarySources()
 	sources {
 		include "index.adoc"
-//		include "guides/*.adoc"
+		// include "guides/*.adoc"
+	}
+	resources {
+		duplicatesStrategy DuplicatesStrategy.EXCLUDE
 	}
 }
 
