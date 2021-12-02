@@ -27,8 +27,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import jakarta.annotation.PostConstruct;
-
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.ExpirationAction;
@@ -664,6 +662,9 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 		// Expose configuration as {@link Properties} in the Spring {@link Environment}
 		// if {@link EnableGemFireHttpSession#exposeConfigurationAsProperties} is set to {@literal true}.
 		exposeSpringSessionGemFireConfiguration();
+
+		// Initialize GemFire/Geode if possible
+		registerSessionSerializerBeanAlias();
 	}
 
 	private void configureClientRegionShortcut(AnnotationAttributes enableGemFireHttpSessionAttributes) {
@@ -918,8 +919,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 		}
 	}
 
-	@PostConstruct
-	public void initGemFire() {
+	public void registerSessionSerializerBeanAlias() {
 		getBeanFactory().registerAlias(getSessionSerializerBeanName(), SESSION_SERIALIZER_BEAN_ALIAS);
 	}
 
