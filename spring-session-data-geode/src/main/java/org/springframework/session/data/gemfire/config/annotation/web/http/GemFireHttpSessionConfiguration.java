@@ -27,6 +27,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import jakarta.annotation.PostConstruct;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.ExpirationAction;
@@ -919,6 +921,7 @@ public class GemFireHttpSessionConfiguration extends AbstractGemFireHttpSessionC
 		}
 	}
 
+	@PostConstruct
 	public void registerSessionSerializerBeanAlias() {
 		getBeanFactory().registerAlias(getSessionSerializerBeanName(), SESSION_SERIALIZER_BEAN_ALIAS);
 	}
