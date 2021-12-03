@@ -39,8 +39,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
@@ -74,7 +74,7 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 
-	@ClientCacheApplication(name = "SpringSessionDataGeodeBootSampleClient", logLevel = "error",
+	@ClientCacheApplication(name = "SpringSessionDataGeodeBootSampleClient",
 		readTimeout = 15000, retryAttempts = 1, subscriptionEnabled = true)  // <3>
 	@EnableGemFireHttpSession(poolName = "DEFAULT") // <4>
 	static class ClientCacheConfiguration extends ClientServerIntegrationTestsSupport {
@@ -111,18 +111,18 @@ public class Application {
 		return writer.toString();
 	}
 
-	@RequestMapping(method = RequestMethod.GET, path = "/ping")
+	@GetMapping(path = "/ping")
 	@ResponseBody
 	public String ping() {
 		return PING_RESPONSE;
 	}
 
-	@RequestMapping(method = RequestMethod.POST, path = "/session")
-	public String session(HttpSession session, ModelMap modelMap,
+	@PostMapping(path = "/session")
+	public String session(HttpSession session, ModelMap model,
 			@RequestParam(name = "attributeName", required = false) String name,
 			@RequestParam(name = "attributeValue", required = false) String value) { // <7>
 
-		modelMap.addAttribute("sessionAttributes",
+		model.addAttribute("sessionAttributes",
 			attributes(setAttribute(updateRequestCount(session), name, value)));
 
 		return INDEX_TEMPLATE_VIEW_NAME;

@@ -102,6 +102,7 @@ public class Application {
 
 // end::class[]
 
+	@SuppressWarnings("all")
 	HttpSession updateRequestCount(HttpSession session) {
 
 		synchronized (session) {

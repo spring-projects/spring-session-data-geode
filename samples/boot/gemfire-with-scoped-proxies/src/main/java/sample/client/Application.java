@@ -31,8 +31,7 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -67,7 +66,7 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 
-	@ClientCacheApplication(name = "SpringSessionDataGeodeBootSampleWithScopedProxiesClient", logLevel = "error",
+	@ClientCacheApplication(name = "SpringSessionDataGeodeBootSampleWithScopedProxiesClient",
 		readTimeout = 15000, retryAttempts = 1, subscriptionEnabled = true)  // <3>
 	@EnableGemFireHttpSession(poolName = "DEFAULT") // <4>
 	static class ClientCacheConfiguration { }
@@ -102,13 +101,13 @@ public class Application {
 		return writer.toString();
 	}
 
-	@RequestMapping(method = RequestMethod.GET, path = "/ping")
+	@GetMapping(path = "/ping")
 	@ResponseBody
 	public String ping() {
 		return PING_RESPONSE;
 	}
 
-	@RequestMapping(method = RequestMethod.GET, path = "/counts")
+	@GetMapping(path = "/counts")
 	public String requestAndSessionInstanceCount(HttpServletRequest request, HttpSession session, Model model) { // <6>
 
 		model.addAttribute("sessionId", session.getId());

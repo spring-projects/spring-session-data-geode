@@ -1,5 +1,4 @@
-<!DOCTYPE html SYSTEM "https://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-3.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>Request and Session Counts</title>
 	<style type="text/css">
@@ -16,7 +15,7 @@
 			in the context of Spring Session when GemFire is used to back the HTTP Session.
 		</p>
 
-		<table class="table table-striped">
+		<table>
 			<thead>
 			<tr>
 				<th> * </th>
@@ -26,12 +25,15 @@
 			</tr>
 			</thead>
 			<tbody>
+				<#attempt>
 				<tr>
 					<td><b>count</b></td>
-					<td th:text="${sessionId}">?</td>
-					<td th:text="${sessionCount}">0</td>
-					<td th:text="${requestCount}">0</td>
+					<td>${sessionId}</td>
+					<td>${sessionCount}</td>
+					<td>${requestCount}/></td>
 				</tr>
+				<#recover>
+				</#attempt>
 			</tbody>
 		</table>
 	</div>

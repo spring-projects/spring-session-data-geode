@@ -1,5 +1,4 @@
-<!DOCTYPE html SYSTEM "https://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-3.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>Session Attributes</title>
 	<style type="text/css">
@@ -19,7 +18,7 @@
 
 		<h1>Try it</h1>
 
-		<form class="form-inline" role="form" action="./session" method="post">
+		<form role="form" action="./session" method="post">
 			<label for="attributeName">Attribute Name</label>
 			<input id="attributeName" type="text" name="attributeName"/>
 			<label for="attributeValue">Attribute Value</label>
@@ -29,7 +28,7 @@
 
 		<hr/>
 
-		<table class="table table-striped">
+		<table>
 			<thead>
 			<tr>
 				<th>Attribute Name</th>
@@ -37,10 +36,15 @@
 			</tr>
 			</thead>
 			<tbody>
-				<tr th:each="attribute: ${sessionAttributes}">
-					<td th:text="${attribute.key}">name</td>
-					<td th:text="${attribute.value}">value</td>
+				<#attempt>
+				<#list sessionAttributes as attributeName, attributeValue>
+				<tr>
+					<td>${attributeName}</td>
+					<td>${attributeValue}</td>
 				</tr>
+				</#list>
+				<#recover>
+				</#attempt>
 			</tbody>
 		</table>
 	</div>
