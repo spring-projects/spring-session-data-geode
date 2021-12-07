@@ -20,6 +20,7 @@ import org.sonarqube.gradle.SonarQubePlugin;
 
 /**
  * @author Rob Winch
+ * @author John Blum
  */
 class SpringSamplePlugin extends AbstractSpringJavaPlugin {
 

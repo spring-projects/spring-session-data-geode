@@ -19,6 +19,7 @@ import org.gradle.api.Project;
 
 /**
  * @author Rob Winch
+ * @author John Blum
  */
 class SpringTestPlugin extends AbstractSpringJavaPlugin {
 

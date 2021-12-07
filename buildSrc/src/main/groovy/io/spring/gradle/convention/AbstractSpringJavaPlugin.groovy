@@ -28,7 +28,12 @@ import org.springframework.gradle.propdeps.PropDepsIdeaPlugin
 import org.springframework.gradle.propdeps.PropDepsPlugin
 
 /**
+ * Base Gradle API Plugin for all Spring Java project Gradle Plugins.
+ *
  * @author Rob Winch
+ * @author John Blum
+ * @see org.gradle.api.Plugin
+ * @see org.gradle.api.Project
  */
 abstract class AbstractSpringJavaPlugin implements Plugin<Project> {
 

@@ -18,6 +18,10 @@ package io.spring.gradle.convention
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
+/**
+ * @author Rob Winch
+ * @author John Blum
+ */
 class DeployDocsPlugin implements Plugin<Project> {
 
 	@Override

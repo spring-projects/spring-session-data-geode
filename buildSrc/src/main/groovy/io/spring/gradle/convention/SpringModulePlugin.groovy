@@ -21,7 +21,10 @@ import org.gradle.api.plugins.PluginManager
 import org.springframework.gradle.maven.SpringMavenPlugin
 
 /**
+ * Defines the Gradle project as a proper Spring Module.
+ *
  * @author Rob Winch
+ * @author John Blum
  */
 class SpringModulePlugin extends AbstractSpringJavaPlugin {
 

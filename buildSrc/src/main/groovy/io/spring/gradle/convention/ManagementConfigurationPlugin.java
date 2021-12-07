@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.spring.gradle.convention;
 
 import org.gradle.api.Plugin;
@@ -23,16 +22,20 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaTestFixturesPlugin;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.publish.PublishingExtension;
+import org.gradle.api.publish.VariantVersionMappingStrategy;
 import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin;
 
 import org.springframework.gradle.propdeps.PropDepsPlugin;
 
 /**
- * Creates a Management configuration that is appropriate for adding a platform to that is not exposed externally. If
- * the JavaPlugin is applied, the compileClasspath, runtimeClasspath, testCompileClasspath, and testRuntimeClasspath
+ * Creates a Management configuration that is appropriate for adding a platform so that it is not exposed externally.
+ *
+ * If the JavaPlugin is applied, the compileClasspath, runtimeClasspath, testCompileClasspath, and testRuntimeClasspath
  * will extend from it.
+ *
  * @author Rob Winch
+ * @author John Blum
  */
 public class ManagementConfigurationPlugin implements Plugin<Project> {
 
@@ -40,35 +43,42 @@ public class ManagementConfigurationPlugin implements Plugin<Project> {
 
 	@Override
 	public void apply(Project project) {
+
 		ConfigurationContainer configurations = project.getConfigurations();
-		configurations.create(MANAGEMENT_CONFIGURATION_NAME, (management) -> {
-			management.setVisible(false);
+
+		configurations.create(MANAGEMENT_CONFIGURATION_NAME, management -> {
+
 			management.setCanBeConsumed(false);
 			management.setCanBeResolved(false);
+			management.setVisible(false);
 
 			PluginContainer plugins = project.getPlugins();
-			plugins.withType(JavaPlugin.class, (javaPlugin) -> {
+
+			plugins.withType(JavaPlugin.class, javaPlugin -> {
 				configurations.getByName(JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME).extendsFrom(management);
 				configurations.getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME).extendsFrom(management);
 				configurations.getByName(JavaPlugin.TEST_COMPILE_CLASSPATH_CONFIGURATION_NAME).extendsFrom(management);
 				configurations.getByName(JavaPlugin.TEST_RUNTIME_CLASSPATH_CONFIGURATION_NAME).extendsFrom(management);
 			});
-			plugins.withType(JavaTestFixturesPlugin.class, (javaTestFixturesPlugin) -> {
+
+			plugins.withType(JavaTestFixturesPlugin.class, javaTestFixturesPlugin -> {
 				configurations.getByName("testFixturesCompileClasspath").extendsFrom(management);
 				configurations.getByName("testFixturesRuntimeClasspath").extendsFrom(management);
 			});
-			plugins.withType(MavenPublishPlugin.class, (mavenPublish) -> {
+
+			plugins.withType(MavenPublishPlugin.class, mavenPublish -> {
+
 				PublishingExtension publishing = project.getExtensions().getByType(PublishingExtension.class);
-				publishing.getPublications().withType(MavenPublication.class, (mavenPublication -> {
-					mavenPublication.versionMapping((versions) ->
-							versions.allVariants(versionMapping -> versionMapping.fromResolutionResult())
-					);
-				}));
+
+				publishing.getPublications().withType(MavenPublication.class, mavenPublication ->
+					mavenPublication.versionMapping(versions ->
+						versions.allVariants(VariantVersionMappingStrategy::fromResolutionResult)));
 			});
-			plugins.withType(PropDepsPlugin.class, (propDepsPlugin -> {
+
+			plugins.withType(PropDepsPlugin.class, propDepsPlugin -> {
 				configurations.getByName("optional").extendsFrom(management);
 				configurations.getByName("provided").extendsFrom(management);
-			}));
+			});
 		});
 	}
 }

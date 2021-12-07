@@ -22,6 +22,10 @@ import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.plugins.PluginManager
 import org.springframework.gradle.maven.SpringNexusPublishPlugin
 
+/**
+ * @author Rob Winch
+ * @author John Blum
+ */
 class RootProjectPlugin implements Plugin<Project> {
 
 	@Override
@@ -30,8 +34,8 @@ class RootProjectPlugin implements Plugin<Project> {
 		PluginManager pluginManager = project.getPluginManager()
 
 		pluginManager.apply(BasePlugin)
-		pluginManager.apply(SchemaPlugin)
 		pluginManager.apply(NoHttpPlugin)
+		pluginManager.apply(SchemaPlugin)
 		pluginManager.apply(SpringNexusPublishPlugin)
 		pluginManager.apply("org.sonarqube")
 

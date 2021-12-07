@@ -26,8 +26,7 @@ import org.gradle.plugins.ide.idea.IdeaPlugin
 import org.springframework.gradle.propdeps.PropDepsPlugin
 
 /**
- *
- * Adds support for integration tests to java projects.
+ * Adds support for integration tests to Java projects.
  *
  * <ul>
  * <li>Adds integrationTestCompile and integrationTestRuntime configurations</li>
@@ -37,6 +36,7 @@ import org.springframework.gradle.propdeps.PropDepsPlugin
  * </ul>
  *
  * @author Rob Winch
+ * @author John Blum
  */
 class IntegrationTestPlugin implements Plugin<Project> {
 

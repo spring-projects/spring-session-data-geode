@@ -28,6 +28,7 @@ import org.gradle.jvm.tasks.Jar
  * </code>
  *
  * @author Rob Winch
+ * @author John Blum
  */
 class TestsConfigurationPlugin implements Plugin<Project> {
 

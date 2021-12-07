@@ -22,6 +22,7 @@ import org.gradle.api.tasks.testing.Test
 
 /**
  * @author Rob Winch
+ * @author John Blum
  */
 class SpringSampleWarPlugin extends SpringSamplePlugin {
 
@@ -68,16 +69,22 @@ class SpringSampleWarPlugin extends SpringSamplePlugin {
         project.gretty.integrationTestTask = integrationTest.name
 
         integrationTest.doFirst {
+
             def gretty = project.gretty
-            String host = project.gretty.host ?: 'localhost'
+
             boolean isHttps = gretty.httpsEnabled
+
             Integer httpPort = integrationTest.systemProperties['gretty.httpPort']
             Integer httpsPort = integrationTest.systemProperties['gretty.httpsPort']
+
             int port = isHttps ? httpsPort : httpPort
+
+            String host = project.gretty.host ?: 'localhost'
             String contextPath = project.gretty.contextPath
             String httpBaseUrl = "http://${host}:${httpPort}${contextPath}"
             String httpsBaseUrl = "https://${host}:${httpsPort}${contextPath}"
             String baseUrl = isHttps ? httpsBaseUrl : httpBaseUrl
+
             integrationTest.systemProperty 'app.port', port
             integrationTest.systemProperty 'app.httpPort', httpPort
             integrationTest.systemProperty 'app.httpsPort', httpsPort

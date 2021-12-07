@@ -30,6 +30,7 @@ import org.gradle.api.plugins.JavaPlugin
  * </ul>
  *
  * @author Rob Winch
+ * @author John Blum
  */
 class DependencySetPlugin implements Plugin<Project> {
 

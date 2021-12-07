@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package io.spring.gradle.convention
 
 import org.gradle.api.Plugin
@@ -24,26 +23,32 @@ import org.gradle.api.plugins.JavaPlugin
  * Adds and configures Checkstyle plugin.
  *
  * @author Vedran Pavic
+ * @author John Blum
  */
 class CheckstylePlugin implements Plugin<Project> {
 
-	final CHECKSTYLE_DIR = 'etc/checkstyle'
+	static final String CHECKSTYLE_PATHNAME = 'etc/checkstyle'
 
 	@Override
 	void apply(Project project) {
+
 		project.plugins.withType(JavaPlugin) {
-			def checkstyleDir = project.rootProject.file(CHECKSTYLE_DIR)
-			if (checkstyleDir.exists() && checkstyleDir.directory) {
+
+			def checkstyleDirectory = project.rootProject.file(CHECKSTYLE_PATHNAME)
+
+			if (checkstyleDirectory.exists() && checkstyleDirectory.directory) {
+
 				project.getPluginManager().apply('checkstyle')
-				project.dependencies.add('checkstyle', 'io.spring.javaformat:spring-javaformat-checkstyle:0.0.29')
-				project.dependencies.add('checkstyle', 'io.spring.nohttp:nohttp-checkstyle:0.0.3.RELEASE')
+				project.dependencies.add('checkstyle',
+					'io.spring.javaformat:spring-javaformat-checkstyle:0.0.29')
+				project.dependencies.add('checkstyle',
+					'io.spring.nohttp:nohttp-checkstyle:0.0.3.RELEASE')
 
 				project.checkstyle {
-					configDirectory = checkstyleDir
+					configDirectory = checkstyleDirectory
 					toolVersion = '8.21'
 				}
 			}
 		}
 	}
-
 }

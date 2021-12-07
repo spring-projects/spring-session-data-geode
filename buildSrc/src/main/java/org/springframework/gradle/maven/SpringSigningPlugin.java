@@ -13,58 +13,57 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.springframework.gradle.maven;
 
-import org.gradle.api.Action;
+import java.util.concurrent.Callable;
+
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.publish.Publication;
 import org.gradle.api.publish.PublishingExtension;
-import org.gradle.api.publish.plugins.PublishingPlugin;
 import org.gradle.plugins.signing.SigningExtension;
 import org.gradle.plugins.signing.SigningPlugin;
 
-import java.util.concurrent.Callable;
-
 public class SpringSigningPlugin implements Plugin<Project> {
+
 	@Override
 	public void apply(Project project) {
+
 		project.getPluginManager().apply(SigningPlugin.class);
-		project.getPlugins().withType(SigningPlugin.class).all(new Action<SigningPlugin>() {
-			@Override
-			public void execute(SigningPlugin signingPlugin) {
-				boolean hasSigningKey = project.hasProperty("signing.keyId") || project.hasProperty("signingKey");
-				if (hasSigningKey) {
-					sign(project);
-				}
+
+		project.getPlugins().withType(SigningPlugin.class).all(signingPlugin -> {
+
+			boolean hasSigningKey = project.hasProperty("signing.keyId")
+				|| project.hasProperty("signingKey");
+
+			if (hasSigningKey) {
+				sign(project);
 			}
 		});
 	}
 
 	private void sign(Project project) {
+
 		SigningExtension signing = project.getExtensions().findByType(SigningExtension.class);
-		signing.setRequired(new Callable<Boolean>() {
-			@Override
-			public Boolean call() throws Exception {
-				return project.getGradle().getTaskGraph().hasTask("publishArtifacts");
-			}
-		});
-		String signingKeyId = (String) project.findProperty("signingKeyId");
+
+		signing.setRequired((Callable<Boolean>) () ->
+			project.getGradle().getTaskGraph().hasTask("publishArtifacts"));
+
 		String signingKey = (String) project.findProperty("signingKey");
+		String signingKeyId = (String) project.findProperty("signingKeyId");
 		String signingPassword = (String) project.findProperty("signingPassword");
+
 		if (signingKeyId != null) {
 			signing.useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword);
-		} else {
+		}
+		else {
 			signing.useInMemoryPgpKeys(signingKey, signingPassword);
 		}
-		project.getPlugins().withType(PublishAllJavaComponentsPlugin.class).all(new Action<PublishAllJavaComponentsPlugin>() {
-			@Override
-			public void execute(PublishAllJavaComponentsPlugin publishingPlugin) {
-				PublishingExtension publishing = project.getExtensions().findByType(PublishingExtension.class);
-				Publication maven = publishing.getPublications().getByName("mavenJava");
-				signing.sign(maven);
-			}
+
+		project.getPlugins().withType(PublishAllJavaComponentsPlugin.class).all(publishingPlugin -> {
+			PublishingExtension publishing = project.getExtensions().findByType(PublishingExtension.class);
+			Publication maven = publishing.getPublications().getByName("mavenJava");
+			signing.sign(maven);
 		});
 	}
 }

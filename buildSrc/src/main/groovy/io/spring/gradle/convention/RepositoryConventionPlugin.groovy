@@ -18,12 +18,17 @@ package io.spring.gradle.convention;
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
+/**
+ * @author Rob Winch
+ * @author John Blum
+ */
 class RepositoryConventionPlugin implements Plugin<Project> {
 
 	@Override
 	void apply(Project project) {
 
-		String[] forceMavenRepositories = ((String) project.findProperty("forceMavenRepositories"))?.split(',')
+		String[] forceMavenRepositories =
+			((String) project.findProperty("forceMavenRepositories"))?.split(',')
 
 		boolean isImplicitSnapshotRepository = forceMavenRepositories == null && Utils.isSnapshot(project)
 		boolean isImplicitMilestoneRepository = forceMavenRepositories == null && Utils.isMilestone(project)

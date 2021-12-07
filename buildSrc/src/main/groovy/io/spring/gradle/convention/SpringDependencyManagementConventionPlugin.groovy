@@ -24,6 +24,9 @@ import org.gradle.api.Project
  * <p>
  * Additionally, if 'gradle/dependency-management.gradle' file is present it will be
  * automatically applied file for configuring the dependencies.
+ *
+ * @author Rob Winch
+ * @author John Blum
  */
 class SpringDependencyManagementConventionPlugin implements Plugin<Project> {
 
@@ -54,5 +57,4 @@ class SpringDependencyManagementConventionPlugin implements Plugin<Project> {
             }
         }
     }
-
 }

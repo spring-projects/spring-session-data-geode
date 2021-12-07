@@ -20,6 +20,7 @@ import org.gradle.api.plugins.PluginManager
 
 /**
  * @author Rob Winch
+ * @author John Blum
  */
 class SpringSampleBootPlugin extends SpringSamplePlugin {
 

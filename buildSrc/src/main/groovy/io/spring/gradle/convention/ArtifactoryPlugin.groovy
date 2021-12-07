@@ -13,26 +13,33 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package io.spring.gradle.convention
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
+/**
+ * @author Rob Winch
+ * @author John Blum
+ */
 class ArtifactoryPlugin implements Plugin<Project> {
 
 	@Override
 	void apply(Project project) {
+
 		project.plugins.apply('com.jfrog.artifactory')
-		String name = Utils.getProjectName(project);
+
 		boolean isSnapshot = Utils.isSnapshot(project);
 		boolean isMilestone = Utils.isMilestone(project);
+
 		project.artifactory {
 			contextUrl = 'https://repo.spring.io'
 			publish {
 				repository {
-					repoKey = isSnapshot ? 'libs-snapshot-local' : isMilestone ? 'libs-milestone-local' : 'libs-release-local'
-					if(project.hasProperty('artifactoryUsername')) {
+					repoKey = isSnapshot ? 'libs-snapshot-local'
+						: isMilestone ? 'libs-milestone-local'
+						: 'libs-release-local'
+					if (project.hasProperty('artifactoryUsername')) {
 						username = artifactoryUsername
 						password = artifactoryPassword
 					}

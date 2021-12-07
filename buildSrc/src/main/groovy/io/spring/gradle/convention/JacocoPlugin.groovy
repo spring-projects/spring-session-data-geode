@@ -23,6 +23,7 @@ import org.gradle.api.plugins.JavaPlugin
  * Adds a version of jacoco to use and makes check depend on jacocoTestReport.
  *
  * @author Rob Winch
+ * @author John Blum
  */
 class JacocoPlugin implements Plugin<Project> {
 
