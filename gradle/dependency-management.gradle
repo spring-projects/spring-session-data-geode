@@ -34,10 +34,10 @@ dependencyManagement {
 		dependency "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:$jakartaServletJspJstlApiVersion"
 		dependency "org.glassfish.web:jakarta.servlet.jsp.jstl:$jakartaServletJspJstlApiVersion"
 		// Apache Geode dependencies
-		// dependency "org.apache.geode:geode-core:$apacheGeodeVersion"
-		// dependency "org.apache.geode:geode-cq:$apacheGeodeVersion"
-		// dependency "org.apache.geode:geode-lucene:$apacheGeodeVersion"
-		// dependency "org.apache.geode:geode-wan:$apacheGeodeVersion"
+		dependency "org.apache.geode:geode-core:$apacheGeodeVersion"
+		dependency "org.apache.geode:geode-cq:$apacheGeodeVersion"
+		dependency "org.apache.geode:geode-lucene:$apacheGeodeVersion"
+		dependency "org.apache.geode:geode-wan:$apacheGeodeVersion"
 		dependency "antlr:antlr:$antlrVersion"
 		// JUnit & Test dependencies
 		dependency "junit:junit:$junitVersion"
