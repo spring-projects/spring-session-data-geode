@@ -24,11 +24,6 @@ dependencies {
 	provided "jakarta.resource:jakarta.resource-api"
 	provided "jakarta.servlet:jakarta.servlet-api"
 
-	// TODO: Remove dependency declarations when all internal Apache Geode API usage is removed; Only required by test,
-	//  and specifically, the GemFireUtilsTests! :P
-	provided "org.apache.geode:geode-logging:$apacheGeodeVersion"
-	provided "org.apache.geode:geode-serialization:$apacheGeodeVersion" // Need for Geode Serialization
-
 	testCompileOnly "com.google.code.findbugs:jsr305:$findbugsVersion"
 
 	testImplementation "org.springframework:spring-web"
