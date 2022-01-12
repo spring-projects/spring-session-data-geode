@@ -8,7 +8,7 @@ repositories {
 dependencies {
 
 	testCompile project(':spring-session-data-geode')
-	testCompile "javax.servlet:javax.servlet-api"
+	testCompile "jakarta.servlet:jakarta.servlet-api"
 	testCompile "junit:junit"
 	testCompile "org.assertj:assertj-core"
 	testCompile "org.mockito:mockito-core"
