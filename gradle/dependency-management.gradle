@@ -2,8 +2,8 @@
 ext['antlrVersion'] = '2.7.7'
 ext['apacheTaglibsVersion'] = '1.2.5'
 ext['assertjVersion'] = '3.22.0'
-ext['javaxServletApiVersion'] ='4.0.1'
-ext['javaxServletJspJstlApiVersion'] = '1.2.2'
+ext['jakartaServletApiVersion'] ='4.0.4'
+ext['jakartaServletJspJstlApiVersion'] = '1.2.7'
 ext['log4jVersion'] = '2.17.1'
 ext['logbackVersion'] = '1.2.3'
 ext['junitVersion'] = '4.13.2'
@@ -23,8 +23,8 @@ dependencyManagement {
 //		mavenBom "org.springframework.session:spring-session-bom:${springSessionBomVersion}"
 	}
 	dependencies {
-		dependency "javax.servlet:javax.servlet-api:$javaxServletApiVersion"
-		dependency "javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:$javaxServletJspJstlApiVersion"
+		dependency "jakarta.servlet:jakarta.servlet-api:$jakartaServletApiVersion"
+		dependency "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:$jakartaServletJspJstlApiVersion"
 		dependency "antlr:antlr:$antlrVersion"
 		dependency "ch.qos.logback:logback-classic:$logbackVersion"
 		dependency "edu.umd.cs.mtc:multithreadedtc:$multithreadedtcVersion"
