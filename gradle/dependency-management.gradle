@@ -5,6 +5,8 @@ ext['assertjVersion'] = '3.22.0'
 ext['jakartaServletApiVersion'] ='4.0.4'
 ext['jakartaServletJspJstlApiVersion'] = '1.2.7'
 ext['log4jVersion'] = '2.17.1'
+// Logback version is currently constrained by tbe Gretty Gradle Plugin.
+// See: https://github.com/gretty-gradle-plugin/gretty/blob/v4.0.0/gradle.properties#L16
 ext['logbackVersion'] = '1.2.3'
 ext['junitVersion'] = '4.13.2'
 ext['mockitoVersion'] = '4.2.0'
