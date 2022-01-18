@@ -60,7 +60,7 @@ dependencies {
     implementation 'com.github.spullara.mustache.java:compiler:0.9.10'
     implementation 'io.github.gradle-nexus:publish-plugin:1.1.0'
     implementation 'io.projectreactor:reactor-core:3.4.11'
-    implementation 'io.spring.nohttp:nohttp-gradle:0.0.9'
+    implementation 'io.spring.nohttp:nohttp-gradle:0.0.10'
     implementation 'io.spring.gradle:dependency-management-plugin:1.0.10.RELEASE'
     implementation 'net.sourceforge.htmlunit:htmlunit:2.55.0'
     implementation 'net.sourceforge.saxon:saxon:9.1.0.8'
