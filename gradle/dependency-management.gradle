@@ -14,6 +14,9 @@ ext['junitJupiterVersion'] = '5.8.2'
 ext['mockitoVersion'] = '4.2.0'
 ext['multithreadedtcVersion'] = '1.01'
 ext['seleniumHtmlUnitVersion'] = '2.56.0'
+ext['seleniumApiVersion'] = '3.141.59'
+ext['seleniumRemoteDriverVersion'] = "$seleniumApiVersion"
+ext['seleniumSupportVersion'] = "$seleniumApiVersion"
 ext['slf4jVersion'] = '1.7.33'
 ext['springSecurityVersion'] = '6.0.0-M1'
 ext['springShellVersion'] = '1.2.0.RELEASE'
@@ -21,10 +24,9 @@ ext['springShellVersion'] = '1.2.0.RELEASE'
 // Declare dependency management for the following dependencies.
 dependencyManagement {
 	imports {
-//		mavenBom "org.springframework.boot:spring-boot-dependencies:$springBootVersion"
 		mavenBom "org.springframework:spring-framework-bom:${springVersion}"
 		mavenBom "org.springframework.data:spring-data-bom:${springDataBomVersion}"
-//		mavenBom "org.springframework.session:spring-session-bom:${springSessionBomVersion}"
+		// mavenBom "org.springframework.session:spring-session-bom:${springSessionBomVersion}"
 	}
 	dependencies {
 		// Java EE 9 dependencies
@@ -47,6 +49,9 @@ dependencyManagement {
 		dependency "org.mockito:mockito-core:$mockitoVersion"
 		dependency "org.projectlombok:lombok:$lombokVersion"
 		dependency "org.seleniumhq.selenium:htmlunit-driver:$seleniumHtmlUnitVersion"
+		dependency "org.seleniumhq.selenium:selenium-api:$seleniumApiVersion"
+		dependency "org.seleniumhq.selenium:selenium-remote-driver:$seleniumRemoteDriverVersion"
+		dependency "org.seleniumhq.selenium:selenium-support:$seleniumSupportVersion"
 		dependency "edu.umd.cs.mtc:multithreadedtc:$multithreadedtcVersion"
 		// Logging dependencies
 		dependency "org.apache.logging.log4j:log4j-to-slf4j:$log4jVersion"
