@@ -12,6 +12,7 @@ ext['logbackVersion'] = '1.2.3'
 ext['lombokVersion'] = "1.18.22"
 ext['junitVersion'] = '4.13.2'
 ext['junitJupiterVersion'] = '5.8.2'
+ext['micrometer.version'] = "$micrometerVersion"
 ext['mockitoVersion'] = '4.2.0'
 ext['multithreadedtcVersion'] = '1.01'
 ext['seleniumHtmlUnitVersion'] = '2.56.0'
@@ -25,6 +26,7 @@ ext['springShellVersion'] = '1.2.0.RELEASE'
 // Declare dependency management for the following dependencies.
 dependencyManagement {
 	imports {
+		mavenBom "io.micrometer:micrometer-bom:$micrometerVersion"
 		mavenBom "org.springframework:spring-framework-bom:${springVersion}"
 		mavenBom "org.springframework.data:spring-data-bom:${springDataBomVersion}"
 		// mavenBom "org.springframework.session:spring-session-bom:${springSessionBomVersion}"
