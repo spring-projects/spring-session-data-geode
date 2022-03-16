@@ -19,7 +19,7 @@ ext['seleniumHtmlUnitVersion'] = '2.56.0'
 ext['seleniumApiVersion'] = '3.141.59'
 ext['seleniumRemoteDriverVersion'] = "$seleniumApiVersion"
 ext['seleniumSupportVersion'] = "$seleniumApiVersion"
-ext['slf4jVersion'] = '1.7.33'
+ext['slf4jVersion'] = '1.7.36'
 ext['springSecurityVersion'] = '6.0.0-M1'
 ext['springShellVersion'] = '1.2.0.RELEASE'
 
