@@ -60,8 +60,6 @@ description = 'Spring Session for Apache Geode'
 //ext['spring-data-bom.version'] = "$springDataBomVersion"
 //ext['spring-session-bom.version'] = "$springSessionBomVersion"
 
-ext.MAVEN_POM_EDITOR_GRADLE = "$rootDir/gradle/maven-pom-editor.gradle"
-
 nohttp {
 	source.exclude "buildSrc/build/**"
 }
