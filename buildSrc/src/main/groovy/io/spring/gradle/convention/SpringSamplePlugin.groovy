@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2021 the original author or authors.
+ * Copyright 2022-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,21 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.spring.gradle.convention;
+package io.spring.gradle.convention
 
 import org.gradle.api.Project
-import org.sonarqube.gradle.SonarQubePlugin;
 
 /**
+ * Gradle Spring Java Plugin used to identify a Gradle {@link Project} as a {@literal Sample} and add configuration
+ * to skip Sonar Qube inspections.
+ *
  * @author Rob Winch
  * @author John Blum
+ * @see org.gradle.api.Project
  */
 class SpringSamplePlugin extends AbstractSpringJavaPlugin {
 
     @Override
-    void additionalPlugins(Project project) {
-        project.plugins.withType(SonarQubePlugin) {
-            project.sonarqube.skipProject = true
-        }
+    void applyAdditionalPlugins(Project project) {
+        Utils.skipProjectWithSonarQubePlugin(project)
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2021 the original author or authors.
+ * Copyright 2022-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,22 +20,30 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 /**
- * Adds and configures {@link DependencyManagementPlugin}.
- * <p>
- * Additionally, if 'gradle/dependency-management.gradle' file is present it will be
- * automatically applied file for configuring the dependencies.
+ * Applies and configures the Spring Gradle {@link DependencyManagementPlugin}.
+ *
+ * Additionally, if a {@literal gradle/dependency-management.gradle} file is present in a Gradle {@link Project},
+ * then this file will be automatically applied in order to configure {@link Project} additional dependencies.
  *
  * @author Rob Winch
  * @author John Blum
+ * @see org.gradle.api.Plugin
+ * @see org.gradle.api.Project
+ * @see org.gradle.api.plugins.PluginManager
  */
-class SpringDependencyManagementConventionPlugin implements Plugin<Project> {
+class SpringDependencyManagementConventionsPlugin implements Plugin<Project> {
 
     static final String DEPENDENCY_MANAGEMENT_RESOURCE = "gradle/dependency-management.gradle"
 
     @Override
     void apply(Project project) {
 
-        project.getPluginManager().apply(ManagementConfigurationPlugin)
+        applyAndConfigureDependencyManagementPlugin(project)
+        applyDependencyManagementResources(project)
+    }
+
+    private void applyAndConfigureDependencyManagementPlugin(Project project) {
+
         project.getPluginManager().apply(DependencyManagementPlugin)
 
         project.dependencyManagement {
@@ -43,17 +51,22 @@ class SpringDependencyManagementConventionPlugin implements Plugin<Project> {
                 cacheChangingModulesFor 0, "seconds"
             }
         }
+    }
+
+    @SuppressWarnings("all")
+    private void applyDependencyManagementResources(Project project) {
 
         File rootDir = project.rootDir
-        List<File> dependencyManagementFiles = [project.rootProject.file(DEPENDENCY_MANAGEMENT_RESOURCE)]
+
+        List<File> dependencyManagementFiles = [ project.rootProject.file(DEPENDENCY_MANAGEMENT_RESOURCE) ]
 
         for (File dir = project.projectDir; dir != rootDir; dir = dir.parentFile) {
             dependencyManagementFiles.add(new File(dir, DEPENDENCY_MANAGEMENT_RESOURCE))
         }
 
-        dependencyManagementFiles.each { f ->
-            if (f.exists()) {
-                project.apply from: f.absolutePath
+        dependencyManagementFiles.each { file ->
+            if (file.exists()) {
+                project.apply from: file.absolutePath
             }
         }
     }

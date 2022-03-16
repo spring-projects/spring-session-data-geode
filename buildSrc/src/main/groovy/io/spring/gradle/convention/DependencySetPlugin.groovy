@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2017 the original author or authors.
+ * Copyright 2022-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,17 +20,24 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 
 /**
- * Adds sets of dependencies to make it easy to add a grouping of dependencies. The
- * dependencies added are:
+ * Defines sets of dependencies to make it easy to add a related group of dependencies to a Gradle {@link Project}.
+ *
+ * The dependencies set defined include:
  *
  * <ul>
  * <li>jstlDependencies</li>
  * <li>seleniumDependencies</li>
  * <li>slf4jDependencies</li>
+ * <li>testDependencies</li>
  * </ul>
+ *
+ *{@literal testDependencies} are automatically added to Java projects
+ * ({@lin Project Projects} with the {@link JavaPlugin} applied).
  *
  * @author Rob Winch
  * @author John Blum
+ * @see org.gradle.api.Plugin
+ * @see org.gradle.api.Project
  */
 class DependencySetPlugin implements Plugin<Project> {
 
@@ -50,6 +57,7 @@ class DependencySetPlugin implements Plugin<Project> {
 		project.ext.slf4jDependencies = [
 			"org.slf4j:slf4j-api",
 			"org.slf4j:jcl-over-slf4j",
+			"org.slf4j:jul-over-slf4j",
 			"org.slf4j:log4j-over-slf4j",
 			"ch.qos.logback:logback-classic"
 		]
