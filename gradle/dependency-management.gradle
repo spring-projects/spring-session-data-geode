@@ -59,6 +59,7 @@ dependencyManagement {
 		// Logging dependencies
 		dependency "org.apache.logging.log4j:log4j-to-slf4j:$log4jVersion"
 		dependency "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+		dependency "org.slf4j:jul-to-slf4j:$slf4jVersion"
 		dependency "org.slf4j:log4j-over-slf4j:$slf4jVersion"
 		dependency "ch.qos.logback:logback-classic:$logbackVersion"
 		// Spring dependencies
