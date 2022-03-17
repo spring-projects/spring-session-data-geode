@@ -51,7 +51,6 @@ import org.springframework.session.data.gemfire.server.GemFireServer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.FileSystemUtils;
-import org.springframework.util.SocketUtils;
 
 /**
  * Integration tests asserting that a GemFire/Geode Server does not require any Spring Session Data GemFire/Geode
@@ -124,9 +123,7 @@ public class SessionSerializationWithPdxRequiresNoServerConfigurationIntegration
 
 		long t0 = System.currentTimeMillis();
 
-		int port = SocketUtils.findAvailableTcpPort();
-
-		//System.err.printf("Starting a Pivotal GemFire Server on host [localhost], listening on port [%d]%n", port);
+		int port = findAndReserveAvailablePort();
 
 		System.setProperty("spring.session.data.gemfire.cache.server.port", String.valueOf(port));
 
