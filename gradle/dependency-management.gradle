@@ -12,7 +12,6 @@ ext['logbackVersion'] = '1.2.10'
 ext['lombokVersion'] = "1.18.22"
 ext['junitVersion'] = '4.13.2'
 ext['junitJupiterVersion'] = '5.8.2'
-ext['micrometer.version'] = "$micrometerVersion"
 ext['mockitoVersion'] = '4.4.0'
 ext['multithreadedtcVersion'] = '1.01'
 ext['seleniumHtmlUnitVersion'] = '2.56.0'
