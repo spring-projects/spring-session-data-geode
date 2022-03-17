@@ -8,11 +8,11 @@ description = "Spring Session for Apache Geode"
 
 dependencies {
 
-	implementation "jakarta.annotation:jakarta.annotation-api"
-	implementation "org.springframework:spring-context-support"
-	implementation "org.springframework:spring-jcl"
-	implementation "org.springframework.data:spring-data-geode"
-	implementation "org.springframework.session:spring-session-core"
+	api "jakarta.annotation:jakarta.annotation-api"
+	api "org.springframework:spring-context-support"
+	api "org.springframework:spring-jcl"
+	api "org.springframework.data:spring-data-geode"
+	api "org.springframework.session:spring-session-core"
 	implementation slf4jDependencies
 
 	compileOnly "com.google.code.findbugs:jsr305:$findbugsVersion"
