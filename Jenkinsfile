@@ -1,3 +1,10 @@
+def p = [:]
+
+node {
+	checkout scm
+	p = readProperties interpolate: true, file: 'ci/pipeline.properties'
+}
+
 pipeline {
 
 	agent any
@@ -14,16 +21,13 @@ pipeline {
 	stages {
 
 		stage('Build') {
-			environment {
-				DOCKER_HUB = credentials('hub.docker.com-springbuildmaster')
-			}
 			options {
 				timeout(time: 15, unit: "MINUTES")
 			}
 			steps {
 				script {
-					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-						docker.image('openjdk:17-bullseye').inside('-u root -v /usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp') {
+					docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
+						docker.image(p['docker.container.image.java.main']).inside(p['docker.container.inside.env.full']) {
 
 							sh "echo 'Setup build environment...'"
 							sh "ci/setup.sh"
@@ -60,8 +64,8 @@ pipeline {
 			}
 			steps {
 				script {
-					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-						docker.image('openjdk:17-bullseye').inside("--name ${env.HOSTNAME}Two -u root -v /tmp:/tmp") {
+					docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
+						docker.image(p['docker.container.image.java.main']).inside(p['docker.container.inside.env.basic']) {
 							withCredentials([file(credentialsId: 'docs.spring.io-jenkins_private_ssh_key', variable: 'DEPLOY_SSH_KEY')]) {
 								try {
 									sh "ci/deployDocs.sh"
@@ -83,8 +87,8 @@ pipeline {
 			}
 			steps {
 				script {
-					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-						docker.image('openjdk:17-bullseye').inside("--name ${env.HOSTNAME}One -u root -v /tmp:/tmp") {
+					docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
+						docker.image(p['docker.container.image.java.main']).inside(p['docker.container.inside.env.basic']) {
 							withCredentials([file(credentialsId: 'spring-signing-secring.gpg', variable: 'SIGNING_KEYRING_FILE')]) {
 								withCredentials([string(credentialsId: 'spring-gpg-passphrase', variable: 'SIGNING_PASSWORD')]) {
 									withCredentials([usernamePassword(credentialsId: 'oss-token', passwordVariable: 'OSSRH_PASSWORD', usernameVariable: 'OSSRH_USERNAME')]) {
@@ -125,11 +129,9 @@ pipeline {
 
 					emailext(subject: subject, body: details, recipientProviders: RECIPIENTS, to: "$GEODE_TEAM_EMAILS")
 
-/*
 					slackSend(color: (currentBuild.currentResult == 'SUCCESS') ? 'good' : 'danger',
 						channel: '#spring-data-dev',
 						message: "${currentBuild.fullDisplayName} - `${currentBuild.currentResult}`\n${env.BUILD_URL}")
- */
 				}
 			}
 		}
