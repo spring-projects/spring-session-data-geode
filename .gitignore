@@ -4,6 +4,7 @@
 .iml
 .ipr
 .iws
+deps.txt
 build
 buildSrc/.gradle
 buildSrc/build
