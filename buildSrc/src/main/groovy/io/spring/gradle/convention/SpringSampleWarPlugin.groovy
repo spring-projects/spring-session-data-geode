@@ -33,12 +33,12 @@ class SpringSampleWarPlugin extends SpringSamplePlugin {
     @Override
     void applyAdditionalPlugins(Project project) {
 
-        super.applyAdditionalPlugins(project);
+        super.applyAdditionalPlugins(project)
 
-        PluginManager pluginManager = project.getPluginManager();
+        PluginManager pluginManager = project.getPluginManager()
 
-        pluginManager.apply("war");
-        pluginManager.apply("org.gretty");
+        pluginManager.apply("war")
+        pluginManager.apply("org.gretty")
 
         project.gretty {
             servletContainer = 'tomcat10'
@@ -70,7 +70,7 @@ class SpringSampleWarPlugin extends SpringSamplePlugin {
         }
     }
 
-    def applyForIntegrationTest(Project project, Task integrationTest) {
+    def static applyForIntegrationTest(Project project, Task integrationTest) {
 
         project.gretty.integrationTestTask = integrationTest.name
 
@@ -102,7 +102,7 @@ class SpringSampleWarPlugin extends SpringSamplePlugin {
         }
     }
 
-    def getRandomPort() {
+    def static getRandomPort() {
         ServerSocket serverSocket = new ServerSocket(0)
         int port = serverSocket.localPort
         serverSocket.close()
