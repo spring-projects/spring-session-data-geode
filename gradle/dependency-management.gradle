@@ -23,8 +23,8 @@ dependencyManagement {
 //		mavenBom "org.springframework.session:spring-session-bom:${springSessionBomVersion}"
 	}
 	dependencies {
-		dependency "javax.servlet:javax.servlet-api:$javaxServletApiVersion"
-		dependency "javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:$javaxServletJspJstlApiVersion"
+		dependency "jakarta.servlet:jakarta.servlet-api:$javaxServletApiVersion"
+		dependency "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:$javaxServletJspJstlApiVersion"
 		dependency "antlr:antlr:$antlrVersion"
 		dependency "ch.qos.logback:logback-classic:$logbackVersion"
 		dependency "edu.umd.cs.mtc:multithreadedtc:$multithreadedtcVersion"
