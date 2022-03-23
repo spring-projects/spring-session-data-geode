@@ -1,3 +1,5 @@
+import io.spring.gradle.convention.Utils
+
 buildscript {
 	repositories {
 		mavenCentral()
@@ -44,14 +46,16 @@ allprojects {
 
 description = 'Spring Session for Apache Geode'
 
-//ext['groovy.version'] = "$groovyVersion"
+// Define dependency version override Gradle Project extension properties.
 //ext['spring.version'] = "$springVersion"
 //ext['spring-framework.version'] = "$springVersion"
 //ext['spring-data-bom.version'] = "$springDataBomVersion"
 //ext['spring-session-bom.version'] = "$springSessionBomVersion"
 
-ext.snapshotBuild = version.endsWith('SNAPSHOT')
-ext.releaseBuild = version.endsWith('RELEASE')
-ext.milestoneBuild = !(releaseBuild || snapshotBuild)
+// Define Gradle build in terms of the type of release (e.g. snapshot, milestone or GA release).
+ext.snapshotBuild = Utils.isSnapshot(project)
+ext.milestoneBuild = Utils.isMilestone(project)
+ext.releaseBuild = Utils.isRelease(project)
 
+// Declare maven-pom-editor Gradle script plugin.
 ext.MAVEN_POM_EDITOR_GRADLE = "$rootDir/gradle/maven-pom-editor.gradle"
