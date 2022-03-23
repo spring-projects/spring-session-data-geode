@@ -1,4 +1,4 @@
-:version: 2.5.5
+:version: 2.5.6
 :geode-version: 113
 
 image:https://badges.gitter.im/spring-projects/spring-session.svg[link="https://gitter.im/spring-projects/spring-session?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
