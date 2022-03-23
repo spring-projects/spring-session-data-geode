@@ -25,10 +25,11 @@ dependencies {
 	compile "org.springframework.data:spring-data-geode-test"
 	compile "org.webjars:bootstrap"
 	compile "org.webjars:webjars-taglib"
-	compile jstlDependencies
 	compile slf4jDependencies
 
-	providedCompile "javax.servlet:javax.servlet-api"
+	providedCompile "jakarta.servlet:jakarta.servlet-api"
+	providedCompile "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"
+	providedCompile "org.apache.taglibs:taglibs-standard-jstlel"
 
 	runtime "org.springframework.shell:spring-shell"
 
