@@ -4,6 +4,28 @@ https://github.com/spring-projects/spring-session-data-geode
 ============================================================
 
 
+Changes in version 2.5.6 (2022-03-23)
+-------------------------------------
+Aligns Spring Session for Apache Geode (SSDG) with Spring Session (core) 2.5.5.
+
+* Upgrades to Apache Geode 1.13.8.
+* Upgrades to Spring Framework 5.3.17.
+* Upgrades to Spring Boot 2.5.10.
+* Upgrades to Spring Data BOM 2021.0.10 (Pascal-SR10).
+* Upgrades to Spring Data Commons 2.5.10.
+* Upgrades to Spring Data for Apache Geode 2.5.10.
+* Upgrades to Spring Security 5.5.5.
+* Upgrades to Spring Session 2.5.5.
+* Upgrades to Spring Session BOM 2021.0.5.
+* Upgrades to Spring Test for Apache Geode 0.1.2-PASCAL.
+* Upgrades to Javax (Jakarta) Servlet API 4.0.4.
+* Upgrades to Javax (Jakarta) Servlet JSP JSTL API  1.2.7.
+* Upgrades to Log4j 2.17.2.
+* Upgrades to Mockito 4.4.0.
+* Upgrades to SLF4J 1.7.36.
+* Switches the use from Javax Servlet dependencies to Jakarta Servlet dependencies.
+
+
 Changes in version 3.0.0-M1 (2022-01-18)
 ----------------------------------------
 Aligns Spring Session for Apache Geode (SSDG) with Spring Session (core) 3.0.0-M1.
