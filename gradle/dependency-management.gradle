@@ -25,10 +25,10 @@ ext['springShellVersion'] = '1.2.0.RELEASE'
 // Declare dependency management for the following dependencies.
 dependencyManagement {
 	imports {
-		mavenBom "io.micrometer:micrometer-bom:$micrometerVersion"
 		mavenBom "org.springframework:spring-framework-bom:${springVersion}"
 		mavenBom "org.springframework.data:spring-data-bom:${springDataBomVersion}"
 		// mavenBom "org.springframework.session:spring-session-bom:${springSessionBomVersion}"
+		mavenBom "io.micrometer:micrometer-bom:$micrometerVersion"
 	}
 	dependencies {
 		// Java EE 9 dependencies
