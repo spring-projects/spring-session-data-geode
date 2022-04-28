@@ -23,6 +23,7 @@ import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newI
 import static org.springframework.session.data.gemfire.AbstractGemFireOperationsSessionRepository.GemFireSession;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -64,6 +65,8 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 
 		private final AbstractConcurrentSessionOperationsIntegrationTests testInstance;
 
+		private final AtomicReference<String> sessionId = new AtomicReference<>(null);
+
 		private final GemFireOperationsSessionRepository sessionRepository;
 
 		protected AbstractConcurrentSessionOperationsTestCase(
@@ -83,30 +86,38 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 					GemFireOperationsSessionRepository.class.getName(), ObjectUtils.nullSafeClassName(sessionRepository)));
 		}
 
-		@NonNull @SuppressWarnings("unused")
-		protected AbstractConcurrentSessionOperationsIntegrationTests getTestInstance() {
+		@SuppressWarnings("unused")
+		protected @NonNull AbstractConcurrentSessionOperationsIntegrationTests getTestInstance() {
 			return this.testInstance;
 		}
 
-		@NonNull
-		protected GemFireOperationsSessionRepository getSessionRepository() {
+		protected @NonNull GemFireOperationsSessionRepository getSessionRepository() {
 			return this.sessionRepository;
 		}
 
-		@Nullable
-		protected Session findById(String id) {
+		protected @NonNull String getSessionId() {
+			return this.sessionId.get();
+		}
+
+		protected void setSessionId(@Nullable String sessionId) {
+			this.sessionId.set(sessionId);
+		}
+
+		protected @Nullable Session findById(@NonNull String id) {
 			return getSessionRepository().findById(id);
 		}
 
-		@NonNull
-		protected Session newSession() {
+		protected @NonNull Session newSession() {
 			return getSessionRepository().createSession();
 		}
 
-		@Nullable
-		protected <T extends Session> T save(@Nullable T session) {
+		protected @Nullable <T extends Session> T save(@Nullable T session) {
 			getSessionRepository().save(session);
 			return session;
+		}
+
+		protected void waitOnAvailableSessionId() {
+			AbstractConcurrentSessionOperationsIntegrationTests.waitOn(() -> Objects.nonNull(this.sessionId.get()));
 		}
 	}
 
@@ -114,13 +125,12 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 	public static class ConcurrentSessionOperationsTestCase extends AbstractConcurrentSessionOperationsTestCase {
 
 		private final AtomicReference<Instant> lastAccessedTime = new AtomicReference<>(null);
-		private final AtomicReference<String> sessionId = new AtomicReference<>(null);
 
 		public ConcurrentSessionOperationsTestCase(AbstractConcurrentSessionOperationsIntegrationTests testInstance) {
 			super(testInstance);
 		}
 
-		// Creator Thread
+		// Session Creator Thread
 		@SuppressWarnings("rawtypes")
 		public void thread1() {
 
@@ -142,7 +152,7 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 
 			save(session);
 
-			this.sessionId.set(session.getId());
+			setSessionId(session.getId());
 
 			waitForTick(4);
 			assertTick(4);
@@ -153,18 +163,19 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 			save(session);
 		}
 
-		// Modifier (Attribute) Thread
+		// Session Attribute Modifier Thread
 		public void thread2() {
 
 			Thread.currentThread().setName("User Session Two");
 
 			waitForTick(1);
 			assertTick(1);
+			waitOnAvailableSessionId();
 
-			Session session = findById(this.sessionId.get());
+			Session session = findById(getSessionId());
 
 			assertThat(session).isNotNull();
-			assertThat(session.getId()).isEqualTo(this.sessionId.get());
+			assertThat(session.getId()).isEqualTo(getSessionId());
 			assertThat(session.isExpired()).isFalse();
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo");
 			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("testOne");
@@ -181,7 +192,7 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 			save(session);
 		}
 
-		// Modifier (Timestamp) Thread
+		// Session Timestamp Modifier Thread
 		public void thread3() {
 
 			Thread.currentThread().setName("User Session Three");
@@ -189,10 +200,10 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 			waitForTick(1);
 			assertTick(1);
 
-			Session session = findById(this.sessionId.get());
+			Session session = findById(getSessionId());
 
 			assertThat(session).isNotNull();
-			assertThat(session.getId()).isEqualTo(this.sessionId.get());
+			assertThat(session.getId()).isEqualTo(getSessionId());
 			assertThat(session.isExpired()).isFalse();
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo");
 			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("testOne");
@@ -211,10 +222,10 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 
 			super.finish();
 
-			Session session = findById(this.sessionId.get());
+			Session session = findById(getSessionId());
 
 			assertThat(session).isNotNull();
-			assertThat(session.getId()).isEqualTo(this.sessionId.get());
+			assertThat(session.getId()).isEqualTo(getSessionId());
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo", "attributeThree");
 			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("testOne");
 			assertThat(session.<String>getAttribute("attributeTwo")).isEqualTo("testTwo");
