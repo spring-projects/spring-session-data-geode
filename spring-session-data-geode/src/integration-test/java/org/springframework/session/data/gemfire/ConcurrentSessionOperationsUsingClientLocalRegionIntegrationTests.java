@@ -83,7 +83,6 @@ public class ConcurrentSessionOperationsUsingClientLocalRegionIntegrationTests
 			assertThat(session.getAttributeNames()).isEmpty();
 
 			save(session);
-
 			setSessionId(session.getId());
 
 			waitForTick(2);
@@ -100,9 +99,9 @@ public class ConcurrentSessionOperationsUsingClientLocalRegionIntegrationTests
 
 			waitForTick(1);
 			assertTick(1);
-			waitOnAvailableSessionId();
+			waitOnRequiredSessionId();
 
-			Session session = findById(getSessionId());
+			Session session = findById(requireSessionId());
 
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(getSessionId());
