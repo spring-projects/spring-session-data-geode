@@ -54,6 +54,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
@@ -160,7 +161,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 
 			Instant beforeLastAccessedTime = Instant.now();
 
-			Session session = findById(getSessionId());
+			Session session = findById(requireSessionId());
 
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(getSessionId());
@@ -188,7 +189,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 
 			Instant beforeLastAccessedTime = Instant.now();
 
-			Session session = findById(getSessionId());
+			Session session = findById(requireSessionId());
 
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(getSessionId());
@@ -218,7 +219,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 		private final Region<Object, Session> sessions;
 
 		public RegionPutWithNonDirtySessionTestCase(
-				ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegrationTests testInstance) {
+				@NonNull ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegrationTests testInstance) {
 
 			super(testInstance);
 
@@ -226,7 +227,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 			this.sessionSerializer = reregisterDataSerializer(resolveDataSerializer());
 		}
 
-		private DataSerializer reregisterDataSerializer(DataSerializer dataSerializer) {
+		private @NonNull DataSerializer reregisterDataSerializer(@NonNull DataSerializer dataSerializer) {
 
 			InternalDataSerializer.unregister(dataSerializer.getId());
 			InternalDataSerializer._register(dataSerializer, false);
@@ -234,7 +235,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 			return dataSerializer;
 		}
 
-		private DataSerializer resolveDataSerializer() {
+		private @NonNull DataSerializer resolveDataSerializer() {
 
 			return Arrays.stream(nullSafeArray(InternalDataSerializer.getSerializers(), DataSerializer.class))
 				.filter(this.sessionSerializerFilter())
@@ -243,7 +244,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 				.orElseThrow(() -> newIllegalStateException(DATA_SERIALIZER_NOT_FOUND_EXCEPTION_MESSAGE));
 		}
 
-		private Predicate<? super DataSerializer> sessionSerializerFilter() {
+		private @NonNull Predicate<? super DataSerializer> sessionSerializerFilter() {
 
 			return dataSerializer -> {
 
@@ -260,11 +261,11 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 			};
 		}
 
-		private Session get(String id) {
+		private @Nullable Session get(@NonNull String id) {
 			return this.sessions.get(id);
 		}
 
-		private void put(Session session) {
+		private void put(@NonNull Session session) {
 
 			this.sessions.put(session.getId(), session);
 
@@ -313,9 +314,9 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 
 			waitForTick(1);
 			assertTick(1);
-			waitOnAvailableSessionId();
+			waitOnRequiredSessionId();
 
-			Session session = get(getSessionId());
+			Session session = get(requireSessionId());
 
 			assertThat(session).isInstanceOf(GemFireSession.class);
 			assertThat(session.getId()).isEqualTo(getSessionId());

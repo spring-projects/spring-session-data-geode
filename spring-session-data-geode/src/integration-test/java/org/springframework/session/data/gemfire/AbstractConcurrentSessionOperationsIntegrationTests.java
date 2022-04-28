@@ -37,7 +37,9 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Abstract base class encapsulating functionality common to all concurrent {@link Session} data access operation
@@ -95,12 +97,23 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 			return this.sessionRepository;
 		}
 
-		protected @NonNull String getSessionId() {
+		protected void setSessionId(@Nullable String sessionId) {
+			this.sessionId.set(sessionId);
+		}
+
+		protected @Nullable String getSessionId() {
 			return this.sessionId.get();
 		}
 
-		protected void setSessionId(@Nullable String sessionId) {
-			this.sessionId.set(sessionId);
+		protected @NonNull String requireSessionId() {
+
+			String sessionId = getSessionId();
+
+			Assert.state(StringUtils.hasText(sessionId), () -> "Session ID [%s] is not set;"
+				+ " A race condition may have occurred between the Thread setting the Session ID and the Threads"
+				+ " using the Session ID due to untimely operations in the Apache Geode client/server topology");
+
+			return sessionId;
 		}
 
 		protected @Nullable Session findById(@NonNull String id) {
@@ -116,7 +129,7 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 			return session;
 		}
 
-		protected void waitOnAvailableSessionId() {
+		protected void waitOnRequiredSessionId() {
 			AbstractConcurrentSessionOperationsIntegrationTests.waitOn(() -> Objects.nonNull(this.sessionId.get()));
 		}
 	}
@@ -151,7 +164,6 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo");
 
 			save(session);
-
 			setSessionId(session.getId());
 
 			waitForTick(4);
@@ -170,9 +182,9 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 
 			waitForTick(1);
 			assertTick(1);
-			waitOnAvailableSessionId();
+			waitOnRequiredSessionId();
 
-			Session session = findById(getSessionId());
+			Session session = findById(requireSessionId());
 
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(getSessionId());
@@ -199,8 +211,9 @@ public abstract class AbstractConcurrentSessionOperationsIntegrationTests extend
 
 			waitForTick(1);
 			assertTick(1);
+			waitOnRequiredSessionId();
 
-			Session session = findById(getSessionId());
+			Session session = findById(requireSessionId());
 
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(getSessionId());
