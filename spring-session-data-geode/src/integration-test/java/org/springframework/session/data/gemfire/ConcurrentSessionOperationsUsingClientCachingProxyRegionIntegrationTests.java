@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
 import org.junit.Before;
@@ -54,6 +53,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.data.gemfire.config.annotation.CacheServerApplication;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
+import org.springframework.lang.NonNull;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
@@ -89,8 +89,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SuppressWarnings("unused")
 public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegrationTests
 		extends AbstractConcurrentSessionOperationsIntegrationTests {
-
-	private static final String GEMFIRE_LOG_LEVEL = "error";
 
 	@Before
 	public void setup() {
@@ -128,10 +126,8 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 	// Tests that 2 Threads share the same Session object reference and therefore see's each other's changes.
 	public static class ConcurrentCachedSessionOperationsTestCase extends AbstractConcurrentSessionOperationsTestCase {
 
-		private final AtomicReference<String> sessionId = new AtomicReference<>(null);
-
 		public ConcurrentCachedSessionOperationsTestCase(
-				ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegrationTests testInstance) {
+				@NonNull ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegrationTests testInstance) {
 
 			super(testInstance);
 		}
@@ -153,7 +149,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 
 			save(session);
 
-			this.sessionId.set(session.getId());
+			setSessionId(session.getId());
 		}
 
 		public void thread1() {
@@ -164,10 +160,10 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 
 			Instant beforeLastAccessedTime = Instant.now();
 
-			Session session = findById(this.sessionId.get());
+			Session session = findById(getSessionId());
 
 			assertThat(session).isNotNull();
-			assertThat(session.getId()).isEqualTo(this.sessionId.get());
+			assertThat(session.getId()).isEqualTo(getSessionId());
 			assertThat(session.getLastAccessedTime()).isAfterOrEqualTo(beforeLastAccessedTime);
 			assertThat(session.getLastAccessedTime()).isBeforeOrEqualTo(Instant.now());
 			assertThat(session.isExpired()).isFalse();
@@ -192,10 +188,10 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 
 			Instant beforeLastAccessedTime = Instant.now();
 
-			Session session = findById(this.sessionId.get());
+			Session session = findById(getSessionId());
 
 			assertThat(session).isNotNull();
-			assertThat(session.getId()).isEqualTo(this.sessionId.get());
+			assertThat(session.getId()).isEqualTo(getSessionId());
 			assertThat(session.getLastAccessedTime()).isAfterOrEqualTo(beforeLastAccessedTime);
 			assertThat(session.getLastAccessedTime()).isBeforeOrEqualTo(Instant.now());
 			assertThat(session.isExpired()).isFalse();
@@ -217,8 +213,6 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 		private static final String DATA_SERIALIZER_NOT_FOUND_EXCEPTION_MESSAGE =
 			"No DataSerializer was found capable of de/serializing Sessions";
 
-		private final AtomicReference<String> sessionId = new AtomicReference<>(null);
-
 		private final DataSerializer sessionSerializer;
 
 		private final Region<Object, Session> sessions;
@@ -230,6 +224,14 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 
 			this.sessions = testInstance.getSessionRegion();
 			this.sessionSerializer = reregisterDataSerializer(resolveDataSerializer());
+		}
+
+		private DataSerializer reregisterDataSerializer(DataSerializer dataSerializer) {
+
+			InternalDataSerializer.unregister(dataSerializer.getId());
+			InternalDataSerializer._register(dataSerializer, false);
+
+			return dataSerializer;
 		}
 
 		private DataSerializer resolveDataSerializer() {
@@ -256,14 +258,6 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 
 				return isSessionSerializer;
 			};
-		}
-
-		private DataSerializer reregisterDataSerializer(DataSerializer dataSerializer) {
-
-			InternalDataSerializer.unregister(dataSerializer.getId());
-			InternalDataSerializer._register(dataSerializer, false);
-
-			return dataSerializer;
 		}
 
 		private Session get(String id) {
@@ -310,7 +304,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 
 			getSessionRepository().commit(loadedSession);
 
-			this.sessionId.set(session.getId());
+			setSessionId(session.getId());
 		}
 
 		public void thread2() {
@@ -319,11 +313,12 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 
 			waitForTick(1);
 			assertTick(1);
+			waitOnAvailableSessionId();
 
-			Session session = get(this.sessionId.get());
+			Session session = get(getSessionId());
 
 			assertThat(session).isInstanceOf(GemFireSession.class);
-			assertThat(session.getId()).isEqualTo(this.sessionId.get());
+			assertThat(session.getId()).isEqualTo(getSessionId());
 			assertThat(session.isExpired()).isFalse();
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo");
 			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("testOne");
@@ -336,10 +331,10 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 		@Override
 		public void finish() {
 
-			Session session = get(this.sessionId.get());
+			Session session = get(getSessionId());
 
 			assertThat(session).isNotNull();
-			assertThat(session.getId()).isEqualTo(this.sessionId.get());
+			assertThat(session.getId()).isEqualTo(getSessionId());
 			assertThat(session.isExpired()).isFalse();
 			assertThat(session.getAttributeNames()).containsOnly("attributeOne", "attributeTwo");
 			assertThat(session.<String>getAttribute("attributeOne")).isEqualTo("testOne");
@@ -352,6 +347,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 
 				verify(this.sessionSerializer, times(2))
 					.toData(isA(GemFireSession.class), isA(DataOutput.class));
+
 			}
 			catch (ClassNotFoundException | IOException ignore) { }
 		}
@@ -364,7 +360,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 
 	// Tests fail when 'copyOnRead' is set to 'true'!
 	//@ClientCacheApplication(copyOnRead = true, logLevel = GEMFIRE_LOG_LEVEL, subscriptionEnabled = true)
-	@ClientCacheApplication(logLevel = GEMFIRE_LOG_LEVEL, subscriptionEnabled = true)
+	@ClientCacheApplication(subscriptionEnabled = true)
 	@EnableGemFireHttpSession(
 		clientRegionShortcut = ClientRegionShortcut.CACHING_PROXY,
 		poolName = "DEFAULT",
@@ -373,10 +369,7 @@ public class ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegration
 	)
 	static class GemFireClientConfiguration { }
 
-	@CacheServerApplication(
-		name = "ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegrationTests",
-		logLevel = GEMFIRE_LOG_LEVEL
-	)
+	@CacheServerApplication(name = "ConcurrentSessionOperationsUsingClientCachingProxyRegionIntegrationTests")
 	@EnableGemFireHttpSession(
 		regionName = "Sessions",
 		sessionSerializerBeanName = GemFireHttpSessionConfiguration.SESSION_DATA_SERIALIZER_BEAN_NAME

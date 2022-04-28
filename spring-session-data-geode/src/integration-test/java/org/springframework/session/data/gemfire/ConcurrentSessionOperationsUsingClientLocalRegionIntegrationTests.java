@@ -17,8 +17,6 @@ package org.springframework.session.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -29,6 +27,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
+import org.springframework.lang.NonNull;
 import org.springframework.session.Session;
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 import org.springframework.session.data.gemfire.config.annotation.web.http.GemFireHttpSessionConfiguration;
@@ -56,8 +55,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class ConcurrentSessionOperationsUsingClientLocalRegionIntegrationTests
 		extends AbstractConcurrentSessionOperationsIntegrationTests {
 
-	private static final String GEMFIRE_LOG_LEVEL = "error";
-
 	@Test
 	public void concurrentLocalSessionAccessIsCorrect() throws Throwable {
 		TestFramework.runOnce(new ConcurrentLocalSessionAccessTestCase(this));
@@ -66,10 +63,8 @@ public class ConcurrentSessionOperationsUsingClientLocalRegionIntegrationTests
 	@SuppressWarnings("unused")
 	public static class ConcurrentLocalSessionAccessTestCase extends AbstractConcurrentSessionOperationsTestCase {
 
-		private final AtomicReference<String> sessionId = new AtomicReference<>(null);
-
 		public ConcurrentLocalSessionAccessTestCase(
-				ConcurrentSessionOperationsUsingClientLocalRegionIntegrationTests testInstance) {
+				@NonNull ConcurrentSessionOperationsUsingClientLocalRegionIntegrationTests testInstance) {
 
 			super(testInstance);
 		}
@@ -89,7 +84,7 @@ public class ConcurrentSessionOperationsUsingClientLocalRegionIntegrationTests
 
 			save(session);
 
-			this.sessionId.set(session.getId());
+			setSessionId(session.getId());
 
 			waitForTick(2);
 			assertTick(2);
@@ -105,11 +100,12 @@ public class ConcurrentSessionOperationsUsingClientLocalRegionIntegrationTests
 
 			waitForTick(1);
 			assertTick(1);
+			waitOnAvailableSessionId();
 
-			Session session = findById(this.sessionId.get());
+			Session session = findById(getSessionId());
 
 			assertThat(session).isNotNull();
-			assertThat(session.getId()).isEqualTo(this.sessionId.get());
+			assertThat(session.getId()).isEqualTo(getSessionId());
 			assertThat(session.isExpired()).isFalse();
 			assertThat(session.getAttributeNames()).isEmpty();
 
@@ -122,7 +118,7 @@ public class ConcurrentSessionOperationsUsingClientLocalRegionIntegrationTests
 		}
 	}
 
-	@ClientCacheApplication(logLevel = GEMFIRE_LOG_LEVEL)
+	@ClientCacheApplication
 	@EnableGemFireHttpSession(
 		clientRegionShortcut = ClientRegionShortcut.LOCAL,
 		poolName = "DEFAULT",
