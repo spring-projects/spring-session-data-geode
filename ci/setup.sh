@@ -9,6 +9,6 @@ chown -R 1001:1001 .
 mkdir -p /tmp/geode/session/artifacts-gradle-cache
 mkdir -p /tmp/geode/session/build-gradle-cache
 mkdir -p /tmp/geode/session/docs-gradle-cache
-echo "Logging into Docker..."
-docker login --username ${DOCKER_HUB_USR} --password ${DOCKER_HUB_PSW}
+#echo "Logging into Docker..."
+#docker login --username ${DOCKER_HUB_USR} --password ${DOCKER_HUB_PSW}
 exit 0
