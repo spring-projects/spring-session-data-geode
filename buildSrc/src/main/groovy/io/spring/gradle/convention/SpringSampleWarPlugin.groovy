@@ -116,9 +116,6 @@ class SpringSampleWarPlugin extends SpringSamplePlugin {
     }
 
     def static getRandomPort() {
-        ServerSocket serverSocket = new ServerSocket(0)
-        int port = serverSocket.localPort
-        serverSocket.close()
-        return port
+        new ServerSocket(0).withCloseable { it.localPort }
     }
 }
