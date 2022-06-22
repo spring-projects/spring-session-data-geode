@@ -60,7 +60,7 @@ class SpringSampleWarPlugin extends SpringSamplePlugin {
             }
         }
 
-        Task prepareAppServerForIntegrationTests = project.tasks.create('prepareAppServerForIntegrationTests') {
+        Task prepareAppServerBeforeIntegrationTests = project.tasks.create('prepareAppServerBeforeIntegrationTests') {
             group = 'Verification'
             description = 'Prepares the Web application server for Integration Testing'
             doFirst {
@@ -71,8 +71,9 @@ class SpringSampleWarPlugin extends SpringSamplePlugin {
             }
         }
 
+        // Gretty Gradle Plugin Task.
         project.tasks.matching { it.name == "appBeforeIntegrationTest" }.all { task ->
-            task.dependsOn prepareAppServerForIntegrationTests
+            task.dependsOn prepareAppServerBeforeIntegrationTests
         }
 
         project.tasks.withType(Test).all { task ->

@@ -42,7 +42,7 @@ class GemFireServerPlugin implements Plugin<Project> {
 			}
 		}
 
-		project.tasks.findByName("prepareAppServerForIntegrationTests")?.configure { task ->
+		project.tasks.findByName("prepareAppServerBeforeIntegrationTests")?.configure { task ->
 			task.dependsOn project.tasks.gemfireServer
 			task.doFirst {
 				project.gretty {
@@ -76,7 +76,7 @@ class GemFireServerPlugin implements Plugin<Project> {
 		boolean debug
 
 		@TaskAction
-		def greet() {
+		def run() {
 
 			port = availablePort()
 			println "Starting Apache Geode Server on port [$port]..."
