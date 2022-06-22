@@ -27,15 +27,15 @@ class GemFireServerPlugin implements Plugin<Project> {
 	@Override
 	void apply(Project project) {
 
-		project.tasks.create('gemfireServer', GemFireServerTask)
+		GemFireServerTask gemFireServerTask = project.tasks.create('gemfireServer', GemFireServerTask)
 
 		project.tasks.integrationTest.doLast {
 			println 'Stopping Apache Geode Server...'
-			project.tasks.gemfireServer.process?.destroy()
+			gemFireServerTask.process?.destroy()
 		}
 
 		if (project.tasks.findByName("bootRun") != null) {
-			project.tasks.integrationTest.dependsOn project.tasks.gemfireServer
+			project.tasks.integrationTest.dependsOn gemFireServerTask
 			project.tasks.integrationTest.doFirst {
 				systemProperties['spring.data.gemfire.cache.server.port'] = project.tasks.gemfireServer.port
 				systemProperties['spring.data.gemfire.pool.servers'] = "localhost[${project.tasks.gemfireServer.port}]"
@@ -43,7 +43,7 @@ class GemFireServerPlugin implements Plugin<Project> {
 		}
 
 		project.tasks.findByName("prepareAppServerBeforeIntegrationTests")?.configure { task ->
-			task.dependsOn project.tasks.gemfireServer
+			task.dependsOn gemFireServerTask
 			task.doFirst {
 				project.gretty {
 					jvmArgs = [
@@ -56,9 +56,7 @@ class GemFireServerPlugin implements Plugin<Project> {
 	}
 
 	static int availablePort() {
-		new ServerSocket(0).withCloseable { socket ->
-			socket.localPort
-		}
+		new ServerSocket(0).withCloseable { it.localPort }
 	}
 
 	static class GemFireServerTask extends DefaultTask {
@@ -75,41 +73,46 @@ class GemFireServerPlugin implements Plugin<Project> {
 		@Input
 		boolean debug
 
+		static def isSet(value) {
+			!(value == null || value.isEmpty())
+		}
+
+		static def init(value, defaultValue) {
+			isSet(value) ? value : defaultValue
+		}
+
 		@TaskAction
 		def run() {
 
-			port = availablePort()
-			println "Starting Apache Geode Server on port [$port]..."
+			this.port = availablePort()
+			println "Starting Apache Geode Server on port [$this.port]..."
 
-			def out = debug ? System.err : new StringBuilder()
-			def err = debug ? System.err : new StringBuilder()
+			def out = this.debug ? System.err : new StringBuilder()
+			def err = this.debug ? System.err : new StringBuilder()
 
 			String classpath = project.sourceSets.main.runtimeClasspath.collect { it }.join(File.pathSeparator)
 			String gemfireLogLevel = System.getProperty('spring.data.gemfire.cache.log-level', 'warning')
-			String javaHome = System.getProperty("java.home");
+			String javaHome = init(System.getProperty("java.home"), System.getenv("JAVA_HOME"))
 
-			javaHome = javaHome == null || javaHome.isEmpty() ? System.getenv("JAVA_HOME") : javaHome;
-			javaHome = javaHome.endsWith(File.separator) ? javaHome : javaHome.concat(File.separator);
+			javaHome = javaHome.endsWith(File.separator) ? javaHome : javaHome.concat(File.separator)
 
-			String javaCommand = javaHome + "bin" + File.separator + "java";
+			String javaCommand = javaHome + "bin" + File.separator + "java"
 
 			String[] commandLine = [
 				javaCommand, '-server', '-ea', '-classpath', classpath,
 				//"-Dgemfire.log-file=gemfire-server.log",
 				"-Dgemfire.log-level=${gemfireLogLevel}",
 				"-Dspring.data.gemfire.cache.server.port=${port}",
-				mainClassName
+				this.mainClassName
 			]
 
 			//println commandLine
 
-			process = commandLine.execute()
+			this.process = commandLine.execute()
 
-			if (project.tasks.findByName("appRun") != null) {
-				project.tasks.appRun.ext.process = process
-			}
+			project.tasks.findByName("appRun")?.configure { it.ext.process = this.process }
 
-			process.consumeProcessOutput(out, err)
+			this.process.consumeProcessOutput(out, err)
 		}
 	}
 }
