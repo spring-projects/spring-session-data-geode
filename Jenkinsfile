@@ -1,5 +1,8 @@
 def p = [:]
 
+def GRADLE_ENTERPRISE_SECRET_ACCESS_KEY =
+	string(credentialsId: 'gradle_enterprise_secret_access_key', variable: 'GRADLE_ENTERPRISE_ACCESS_KEY')
+
 node {
 	checkout scm
 	p = readProperties interpolate: true, file: 'ci/pipeline.properties'
@@ -27,29 +30,32 @@ pipeline {
 			steps {
 				script {
 					docker.image(p['docker.container.image.java.main']).inside(p['docker.container.inside.env.full']) {
+						withCredentials([GRADLE_ENTERPRISE_SECRET_ACCESS_KEY]) {
+							withEnv(["GRADLE_ENTERPRISE_ACCESS_KEY=${GRADLE_ENTERPRISE_ACCESS_KEY}"]) {
+								sh "echo 'Setup build environment...'"
+								sh "ci/setup.sh"
 
-						sh "echo 'Setup build environment...'"
-						sh "ci/setup.sh"
+								// Cleanup any prior build system resources
+								try {
+									sh "echo 'Clean up GemFire/Geode files & build artifacts...'"
+									sh "ci/cleanupGemFiles.sh"
+									sh "ci/cleanupArtifacts.sh"
+								}
+								catch (ignore) { }
 
-						// Cleanup any prior build system resources
-						try {
-							sh "echo 'Clean up GemFire/Geode files & build artifacts...'"
-							sh "ci/cleanupGemFiles.sh"
-							sh "ci/cleanupArtifacts.sh"
-						}
-						catch (ignore) { }
-
-						// Run the SBDG project Gradle build using JDK 8 inside Docker
-						try {
-							sh "echo 'Building SSDG...'"
-							sh "ci/check.sh"
-						}
-						catch (e) {
-							currentBuild.result = "FAILED: build"
-							throw e
-						}
-						finally {
-							junit '**/build/test-results/*/*.xml'
+								// Run the SBDG project Gradle build using JDK 8 inside Docker
+								try {
+									sh "echo 'Building SSDG...'"
+									sh "ci/check.sh"
+								}
+								catch (e) {
+									currentBuild.result = "FAILED: build"
+									throw e
+								}
+								finally {
+									junit '**/build/test-results/*/*.xml'
+								}
+							}
 						}
 					}
 				}
