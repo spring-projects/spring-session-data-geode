@@ -32,6 +32,7 @@ pipeline {
 					docker.image(p['docker.container.image.java.main']).inside(p['docker.container.inside.env.full']) {
 						withCredentials([GRADLE_ENTERPRISE_SECRET_ACCESS_KEY]) {
 							withEnv(["GRADLE_ENTERPRISE_ACCESS_KEY=${GRADLE_ENTERPRISE_ACCESS_KEY}"]) {
+
 								sh "echo 'Setup build environment...'"
 								sh "ci/setup.sh"
 
