@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package sample.server;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -21,7 +20,7 @@ import org.springframework.data.gemfire.config.annotation.CacheServerApplication
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 
 // tag::class[]
-@CacheServerApplication(name = "SpringSessionDataGeodeJavaConfigSampleServer", logLevel = "error") // <1>
+@CacheServerApplication(name = "SpringSessionDataGeodeJavaConfigSampleServer") // <1>
 @EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 30) // <2>
 public class GemFireServer {
 

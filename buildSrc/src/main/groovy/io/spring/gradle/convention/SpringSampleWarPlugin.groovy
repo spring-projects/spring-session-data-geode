@@ -64,9 +64,15 @@ class SpringSampleWarPlugin extends SpringSamplePlugin {
             group = 'Verification'
             description = 'Prepares the Web application server for Integration Testing'
             doFirst {
+                int cacheServerPort = getRandomPort();
                 project.gretty {
+                    // classPath = project.sourceSets.integrationTest.runtimeClasspath.toSet()
                     httpPort = getRandomPort()
                     httpsPort = getRandomPort()
+                    jvmArgs = [
+                        "-Dspring.data.gemfire.cache.server.port=$cacheServerPort",
+                        "-Dspring.data.gemfire.pool.servers=localhost[$cacheServerPort]"
+                    ]
                 }
             }
         }

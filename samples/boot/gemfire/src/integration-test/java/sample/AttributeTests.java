@@ -17,8 +17,11 @@ package sample;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -26,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.data.gemfire.tests.integration.ForkingClientServerIntegrationTestsSupport;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.htmlunit.webdriver.MockMvcHtmlUnitDriverBuilder;
@@ -34,6 +38,7 @@ import org.openqa.selenium.WebDriver;
 
 import sample.client.Application;
 import sample.pages.HomePage;
+import sample.server.GemFireServer;
 
 /**
  * @author Eddú Meléndez
@@ -41,12 +46,17 @@ import sample.pages.HomePage;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class, webEnvironment = WebEnvironment.MOCK)
 @AutoConfigureMockMvc
-public class AttributeTests {
+public class AttributeTests extends ForkingClientServerIntegrationTestsSupport {
 
 	@Autowired
 	private MockMvc mockMvc;
 
 	private WebDriver driver;
+
+	@BeforeClass
+	public static void startGeodeServer() throws IOException {
+		startGeodeServer(GemFireServer.class);
+	}
 
 	@Before
 	public void setup() {

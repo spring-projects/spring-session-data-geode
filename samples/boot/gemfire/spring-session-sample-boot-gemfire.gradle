@@ -1,5 +1,5 @@
 apply plugin: 'io.spring.convention.spring-sample-boot'
-apply plugin: "gemfire-server"
+// apply plugin: "gemfire-server"
 apply plugin: "application"
 
 dependencies {

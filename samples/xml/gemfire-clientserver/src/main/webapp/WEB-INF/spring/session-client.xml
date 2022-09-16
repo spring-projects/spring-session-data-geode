@@ -17,6 +17,7 @@
 
 	<context:property-placeholder/>
 
+	<bean class="sample.client.ApacheGeodeServerWebApplicationInitializer"/>
 	<bean class="sample.client.ClientServerReadyBeanPostProcessor"/>
 
 	<!--1-->

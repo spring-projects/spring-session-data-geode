@@ -35,7 +35,7 @@ import org.springframework.session.data.gemfire.config.annotation.web.http.Enabl
  */
 // tag::class[]
 @SpringBootApplication // <1>
-@CacheServerApplication(name = "SpringSessionDataGeodeBootSampleServer", logLevel = "error") // <2>
+@CacheServerApplication(name = "SpringSessionDataGeodeBootSampleServer") // <2>
 @EnableGemFireHttpSession(maxInactiveIntervalInSeconds = 20) // <3>
 public class GemFireServer {
 

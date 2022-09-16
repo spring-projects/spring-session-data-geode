@@ -24,7 +24,7 @@ import org.springframework.data.gemfire.tests.integration.ClientServerIntegratio
 import org.springframework.session.data.gemfire.config.annotation.web.http.EnableGemFireHttpSession;
 
 // tag::class[]
-@ClientCacheApplication(name = "SpringSessionDataGeodeJavaConfigSampleClient", logLevel = "error",
+@ClientCacheApplication(name = "SpringSessionDataGeodeJavaConfigSampleClient",
 	readTimeout = 15000, retryAttempts = 1, subscriptionEnabled = true) // <1>
 @EnableGemFireHttpSession(poolName = "DEFAULT") // <2>
 public class ClientConfig extends ClientServerIntegrationTestsSupport {

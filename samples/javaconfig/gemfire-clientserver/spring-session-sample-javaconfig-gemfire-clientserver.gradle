@@ -3,12 +3,13 @@ plugins {
 	id "io.spring.convention.spring-sample-war"
 }
 
-apply plugin: "gemfire-server"
+// apply plugin: "gemfire-server"
 apply plugin: "application"
 
 dependencies {
 
 	implementation project(':spring-session-data-geode')
+	implementation "io.github.classgraph:classgraph:4.8.149"
 	implementation "org.springframework:spring-web"
 	implementation "org.springframework.data:spring-data-geode-test"
 	implementation jstlDependencies
