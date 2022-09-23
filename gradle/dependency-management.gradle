@@ -1,8 +1,8 @@
 // Define dependency version properties
-ext['apacheTaglibsVersion'] = '1.2.5'
-ext['assertjVersion'] = '3.23.1'
 ext['javaxServletApiVersion'] ='4.0.4'
 ext['javaxServletJspJstlApiVersion'] = '1.2.7'
+ext['apacheTaglibsVersion'] = '1.2.5'
+ext['assertjVersion'] = '3.23.1'
 ext['findbugsVersion'] = "3.0.2"
 ext['log4jVersion'] = '2.19.0'
 ext['logbackVersion'] = '1.2.3'
