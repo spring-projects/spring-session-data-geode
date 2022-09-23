@@ -1,5 +1,4 @@
 // Define dependency version properties
-ext['antlrVersion'] = '2.7.7'
 ext['apacheTaglibsVersion'] = '1.2.5'
 ext['assertjVersion'] = '3.22.0'
 ext['jakartaServletApiVersion'] ='4.0.4'
