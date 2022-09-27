@@ -690,13 +690,10 @@ public class GemFireHttpSessionConfigurationUnitTests {
 	@Test
 	public void postConstructInitRegistersBeanAlias() {
 
-		assertThat(System.getProperty(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_BEAN_ALIAS)).isNull();
-
 		ConfigurableBeanFactory beanFactory = this.gemfireConfiguration.getBeanFactory();
 
 		this.gemfireConfiguration.setSessionSerializerBeanName("testSessionSerializer");
 		this.gemfireConfiguration.registerSessionSerializerBeanAlias();
-		this.gemfireConfiguration.init();
 
 		verify(beanFactory, times(1))
 			.registerAlias(eq("testSessionSerializer"), eq(GemFireHttpSessionConfiguration.SESSION_SERIALIZER_BEAN_ALIAS));
