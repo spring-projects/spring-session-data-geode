@@ -2,7 +2,7 @@
 ext['apacheTaglibsVersion'] = '1.2.5'
 ext['assertjVersion'] = '3.23.1'
 ext['findbugsVersion'] = "3.0.2"
-ext['jakartaAnnotationApiVersion'] = '2.0.0'
+ext['jakartaAnnotationApiVersion'] = '2.1.1'
 ext['jakartaResourceApiVersion'] = '2.0.0'
 ext['jakartaxServletApiVersion'] ='5.0.0'
 ext['jakartaServletJspJstlApiVersion'] = '2.0.0'
