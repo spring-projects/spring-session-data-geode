@@ -18,7 +18,7 @@ ext['seleniumHtmlUnitVersion'] = '4.5.2'
 ext['seleniumRemoteDriverVersion'] = "$seleniumApiVersion"
 ext['seleniumSupportVersion'] = "$seleniumApiVersion"
 ext['slf4jVersion'] = '2.0.4'
-ext['springSecurityVersion'] = '6.0.0-M7'
+ext['springSecurityVersion'] = '6.0.0'
 ext['springShellVersion'] = '1.2.0.RELEASE'
 
 // Declare dependency management for the following dependencies.
