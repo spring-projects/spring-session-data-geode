@@ -6,11 +6,41 @@ image:https://badges.gitter.im/spring-projects/spring-session.svg[link="https://
 image:https://travis-ci.org/spring-projects/spring-session.svg?branch=master["Build Status", link="https://travis-ci.org/spring-projects/spring-session-data-geode"]
 
 [[ssdg]]
-== Spring Session for Apache Geode & VMware Tanzu GemFire
+== Spring Session for Apache Geode
 
 _Spring Session_ core provides an API along with several provider implementations to manage user sessions.  It also
 simplifies the support for clustered session state management without being tied to an application container
 specific solution.
+
+[[notice]]
+== NOTICE
+
+[[notice-2023-january]]
+*2023-January-17*:
+
+At the end of 2022, VMware https://tanzu.vmware.com/content/blog/spring-for-vmware-gemfire-is-now-available[announced]
+the general availability of the Spring for VMware GemFire portfolio of projects.
+
+While these Spring based projects for VMware GemFire are open source and a succession to the Spring for Apache Geode
+projects, they are not a replacement. VMware GemFire forked from the Apache Geode project and is not open source.
+Additionally, newer Apache Geode and VMware GemFire clients are not backwards compatible with older Apache Geode
+and VMware GemFire servers. You can begin the transition by starting https://docs.vmware.com/en/Spring-Session-for-VMware-GemFire/index.html[here].
+
+Alternatively, the Spring portfolio provides first-class https://spring.io/projects/spring-session[integration]
+with other comparable session caching providers. Also, see https://docs.spring.io/spring-session/reference/modules.html[here].
+
+Finally, keep in mind, the Spring for Apache Geode projects will still be maintained until OSS and commercial support
+ends. Maintenance will only include CVE and critical fixes. No new features or major enhancements will be made.
+The Spring Session for Apache Geode support timelines can be viewed https://spring.io/projects/spring-session#support[here].
+
+[[notice-2022-october]]
+*2022-October-24*:
+
+See the October 24th https://github.com/spring-projects/spring-data-geode#notice[NOTICE]
+on the _Spring Data for Apache Geode_ GitHub project page for complete details.
+
+[[project-features]]
+== Features
 
 Out of the box _Spring Session_ provides integration with:
 
