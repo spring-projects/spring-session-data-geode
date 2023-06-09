@@ -2,18 +2,11 @@ pluginManagement {
 	repositories {
 		mavenCentral()
 		gradlePluginPortal()
-		maven {
-			url 'https://repo.spring.io/release'
-		}
+		maven { url 'https://repo.spring.io/release' }
 		if (version.endsWith('-SNAPSHOT')) {
 			maven { url "https://repo.spring.io/snapshot" }
 		}
 	}
-}
-
-plugins {
-	id "com.gradle.enterprise" version "3.11.1"
-	id "io.spring.ge.conventions" version "0.0.11"
 }
 
 rootProject.name = 'spring-session-data-geode-build'
