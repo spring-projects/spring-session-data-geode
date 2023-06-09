@@ -39,10 +39,6 @@ gradlePlugin {
             id = "org.springframework.propdeps"
             implementationClass = "org.springframework.gradle.propdeps.PropDepsPlugin"
         }
-        sagan {
-            id = "org.springframework.sagan"
-            implementationClass = "org.springframework.gradle.sagan.SaganPlugin"
-        }
     }
 }
 
