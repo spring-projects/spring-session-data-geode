@@ -33,20 +33,19 @@ pipeline {
 
 						// Cleanup any prior build system resources
 						try {
-							sh "echo 'Clean up GemFire/Geode files & build artifacts...'"
-							sh "ci/cleanupGemFiles.sh"
 							sh "ci/cleanupArtifacts.sh"
+							sh "ci/cleanupGemFiles.sh"
 						}
 						catch (ignore) { }
 
 						// Run the SBDG project Gradle build using JDK 8 inside Docker
 						try {
 							sh "echo 'Building SSDG...'"
-							sh "ci/check.sh"
+							sh "ci/build.sh"
 						}
-						catch (e) {
+						catch (cause) {
 							currentBuild.result = "FAILED: build"
-							throw e
+							throw cause
 						}
 						finally {
 							junit '**/build/test-results/*/*.xml'
@@ -64,9 +63,9 @@ pipeline {
 							try {
 								sh "ci/deployDocs.sh"
 							}
-							catch (e) {
+							catch (cause) {
 								currentBuild.result = "FAILED: deploy docs"
-								throw e
+								throw cause
 							}
 						}
 					}
