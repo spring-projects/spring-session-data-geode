@@ -38,7 +38,7 @@ gradlePlugin {
 		}
 		propdeps {
 			id = "org.springframework.propdeps"
-			implementationClass = "org.springframework.gradle.propdeps.PropDepsPlugin"
+			implementationClass = "io.spring.gradle.convention.propdeps.PropDepsPlugin"
 		}
 	}
 }
