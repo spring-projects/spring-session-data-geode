@@ -58,3 +58,7 @@ ext.releaseBuild = Utils.isRelease(project)
 
 // Declare maven-pom-editor Gradle script plugin.
 ext.MAVEN_POM_EDITOR_GRADLE = "$rootDir/gradle/maven-pom-editor.gradle"
+
+task buildScriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {
+	configurations = project.buildscript.configurations
+}
