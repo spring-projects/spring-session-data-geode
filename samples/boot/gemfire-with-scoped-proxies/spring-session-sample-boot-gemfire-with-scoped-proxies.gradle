@@ -30,7 +30,7 @@ dependencies {
 mainClassName = 'sample.client.Application'
 
 bootJar {
-	mainClassName = 'sample.client.Application'
+	mainClass = 'sample.client.Application'
 }
 
 run {

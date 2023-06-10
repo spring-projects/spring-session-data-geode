@@ -14,7 +14,10 @@ dependencies {
 		exclude group: "org.apache.logging.log4j", module: "log4j-to-slf4j"
 	}
 
-	compile "org.springframework.data:spring-data-geode-test"
+	compile("org.springframework.data:spring-data-geode-test") {
+		exclude group: "org.springframework.boot",  module: "spring-boot-loader-tools"
+	}
+
 	compile "org.webjars:bootstrap"
 	compile "org.webjars:webjars-locator"
 
@@ -33,7 +36,7 @@ dependencies {
 mainClassName = 'sample.client.Application'
 
 bootJar {
-	mainClassName = 'sample.client.Application'
+	mainClass = 'sample.client.Application'
 }
 
 run {
