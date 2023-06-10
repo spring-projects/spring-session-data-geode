@@ -45,12 +45,12 @@ public interface SessionExpirationPolicy {
 	 * Determines an {@link Optional} {@link Duration length of time} until the given {@link Session} will expire.
 	 * A {@link Duration#ZERO Zero} or {@link Duration#isNegative() Negative Duration} indicates that
 	 * the {@link Session} has expired.
-	 *
-	 * May return {@link Optional#EMPTY} as a "suggestion" that the Session should not expire or that the expiration
+	 * <p>
+	 * May return {@link Optional#empty()} as a "suggestion" that the Session should not expire or that the expiration
 	 * determination should be handled by the next expiration policy in a chain of policies.  Implementors are free
 	 * to compose 2 or more expiration policies using Composite Software Design Pattern as necessary.
-	 *
-	 * In Apache Geode or Pivotal GemFire's case, an {@link Optional#EMPTY} return value will indicate that it
+	 * <p>
+	 * In Apache Geode or Pivotal GemFire's case, an {@link Optional#empty()} return value will indicate that it
 	 * should default to the configured Entry Idle Timeout (TTI) Expiration Policy of the {@link Region} managing
 	 * {@link Session} state to determine exactly when the {@link Session} will expire.
 	 *
