@@ -1,4 +1,9 @@
+// plugins {
+// 	id 'org.springframework.boot'
+// }
+
 apply plugin: 'io.spring.convention.spring-sample-boot'
+// apply plugin: 'io.spring.convention.spring-sample'
 apply plugin: "gemfire-server"
 apply plugin: "application"
 
