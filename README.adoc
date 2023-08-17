@@ -5,6 +5,8 @@ image:https://badges.gitter.im/spring-projects/spring-session.svg[link="https://
 
 image:https://travis-ci.org/spring-projects/spring-session.svg?branch=master["Build Status", link="https://travis-ci.org/spring-projects/spring-session-data-geode"]
 
+image:https://img.shields.io/badge/Revved%20up%20by-Gradle%20Enterprise-06A0CE?logo=Gradle&labelColor=02303A["Revved up by Gradle Enterprise", link="https://ge.spring.io/scans?&search.rootProjectNames=ROOT_PROJECT_NAME"]
+
 [[ssdg]]
 == Spring Session for Apache Geode
 
