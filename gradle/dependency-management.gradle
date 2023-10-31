@@ -13,7 +13,7 @@ ext['mockitoVersion'] = '4.5.1'
 ext['multithreadedtcVersion'] = '1.01'
 ext['seleniumHtmlUnitVersion'] = '3.61.0'
 ext['slf4jVersion'] = '1.7.36'
-ext['springSecurityVersion'] = '5.7.8'
+ext['springSecurityVersion'] = '5.7.11'
 ext['springShellVersion'] = '1.2.0.RELEASE'
 
 // Declare dependency management for the following dependencies.
